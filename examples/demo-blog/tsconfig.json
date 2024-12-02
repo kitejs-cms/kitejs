@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "module": "CommonJS",
+    "target": "ES2021",
+    "strict": true,
+    "rootDir": "src",
+    "outDir": "../../dist/examples/demo-blog",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": ["ES2021"],
+    "paths": {
+      "@kitejs/core": ["dist/packages/core"]
+    }
+  },
+  "references": [{ "path": "../../packages/core" }],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

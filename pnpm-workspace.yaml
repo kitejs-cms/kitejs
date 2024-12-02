@@ -1,0 +1,3 @@
+packages:
+  - "packages/*"   # Core, plugin, temi
+  - "examples/*"   # Siti demo

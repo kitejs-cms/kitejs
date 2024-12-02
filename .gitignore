@@ -1,0 +1,44 @@
+# Node.js
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Directory di output compilate
+dist/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.*.local
+
+# MacOS system files
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.swp
+*.swo
+
+# Dependency directories
+**/node_modules
+
+# Coverage files
+coverage/
+*.lcov
+*.lcov.info
+
+# Directory per il watch script o file temporanei
+*.watch
+*.trigger
+
+# OS specific
+Thumbs.db

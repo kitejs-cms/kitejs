@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "strictPropertyInitialization": false,
+    "target": "esnext",
+    "module": "commonjs",
+    "experimentalDecorators": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "strict": true,
+    "baseUrl": "./"
+  },
+  "include": ["packages/**/*", "examples/**/*"],
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./examples/demo-blog" }
+  ]
+}

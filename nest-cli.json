@@ -1,0 +1,27 @@
+{
+  "monorepo": true,
+  "sourceRoot": "src",
+  "projects": {
+    "demo-blog": {
+      "type": "application",
+      "root": "examples/demo-blog",
+      "entryFile": "main",
+      "sourceRoot": "examples/demo-blog/src",
+      "compilerOptions": {
+        "tsConfigPath": "examples/demo-blog/tsconfig.json",
+        "webpack": false,
+        "outDir": "../../dist/examples/demo-blog"
+      }
+    },
+    "core": {
+      "type": "library",
+      "root": "packages/core",
+      "entryFile": "index",
+      "sourceRoot": "packages/core/src",
+      "compilerOptions": {
+        "tsConfigPath": "packages/core/tsconfig.json",
+        "outDir": "../../dist/packages/core"
+      }
+    }
+  }
+}

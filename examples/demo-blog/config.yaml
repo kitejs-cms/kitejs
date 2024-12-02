@@ -1,0 +1,13 @@
+app:
+  name: Demo Blog
+  version: 0.1.0
+  port: 5000
+
+database:
+  url: postgresql://user:password@localhost:5432/demo_blog
+  logging: true
+
+environment:
+  nodeEnv: development
+
+plugins:
