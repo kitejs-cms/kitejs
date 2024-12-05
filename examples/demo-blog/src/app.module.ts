@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { CoreModule, yamlConfigLoader } from "@kitejs/core";
 import { join } from "path";
+import { AppController } from "./app.controller";
+import { ServeStaticModule } from "@nestjs/serve-static";
 
 @Module({
   imports: [
@@ -15,6 +17,11 @@ import { join } from "path";
       ],
       isGlobal: true,
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "/theme/assets"),
+      serveRoot: "/assets",
+    }),
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

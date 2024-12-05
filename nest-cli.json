@@ -10,7 +10,22 @@
       "compilerOptions": {
         "tsConfigPath": "examples/demo-blog/tsconfig.json",
         "webpack": false,
-        "outDir": "../../dist/examples/demo-blog"
+        "outDir": "../../dist/examples/demo-blog",
+        "assets": [
+          {
+            "include": "theme/**/*",
+            "outDir": "dist/examples/demo-blog"
+          },
+          {
+            "include": "theme/assets/**/*",
+            "outDir": "dist/examples/theme/assets"
+          },
+          {
+            "include": "config.yaml",
+            "outDir": "dist/examples/demo-blog"
+          }
+        ],
+        "watchAssets": true
       }
     },
     "core": {

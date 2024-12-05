@@ -16,14 +16,18 @@
     "@nestjs/schematics": "^10.2.3",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.9.4",
+    "@types/react": "^18.3.12",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
+    "chokidar": "^4.0.1",
     "eslint": "^9.15.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "ws": "^8.18.0"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.8",

@@ -3,6 +3,9 @@ app:
   version: 0.1.0
   port: 5000
 
+theme:
+  path: "examples/demo-blog/theme"
+
 database:
   url: postgresql://user:password@localhost:5432/demo_blog
   logging: true
