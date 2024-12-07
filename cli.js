@@ -2,14 +2,13 @@
 const { spawn, exec } = require("child_process");
 const chokidar = require("chokidar");
 const WebSocket = require("ws");
-
-// Configurazione
 const coreDistPath = "dist/packages/core";
 const themePath = "examples/demo-blog/src/theme";
+const viteConfigPath = "examples/demo-blog/vite.config.ts";
+
 const demoPort = 5000;
 const reloadPort = 3001;
-
-let backendReady = false; // Flag per tracciare lo stato del backend
+let backendReady = false;
 
 function startProcess(name, command, args = [], options = {}) {
   const process = spawn(command, args, {
@@ -21,14 +20,14 @@ function startProcess(name, command, args = [], options = {}) {
   process.stdout.on("data", (data) => {
     processLog(name, data.toString());
 
-    // Controlla se il backend è pronto (usa un log specifico del tuo backend come indicatore)
+    // Controlla se il backend è pronto
     if (
       name === "Demo" &&
       data.toString().includes("Nest application successfully started")
     ) {
       backendReady = true;
       console.log("✅ Backend is ready. Sending reload signal to clients...");
-      notifyClients(globalWebSocketServer, "reload"); // Notifica i client solo quando il backend è pronto
+      notifyClients(globalWebSocketServer, "reload");
     }
   });
 
@@ -104,6 +103,31 @@ function startCoreWatch() {
   return startProcess("Core", "pnpm", ["run", "dev:core"]);
 }
 
+// Funzione per eseguire la build del tema
+function buildTheme() {
+  console.log("🛠️ Building theme with Vite...");
+  const viteBuild = spawn(
+    "pnpm",
+    ["vite", "build", "--config", viteConfigPath],
+    {
+      stdio: "inherit",
+      shell: true,
+    }
+  );
+
+  return new Promise((resolve, reject) => {
+    viteBuild.on("close", (code) => {
+      if (code === 0) {
+        console.log("✅ Theme build completed");
+        resolve();
+      } else {
+        console.error("❌ Theme build failed");
+        reject(new Error("Theme build failed"));
+      }
+    });
+  });
+}
+
 function watchFiles(wss) {
   console.log(`👀 Watching changes in ${coreDistPath} and ${themePath}...`);
   const watcher = chokidar.watch([coreDistPath, themePath], {
@@ -114,11 +138,7 @@ function watchFiles(wss) {
   watcher.on("change", (path) => {
     console.log(`🔧 File changed: ${path}`);
     if (path.startsWith(themePath)) {
-      if (backendReady) {
-        notifyClients(wss, "reload");
-      } else {
-        console.log("⏳ Waiting for backend to restart...");
-      }
+      buildTheme();
     } else {
       restartDemoApp();
     }
@@ -129,8 +149,16 @@ function watchFiles(wss) {
   });
 }
 
-function start() {
+async function start() {
   console.log("🎯 Starting development environment...");
+  try {
+    await buildTheme();
+    console.log("🎉 Initial theme build complete.");
+  } catch (error) {
+    console.error("❌ Initial theme build failed.");
+    process.exit(1);
+  }
+
   global.globalWebSocketServer = startWebSocketServer();
   const coreProcess = startCoreWatch();
   restartDemoApp();

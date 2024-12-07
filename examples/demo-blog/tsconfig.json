@@ -18,6 +18,6 @@
     }
   },
   "references": [{ "path": "../../packages/core" }],
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/theme/index.html"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]
 }
