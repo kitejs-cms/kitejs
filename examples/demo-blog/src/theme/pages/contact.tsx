@@ -10,8 +10,6 @@ export default function ContactPage() {
     <MainLayout>
       <h1>Welcome to the Contact</h1>
       <div>
-        <h2>Counter</h2>
-
         <button onClick={test}>Decrement</button>
       </div>
     </MainLayout>

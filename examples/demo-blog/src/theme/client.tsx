@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (PageComponent) {
     hydrateRoot(appElement, <PageComponent />, {
-      onRecoverableError: (error, errorInfo) => {
+      onRecoverableError: (error: any, errorInfo: any) => {
         console.error("Hydration error:", error, errorInfo);
       },
     });

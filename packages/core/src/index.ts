@@ -3,10 +3,7 @@ export * from "./core.module";
 /* Utils */
 export * from "./utils/plugin-loader";
 export * from "./utils/yaml-config-loader";
-
-/* Render */
-export * from "./render/render";
-export * from "./render/hydrate";
-export * from "./render/theme.config.schema";
+export * from "./utils/inject-web-socket";
+export * from "./utils/clean-old-bundles";
 
 /* Middleware */
