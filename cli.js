@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 const { spawn, exec } = require("child_process");
-const chokidar = require("chokidar");
 const WebSocket = require("ws");
+const chokidar = require("chokidar");
+const fs = require("fs");
+const path = require("path");
+
 const coreDistPath = "dist/packages/core";
 const themePath = "examples/demo-blog/src/theme";
 const viteConfigPath = "examples/demo-blog/vite.config.ts";
@@ -20,14 +23,13 @@ function startProcess(name, command, args = [], options = {}) {
   process.stdout.on("data", (data) => {
     processLog(name, data.toString());
 
-    // Controlla se il backend è pronto
     if (
       name === "Demo" &&
       data.toString().includes("Nest application successfully started")
     ) {
       backendReady = true;
       console.log("✅ Backend is ready. Sending reload signal to clients...");
-      notifyClients(globalWebSocketServer, "reload");
+      notifyClients(global.globalWebSocketServer, "reload");
     }
   });
 
@@ -90,7 +92,7 @@ function restartDemoApp() {
   if (demoProcess) {
     console.log("🔄 Restarting Demo App...");
     demoProcess.kill();
-    backendReady = false; // Resetta il flag
+    backendReady = false;
   }
 
   killPort(demoPort, () => {
@@ -103,9 +105,38 @@ function startCoreWatch() {
   return startProcess("Core", "pnpm", ["run", "dev:core"]);
 }
 
-// Funzione per eseguire la build del tema
+function watchCoreChanges() {
+  console.log(`👀 Watching changes in ${coreDistPath}...`);
+  const watcher = chokidar.watch(coreDistPath, {
+    persistent: true,
+    ignoreInitial: true,
+  });
+
+  watcher.on("change", (filePath) => {
+    console.log(`🔧 Core file changed: ${filePath}`);
+    restartDemoApp();
+  });
+
+  watcher.on("error", (error) => {
+    console.error("❌ Error watching core files:", error);
+  });
+}
+
+function ensureAssetsDirExists() {
+  const assetsDir = path.resolve(
+    __dirname,
+    "../../dist/examples/demo-blog/theme/assets"
+  );
+  if (!fs.existsSync(assetsDir)) {
+    fs.mkdirSync(assetsDir, { recursive: true });
+    console.log(`✅ Created missing directory: ${assetsDir}`);
+  }
+}
+
 function buildTheme() {
   console.log("🛠️ Building theme with Vite...");
+  ensureAssetsDirExists();
+
   const viteBuild = spawn(
     "pnpm",
     ["vite", "build", "--config", viteConfigPath],
@@ -128,41 +159,23 @@ function buildTheme() {
   });
 }
 
-function watchFiles(wss) {
-  console.log(`👀 Watching changes in ${coreDistPath} and ${themePath}...`);
-  const watcher = chokidar.watch([coreDistPath, themePath], {
-    persistent: true,
-    ignoreInitial: true,
-  });
-
-  watcher.on("change", (path) => {
-    console.log(`🔧 File changed: ${path}`);
-    if (path.startsWith(themePath)) {
-      buildTheme();
-    } else {
-      restartDemoApp();
-    }
-  });
-
-  watcher.on("error", (error) => {
-    console.error("❌ Error watching files:", error);
-  });
-}
-
 async function start() {
   console.log("🎯 Starting development environment...");
+
+  global.globalWebSocketServer = startWebSocketServer();
+  const coreProcess = startCoreWatch();
+  watchCoreChanges();
+  restartDemoApp();
+
   try {
+    console.log("🛠️ Ensuring assets directory exists...");
+    ensureAssetsDirExists();
     await buildTheme();
     console.log("🎉 Initial theme build complete.");
   } catch (error) {
     console.error("❌ Initial theme build failed.");
     process.exit(1);
   }
-
-  global.globalWebSocketServer = startWebSocketServer();
-  const coreProcess = startCoreWatch();
-  restartDemoApp();
-  watchFiles(global.globalWebSocketServer);
 
   process.on("SIGINT", () => {
     console.log("\n🛑 Stopping processes...");

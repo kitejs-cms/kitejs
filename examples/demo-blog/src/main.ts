@@ -17,9 +17,9 @@ async function bootstrap() {
     })
   );
 
+  app.setGlobalPrefix("api", { exclude: [""] });
   await app.init();
 
-  // Usa il ConfigService per ottenere i plugin e la porta
   const configService = app.get(ConfigService);
   const plugins = getEnabledPlugins(configService.get("plugins") || []);
   console.log("Enabled Plugins:", plugins);

@@ -3,12 +3,12 @@ app:
   version: 0.1.0
   port: 5000
 
+database:
+  uri: mongodb://admin:adminpassword@localhost:27017/?retryWrites=true&loadBalanced=false&serverSelectionTimeoutMS=5000&connectTimeoutMS=10000&authSource=admin&authMechanism=SCRAM-SHA-256
+  dbName: "demo_blog"
+
 theme:
   path: "examples/demo-blog/theme"
-
-database:
-  url: postgresql://user:password@localhost:5432/demo_blog
-  logging: true
 
 environment:
   nodeEnv: development

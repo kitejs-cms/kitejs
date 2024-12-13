@@ -13,6 +13,7 @@
     "@nestjs/serve-static": "^4.0.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "express": "^4.21.2",
     "js-yaml": "^4.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -27,6 +28,9 @@
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
     "vite": "^6.0.3"

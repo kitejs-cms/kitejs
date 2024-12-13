@@ -7,6 +7,9 @@ const {
 
 module.exports = {
   root: "src/theme",
+  css: {
+    postcss: path.resolve(__dirname, "postcss.config.js"),
+  },
   build: {
     minify: true,
     outDir: path.resolve(
@@ -15,13 +18,18 @@ module.exports = {
     ),
     emptyOutDir: false,
     rollupOptions: {
-      input: path.resolve(__dirname, "src/theme/client.tsx"),
+      input: {
+        main: path.resolve(__dirname, "src/theme/client.tsx"),
+        styles: path.resolve(__dirname, "src/theme/index.css"),
+      },
       output: {
         dir: path.resolve(
           __dirname,
           "../../dist/examples/demo-blog/theme/assets"
         ),
-        entryFileNames: "bundle.[hash].js",
+        entryFileNames: "[name].[hash].js",
+        chunkFileNames: "[name].[hash].js",
+        assetFileNames: "[name].[ext]",
         format: "esm",
       },
     },

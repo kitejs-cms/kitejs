@@ -16,7 +16,7 @@ export default function HomePage() {
     <MainLayout>
       <h1>Welcome to the Home Page</h1>
       <p>This is the home page content..</p>
-      <div>
+      <div className="bg-blue-500 text-white p-4">
         <h2>Counter</h2>
         <p>Current count: {count}</p>
         <button onClick={incrementCounter}>Increments</button>

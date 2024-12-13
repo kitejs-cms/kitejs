@@ -24,7 +24,7 @@ export class AppController {
     );
     this.pages = {};
 
-    fs.readdirSync(pagesDir).forEach((file) => {
+    fs.readdirSync(pagesDir).forEach((file: string) => {
       if (file.endsWith(".js") || file.endsWith(".jsx")) {
         const pageName = path.basename(file, path.extname(file));
         const modulePath = path.join(pagesDir, file);
@@ -52,7 +52,7 @@ export class AppController {
     );
     const files = fs.readdirSync(assetsDir);
     const bundle = files.find(
-      (file) => file.startsWith("bundle.") && file.endsWith(".js")
+      (file: string) => file.startsWith("main.") && file.endsWith(".js")
     );
     if (!bundle) {
       throw new Error("Bundle not found");
