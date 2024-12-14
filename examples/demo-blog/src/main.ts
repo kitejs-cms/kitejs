@@ -1,8 +1,9 @@
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { getEnabledPlugins } from "@kitejs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { getEnabledPlugins } from "@kitejs/core";
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
 import { createServer } from "http";
 
 async function bootstrap() {
@@ -17,6 +18,16 @@ async function bootstrap() {
     })
   );
 
+  const config = new DocumentBuilder()
+    .setTitle("CMS API")
+    .setDescription("API documentation for the CMS")
+    .setVersion("1.0")
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("api-docs", app, document);
+
   app.setGlobalPrefix("api", { exclude: [""] });
   await app.init();
 
@@ -26,7 +37,10 @@ async function bootstrap() {
 
   const port = configService.get<number>("app.port") || 3000;
   server.listen(port, () => {
-    console.log(`Application is running on http://localhost:${port}`);
+    console.log(`🚀 Application is running on http://localhost:${port}`);
+    console.log(
+      `📄 Swagger documentation is available at: http://localhost:${port}/api-docs`
+    );
   });
 }
 
