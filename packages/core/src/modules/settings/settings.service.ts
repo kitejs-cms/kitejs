@@ -1,4 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import {
+  Injectable,
+  InternalServerErrorException,
+  Inject,
+} from "@nestjs/common";
+import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { Setting, SettingDocument } from "./settings.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
@@ -7,22 +12,39 @@ import { Model } from "mongoose";
 export class SettingsService {
   constructor(
     @InjectModel(Setting.name)
-    private readonly settingModel: Model<SettingDocument>
+    private readonly settingModel: Model<SettingDocument>,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache
   ) {}
 
   /**
    * Retrieve a setting by namespace and key.
-   * Returns `null` if the setting is not found.
+   * Checks the cache first before querying the database.
    * @param namespace - The namespace for the setting (e.g., plugin name).
    * @param key - The unique key of the setting within the namespace.
    */
   async findOne(namespace: string, key: string): Promise<Setting | null> {
-    return this.settingModel.findOne({ namespace, key }).exec();
+    const cacheKey = `settings_${namespace}:${key}`;
+
+    const cachedValue = await this.cacheManager.get<Setting>(cacheKey);
+    if (cachedValue) {
+      return cachedValue;
+    }
+
+    try {
+      const setting = await this.settingModel
+        .findOne({ namespace, key })
+        .exec();
+      if (setting) {
+        await this.cacheManager.set(cacheKey, setting); // Save to cache
+      }
+      return setting;
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to retrieve the setting.");
+    }
   }
 
   /**
    * Retrieve all settings, optionally filtered by namespace.
-   * Useful for fetching configurations for a specific plugin, theme, or global context.
    * @param namespace - (Optional) Namespace to filter settings by.
    */
   async findAll(namespace?: string): Promise<Setting[]> {
@@ -36,8 +58,18 @@ export class SettingsService {
    * @param settingData - Partial setting data to create the document.
    */
   async create(settingData: Partial<Setting>): Promise<Setting> {
-    const createdSetting = new this.settingModel(settingData);
-    return createdSetting.save();
+    try {
+      const createdSetting = new this.settingModel(settingData);
+      const savedSetting = await createdSetting.save();
+
+      // Invalidate cache for the namespace
+      const cacheKey = `settings_${settingData.namespace}:${settingData.key}`;
+      await this.cacheManager.del(cacheKey);
+
+      return savedSetting;
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to create the setting.");
+    }
   }
 
   /**
@@ -48,13 +80,22 @@ export class SettingsService {
    * @param value - The value to set for the setting.
    */
   async upsert(namespace: string, key: string, value: any): Promise<Setting> {
-    return this.settingModel
-      .findOneAndUpdate(
-        { namespace, key },
-        { $set: { value } },
-        { new: true, upsert: true }
-      )
-      .exec();
+    try {
+      const updatedSetting = await this.settingModel
+        .findOneAndUpdate(
+          { namespace, key },
+          { $set: { value } },
+          { new: true, upsert: true }
+        )
+        .exec();
+
+      const cacheKey = `settings_${namespace}:${key}`;
+      await this.cacheManager.set(cacheKey, updatedSetting);
+
+      return updatedSetting;
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to update the setting.");
+    }
   }
 
   /**
@@ -64,7 +105,18 @@ export class SettingsService {
    * @param key - The unique key of the setting within the namespace.
    */
   async delete(namespace: string, key: string): Promise<boolean> {
-    const result = await this.settingModel.deleteOne({ namespace, key }).exec();
-    return result.deletedCount > 0;
+    try {
+      const result = await this.settingModel
+        .deleteOne({ namespace, key })
+        .exec();
+      if (result.deletedCount > 0) {
+        const cacheKey = `settings_${namespace}:${key}`;
+        await this.cacheManager.del(cacheKey);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to delete the setting.");
+    }
   }
 }
