@@ -8,180 +8,143 @@ const path = require("path");
 const coreDistPath = "dist/packages/core";
 const themePath = "examples/demo-blog/src/theme";
 const viteConfigPath = "examples/demo-blog/vite.config.ts";
+const assetsDir = path.resolve(
+  __dirname,
+  "../../dist/examples/demo-blog/theme/assets"
+);
 
 const demoPort = 5000;
 const reloadPort = 3001;
 let backendReady = false;
 
-function startProcess(name, command, args = [], options = {}) {
-  const process = spawn(command, args, {
-    stdio: ["inherit", "pipe", "pipe"],
-    shell: true,
-    ...options,
-  });
-
-  process.stdout.on("data", (data) => {
-    processLog(name, data.toString());
-
-    if (
-      name === "Demo" &&
-      data.toString().includes("Nest application successfully started")
-    ) {
-      backendReady = true;
-      console.log("✅ Backend is ready. Sending reload signal to clients...");
-      notifyClients(global.globalWebSocketServer, "reload");
-    }
-  });
-
-  process.stderr.on("data", (data) => {
-    processLog(name, data.toString(), true);
-  });
-
-  process.on("close", (code) => {
-    if (code !== 0) {
-      console.error(`❌ [${name}] Process exited with code ${code}`);
-    }
-  });
-
-  return process;
-}
-
-function processLog(name, message, isError = false) {
-  const color = isError ? "\x1b[31m" : "\x1b[32m";
-  const reset = "\x1b[0m";
-  console.log(`${color}[${name}]${reset} ${message.trim()}`);
-}
-
-function startWebSocketServer() {
-  const wss = new WebSocket.Server({ port: reloadPort });
-
-  wss.on("connection", (ws) => {
-    console.log("🔌 Client connected to WebSocket for live reload");
-  });
-
-  return wss;
-}
-
-function notifyClients(wss, message) {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
-}
-
-let demoProcess = null;
-
-function killPort(port, callback) {
-  const command =
-    process.platform === "win32"
-      ? `netstat -ano | findstr :${port} | findstr LISTENING && for /F "tokens=5" %A in ('netstat -ano ^| findstr :${port} ^| findstr LISTENING') do taskkill /PID %A /F`
-      : `lsof -ti tcp:${port} | xargs kill -9`;
-
-  exec(command, (err) => {
-    if (err) {
-      console.error(`❌ Failed to kill process on port ${port}:`, err.message);
-    } else {
-      console.log(`✅ Successfully killed process on port ${port}`);
-    }
-    if (callback) callback();
-  });
-}
-
-function restartDemoApp() {
-  if (demoProcess) {
-    console.log("🔄 Restarting Demo App...");
-    demoProcess.kill();
-    backendReady = false;
-  }
-
-  killPort(demoPort, () => {
-    demoProcess = startProcess("Demo", "pnpm", ["run", "dev:demo-blog"]);
-  });
-}
-
-function startCoreWatch() {
-  console.log("🚀 Starting Core Watch...");
-  return startProcess("Core", "pnpm", ["run", "dev:core"]);
-}
-
-function watchCoreChanges() {
-  console.log(`👀 Watching changes in ${coreDistPath}...`);
-  const watcher = chokidar.watch(coreDistPath, {
-    persistent: true,
-    ignoreInitial: true,
-  });
-
-  watcher.on("change", (filePath) => {
-    console.log(`🔧 Core file changed: ${filePath}`);
-    restartDemoApp();
-  });
-
-  watcher.on("error", (error) => {
-    console.error("❌ Error watching core files:", error);
-  });
-}
-
-function ensureAssetsDirExists() {
-  const assetsDir = path.resolve(
-    __dirname,
-    "../../dist/examples/demo-blog/theme/assets"
-  );
-  if (!fs.existsSync(assetsDir)) {
-    fs.mkdirSync(assetsDir, { recursive: true });
-    console.log(`✅ Created missing directory: ${assetsDir}`);
-  }
-}
-
-function buildTheme() {
-  console.log("🛠️ Building theme with Vite...");
-  ensureAssetsDirExists();
-
-  const viteBuild = spawn(
-    "pnpm",
-    ["vite", "build", "--config", viteConfigPath],
-    {
-      stdio: "inherit",
-      shell: true,
-    }
-  );
-
+// Utilities
+function executeCommand(command) {
   return new Promise((resolve, reject) => {
-    viteBuild.on("close", (code) => {
-      if (code === 0) {
-        console.log("✅ Theme build completed");
-        resolve();
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        reject(stderr || err.message);
       } else {
-        console.error("❌ Theme build failed");
-        reject(new Error("Theme build failed"));
+        resolve(stdout);
       }
     });
   });
 }
 
-async function start() {
-  console.log("🎯 Starting development environment...");
+function log(name, message, isError = false) {
+  const color = isError ? "\x1b[31m" : "\x1b[32m";
+  const reset = "\x1b[0m";
+  console.log(`${color}[${name}]${reset} ${message.trim()}`);
+}
 
-  global.globalWebSocketServer = startWebSocketServer();
-  const coreProcess = startCoreWatch();
-  watchCoreChanges();
-  restartDemoApp();
+// Start a process with cleaner logging
+function startProcess(name, command, args = []) {
+  const proc = spawn(command, args, { stdio: "inherit", shell: true });
+  proc.on("error", (err) => log(name, `Error: ${err.message}`, true));
+  return proc;
+}
+
+// Kill port
+async function killPort(port) {
+  const killCommand =
+    process.platform === "win32"
+      ? `for /F "tokens=5" %A in ('netstat -ano ^| findstr :${port} ^| findstr LISTENING') do taskkill /PID %A /F`
+      : `lsof -ti tcp:${port} | xargs kill -9`;
 
   try {
-    console.log("🛠️ Ensuring assets directory exists...");
-    ensureAssetsDirExists();
-    await buildTheme();
-    console.log("🎉 Initial theme build complete.");
+    await executeCommand(killCommand);
+    log("Port", `Successfully killed process on port ${port}`);
   } catch (error) {
-    console.error("❌ Initial theme build failed.");
+    log("Port", `No process found on port ${port}`, true);
+  }
+}
+
+// Ensure assets directory exists
+function ensureAssetsDirExists() {
+  if (!fs.existsSync(assetsDir)) {
+    fs.mkdirSync(assetsDir, { recursive: true });
+    log("Assets", `Created missing directory: ${assetsDir}`);
+  }
+}
+
+// Build theme
+async function buildTheme() {
+  log("Theme", "Building theme with Vite...");
+  ensureAssetsDirExists();
+  try {
+    await executeCommand(`pnpm vite build --config ${viteConfigPath}`);
+    log("Theme", "Build completed successfully.");
+  } catch (err) {
+    log("Theme", "Build failed", true);
     process.exit(1);
   }
+}
+
+// Restart Demo App
+async function restartDemoApp(wss) {
+  await killPort(demoPort);
+  log("Demo", "Restarting demo application...");
+  const demoProc = startProcess("Demo", "pnpm", ["run", "dev:demo-blog"]);
+
+  demoProc.stdout?.on("data", (data) => {
+    if (data.includes("Nest application successfully started")) {
+      backendReady = true;
+      notifyClients(wss, "reload");
+      log("Demo", "Backend ready. Clients reloaded.");
+    }
+  });
+}
+
+// Watch Core Changes
+function watchCoreChanges(wss) {
+  const watcher = chokidar.watch(coreDistPath, { persistent: true });
+  let timeout = null;
+
+  watcher.on("change", (filePath) => {
+    log("Core", `File changed: ${filePath}`);
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      restartDemoApp(wss);
+    }, 500); // Debounce
+  });
+}
+
+// Start WebSocket Server
+function startWebSocketServer() {
+  const wss = new WebSocket.Server({ port: reloadPort });
+  wss.on("connection", () => log("WebSocket", "Client connected for reload"));
+  return wss;
+}
+
+// Notify clients
+function notifyClients(wss, message) {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) client.send(message);
+  });
+}
+
+// Main flow
+async function start() {
+  log("Start", "Initializing development environment...");
+  const wss = startWebSocketServer();
+  log("WebSocket", "WebSocket server started.");
+
+  await killPort(demoPort);
+  const coreProc = startProcess("Core", "pnpm", ["run", "dev:core"]);
+
+  await buildTheme(); // Initial theme build
+  watchCoreChanges(wss);
+  restartDemoApp(wss);
+
+  chokidar.watch(themePath, { persistent: true }).on("change", async () => {
+    log("Theme", "Theme file changed, rebuilding...");
+    await buildTheme();
+    restartDemoApp(wss);
+  });
 
   process.on("SIGINT", () => {
-    console.log("\n🛑 Stopping processes...");
-    coreProcess.kill();
-    if (demoProcess) demoProcess.kill();
-    global.globalWebSocketServer.close();
+    log("Exit", "Cleaning up processes...");
+    coreProc.kill();
+    wss.close();
     process.exit(0);
   });
 }

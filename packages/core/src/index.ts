@@ -13,3 +13,6 @@ export * from "./decorators/set-meta.decorator";
 
 /* Models */
 export * from "./models/api-response.model";
+
+/* Middlewares */
+export * from "./middlewares/api-prefix.middleware";

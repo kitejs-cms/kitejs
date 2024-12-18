@@ -7,7 +7,6 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 
 @Module({
   imports: [
-    CoreModule,
     ConfigModule.forRoot({
       load: [
         () =>
@@ -21,6 +20,7 @@ import { ServeStaticModule } from "@nestjs/serve-static";
       rootPath: join(__dirname, "/theme/assets"),
       serveRoot: "/assets",
     }),
+    CoreModule,
   ],
   controllers: [AppController],
 })

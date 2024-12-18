@@ -60,7 +60,7 @@ export class AppController {
     return `/assets/${bundle}`;
   }
 
-  @Get("/:page?")
+  @Get(":page")
   renderPage(@Param("page") page: string = "home", @Res() res: Response) {
     const lang = "en";
     const title = `Title for ${page}`;

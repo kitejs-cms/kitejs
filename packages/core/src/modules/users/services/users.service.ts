@@ -30,8 +30,8 @@ export class UserService {
    * Retrieves all users.
    * @returns An array of users.
    */
-  async findUsers(): Promise<User[]> {
-    return await this.userModel.find().populate("roles permissions").exec();
+  async findUsers(status: string | undefined): Promise<User[]> {
+    return await this.userModel.find({});
   }
 
   /**

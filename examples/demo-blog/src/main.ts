@@ -5,10 +5,13 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { createServer } from "http";
+import { ApiPrefixMiddleware } from "@kitejs/core";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const server = createServer(app.getHttpAdapter().getInstance());
+  app.use(new ApiPrefixMiddleware().use);
+  app.setGlobalPrefix("api");
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -28,7 +31,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api-docs", app, document);
 
-  app.setGlobalPrefix("api", { exclude: [""] });
   await app.init();
 
   const configService = app.get(ConfigService);

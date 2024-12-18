@@ -13,6 +13,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "lib": ["DOM", "ESNext"],
+    "skipLibCheck": true,
     "paths": {
       "@kitejs/core": ["dist/packages/core"]
     }
