@@ -1,7 +1,10 @@
 {
   "extends": "@kitejs/typescript-config/react-library.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
