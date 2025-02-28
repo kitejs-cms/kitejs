@@ -1,12 +1,20 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
-} from '@nestjs/common';
-import { Setting, SettingDocument } from './settings.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CacheService } from '../cache';
+} from "@nestjs/common";
+import { Setting, SettingDocument } from "./settings.schema";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { CacheService } from "../cache";
+import { UserService } from "../users/services/users.service";
+import { InitCmsModel } from "./models/init-cms.model";
+import {
+  CMS_SETTINGS_KEY,
+  CmsSettingsModel,
+} from "./models/cms-settings.model";
+import { CORE_NAMESPACE } from "../../constants";
 
 @Injectable()
 export class SettingsService {
@@ -15,7 +23,8 @@ export class SettingsService {
   constructor(
     @InjectModel(Setting.name)
     private readonly settingModel: Model<SettingDocument>,
-    private readonly cache: CacheService
+    private readonly cache: CacheService,
+    private readonly userService: UserService
   ) {}
 
   /**
@@ -56,7 +65,7 @@ export class SettingsService {
         `Error in findOne (namespace: ${namespace}, key: ${key}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to retrieve the setting.');
+      throw new InternalServerErrorException("Failed to retrieve the setting.");
     }
   }
 
@@ -73,7 +82,7 @@ export class SettingsService {
         `Error in findAll (namespace: ${namespace}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to retrieve settings.');
+      throw new InternalServerErrorException("Failed to retrieve settings.");
     }
   }
 
@@ -85,7 +94,7 @@ export class SettingsService {
     try {
       if (!settingData.namespace || !settingData.key) {
         throw new InternalServerErrorException(
-          'Namespace and key are required.'
+          "Namespace and key are required."
         );
       }
 
@@ -102,7 +111,7 @@ export class SettingsService {
         `Error in create (settingData: ${JSON.stringify(settingData)}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to create the setting.');
+      throw new InternalServerErrorException("Failed to create the setting.");
     }
   }
 
@@ -134,7 +143,7 @@ export class SettingsService {
         `Error in upsert (namespace: ${namespace}, key: ${key}, value: ${value}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to update the setting.');
+      throw new InternalServerErrorException("Failed to update the setting.");
     }
   }
 
@@ -159,7 +168,57 @@ export class SettingsService {
         `Error in delete (namespace: ${namespace}, key: ${key}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to delete the setting.');
+      throw new InternalServerErrorException("Failed to delete the setting.");
     }
+  }
+
+  /**
+   * Initializes the CMS with essential settings and creates the first admin user.
+   *
+   * This method ensures that the CMS is only initialized once by checking if settings already exist.
+   * If settings are already present, it throws an error.
+   *
+   * @param {InitCmsModel} data - Initialization data containing site settings and admin details.
+   * @throws {BadRequestException} If the CMS has already been initialized.
+   * @returns {Promise<any>} The created CMS settings.
+   */
+  async initCms(data: InitCmsModel): Promise<any> {
+    const namespace = CORE_NAMESPACE;
+    const key = CMS_SETTINGS_KEY;
+
+    const existingSetting = await this.settingModel
+      .findOne({ namespace, key })
+      .exec();
+    if (existingSetting) {
+      throw new BadRequestException("CMS has already been initialized.");
+    }
+
+    const { siteName, siteUrl, defaultLanguage, allowIndexing } = data;
+    if (!siteName || !siteUrl || !defaultLanguage) {
+      throw new BadRequestException("Missing required site settings.");
+    }
+
+    const adminUser = await this.userService.createUser({
+      email: data.adminEmail,
+      password: data.adminPassword,
+      firstName: data.adminFirstName,
+      lastName: data.adminLastName,
+    });
+
+    if (!adminUser) {
+      throw new BadRequestException(
+        "Failed to create the administrator account."
+      );
+    }
+
+    const value: CmsSettingsModel = {
+      siteName,
+      siteUrl,
+      siteDescription: data.siteDescription || "",
+      defaultLanguage,
+      allowIndexing: allowIndexing ?? true,
+    };
+
+    return await this.create({ namespace, key, value });
   }
 }

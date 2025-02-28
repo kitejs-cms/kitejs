@@ -1,5 +1,6 @@
-import { SettingsService } from './settings.service';
-import { SettingResponseDto } from './dto/setting-response.dto';
+import { InitCmsDto } from "./dto/init-cms.dto";
+import { SettingsService } from "./settings.service";
+import { SettingResponseDto } from "./dto/setting-response.dto";
 import {
   Controller,
   Get,
@@ -9,9 +10,10 @@ import {
   Delete,
   Query,
   NotFoundException,
-} from '@nestjs/common';
+  Post,
+} from "@nestjs/common";
 
-@Controller('settings')
+@Controller("settings")
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
@@ -20,10 +22,10 @@ export class SettingsController {
    * @param namespace - The namespace of the setting.
    * @param key - The unique key of the setting within the namespace.
    */
-  @Get(':namespace/:key')
+  @Get(":namespace/:key")
   async getSetting(
-    @Param('namespace') namespace: string,
-    @Param('key') key: string
+    @Param("namespace") namespace: string,
+    @Param("key") key: string
   ): Promise<SettingResponseDto | null> {
     const data = await this.settingsService.findOne(namespace, key);
 
@@ -39,7 +41,7 @@ export class SettingsController {
    */
   @Get()
   async getAllSettings(
-    @Query('namespace') namespace?: string
+    @Query("namespace") namespace?: string
   ): Promise<SettingResponseDto[]> {
     const data = await this.settingsService.findAll(namespace);
 
@@ -52,13 +54,25 @@ export class SettingsController {
    * @param key - The unique key of the setting within the namespace.
    * @param body - The value to update or create for the setting.
    */
-  @Put(':namespace/:key')
+  @Put(":namespace/:key")
   async upsertSetting(
-    @Param('namespace') namespace: string,
-    @Param('key') key: string,
-    @Body('value') value: string
+    @Param("namespace") namespace: string,
+    @Param("key") key: string,
+    @Body("value") value: string
   ): Promise<SettingResponseDto> {
     const data = await this.settingsService.upsert(namespace, key, value);
+
+    return new SettingResponseDto(data);
+  }
+
+  /**
+   * Initializes the CMS with essential settings and creates the first admin user.
+   * @param dto - The initialization data.
+   * @returns The created CMS settings.
+   */
+  @Post("init-cms")
+  async initCms(@Body() dto: InitCmsDto) {
+    const data = await this.settingsService.initCms(dto);
 
     return new SettingResponseDto(data);
   }
@@ -68,10 +82,10 @@ export class SettingsController {
    * @param namespace - The namespace of the setting.
    * @param key - The unique key of the setting within the namespace.
    */
-  @Delete(':namespace/:key')
+  @Delete(":namespace/:key")
   async deleteSetting(
-    @Param('namespace') namespace: string,
-    @Param('key') key: string
+    @Param("namespace") namespace: string,
+    @Param("key") key: string
   ): Promise<{ success: boolean }> {
     const deleted = await this.settingsService.delete(namespace, key);
     return { success: deleted };

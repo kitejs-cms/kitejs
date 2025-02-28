@@ -1,17 +1,19 @@
-import { JwtService } from '@nestjs/jwt';
-import * as argon2 from 'argon2';
-import { UserService } from '../users/services/users.service';
-import { SettingsService } from '../settings/settings.service';
-import { LoginDto } from './dto/login.dto';
-import { CORE_NAMESPACE } from '../../constants';
+import { JwtService } from "@nestjs/jwt";
+import * as argon2 from "argon2";
+import { UserService } from "../users/services/users.service";
+import { SettingsService } from "../settings/settings.service";
+import { LoginDto } from "./dto/login.dto";
+import { CORE_NAMESPACE } from "../../constants";
+import { JwtPayloadModel } from "./models/payload-jwt.model";
+import { parseTimeToMs } from "../../common";
+import { AUTH_SETTINGS_KEY, AuthSettingsModel } from "../settings";
+import { ChangePasswordModel } from "./models/change-password.model";
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { JwtPayloadModel } from './models/payload-jwt.model';
-import { parseTimeToMs } from '../../common';
-import { AUTH_SETTINGS_KEY, AuthSettingsModel } from '../settings';
+} from "@nestjs/common";
 
 @Injectable()
 export class AuthService {
@@ -51,12 +53,12 @@ export class AuthService {
     const now = new Date();
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password.');
+      throw new UnauthorizedException("Invalid email or password.");
     }
 
     if (loginAttemptResetTime && maxLoginAttempts && user.loginAttempts) {
-      const count = parseInt(user.loginAttempts.split('_')[0]);
-      const lastAttempt = new Date(user.loginAttempts.split('_')[1]);
+      const count = parseInt(user.loginAttempts.split("_")[0]);
+      const lastAttempt = new Date(user.loginAttempts.split("_")[1]);
 
       const resetTimeMs = parseTimeToMs(loginAttemptResetTime);
       const resetDate = new Date(lastAttempt.getTime() + resetTimeMs);
@@ -75,13 +77,13 @@ export class AuthService {
         let loginAttempts = `1_${now.toISOString()}`;
 
         if (user.loginAttempts) {
-          const count = parseInt(user.loginAttempts.split('_')[0]);
+          const count = parseInt(user.loginAttempts.split("_")[0]);
           loginAttempts = `${count + 1}_${now.toISOString()}`;
         }
 
         await this.userService.updateUser(user.id, { loginAttempts });
       }
-      throw new UnauthorizedException('Invalid email or password.');
+      throw new UnauthorizedException("Invalid email or password.");
     }
 
     // Reset login attempts after successful authentication
@@ -119,7 +121,7 @@ export class AuthService {
 
     // Validate allowed domains
     if (allowedDomains?.length) {
-      const userDomain = user.email.split('@')[1];
+      const userDomain = user.email.split("@")[1];
       if (!allowedDomains.includes(userDomain)) {
         throw new UnauthorizedException(`Domain ${userDomain} is not allowed.`);
       }
@@ -139,4 +141,52 @@ export class AuthService {
       ...(refreshTokensEnabled && { refreshToken }),
     };
   }
+
+  /**
+   * Retrieves the authenticated user based on the provided user ID.
+   *
+   * This method queries the `UserService` to find and return the user
+   * associated with the given `id`. It is typically used to fetch the details
+   * of a user after authentication or to validate session-based access.
+   *
+   * @param id The unique identifier of the user.
+   * @returns A promise that resolves to the user object if found.
+   */
+  async getAuthUser(id: string) {
+    return this.userService.findUser(id);
+  }
+
+  /**
+   * Changes the password of an authenticated user.
+   * This method ensures that the old password is correct before updating to a new password.
+   *
+   * @param userId - The ID of the authenticated user.
+   * @param changePasswordDto - DTO containing old and new password.
+   * @throws {BadRequestException} If the old password is incorrect or update fails.
+   * @returns A success message if the password is updated.
+   */
+  // async changePassword(userId: string, changePasswordDto: ChangePasswordModel) {
+  //   const { oldPassword, newPassword } = changePasswordDto;
+  //
+  //   const user = await this.userService.findUser(userId);
+  //   if (!user) {
+  //     throw new BadRequestException("User not found.");
+  //   }
+  //
+  //   const isPasswordValid = await argon2.verify(user.password, oldPassword);
+  //   if (!isPasswordValid) {
+  //     throw new BadRequestException("Old password is incorrect.");
+  //   }
+  //
+  //   if (await argon2.verify(user.password, newPassword)) {
+  //     throw new BadRequestException(
+  //       "New password cannot be the same as the old password."
+  //     );
+  //   }
+  //
+  //   const hashedPassword = await argon2.hash(newPassword);
+  //   await this.userService.updateUser(userId, { password: hashedPassword });
+  //
+  //   return { updatedAt: new Date() };
+  // }
 }

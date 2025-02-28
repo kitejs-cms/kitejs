@@ -9,6 +9,7 @@ import { securitySetup } from "./security";
 import cookieParser from "cookie-parser";
 import { IPlugin } from "../modules/plugins";
 import { pluginsSetup } from "./plugins";
+import { middlewareSetup } from "./middleware";
 
 interface BootstrapOptions {
   modules?: Type<unknown>[];
@@ -34,6 +35,7 @@ export async function bootstrap({
   const port = configService.get<number>("PORT") || 3000;
 
   await swaggerSetup(app, settingsService, port);
+  await middlewareSetup(app);
   securitySetup(app);
   validationSetup(app);
   app.use(cookieParser());
