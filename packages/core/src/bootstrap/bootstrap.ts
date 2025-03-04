@@ -34,11 +34,11 @@ export async function bootstrap({
 
   const port = configService.get<number>("PORT") || 3000;
 
+  app.use(cookieParser());
   await swaggerSetup(app, settingsService, port);
   await middlewareSetup(app);
   securitySetup(app);
   validationSetup(app);
-  app.use(cookieParser());
 
   await app.listen(port);
 

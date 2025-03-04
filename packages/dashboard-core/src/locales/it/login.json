@@ -1,0 +1,19 @@
+{
+  "title": "Accedi al tuo account",
+  "subtitle": "Inserisci la tua email per accedere al tuo account",
+  "fields": {
+    "email": "Email",
+    "password": "Password"
+  },
+  "placeholders": {
+    "email": "m@example.com",
+    "password": "Inserisci la tua password"
+  },
+  "forgotPassword": "Hai dimenticato la password?",
+  "buttons": {
+    "login": "Accedi"
+  },
+  "errors": {
+    "generic": "Si è verificato un errore durante l'accesso. Controlla la tua email e password e riprova."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Login to your account",
+  "subtitle": "Enter your email below to login to your account",
+  "fields": {
+    "email": "Email",
+    "password": "Password"
+  },
+  "placeholders": {
+    "email": "m@example.com",
+    "password": "Enter your password"
+  },
+  "forgotPassword": "Forgot your password?",
+  "buttons": {
+    "login": "Login"
+  },
+  "errors": {
+    "generic": "An error occurred during login. Please check your email and password and try again."
+  }
+}

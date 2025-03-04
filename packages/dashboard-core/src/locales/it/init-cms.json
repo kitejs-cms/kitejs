@@ -1,0 +1,59 @@
+{
+  "title": "Configurazione Iniziale del CMS",
+  "steps": {
+    "admin": {
+      "title": "Creazione Amministratore",
+      "description": "Inserisci i dati per creare l'utente amministratore principale del CMS."
+    },
+    "cms": {
+      "title": "Configurazione CMS",
+      "description": "Ora configura le impostazioni generali del CMS, inclusi nome, URL e lingua predefinita."
+    }
+  },
+  "fields": {
+    "adminFirstName": "Nome",
+    "adminLastName": "Cognome",
+    "adminEmail": "Email",
+    "adminPassword": "Password",
+    "confirmPassword": "Conferma Password",
+    "siteName": "Nome del sito",
+    "siteUrl": "URL del sito",
+    "siteDescription": "Descrizione",
+    "defaultLanguage": "Lingua predefinita"
+  },
+  "placeholders": {
+    "adminFirstName": "Mario",
+    "adminLastName": "Rossi",
+    "adminEmail": "admin@example.com",
+    "adminPassword": "********",
+    "confirmPassword": "********",
+    "siteName": "Il mio sito",
+    "siteUrl": "https://example.com",
+    "siteDescription": "Descrizione del sito (opzionale)",
+    "defaultLanguage": "it"
+  },
+  "validation": {
+    "required": "Questo campo è obbligatorio.",
+    "email": "Inserisci un'email valida.",
+    "passwordMin": "La password deve avere almeno 6 caratteri.",
+    "passwordStrength": "La password deve contenere almeno un numero e un carattere speciale (!@#$%^&*).",
+    "passwordMismatch": "Le password non corrispondono.",
+    "minCharacters": "Deve avere almeno {{min}} caratteri.",
+    "url": "Inserisci un URL valido."
+  },
+  "buttons": {
+    "next": "Prossimo Step",
+    "back": "Indietro",
+    "submit": "Invia",
+    "goToLogin": "Vai alla Login"
+  },
+  "success": {
+    "title": "Configurazione completata!",
+    "subTitle": "Ora puoi iniziare a usare il CMS",
+    "message": "Il CMS è stato configurato con successo. Ora puoi accedere con le credenziali dell'amministratore.",
+    "cta": "Accedi ora"
+  },
+  "errors": {
+    "generic": "Si è verificato un errore durante la configurazione. Riprova più tardi."
+  }
+}

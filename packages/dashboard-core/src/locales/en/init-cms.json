@@ -1,0 +1,59 @@
+{
+  "title": "Initial CMS Setup",
+  "steps": {
+    "admin": {
+      "title": "Administrator Creation",
+      "description": "Enter the details to create the main administrator account for the CMS."
+    },
+    "cms": {
+      "title": "CMS Configuration",
+      "description": "Now configure the general settings of the CMS, including name, URL, and default language."
+    }
+  },
+  "fields": {
+    "adminFirstName": "First Name",
+    "adminLastName": "Last Name",
+    "adminEmail": "Email",
+    "adminPassword": "Password",
+    "confirmPassword": "Confirm Password",
+    "siteName": "Site Name",
+    "siteUrl": "Site URL",
+    "siteDescription": "Description",
+    "defaultLanguage": "Default Language"
+  },
+  "placeholders": {
+    "adminFirstName": "John",
+    "adminLastName": "Doe",
+    "adminEmail": "admin@example.com",
+    "adminPassword": "********",
+    "confirmPassword": "********",
+    "siteName": "My Website",
+    "siteUrl": "https://example.com",
+    "siteDescription": "Site description (optional)",
+    "defaultLanguage": "en"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "Enter a valid email.",
+    "passwordMin": "Password must be at least 6 characters.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordStrength": "Password must contain at least one number and one special character (!@#$%^&*).",
+    "minCharacters": "Must be at least {{min}} characters long.",
+    "url": "Enter a valid URL."
+  },
+  "buttons": {
+    "next": "Next Step",
+    "back": "Back",
+    "submit": "Submit",
+    "goToLogin": "Go to Login"
+  },
+  "success": {
+    "title": "Setup Complete!",
+    "subTitle": "You can now start using the CMS",
+    "message": "The CMS has been successfully configured. You can now log in using the administrator credentials.",
+    "cta": "Log in now"
+  },
+  "errors": {
+    "generic": "An error occurred during the configuration. Please try again later."
+  }
+}

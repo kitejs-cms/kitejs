@@ -1,6 +1,4 @@
 import type { Config } from "tailwindcss";
-import sharedConfig from "@kitejs/tailwind-config";
-
 const config: Config = {
   content: ["./src/**/*.tsx"],
   theme: {

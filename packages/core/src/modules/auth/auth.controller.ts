@@ -1,10 +1,11 @@
-import { Permissions, parseTimeToMs } from '../../common';
-import { PermissionsGuard } from './guards/permissions-guard';
-import { AuthResponseDto } from './dto/auth-response.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { AuthService } from './auth.service';
-import { Response as ExpressResponse } from 'express';
-import { LoginDto } from './dto/login.dto';
+import { GetAuthUser, parseTimeToMs } from "../../common";
+import { AuthResponseDto } from "./dto/auth-response.dto";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { AuthService } from "./auth.service";
+import { Response as ExpressResponse } from "express";
+import { LoginDto } from "./dto/login.dto";
+import { JwtPayloadModel } from "./models/payload-jwt.model";
+import { UserResponseDto } from "../users/dto/user-response.dto";
 import {
   Controller,
   Post,
@@ -12,13 +13,14 @@ import {
   Request,
   Res,
   UseGuards,
-} from '@nestjs/common';
+  Get,
+} from "@nestjs/common";
 
-@Controller('auth')
+@Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
+  @Post("login")
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: ExpressResponse
@@ -42,11 +44,11 @@ export class AuthController {
           ? parseTimeToMs(refreshTokenExpiry)
           : parseTimeToMs(expiresIn);
 
-      res.cookie(cookieName || 'session', JSON.stringify(data), {
+      res.cookie(cookieName || "session", JSON.stringify(data), {
         httpOnly: cookieHttpOnly ?? true,
-        secure: cookieSecure ?? process.env['NODE_ENV'] === 'production',
-        sameSite: cookieSameSite || 'strict',
-        domain: 'localhost',
+        secure: cookieSecure ?? process.env["NODE_ENV"] === "production",
+        sameSite: cookieSameSite || "strict",
+        domain: "localhost",
         maxAge,
       });
     }
@@ -54,10 +56,10 @@ export class AuthController {
     return new AuthResponseDto(data);
   }
 
-  @Post('profile')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions('view_users')
-  async getProfile(@Request() req: any) {
-    return req.user;
+  @Get("profile")
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@GetAuthUser() user: JwtPayloadModel) {
+    const data = await this.authService.getAuthUser(user.sub);
+    return new UserResponseDto(data);
   }
 }

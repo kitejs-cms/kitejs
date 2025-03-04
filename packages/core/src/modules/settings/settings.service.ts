@@ -15,6 +15,7 @@ import {
   CmsSettingsModel,
 } from "./models/cms-settings.model";
 import { CORE_NAMESPACE } from "../../constants";
+import { SettingType } from "./models/setting-type.enum";
 
 @Injectable()
 export class SettingsService {
@@ -182,7 +183,7 @@ export class SettingsService {
    * @throws {BadRequestException} If the CMS has already been initialized.
    * @returns {Promise<any>} The created CMS settings.
    */
-  async initCms(data: InitCmsModel): Promise<any> {
+  async initCms(data: InitCmsModel): Promise<unknown> {
     const namespace = CORE_NAMESPACE;
     const key = CMS_SETTINGS_KEY;
 
@@ -219,6 +220,6 @@ export class SettingsService {
       allowIndexing: allowIndexing ?? true,
     };
 
-    return await this.create({ namespace, key, value });
+    return await this.create({ namespace, key, value, type: SettingType.CORE });
   }
 }

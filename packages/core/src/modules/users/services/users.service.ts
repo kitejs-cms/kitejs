@@ -30,7 +30,12 @@ export class UserService {
     userData: CreateUserModel
   ): Promise<UserResponseModel | null> {
     try {
-      const user = new this.userModel(userData);
+      const hashedPassword = await argon2.hash(userData.password);
+
+      const user = new this.userModel({
+        ...userData,
+        password: hashedPassword,
+      });
       await user.save();
 
       return this.findUser(userData.email);

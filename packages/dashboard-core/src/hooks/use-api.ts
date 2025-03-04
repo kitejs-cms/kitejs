@@ -4,6 +4,9 @@ import {
   MetaModel,
 } from "@kitejs/core/common/models/api-response.model";
 
+// eslint-disable-next-line turbo/no-undeclared-env-vars
+const baseUrl = import.meta.env.VITE_API_URL;
+
 type UseApiResult<T> = {
   data: T | null;
   loading: boolean;
@@ -42,7 +45,7 @@ export function useApi<T>(): UseApiResult<T> {
       setError(null);
 
       try {
-        const response = await fetch(url, {
+        const response = await fetch(`${baseUrl}/${url}`, {
           method,
           body: body ? JSON.stringify(body) : undefined,
           headers: {

@@ -1,10 +1,10 @@
+import { PermissionModel } from "./modules/users/models/permission.model";
 import {
   AUTH_SETTINGS_KEY,
   CACHE_SETTINGS_KEY,
   SWAGGER_SETTINGS_KEY,
   SettingModel,
 } from "./modules/settings";
-import { PermissionModel } from "./modules/users";
 
 export const CORE_NAMESPACE = "core";
 

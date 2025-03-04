@@ -5,7 +5,10 @@ import { useApi } from "../hooks/use-api";
 
 interface AuthContextType {
   user: UserResponseModel | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ data: UserResponseModel | null; error: unknown | null }>;
   logout: () => void;
 }
 
@@ -38,8 +41,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (data) {
       navigate("/");
+      return { data: null, error };
     } else {
-      console.error(error);
+      return { error, data: null };
     }
   };
 
@@ -58,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuthContext() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth deve essere usato all'interno di AuthProvider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
