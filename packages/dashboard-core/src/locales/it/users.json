@@ -1,0 +1,27 @@
+{
+  "fields": {
+    "email": "E-mail",
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "status": "Stato",
+    "createdAt": "Data creazione",
+    "actions": "Azioni"
+  },
+  "buttons": {
+    "edit": "Modifica",
+    "viewJson": "Visualizza JSON",
+    "add": "Aggiungi Utente",
+    "copy": "Copia negli Appunti",
+    "download": "Download"
+  },
+  "title": {
+    "manageUsers": "Gestione Utenti"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "users": "Utenti"
+  },
+  "search": {
+    "placeholder": "Cerca utenti..."
+  }
+}

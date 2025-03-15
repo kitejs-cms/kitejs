@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
-import {
-  type ApiResponse,
+import type {
+  ApiResponse,
   MetaModel,
 } from "@kitejs/core/common/models/api-response.model";
+import type { PaginationModel } from "@kitejs/core/common/models/pagination.model";
 
 // eslint-disable-next-line turbo/no-undeclared-env-vars
 const baseUrl = import.meta.env.VITE_API_URL;
@@ -12,6 +13,7 @@ type UseApiResult<T> = {
   loading: boolean;
   error: string | null;
   meta: MetaModel | null;
+  pagination: PaginationModel | null;
   fetchData: (
     url: string,
     method?: "GET" | "POST" | "PUT" | "DELETE",
@@ -27,6 +29,7 @@ type UseApiResult<T> = {
 export function useApi<T>(): UseApiResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [meta, setMeta] = useState<MetaModel | null>(null);
+  const [pagination, setpagination] = useState<PaginationModel | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +49,10 @@ export function useApi<T>(): UseApiResult<T> {
 
       try {
         const response = await fetch(`${baseUrl}/${url}`, {
+          credentials: "include",
+          mode: "cors",
+          cache: "no-cache",
+          ...options,
           method,
           body: body ? JSON.stringify(body) : undefined,
           headers: {
@@ -63,6 +70,7 @@ export function useApi<T>(): UseApiResult<T> {
 
         setData(result.data ?? null);
         setMeta(result.meta ?? null);
+        setpagination(result.meta?.pagination ?? null);
 
         return {
           data: result.data ?? null,
@@ -83,5 +91,12 @@ export function useApi<T>(): UseApiResult<T> {
     []
   );
 
-  return { data, loading, error, meta, fetchData };
+  return {
+    data,
+    loading,
+    error,
+    meta,
+    pagination,
+    fetchData,
+  };
 }

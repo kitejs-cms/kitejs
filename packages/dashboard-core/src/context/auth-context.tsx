@@ -5,6 +5,7 @@ import { useApi } from "../hooks/use-api";
 
 interface AuthContextType {
   user: UserResponseModel | null;
+  setUser: React.Dispatch<React.SetStateAction<UserResponseModel | null>>;
   login: (
     email: string,
     password: string
@@ -40,6 +41,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (data) {
+      const { data: userData } = await fetchData("auth/profile", "GET");
+      if (userData) setUser(userData);
+
       navigate("/");
       return { data: null, error };
     } else {
@@ -49,11 +53,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     await fetchData("auth/logout", "DELETE");
+    setUser(null);
     navigate("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -16,6 +16,9 @@ export * from "./components/ui/form";
 export * from "./components/ui/textarea";
 export * from "./components/ui/popover";
 export * from "./components/ui/select";
+export * from "./components/ui/table";
+export * from "./components/ui/badge";
+export * from "./components/ui/alert-dialog";
 
 /* Router */
 export * from "./router";
@@ -29,6 +32,8 @@ export * from "./models/menu-item.model";
 /* Hooks */
 export * from "./hooks/use-api";
 export * from "./hooks/use-mobile";
+export * from "./hooks/use-clipboard-table";
+export * from "./context/breadcrumb-context";
 
 /* Pages */
 export * from "./pages/login";
@@ -36,3 +41,4 @@ export * from "./pages/login";
 /* Context */
 export * from "./context/auth-context";
 export * from "./context/settings-context";
+export * from "./context/theme-context";

@@ -1,5 +1,5 @@
 import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "./ui/sidebar";
-//import { useAuth } from "@/context/auth-context";
+import { useAuthContext } from "../context/auth-context";
+import { getInitials } from "../lib/get-initials";
 
 export function NavUser({
   user,
@@ -23,29 +24,10 @@ export function NavUser({
   user: {
     name: string;
     email: string;
-    avatar: string;
   };
 }) {
-  //const { logout } = useAuth();
+  const { logout } = useAuthContext();
   const { isMobile } = useSidebar();
-
-  const logout = () => null;
-
-  function getInitials(name: string): string {
-    const namesArray = name.trim().split(/\s+/);
-
-    if (namesArray.length === 0) return "";
-
-    if (namesArray.length === 1) {
-      return namesArray[0]!.charAt(0).toUpperCase();
-    }
-
-    const firstInitial = namesArray[0]!.charAt(0).toUpperCase();
-    const lastInitial =
-      namesArray[namesArray.length - 1]!.charAt(0).toUpperCase();
-
-    return firstInitial + lastInitial;
-  }
 
   return (
     <SidebarMenu>
@@ -57,7 +39,6 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="rounded-lg">
                   {getInitials(user.name)}
                 </AvatarFallback>
@@ -78,7 +59,6 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="rounded-lg">
                     {getInitials(user.name)}
                   </AvatarFallback>

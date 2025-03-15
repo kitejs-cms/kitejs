@@ -1,0 +1,27 @@
+{
+  "fields": {
+    "email": "E-mail",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "status": "Status",
+    "createdAt": "Created At",
+    "actions": "Actions"
+  },
+  "buttons": {
+    "edit": "Edit",
+    "viewJson": "View JSON",
+    "add": "Add User",
+    "copy": "Copy to Clipboard",
+    "download": "Download"
+  },
+  "title": {
+    "manageUsers": "Manage Users"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "users": "Users"
+  },
+  "search": {
+    "placeholder": "Search users..."
+  }
+}

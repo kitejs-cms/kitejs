@@ -98,7 +98,11 @@ export class UserService {
           (permission: Permission) => permission.name
         );
 
-        return { ...jsonUser, roles, permissions } as UserResponseModel;
+        return {
+          ...jsonUser,
+          roles,
+          permissions,
+        } as unknown as UserResponseModel;
       });
 
       return data;
@@ -138,7 +142,11 @@ export class UserService {
           (permission) => permission.name
         );
 
-        return { ...jsonUser, roles, permissions } as UserResponseModel;
+        return {
+          ...jsonUser,
+          roles,
+          permissions,
+        } as unknown as UserResponseModel;
       }
 
       return null;

@@ -1,21 +1,11 @@
 import * as React from "react";
 import {
-  BookOpen,
-  Bot,
   Command,
-  Frame,
   LayoutDashboard,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
   Shield,
-  SquareTerminal,
   UserPlus,
   Users,
 } from "lucide-react";
-
 import { NavMain } from "../components/nav-main";
 import { NavUser } from "../components/nav-user";
 import {
@@ -27,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "../components/ui/sidebar";
+import { useAuthContext } from "../context/auth-context";
 
 const items = [
   {
@@ -44,12 +35,12 @@ const items = [
         items: [
           {
             title: "Manage Users",
-            url: "#users/manage",
+            url: "/users/manage",
             icon: UserPlus,
           },
           {
             title: "Manage Roles",
-            url: "#users/roles",
+            url: "/users/roles",
             icon: Shield,
           },
         ],
@@ -59,6 +50,8 @@ const items = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuthContext();
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -86,9 +79,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <NavUser
           user={{
-            name: "shadcn",
-            email: "m@example.com",
-            avatar: "/avatars/shadcn.jpg",
+            name: `${user?.firstName} ${user?.lastName}`,
+            email: user?.email,
           }}
         />
       </SidebarFooter>

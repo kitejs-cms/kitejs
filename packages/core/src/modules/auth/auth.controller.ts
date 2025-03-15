@@ -14,6 +14,7 @@ import {
   Res,
   UseGuards,
   Get,
+  Delete,
 } from "@nestjs/common";
 
 @Controller("auth")
@@ -48,7 +49,7 @@ export class AuthController {
         httpOnly: cookieHttpOnly ?? true,
         secure: cookieSecure ?? process.env["NODE_ENV"] === "production",
         sameSite: cookieSameSite || "strict",
-        domain: "localhost",
+        //domain: "localhost",
         maxAge,
       });
     }
@@ -61,5 +62,23 @@ export class AuthController {
   async getProfile(@GetAuthUser() user: JwtPayloadModel) {
     const data = await this.authService.getAuthUser(user.sub);
     return new UserResponseDto(data);
+  }
+
+  @Delete("logout")
+  @UseGuards(JwtAuthGuard)
+  async logout(@Res({ passthrough: true }) res: ExpressResponse) {
+    const { cookieSameSite, cookieSecure, cookieHttpOnly, cookieName } =
+      await this.authService.getAuthConfig();
+
+    res.cookie(
+      cookieName || "session",
+      {},
+      {
+        httpOnly: cookieHttpOnly ?? true,
+        secure: cookieSecure ?? process.env["NODE_ENV"] === "production",
+        sameSite: cookieSameSite || "strict",
+        maxAge: 0,
+      }
+    );
   }
 }

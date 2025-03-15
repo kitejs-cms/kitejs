@@ -1,0 +1,17 @@
+{
+  "buttons": {
+    "copy": "Copia",
+    "editProfile": "Modifica profilo",
+    "viewJson": "Visualizza JSON"
+  },
+  "fields": {
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "email": "Email",
+    "status": "Stato",
+    "roles": "Ruoli",
+    "createdAt": "Data di creazione",
+    "updatedAt": "Ultimo aggiornamento"
+  },
+  "empty": "-"
+}

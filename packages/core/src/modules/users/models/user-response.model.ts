@@ -10,4 +10,6 @@ export type UserResponseModel = {
   permissions: string[];
   loginAttempts?: string | null;
   password?: string;
+  createdAt: string;
+  updatedAt: string;
 };

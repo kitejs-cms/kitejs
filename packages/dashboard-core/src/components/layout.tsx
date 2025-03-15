@@ -1,5 +1,4 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "./ui/sidebar";
-import { Users, UserPlus, Shield, LayoutDashboard } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
 import { AppSidebar } from "./app-sidebar";
 import { Outlet } from "react-router-dom";
@@ -11,38 +10,11 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "./ui/breadcrumb";
-
-const sidebarData = [
-  {
-    title: "Main Menu",
-    items: [
-      {
-        name: "Dashboard",
-        url: "#dashboard",
-        icon: LayoutDashboard,
-      },
-      {
-        name: "Users",
-        url: "#users",
-        icon: Users,
-        subItems: [
-          {
-            name: "Manage Users",
-            url: "#users/manage",
-            icon: UserPlus,
-          },
-          {
-            name: "Manage Roles",
-            url: "#users/roles",
-            icon: Shield,
-          },
-        ],
-      },
-    ],
-  },
-];
+import { useBreadcrumb } from "../context/breadcrumb-context";
 
 export function Layout() {
+  const { breadcrumb } = useBreadcrumb();
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -53,26 +25,28 @@ export function Layout() {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                {breadcrumb.map((item, index) => (
+                  <BreadcrumbItem key={item.path}>
+                    {index < breadcrumb.length - 1 ? (
+                      <>
+                        <BreadcrumbLink href={item.path}>
+                          {item.label}
+                        </BreadcrumbLink>
+                        <BreadcrumbSeparator />
+                      </>
+                    ) : (
+                      <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                    )}
+                  </BreadcrumbItem>
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
+          <div className="min-h-[100vh] flex-1 md:min-h-min">
+            <Outlet />
           </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
         </div>
       </SidebarInset>
     </SidebarProvider>

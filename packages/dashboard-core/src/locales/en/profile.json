@@ -1,0 +1,17 @@
+{
+  "buttons": {
+    "copy": "Copy",
+    "editProfile": "Edit Profile",
+    "viewJson": "View JSON"
+  },
+  "fields": {
+    "firstName": "Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "status": "Status",
+    "roles": "Roles",
+    "createdAt": "Created At",
+    "updatedAt": "Last Updated"
+  },
+  "empty": "-"
+}

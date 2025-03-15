@@ -1,0 +1,15 @@
+{
+  "json-modal": {
+    "title": "JSON Viewer",
+    "keys": "chiavi",
+    "copy": "Copia",
+    "copied": "Copiato!",
+    "close": "Chiudi"
+  },
+  "pagination": {
+    "previous": "Precedente",
+    "next": "Successivo",
+    "morePages": "Altre pagine",
+    "pageInfo": "Pagina {{current}} di {{total}}"
+  }
+}
