@@ -15,11 +15,16 @@
     "download": "Download"
   },
   "title": {
-    "manageUsers": "Manage Users"
+    "manageUsers": "Manage Users",
+    "manageRoles": "Manage Roles"
   },
   "breadcrumb": {
     "home": "Home",
     "users": "Users"
+  },
+  "menu": {
+    "users": "Users",
+    "usersList": "Users List"
   },
   "search": {
     "placeholder": "Search users..."

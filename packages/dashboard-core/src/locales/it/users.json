@@ -15,11 +15,16 @@
     "download": "Download"
   },
   "title": {
-    "manageUsers": "Gestione Utenti"
+    "manageUsers": "Gestione Utenti",
+    "manageRoles": "Gestione Ruoli"
   },
   "breadcrumb": {
     "home": "Home",
     "users": "Utenti"
+  },
+  "menu": {
+    "users": "Utenti",
+    "usersList": "Lista Utenti"
   },
   "search": {
     "placeholder": "Cerca utenti..."

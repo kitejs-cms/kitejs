@@ -11,13 +11,20 @@ import {
   BreadcrumbPage,
 } from "./ui/breadcrumb";
 import { useBreadcrumb } from "../context/breadcrumb-context";
+import { SidebarMenuItem } from "../models/module.model";
+import { useState } from "react";
+import { SettingsModal } from "./settings-modal";
 
-export function Layout() {
+export function Layout({ menuItems }: { menuItems: SidebarMenuItem[] }) {
+  const [settingsModal, setSettingsModal] = useState(false);
   const { breadcrumb } = useBreadcrumb();
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar
+        items={menuItems}
+        openSettings={() => setSettingsModal(true)}
+      />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
@@ -44,6 +51,7 @@ export function Layout() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <SettingsModal open={settingsModal} onOpenChange={setSettingsModal} />
           <div className="min-h-[100vh] flex-1 md:min-h-min">
             <Outlet />
           </div>

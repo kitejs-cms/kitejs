@@ -1,5 +1,6 @@
-import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from "lucide-react";
+import { BadgeCheck, ChevronsUpDown, LogOut, Settings } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,17 +18,22 @@ import {
 } from "./ui/sidebar";
 import { useAuthContext } from "../context/auth-context";
 import { getInitials } from "../lib/get-initials";
+import { useNavigate } from "react-router-dom";
 
 export function NavUser({
   user,
+  openSettings,
 }: {
   user: {
     name: string;
     email: string;
   };
+  openSettings: () => void;
 }) {
   const { logout } = useAuthContext();
+  const { t } = useTranslation("components");
   const { isMobile } = useSidebar();
+  const navigate = useNavigate();
 
   return (
     <SidebarMenu>
@@ -71,19 +77,19 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/profile")}>
                 <BadgeCheck />
-                Account
+                {t("nav-user.account")}
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
+              <DropdownMenuItem onClick={openSettings}>
+                <Settings />
+                {t("nav-user.settings")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
               <LogOut />
-              Log out
+              {t("nav-user.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

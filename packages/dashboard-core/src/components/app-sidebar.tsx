@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  Command,
-  LayoutDashboard,
-  Shield,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { Command, LayoutDashboard } from "lucide-react";
 import { NavMain } from "../components/nav-main";
 import { NavUser } from "../components/nav-user";
 import {
@@ -18,39 +12,30 @@ import {
   SidebarMenuItem,
 } from "../components/ui/sidebar";
 import { useAuthContext } from "../context/auth-context";
+import { SidebarMenuItem as ItemModule } from "../models/module.model";
 
-const items = [
-  {
-    title: "Main Menu",
-    items: [
-      {
-        title: "Dashboard",
-        url: "#dashboard",
-        icon: LayoutDashboard,
-      },
-      {
-        title: "Users",
-        url: "#users",
-        icon: Users,
-        items: [
-          {
-            title: "Manage Users",
-            url: "/users/manage",
-            icon: UserPlus,
-          },
-          {
-            title: "Manage Roles",
-            url: "/users/roles",
-            icon: Shield,
-          },
-        ],
-      },
-    ],
-  },
-];
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  items = [],
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  items?: ItemModule[];
+  openSettings?: () => void;
+}) {
   const { user } = useAuthContext();
+
+  const allItems = [
+    {
+      title: "Main Menu",
+      items: [
+        {
+          title: "Dashboard",
+          url: "#dashboard",
+          icon: LayoutDashboard,
+        },
+        ...items,
+      ],
+    },
+  ];
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -72,12 +57,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {items.map((group, index) => (
-          <NavMain key={index} items={group.items} />
+        {allItems.map((group, index) => (
+          <NavMain
+            key={index}
+            title={group.title}
+            items={group.items as never}
+          />
         ))}
       </SidebarContent>
       <SidebarFooter>
         <NavUser
+          openSettings={props.openSettings}
           user={{
             name: `${user?.firstName} ${user?.lastName}`,
             email: user?.email,

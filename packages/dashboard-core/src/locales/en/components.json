@@ -11,5 +11,10 @@
     "next": "Next",
     "morePages": "More pages",
     "pageInfo": "Page {{current}} of {{total}}"
+  },
+  "nav-user": {
+    "account": "Account",
+    "settings": "Ssettings",
+    "logout": "Log out"
   }
 }

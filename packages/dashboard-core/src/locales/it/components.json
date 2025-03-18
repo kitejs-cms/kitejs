@@ -11,5 +11,10 @@
     "next": "Successivo",
     "morePages": "Altre pagine",
     "pageInfo": "Pagina {{current}} di {{total}}"
+  },
+  "nav-user": {
+    "account": "Account",
+    "settings": "Impostazioni",
+    "logout": "Esci"
   }
 }

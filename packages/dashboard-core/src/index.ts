@@ -28,6 +28,7 @@ export * from "./components/layout";
 
 /* Models */
 export * from "./models/menu-item.model";
+export * from "./models/settings.model";
 
 /* Hooks */
 export * from "./hooks/use-api";

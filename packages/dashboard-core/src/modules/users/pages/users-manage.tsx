@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useBreadcrumb } from "../../../context/breadcrumb-context";
 import {
   MoreVertical,
@@ -34,11 +35,13 @@ export function UsersManagePage() {
   const { setBreadcrumb } = useBreadcrumb();
   const { copyTable } = useClipboardTable();
   const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation("users");
+  const navigate = useNavigate();
 
   const itemsPerPage = 10;
+  const currentPage = parseInt(searchParams.get("page") || "1");
+  const searchQuery = searchParams.get("search") || "";
 
   const { data, loading, fetchData, pagination } =
     useApi<UserResponseModel[]>();
@@ -51,8 +54,15 @@ export function UsersManagePage() {
   }, [setBreadcrumb, t]);
 
   useEffect(() => {
-    fetchData(`users?page=1&itemsPerPage=${itemsPerPage}`);
-  }, [fetchData]);
+    const queryParams = new URLSearchParams();
+    if (currentPage > 1) queryParams.set("page", currentPage.toString());
+    if (searchQuery) queryParams.set("search", searchQuery);
+    setSearchParams(queryParams, { replace: true });
+
+    fetchData(
+      `users?page=${currentPage}&itemsPerPage=${itemsPerPage}${searchQuery ? `&search=${searchQuery}` : ""}`
+    );
+  }, [fetchData, currentPage, searchQuery, setSearchParams, searchParams]);
 
   const handleCopy = () => {
     if (!data) return;
@@ -87,7 +97,17 @@ export function UsersManagePage() {
                     placeholder={t("search.placeholder")}
                     className="w-[200px] animate-in fade-in slide-in-from-right-1 duration-300 bg-white shadow-muted"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const queryParams = new URLSearchParams(searchParams);
+                      if (value) {
+                        queryParams.set("search", value);
+                      } else {
+                        queryParams.delete("search");
+                      }
+                      queryParams.set("page", "1");
+                      setSearchParams(queryParams);
+                    }}
                   />
                 </div>
               )}
@@ -156,13 +176,19 @@ export function UsersManagePage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
-                        onClick={() => console.log("Edit:", row)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/users/${row.id}?view=edit`);
+                        }}
                       >
                         <Edit className="mr-2 h-4 w-4" />
                         {t("buttons.edit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => console.log("View JSON:", row)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/users/${row.id}?view=json`);
+                        }}
                       >
                         <Code className="mr-2 h-4 w-4" />
                         {t("buttons.viewJson")}
@@ -175,10 +201,12 @@ export function UsersManagePage() {
             pagination={{
               currentPage: pagination?.currentPage,
               totalPages: pagination?.totalPages,
-              onPageChange: (page) =>
-                fetchData(`users?page=${page}&itemsPerPage=${itemsPerPage}`),
+              onPageChange: (page) => {
+                fetchData(`users?page=${page}&itemsPerPage=${itemsPerPage}`);
+                searchParams.set("page", page.toString());
+              },
             }}
-            onRowClick={(row) => console.log("Cliccato:", row)}
+            onRowClick={(row) => navigate(`/users/${row.id}`)}
           />
         </CardContent>
       </Card>

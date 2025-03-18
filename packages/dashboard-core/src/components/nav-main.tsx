@@ -15,6 +15,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
+import { useTranslation } from "react-i18next";
 
 export function NavMain({
   items,
@@ -29,35 +30,51 @@ export function NavMain({
     items?: {
       title: string;
       url: string;
+      icon?: LucideIcon;
     }[];
   }[];
 }) {
+  const { t } = useTranslation();
+
   return (
     <SidebarGroup>
       {title && <SidebarGroupLabel>{title}</SidebarGroupLabel>}
       <SidebarMenu>
         {items.map((item) => (
-          <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+          <Collapsible
+            key={item.title}
+            asChild
+            defaultOpen={
+              item.isActive ||
+              item.items?.some(
+                (subItem) => window.location.pathname === subItem.url
+              )
+            }
+          >
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={item.title}>
+              <SidebarMenuButton
+                asChild
+                tooltip={item.title}
+                isActive={window.location.pathname === item.url}
+              >
                 {item.items?.length ? (
                   <CollapsibleTrigger asChild>
                     <a href={item.url}>
                       <item.icon />
-                      <span>{item.title}</span>
+                      <span>{t(item.title)}</span>
                     </a>
                   </CollapsibleTrigger>
                 ) : (
                   <a href={item.url}>
                     <item.icon />
-                    <span>{item.title}</span>
+                    <span>{t(item.title)}</span>
                   </a>
                 )}
               </SidebarMenuButton>
               {item.items?.length ? (
                 <>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuAction className="data-[state=open]:rotate-90">
+                    <SidebarMenuAction className="data-[state=open]:rotate-90 data-[state=open]:text-sidebar-accent-foreground">
                       <ChevronRight />
                       <span className="sr-only">Toggle</span>
                     </SidebarMenuAction>
@@ -65,10 +82,13 @@ export function NavMain({
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
+                        <SidebarMenuSubItem key={t(subItem.title)}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={window.location.pathname === subItem.url}
+                          >
                             <a href={subItem.url}>
-                              <span>{subItem.title}</span>
+                              <span>{t(subItem.title)}</span>
                             </a>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>

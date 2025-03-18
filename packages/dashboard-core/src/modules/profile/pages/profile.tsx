@@ -25,7 +25,7 @@ import { ProfileForm } from "../components/profile-form";
 export function ProfilePage() {
   const { copyTable } = useClipboardTable();
   const [jsonView, setJsonView] = useState(false);
-  const [profileForm, setProfileForm] = useState(true);
+  const [profileForm, setProfileForm] = useState(false);
   const { user } = useAuthContext();
   const { t } = useTranslation("profile");
 
