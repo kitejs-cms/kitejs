@@ -1,0 +1,35 @@
+{
+  "login": "Login",
+  "init": {
+    "title": "Initialize CMS"
+  },
+  "settings": {
+    "menu": {
+      "title": "Settings"
+    },
+    "general": {
+      "title": "General Settings",
+      "description": "Configure your general preferences and settings."
+    },
+    "cms": {
+      "title": "CMS Settings"
+    },
+    "developer": {
+      "title": "Developer Settings",
+      "cache": {
+        "enabled": "Enable Cache",
+        "ttl": "Cache TTL"
+      },
+      "swagger": {
+        "enabled": "Enable Swagger",
+        "path": "Swagger Path",
+        "title": "Swagger Title",
+        "description": "Swagger Description",
+        "version": "Swagger Version"
+      }
+    }
+  },
+  "common": {
+    "save": "Save"
+  }
+}

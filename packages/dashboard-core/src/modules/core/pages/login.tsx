@@ -1,17 +1,17 @@
 import { GalleryVerticalEnd } from "lucide-react";
-import { Label } from "../components/ui/label";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
+import { Label } from "../../../components/ui/label";
+import { Input } from "../../../components/ui/input";
+import { Button } from "../../../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Separator } from "../components/ui/separator";
+} from "../../../components/ui/card";
+import { Separator } from "../../../components/ui/separator";
 import { useTranslation } from "react-i18next";
-import { useSettingsContext } from "../context/settings-context";
-import { useAuthContext } from "../context/auth-context";
+import { useSettingsContext } from "../../../context/settings-context";
+import { useAuthContext } from "../../../context/auth-context";
 import { useState } from "react";
 
 export function LoginPage() {

@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { DashboardRouter } from "@kitejs/dashboard-core/router";
+import { DashboardProvider } from "@kitejs/dashboard-core/dashboard-provider";
 
 /* CSS */
 import "./index.css";
@@ -8,6 +8,6 @@ import "@kitejs/dashboard-core/styles.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <DashboardRouter />
+    <DashboardProvider />
   </StrictMode>
 );

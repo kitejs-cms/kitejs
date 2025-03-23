@@ -3,8 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
 import {
   Form,
   FormControl,
@@ -12,26 +12,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../components/ui/form";
+} from "../../../components/ui/form";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Separator } from "../components/ui/separator";
+} from "../../../components/ui/card";
+import { Separator } from "../../../components/ui/separator";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { useSettingsContext } from "../context/settings-context";
+} from "../../../components/ui/select";
+import { useSettingsContext } from "../../../context/settings-context";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
-import { useApi } from "../hooks/use-api";
-import { Textarea } from "../components/ui/textarea";
+import { useApi } from "../../../hooks/use-api";
+import { Textarea } from "../../../components/ui/textarea";
 
 const languages = [
   { code: "en", name: "English" },

@@ -3,6 +3,7 @@ import {
   AUTH_SETTINGS_KEY,
   CACHE_SETTINGS_KEY,
   SWAGGER_SETTINGS_KEY,
+  STORAGE_SETTINGS_KEY,
   SettingModel,
 } from "./modules/settings";
 
@@ -93,6 +94,13 @@ export const CoreSetting: SettingModel[] = [
       description: "API documentation for the CMS",
       version: "1.0",
       path: "api-docs",
+    },
+  },
+  {
+    key: STORAGE_SETTINGS_KEY,
+    value: {
+      provider: "local",
+      local: { uploadPath: "assets" },
     },
   },
 ];

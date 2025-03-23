@@ -1,0 +1,29 @@
+{
+  "cms": {
+    "settings": {
+      "siteName": "Nome del Sito",
+      "siteUrl": "URL del Sito",
+      "siteDescription": "Descrizione del Sito",
+      "defaultLanguage": "Lingua Predefinita",
+      "allowIndexing": "Consenti Indicizzazione ai Motori di Ricerca"
+    }
+  },
+  "developer": {
+    "settings": {
+      "cache": {
+        "enabled": "Abilita Cache",
+        "ttl": "TTL Cache (secondi)"
+      },
+      "swagger": {
+        "enabled": "Abilita Swagger",
+        "path": "Percorso API",
+        "title": "Titolo API",
+        "description": "Descrizione API",
+        "version": "Versione API"
+      }
+    }
+  },
+  "common": {
+    "save": "Salva Modifiche"
+  }
+}

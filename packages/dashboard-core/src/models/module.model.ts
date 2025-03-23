@@ -18,8 +18,12 @@ export interface SidebarMenuItem {
 }
 
 export interface DashboardModule {
+  key: string;
   name: string;
   routes: ModuleRoute[];
   settings?: SettingsModel;
   menuItem?: SidebarMenuItem;
+  translations?: {
+    [lang: string]: { [key: string]: string } | unknown;
+  };
 }

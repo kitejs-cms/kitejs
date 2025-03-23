@@ -5,6 +5,7 @@ import { UsersManagePage } from "./pages/users-manage";
 
 export const UsersModule: DashboardModule = {
   name: "users",
+  key: "users",
   routes: [
     {
       path: "users",
@@ -26,6 +27,28 @@ export const UsersModule: DashboardModule = {
         title: "users:title.manageRoles",
         url: "/users/roles",
         icon: Shield,
+      },
+    ],
+  },
+  settings: {
+    key: "users",
+    title: "users:settings.title",
+    icon: <Users />,
+    description: "users:settings.description",
+    component: <div>Main</div>,
+
+    children: [
+      {
+        key: "users-management",
+        title: "users:settings.usersManagement",
+        icon: <UserPlus />,
+        component: <div>TEST</div>,
+      },
+      {
+        key: "roles",
+        title: "users:settings.roles",
+        icon: <Shield />,
+        component: <div>TEST2</div>,
       },
     ],
   },

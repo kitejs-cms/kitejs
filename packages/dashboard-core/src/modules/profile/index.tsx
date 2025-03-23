@@ -4,6 +4,7 @@ import { UserIcon } from "lucide-react";
 
 export const ProfileModule: DashboardModule = {
   name: "profile",
+  key: "Profile",
   routes: [
     {
       path: "profile",

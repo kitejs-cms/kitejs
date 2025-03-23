@@ -19,9 +19,10 @@ export * from "./components/ui/select";
 export * from "./components/ui/table";
 export * from "./components/ui/badge";
 export * from "./components/ui/alert-dialog";
+export * from "./components/ui/switch";
 
-/* Router */
-export * from "./router";
+/* Provider */
+export * from "./dashboard-provider";
 
 /* Components */
 export * from "./components/layout";
@@ -35,9 +36,6 @@ export * from "./hooks/use-api";
 export * from "./hooks/use-mobile";
 export * from "./hooks/use-clipboard-table";
 export * from "./context/breadcrumb-context";
-
-/* Pages */
-export * from "./pages/login";
 
 /* Context */
 export * from "./context/auth-context";

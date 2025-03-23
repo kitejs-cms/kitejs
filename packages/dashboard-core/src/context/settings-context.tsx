@@ -1,3 +1,7 @@
+import { useNavigate } from "react-router-dom";
+import { useApi } from "../hooks/use-api";
+import { CmsSettingsModel } from "@kitejs/core/index";
+import { SettingsModel } from "../models/settings.model";
 import React, {
   createContext,
   useCallback,
@@ -5,31 +9,64 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { useNavigate } from "react-router-dom";
-import { useApi } from "../hooks/use-api";
-import { CmsSettingsModel } from "@kitejs/core/index";
 
 interface SettingsContextType {
   cmsSettings: CmsSettingsModel | null;
+  settingsSection: SettingsModel[];
   getSetting: <T = unknown>(
     namespace: string,
     key: string
   ) => Promise<T | null>;
+  updateSetting: <T = unknown>(
+    namespace: string,
+    key: string,
+    value: T
+  ) => Promise<T | null>;
+  hasUnsavedChanges: boolean;
+  setHasUnsavedChanges: (value: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
   undefined
 );
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+export function SettingsProvider({
+  children,
+  settingsSection,
+}: {
+  children: React.ReactNode;
+  settingsSection: SettingsModel[];
+}) {
   const [cmsSettings, setCmsSettings] = useState<CmsSettingsModel | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { fetchData } = useApi();
-
   const navigate = useNavigate();
 
   const getSetting = useCallback(
     async <T = unknown,>(namespace: string, key: string): Promise<T | null> => {
       const { data } = await fetchData(`settings/${namespace}/${key}`, "GET");
+      return data as T | null;
+    },
+    [fetchData]
+  );
+
+  const updateSetting = useCallback(
+    async <T = unknown,>(
+      namespace: string,
+      key: string,
+      value: T
+    ): Promise<T | null> => {
+      const { data } = await fetchData(`settings/${namespace}/${key}`, "PUT", {
+        value,
+      });
+
+      if (
+        namespace === "core" &&
+        key === "core:cms" &&
+        (data as { value: unknown })?.value
+      ) {
+        setCmsSettings((data as { value: unknown }).value as CmsSettingsModel);
+      }
       return data as T | null;
     },
     [fetchData]
@@ -48,7 +85,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [getSetting, navigate]);
 
   return (
-    <SettingsContext.Provider value={{ getSetting, cmsSettings }}>
+    <SettingsContext.Provider
+      value={{
+        getSetting,
+        updateSetting,
+        cmsSettings,
+        settingsSection,
+        hasUnsavedChanges,
+        setHasUnsavedChanges,
+      }}
+    >
       {children}
     </SettingsContext.Provider>
   );

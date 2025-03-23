@@ -1,0 +1,35 @@
+{
+  "login": "Login",
+  "init": {
+    "title": "Inizializza CMS"
+  },
+  "settings": {
+    "menu": {
+      "title": "Impostazioni"
+    },
+    "general": {
+      "title": "Generali",
+      "description": "Configura le tue preferenze generali e impostazioni."
+    },
+    "cms": {
+      "title": "Impostazioni CMS"
+    },
+    "developer": {
+      "title": "Impostazioni Sviluppatore",
+      "cache": {
+        "enabled": "Abilita Cache",
+        "ttl": "TTL della Cache"
+      },
+      "swagger": {
+        "enabled": "Abilita Swagger",
+        "path": "Percorso Swagger",
+        "title": "Titolo Swagger",
+        "description": "Descrizione Swagger",
+        "version": "Versione Swagger"
+      }
+    }
+  },
+  "common": {
+    "save": "Salva"
+  }
+}

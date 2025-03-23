@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 export type SettingsModel = {
-  id: string;
+  key: string;
   title: string;
   icon?: ReactNode;
   children?: Omit<SettingsModel, "children">[];
