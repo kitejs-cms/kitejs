@@ -65,9 +65,8 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
                     />
                   ))}
 
-                  {/* Layout con le rotte dei moduli */}
                   <Route path="/*" element={<Layout menuItems={menuItems} />}>
-                    {moduleRoutes}
+                    {moduleRoutes.filter((item) => item.key)}
                   </Route>
 
                   <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,3 +1,6 @@
+import { DirectoryNodeModel } from "./models/fs-node.model";
+import { UploadResultModel } from "./models/upload-result.model";
+
 export interface IStorageProvider {
   /**
    * Uploads a file to a specific directory.
@@ -5,7 +8,10 @@ export interface IStorageProvider {
    * @param dir - Optional subdirectory where the file will be saved.
    * @returns A promise that resolves with the upload result.
    */
-  uploadFile(file: Express.Multer.File, dir?: string): Promise<UploadResult>;
+  uploadFile(
+    file: Express.Multer.File,
+    dir?: string
+  ): Promise<UploadResultModel>;
 
   /**
    * Removes a file given its full path.
@@ -17,7 +23,7 @@ export interface IStorageProvider {
    * Retrieves the directory structure.
    * @returns A promise that resolves with a tree-like structure of directories and files.
    */
-  getDirectoryStructure(): Promise<DirectoryNode>;
+  getDirectoryStructure(): Promise<DirectoryNodeModel>;
 
   /**
    * Creates an empty directory at the specified path.
@@ -25,22 +31,25 @@ export interface IStorageProvider {
    * @param directoryPath - The path where the directory should be created.
    */
   createEmptyDirectory(directoryPath: string): Promise<void>;
-}
 
-export type UploadResult = {
-  filename: string;
-  path: string;
-};
+  /**
+   * Renames a file or directory
+   * @param oldPath Current path of the item
+   * @param newPath New path for the item
+   */
+  renamePath(oldPath: string, newPath: string): Promise<void>;
 
-export interface DirectoryNode {
-  name: string;
-  path: string;
-  type: "directory";
-  children: Array<DirectoryNode | FileNode>;
-}
+  /**
+   * Moves a file or directory to a new location
+   * @param sourcePath Current path of the item
+   * @param destinationPath New path for the item
+   */
+  movePath(sourcePath: string, destinationPath: string): Promise<void>;
 
-export interface FileNode {
-  name: string;
-  path: string;
-  type: "file";
+  /**
+   * Copies a file or directory to a new location
+   * @param sourcePath Current path of the item
+   * @param destinationPath New path for the copy
+   */
+  copyPath(sourcePath: string, destinationPath: string): Promise<void>;
 }

@@ -1,19 +1,17 @@
 import { Injectable } from "@nestjs/common";
 import { Model } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
-import {
-  IStorageProvider,
-  UploadResult,
-  DirectoryNode,
-} from "./storage-provider.interface";
+import { IStorageProvider } from "./storage-provider.interface";
 import { S3StorageProvider } from "./providers/s3-storage.provider";
 import { LocalStorageProvider } from "./providers/local-storage.provider";
+import { Storage, StorageDocument } from "./storage.schema";
+import { UploadResultModel } from "./models/upload-result.model";
+import { DirectoryNodeModel } from "./models/fs-node.model";
 import {
   SettingsService,
   STORAGE_SETTINGS_KEY,
   StorageSettingsModel,
 } from "../settings";
-import { Storage, StorageDocument } from "./storage.schema"; // Assicurati che il path sia corretto
 
 @Injectable()
 export class StorageService {
@@ -35,7 +33,7 @@ export class StorageService {
   async uploadFile(
     file: Express.Multer.File,
     dir?: string
-  ): Promise<UploadResult> {
+  ): Promise<UploadResultModel> {
     const { value } = await this.settingsService.findOne<StorageSettingsModel>(
       "core",
       STORAGE_SETTINGS_KEY
@@ -57,7 +55,7 @@ export class StorageService {
 
   /**
    * Removes a file using the provider configured in the settings.
-   * Inoltre, rimuove anche il documento associato nel DB.
+   * Also removes the associated document from the DB.
    */
   async removeFile(filePath: string): Promise<void> {
     const { value } = await this.settingsService.findOne<StorageSettingsModel>(
@@ -74,7 +72,7 @@ export class StorageService {
   /**
    * Retrieves the directory structure starting from the specified rootPath.
    */
-  async getDirectoryStructure(): Promise<DirectoryNode> {
+  async getDirectoryStructure(): Promise<DirectoryNodeModel> {
     const { value } = await this.settingsService.findOne<StorageSettingsModel>(
       "core",
       STORAGE_SETTINGS_KEY
@@ -93,5 +91,47 @@ export class StorageService {
     );
     const selectedProvider = this.providerMap[value.provider];
     return selectedProvider.createEmptyDirectory(directoryPath);
+  }
+
+  /**
+   * Renames a file or directory using the configured provider.
+   * @param oldPath - The current path of the item.
+   * @param newPath - The desired new path.
+   */
+  async renamePath(oldPath: string, newPath: string): Promise<void> {
+    const { value } = await this.settingsService.findOne<StorageSettingsModel>(
+      "core",
+      STORAGE_SETTINGS_KEY
+    );
+    const selectedProvider = this.providerMap[value.provider];
+    return selectedProvider.renamePath(oldPath, newPath);
+  }
+
+  /**
+   * Moves a file or directory to a new location using the configured provider.
+   * @param sourcePath - The current path of the item.
+   * @param destinationPath - The new destination path for the item.
+   */
+  async movePath(sourcePath: string, destinationPath: string): Promise<void> {
+    const { value } = await this.settingsService.findOne<StorageSettingsModel>(
+      "core",
+      STORAGE_SETTINGS_KEY
+    );
+    const selectedProvider = this.providerMap[value.provider];
+    return selectedProvider.movePath(sourcePath, destinationPath);
+  }
+
+  /**
+   * Copies a file or directory to a new location using the configured provider.
+   * @param sourcePath - The current path of the item.
+   * @param destinationPath - The destination path for the copy.
+   */
+  async copyPath(sourcePath: string, destinationPath: string): Promise<void> {
+    const { value } = await this.settingsService.findOne<StorageSettingsModel>(
+      "core",
+      STORAGE_SETTINGS_KEY
+    );
+    const selectedProvider = this.providerMap[value.provider];
+    return selectedProvider.copyPath(sourcePath, destinationPath);
   }
 }

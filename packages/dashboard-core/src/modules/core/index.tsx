@@ -20,7 +20,7 @@ export const CoreModule: DashboardModule = {
       label: "core:login",
     },
     {
-      path: "/init",
+      path: "/init-cms",
       element: <InitCmsPage />,
       label: "core:init.title",
     },

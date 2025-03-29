@@ -266,6 +266,9 @@ importers:
       '@kitejs/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@tailwindcss/cli':
+        specifier: ^4.0.8
+        version: 4.0.8
       '@types/cookie-parser':
         specifier: ^1.4.8
         version: 1.4.8(@types/express@5.0.0)

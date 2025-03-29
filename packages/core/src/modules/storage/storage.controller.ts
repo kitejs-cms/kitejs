@@ -155,4 +155,119 @@ export class StorageController {
       );
     }
   }
+
+  @Post("rename")
+  @ApiOperation({ summary: "Rename a file or directory in storage" })
+  @ApiResponse({ status: 200, description: "Item renamed successfully" })
+  @ApiResponse({
+    status: 400,
+    description: "Bad request or error renaming item",
+  })
+  @ApiBody({
+    required: true,
+    schema: {
+      type: "object",
+      properties: {
+        oldPath: {
+          type: "string",
+          description: "The current path of the item",
+        },
+        newPath: {
+          type: "string",
+          description: "The desired new path of the item",
+        },
+      },
+    },
+  })
+  async renamePath(
+    @Body("oldPath") oldPath: string,
+    @Body("newPath") newPath: string
+  ) {
+    if (!oldPath || !newPath)
+      throw new BadRequestException("Both oldPath and newPath are required");
+
+    try {
+      await this.storageService.renamePath(oldPath, newPath);
+      return { message: "Item renamed successfully" };
+    } catch (error) {
+      throw new InternalServerErrorException(`Error renaming item: ${error}`);
+    }
+  }
+
+  @Post("move")
+  @ApiOperation({ summary: "Move a file or directory to a new location" })
+  @ApiResponse({ status: 200, description: "Item moved successfully" })
+  @ApiResponse({ status: 400, description: "Bad request or error moving item" })
+  @ApiBody({
+    required: true,
+    schema: {
+      type: "object",
+      properties: {
+        sourcePath: {
+          type: "string",
+          description: "The current path of the item",
+        },
+        destinationPath: {
+          type: "string",
+          description: "The new destination path for the item",
+        },
+      },
+    },
+  })
+  async movePath(
+    @Body("sourcePath") sourcePath: string,
+    @Body("destinationPath") destinationPath: string
+  ) {
+    if (!sourcePath || !destinationPath)
+      throw new BadRequestException(
+        "Both sourcePath and destinationPath are required"
+      );
+
+    try {
+      await this.storageService.movePath(sourcePath, destinationPath);
+      return { message: "Item moved successfully" };
+    } catch (error) {
+      throw new InternalServerErrorException(`Error moving item: ${error}`);
+    }
+  }
+
+  @Post("copy")
+  @ApiOperation({ summary: "Copy a file or directory to a new location" })
+  @ApiResponse({ status: 200, description: "Item copied successfully" })
+  @ApiResponse({
+    status: 400,
+    description: "Bad request or error copying item",
+  })
+  @ApiBody({
+    required: true,
+    schema: {
+      type: "object",
+      properties: {
+        sourcePath: {
+          type: "string",
+          description: "The current path of the item",
+        },
+        destinationPath: {
+          type: "string",
+          description: "The destination path for the copy",
+        },
+      },
+    },
+  })
+  async copyPath(
+    @Body("sourcePath") sourcePath: string,
+    @Body("destinationPath") destinationPath: string
+  ) {
+    if (!sourcePath || !destinationPath)
+      throw new BadRequestException(
+        "Both sourcePath and destinationPath are required"
+      );
+
+    try {
+      await this.storageService.copyPath(sourcePath, destinationPath);
+      return { message: "Item copied successfully" };
+    } catch (error) {
+      throw new InternalServerErrorException(`Error copying item: ${error}`);
+    }
+  }
 }

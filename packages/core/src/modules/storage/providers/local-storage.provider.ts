@@ -1,24 +1,22 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
 import * as fs from "fs";
 import * as path from "path";
-import {
-  DirectoryNode,
-  IStorageProvider,
-  UploadResult,
-} from "../storage-provider.interface";
+import { IStorageProvider } from "../storage-provider.interface";
 import {
   SettingsService,
   STORAGE_SETTINGS_KEY,
   StorageSettingsModel,
 } from "../../settings";
+import { UploadResultModel } from "../models/upload-result.model";
+import { DirectoryNodeModel } from "../models/fs-node.model";
 
 @Injectable()
 export class LocalStorageProvider implements IStorageProvider {
   constructor(private readonly settingsService: SettingsService) {}
 
   /**
-   * Creates the target directory for file storage.
-   * If the directory doesn't exist, it is created recursively.
+   * Crea la directory di destinazione per il salvataggio dei file.
+   * Se la directory non esiste, viene creata in modo ricorsivo.
    */
   private createDirectory(destination: string): string {
     if (!fs.existsSync(destination)) {
@@ -28,8 +26,8 @@ export class LocalStorageProvider implements IStorageProvider {
   }
 
   /**
-   * Generates a unique file name in the given destination directory.
-   * If the original file name already exists, an incremental numeric suffix is appended.
+   * Genera un nome file unico nella directory di destinazione.
+   * Se il nome originale esiste già, viene aggiunto un suffisso numerico incrementale.
    */
   private generateFileName(
     originalName: string,
@@ -48,23 +46,14 @@ export class LocalStorageProvider implements IStorageProvider {
     return fileName;
   }
 
-  /**
-   * Handles the file upload process:
-   * - Reads configuration settings to determine the base upload path.
-   * - Creates the directory (or subdirectory if provided) if it does not exist.
-   * - Generates a unique file name based on the original name.
-   * - Saves the file content (from file.buffer) to the filesystem.
-   * - Returns the generated file name and the final full path.
-   */
   async uploadFile(
     file: Express.Multer.File,
     dir?: string
-  ): Promise<UploadResult> {
+  ): Promise<UploadResultModel> {
     if (!file) {
       throw new BadRequestException("Missing file");
     }
 
-    // Retrieve the storage configuration from settings.
     const { value } = await this.settingsService.findOne<StorageSettingsModel>(
       "core",
       STORAGE_SETTINGS_KEY
@@ -94,23 +83,18 @@ export class LocalStorageProvider implements IStorageProvider {
     };
   }
 
-  /**
-   * Retrieves the directory structure starting from the root upload path defined in the configuration.
-   * Returns a tree-like structure representing files and directories.
-   * The "path" property for each node is relative to the base upload path.
-   */
-  async getDirectoryStructure(): Promise<DirectoryNode> {
+  async getDirectoryStructure(): Promise<DirectoryNodeModel> {
     const { value } = await this.settingsService.findOne<StorageSettingsModel>(
       "core",
       STORAGE_SETTINGS_KEY
     );
     const basePath = value.local.uploadPath;
 
-    // Funzione ricorsiva per costruire l'albero delle directory.
-    const buildTree = async (currentPath: string): Promise<DirectoryNode> => {
-      // Calcola il percorso relativo rispetto alla directory base.
+    const buildTree = async (
+      currentPath: string
+    ): Promise<DirectoryNodeModel> => {
       const relativePath = path.relative(basePath, currentPath);
-      const node: DirectoryNode = {
+      const node: DirectoryNodeModel = {
         name: path.basename(currentPath),
         path: relativePath ? "/" + relativePath.replace(/\\/g, "/") : "/",
         type: "directory",
@@ -127,7 +111,6 @@ export class LocalStorageProvider implements IStorageProvider {
       }
 
       for (const item of items) {
-        // Esclude file o directory nascosti (quelli che iniziano con un punto).
         if (item.startsWith(".")) continue;
 
         const itemPath = path.join(currentPath, item);
@@ -149,32 +132,168 @@ export class LocalStorageProvider implements IStorageProvider {
 
     return buildTree(basePath);
   }
-  /**
-   * Creates an empty directory at the specified path.
-   * If the directory already exists, no action is taken.
-   */
+
   async createEmptyDirectory(directoryPath: string): Promise<void> {
     try {
-      if (!fs.existsSync(directoryPath)) {
-        await fs.promises.mkdir(directoryPath, { recursive: true });
+      const { value } =
+        await this.settingsService.findOne<StorageSettingsModel>(
+          "core",
+          STORAGE_SETTINGS_KEY
+        );
+
+      const fullPath = value.local.uploadPath + directoryPath;
+      if (!fs.existsSync(fullPath)) {
+        await fs.promises.mkdir(fullPath, { recursive: true });
       }
     } catch (error) {
       throw new BadRequestException("Error creating directory");
     }
   }
 
-  /**
-   * Removes a file from the filesystem given its full path.
-   */
   async removeFile(filePath: string): Promise<void> {
     try {
-      if (fs.existsSync(filePath)) {
-        await fs.promises.unlink(filePath);
-      } else {
+      const { value } =
+        await this.settingsService.findOne<StorageSettingsModel>(
+          "core",
+          STORAGE_SETTINGS_KEY
+        );
+      const fullPath = path.join(value.local.uploadPath, filePath);
+
+      if (!fs.existsSync(fullPath)) {
         throw new BadRequestException("File not found");
       }
+
+      const stats = await fs.promises.stat(fullPath);
+
+      if (stats.isDirectory()) {
+        await fs.promises.rm(fullPath, { recursive: true, force: true });
+      } else {
+        await fs.promises.unlink(fullPath);
+      }
     } catch (error) {
-      throw new BadRequestException("Error removing file from filesystem");
+      throw new BadRequestException(
+        "Error removing file/directory from filesystem"
+      );
+    }
+  }
+
+  /**
+   * Renames a file or directory.
+   * @param oldPath - The current path of the item.
+   * @param newPath - The desired new path.
+   */
+  async renamePath(oldPath: string, newPath: string): Promise<void> {
+    try {
+      const { value } =
+        await this.settingsService.findOne<StorageSettingsModel>(
+          "core",
+          STORAGE_SETTINGS_KEY
+        );
+
+      await fs.promises.rename(
+        value.local.uploadPath + oldPath,
+        value.local.uploadPath + newPath
+      );
+    } catch (error) {
+      throw new BadRequestException("Error renaming the path");
+    }
+  }
+
+  /**
+   * Moves a file or directory to a new location.
+   * @param sourcePath - The current path of the item.
+   * @param destinationPath - The new destination path for the item.
+   */
+  async movePath(sourcePath: string, destinationPath: string): Promise<void> {
+    try {
+      const { value } =
+        await this.settingsService.findOne<StorageSettingsModel>(
+          "core",
+          STORAGE_SETTINGS_KEY
+        );
+      const basePath = value.local.uploadPath;
+
+      const sourceFullPath = path.join(basePath, sourcePath);
+      const destinationFullPath = path.join(basePath, destinationPath);
+
+      const destinationDir = path.dirname(destinationFullPath);
+      if (!fs.existsSync(destinationDir)) {
+        await fs.promises.mkdir(destinationDir, { recursive: true });
+      }
+
+      await fs.promises.rename(sourceFullPath, destinationFullPath);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException("Error moving the path", error);
+    }
+  }
+
+  /**
+   * Copies a file or directory to a new location.
+   * @param sourcePath - The current path of the item.
+   * @param destinationPath - The destination path for the copy.
+   */
+  async copyPath(sourcePath: string, destinationPath: string): Promise<void> {
+    try {
+      const { value } =
+        await this.settingsService.findOne<StorageSettingsModel>(
+          "core",
+          STORAGE_SETTINGS_KEY
+        );
+      const stats = await fs.promises.stat(value.local.uploadPath + sourcePath);
+      if (stats.isDirectory()) {
+        await this.copyDirectory(
+          value.local.uploadPath + sourcePath,
+          value.local.uploadPath + destinationPath
+        );
+      } else {
+        const destinationDir = path.dirname(
+          value.local.uploadPath + destinationPath
+        );
+        if (!fs.existsSync(destinationDir)) {
+          await fs.promises.mkdir(destinationDir, { recursive: true });
+        }
+        await fs.promises.copyFile(
+          value.local.uploadPath + sourcePath,
+          destinationPath
+        );
+      }
+    } catch (error) {
+      throw new BadRequestException("Errore nella copia del percorso");
+    }
+  }
+
+  /**
+   * Private function to recursively copy a directory.
+   * @param sourceDir - The source directory to copy.
+   * @param destinationDir - The destination directory.
+   */
+  private async copyDirectory(
+    sourceDir: string,
+    destinationDir: string
+  ): Promise<void> {
+    const { value } = await this.settingsService.findOne<StorageSettingsModel>(
+      "core",
+      STORAGE_SETTINGS_KEY
+    );
+
+    await fs.promises.mkdir(value.local.uploadPath + destinationDir, {
+      recursive: true,
+    });
+    const entries = await fs.promises.readdir(sourceDir, {
+      withFileTypes: true,
+    });
+    for (const entry of entries) {
+      const srcPath = path.join(value.local.uploadPath + sourceDir, entry.name);
+      const destPath = path.join(
+        value.local.uploadPath + destinationDir,
+        entry.name
+      );
+      if (entry.isDirectory()) {
+        await this.copyDirectory(srcPath, destPath);
+      } else {
+        await fs.promises.copyFile(srcPath, destPath);
+      }
     }
   }
 }

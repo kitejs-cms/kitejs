@@ -14,6 +14,7 @@ import { useBreadcrumb } from "../context/breadcrumb-context";
 import { SidebarMenuItem } from "../models/module.model";
 import { useState } from "react";
 import { SettingsModal } from "./settings-modal";
+import { StorageExplorer } from "../modules/core/components/storage-explorer/storage-explorer";
 
 export function Layout({ menuItems }: { menuItems: SidebarMenuItem[] }) {
   const [settingsModal, setSettingsModal] = useState(false);
@@ -25,6 +26,7 @@ export function Layout({ menuItems }: { menuItems: SidebarMenuItem[] }) {
         items={menuItems}
         openSettings={() => setSettingsModal(true)}
       />
+      <StorageExplorer />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
