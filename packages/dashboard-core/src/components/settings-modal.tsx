@@ -109,7 +109,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                           const newExpandedSection =
                             expandedSection === section.key ? "" : section.key;
                           setExpandedSection(newExpandedSection);
-                          // Se la sezione non ha componente, seleziona il primo child quando viene espansa
                           if (
                             newExpandedSection &&
                             section.children.length > 0 &&
@@ -117,13 +116,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                           ) {
                             setActiveSection(section.children[0].key);
                           } else if (!section.component) {
-                            // Altrimenti, se non ha componente e non è espansa, espandi la sezione
                             setExpandedSection(section.key);
                             setActiveSection(section.children[0].key);
                           }
                         } else {
                           setActiveSection(section.key);
-                          // On mobile, scrolla il contenuto in vista
                           if (window.innerWidth < 768) {
                             const contentElement =
                               document.querySelector(".settings-content");
@@ -166,7 +163,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                             )}
                             onClick={() => {
                               setActiveSection(child.key);
-                              // On mobile, scrolla il contenuto in vista
                               if (window.innerWidth < 768) {
                                 const contentElement =
                                   document.querySelector(".settings-content");

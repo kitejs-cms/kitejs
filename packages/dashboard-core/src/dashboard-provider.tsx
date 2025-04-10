@@ -10,13 +10,18 @@ import { DashboardModule } from "./models/module.model";
 import { UsersModule } from "./modules/users";
 import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";
+import { PageBuilderModule } from "./modules/page-builder";
 
 interface DashboardRouterProps {
   modules?: DashboardModule[];
 }
 
 export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
-  const coreModules: DashboardModule[] = [UsersModule, ProfileModule];
+  const coreModules: DashboardModule[] = [
+    UsersModule,
+    ProfileModule,
+    PageBuilderModule,
+  ];
   const allModules = [...coreModules, ...modules];
 
   const modulesWithTranslations = [CoreModule, ...allModules].filter(

@@ -17,7 +17,7 @@ import {
 import { NewFolderDialog } from "./components/new-folder-dialog";
 
 export function StorageExplorer() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const {
     selectedItem,
     currentDir,

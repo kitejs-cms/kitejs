@@ -127,3 +127,66 @@
     @apply bg-background text-foreground;
   }
 }
+
+h1.ce-header {
+  @apply text-4xl font-bold my-4;
+}
+
+h2.ce-header {
+  @apply text-3xl font-bold my-3;
+}
+
+h3.ce-header {
+  @apply text-2xl font-bold my-2;
+}
+
+h4.ce-header {
+  @apply text-xl font-semibold my-2;
+}
+
+h5.ce-header {
+  @apply text-lg font-semibold my-1;
+}
+
+h6.ce-header {
+  @apply text-base font-semibold my-1;
+}
+
+.ce-block__content {
+  @apply text-base text-gray-800;
+}
+
+.ce-paragraph {
+  @apply text-base leading-relaxed my-2;
+}
+
+.cdx-list,
+.cdx-list-unordered {
+  @apply list-disc pl-5 my-2;
+}
+
+.cdx-list__item {
+  @apply mb-1;
+}
+
+.cdx-list__item-content {
+  @apply text-base;
+}
+
+.ce-delimiter::before {
+  content: "";
+  @apply absolute left-0 right-0 border-t border-gray-300;
+}
+
+.inline-code,
+.ce-inline-code {
+  @apply bg-gray-100 text-red-600 px-1 py-0.5 rounded font-mono;
+}
+
+.editorjs-columns {
+  @apply grid gap-4;
+}
+
+.editorjs-columns__column {
+  @apply p-2 border border-dashed border-gray-300 rounded;
+}

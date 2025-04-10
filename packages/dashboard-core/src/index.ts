@@ -20,12 +20,14 @@ export * from "./components/ui/table";
 export * from "./components/ui/badge";
 export * from "./components/ui/alert-dialog";
 export * from "./components/ui/switch";
+export * from "./components/html-editor/html-editor";
 
 /* Provider */
 export * from "./dashboard-provider";
 
 /* Components */
 export * from "./components/layout";
+export * from "./components/color-picker";
 
 /* Models */
 export * from "./models/menu-item.model";
