@@ -1,6 +1,5 @@
 {
-  "name": "@kitejs/dashboard",
-  "private": true,
+  "name": "@kitejs-cms/dashboard",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -10,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@kitejs/dashboard-core": "workspace:*",
+    "@kitejs-cms/dashboard-core": "workspace:*",
     "@tailwindcss/vite": "^4.0.8",
     "install": "^0.13.0",
     "react": "^19.0.0",
@@ -20,9 +19,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
-    "@kitejs/eslint-config": "workspace:*",
-    "@kitejs/tailwind-config": "workspace:*",
-    "@kitejs/typescript-config": "workspace:*",
+    "@kitejs-cms/eslint-config": "workspace:*",
+    "@kitejs-cms/tailwind-config": "workspace:*",
+    "@kitejs-cms/typescript-config": "workspace:*",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",

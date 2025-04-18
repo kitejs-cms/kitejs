@@ -1,9 +1,10 @@
 {
-  "extends": "@kitejs/typescript-config/nestjs.json",
+  "extends": "@kitejs-cms/typescript-config/nestjs.json",
   "compilerOptions": {
     "allowJs": true,
     "baseUrl": "src",
     "esModuleInterop": true,
+    "declaration": true,
     "incremental": false,
     "outDir": "dist"
   },

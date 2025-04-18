@@ -6,7 +6,7 @@ import { useBreadcrumb } from "../../../context/breadcrumb-context";
 import { ProfileForm } from "../../profile/components/profile-form";
 import { Button } from "../../../components/ui/button";
 import { useApi } from "../../../hooks/use-api";
-import type { UserResponseModel } from "@kitejs/core/index";
+import type { UserResponseModel } from "@kitejs-cms/core/index";
 import { Separator } from "../../../components/ui/separator";
 import { Badge } from "../../../components/ui/badge";
 import { JsonModal } from "../../../components/json-modal";

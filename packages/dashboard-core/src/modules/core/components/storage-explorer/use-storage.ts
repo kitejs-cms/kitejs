@@ -3,7 +3,7 @@ import { useApi } from "../../../../hooks/use-api";
 import type {
   DirectoryNodeModel,
   FileNodeModel,
-} from "@kitejs/core/modules/storage/models/fs-node.model";
+} from "@kitejs-cms/core/modules/storage/models/fs-node.model";
 
 export type ViewMode = "grid" | "list";
 

@@ -7,7 +7,8 @@ import { SettingsModule } from "./modules/settings";
 import { UsersModule } from "./modules/users";
 import { AuthModule } from "./modules/auth";
 import { PluginsModule } from "./modules/plugins";
-import { StorageModule } from "./modules/storage/storage.module";
+import { StorageModule } from "./modules/storage";
+import { PagesModule } from "./modules/pages";
 import "multer";
 
 @Module({
@@ -23,6 +24,7 @@ import "multer";
     AuthModule,
     PluginsModule,
     StorageModule,
+    PagesModule,
   ],
   providers: [
     {

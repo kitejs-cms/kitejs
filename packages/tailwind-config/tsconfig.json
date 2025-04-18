@@ -1,5 +1,5 @@
 {
-  "extends": "@kitejs/typescript-config/base.json",
+  "extends": "@kitejs-cms/typescript-config/base.json",
   "include": ["."],
   "exclude": ["dist", "build", "node_modules"]
 }

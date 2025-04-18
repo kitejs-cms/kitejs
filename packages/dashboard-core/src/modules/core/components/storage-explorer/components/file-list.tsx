@@ -1,7 +1,7 @@
 import {
   DirectoryNodeModel,
   FileNodeModel,
-} from "@kitejs/core/modules/storage/models/fs-node.model";
+} from "@kitejs-cms/core/modules/storage/models/fs-node.model";
 import { FolderIcon, FileTextIcon } from "lucide-react";
 
 interface FileListProps {

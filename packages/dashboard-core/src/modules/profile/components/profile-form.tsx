@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserResponseModel } from "@kitejs/core/index";
+import { UserResponseModel } from "@kitejs-cms/core/index";
 import {
   Dialog,
   DialogClose,

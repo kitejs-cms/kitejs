@@ -1,7 +1,6 @@
 {
-  "name": "@kitejs/core",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@kitejs-cms/core",
+  "version": "0.0.0-alpha.1",
   "license": "MIT",
   "scripts": {
     "dev": "pnpm build --watch",
@@ -59,8 +58,8 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@kitejs/eslint-config": "workspace:*",
-    "@kitejs/typescript-config": "workspace:*",
+    "@kitejs-cms/eslint-config": "workspace:*",
+    "@kitejs-cms/typescript-config": "workspace:*",
     "@tailwindcss/cli": "^4.0.8",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",

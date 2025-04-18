@@ -1,4 +1,4 @@
-import { DirectoryNodeModel } from "@kitejs/core/modules/storage/models/fs-node.model";
+import { DirectoryNodeModel } from "@kitejs-cms/core/modules/storage/models/fs-node.model";
 import {
   ChevronLeft,
   ChevronRight,

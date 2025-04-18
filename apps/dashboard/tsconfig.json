@@ -1,5 +1,5 @@
 {
-  "extends": "@kitejs/typescript-config/vite.json",
+  "extends": "@kitejs-cms/typescript-config/vite.json",
   "include": ["src", "postcss.config.js", "tailwind.config.ts"],
   "compilerOptions": {
     "jsx": "react-jsx"

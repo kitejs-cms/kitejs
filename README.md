@@ -18,9 +18,9 @@ This Turborepo includes the following packages/apps:
 
 - `docs`: a [Next.js](https://nextjs.org/) app
 - `web`: another [Next.js](https://nextjs.org/) app
-- `@kitejs/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@kitejs/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@kitejs/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `@kitejs-cms/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@kitejs-cms/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@kitejs-cms/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 

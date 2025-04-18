@@ -1,16 +1,15 @@
 {
-  "name": "@kitejs/blog",
+  "name": "@kitejs-cms/blog",
   "version": "0.0.0",
-  "private": true,
   "license": "MIT",
   "scripts": {
     "dev": "tsx --watch src/main.ts",
-    "build": "tsc -b -v",
+    "build": "tsc -b --force -v",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
   "main": "./dist/main.js",
   "dependencies": {
-    "@kitejs/core": "workspace:*",
+    "@kitejs-cms/core": "workspace:*",
     "@nestjs/common": "^11.0.10",
     "@nestjs/cache-manager": "^3.0.0",
     "@nestjs/config": "^4.0.0",
@@ -33,8 +32,8 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@kitejs/eslint-config": "workspace:*",
-    "@kitejs/typescript-config": "workspace:*",
+    "@kitejs-cms/eslint-config": "workspace:*",
+    "@kitejs-cms/typescript-config": "workspace:*",
     "@swc/core": "^1.10.18",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.5",

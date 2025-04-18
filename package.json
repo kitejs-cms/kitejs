@@ -1,6 +1,6 @@
 {
   "name": "kitejs",
-  "private": true,
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -19,5 +19,9 @@
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "inquirer": "^12.5.2"
   }
 }

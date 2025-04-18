@@ -22,7 +22,7 @@ import {
 import { Separator } from "../../../components/ui/separator";
 import { DataTable } from "../../../components/data-table";
 import { useApi } from "../../../hooks/use-api";
-import { UserResponseModel } from "@kitejs/core/index";
+import { UserResponseModel } from "@kitejs-cms/core/index";
 import {
   DropdownMenu,
   DropdownMenuContent,

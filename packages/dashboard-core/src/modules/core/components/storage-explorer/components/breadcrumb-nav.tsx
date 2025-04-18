@@ -1,4 +1,4 @@
-import { DirectoryNodeModel } from "@kitejs/core/index";
+import { DirectoryNodeModel } from "@kitejs-cms/core/index";
 import { ChevronRight } from "lucide-react";
 
 interface BreadcrumbNavProps {

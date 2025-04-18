@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "../../../components/ui/select";
 import { Button } from "../../../components/ui/button";
-import { type CmsSettingsModel } from "@kitejs/core/modules/settings/models/cms-settings.model";
+import { type CmsSettingsModel } from "@kitejs-cms/core/modules/settings/models/cms-settings.model";
 
 const formSchema = z.object({
   siteName: z.string().min(1, "Site name is required"),

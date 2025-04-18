@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useApi } from "../hooks/use-api";
-import { CmsSettingsModel } from "@kitejs/core/index";
+import { CmsSettingsModel } from "@kitejs-cms/core/index";
 import { SettingsModel } from "../models/settings.model";
 import React, {
   createContext,

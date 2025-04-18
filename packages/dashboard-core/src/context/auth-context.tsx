@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { UserResponseModel } from "@kitejs/core/index";
+import type { UserResponseModel } from "@kitejs-cms/core/index";
 import { useApi } from "../hooks/use-api";
 
 interface AuthContextType {

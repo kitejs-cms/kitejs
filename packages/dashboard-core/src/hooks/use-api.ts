@@ -2,8 +2,8 @@ import { useState, useCallback } from "react";
 import type {
   ApiResponse,
   MetaModel,
-} from "@kitejs/core/common/models/api-response.model";
-import type { PaginationModel } from "@kitejs/core/common/models/pagination.model";
+} from "@kitejs-cms/core/common/models/api-response.model";
+import type { PaginationModel } from "@kitejs-cms/core/common/models/pagination.model";
 
 // eslint-disable-next-line turbo/no-undeclared-env-vars
 const baseUrl = import.meta.env.VITE_API_URL;
