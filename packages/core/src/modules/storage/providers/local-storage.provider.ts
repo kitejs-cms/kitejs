@@ -1,22 +1,24 @@
+import { IStorageProvider } from "../storage-provider.interface";
 import { Injectable, BadRequestException } from "@nestjs/common";
+import { UploadResultModel } from "../models/upload-result.model";
+import { DirectoryNodeModel } from "../models/fs-node.model";
 import * as fs from "fs";
 import * as path from "path";
-import { IStorageProvider } from "../storage-provider.interface";
 import {
+  CMS_SETTINGS_KEY,
+  CmsSettingsModel,
   SettingsService,
   STORAGE_SETTINGS_KEY,
   StorageSettingsModel,
 } from "../../settings";
-import { UploadResultModel } from "../models/upload-result.model";
-import { DirectoryNodeModel } from "../models/fs-node.model";
 
 @Injectable()
 export class LocalStorageProvider implements IStorageProvider {
   constructor(private readonly settingsService: SettingsService) {}
 
   /**
-   * Crea la directory di destinazione per il salvataggio dei file.
-   * Se la directory non esiste, viene creata in modo ricorsivo.
+   * Creates the destination directory for saving files.
+   * If the directory does not exist, it is created recursively.
    */
   private createDirectory(destination: string): string {
     if (!fs.existsSync(destination)) {
@@ -26,8 +28,8 @@ export class LocalStorageProvider implements IStorageProvider {
   }
 
   /**
-   * Genera un nome file unico nella directory di destinazione.
-   * Se il nome originale esiste già, viene aggiunto un suffisso numerico incrementale.
+   * Generates a unique filename in the destination directory.
+   * If a file with the original name already exists, an incremental numeric suffix is added.
    */
   private generateFileName(
     originalName: string,
@@ -46,6 +48,10 @@ export class LocalStorageProvider implements IStorageProvider {
     return fileName;
   }
 
+  /**
+   * Uploads a file to the local filesystem.
+   * Returns the file metadata including a URL to access the file.
+   */
   async uploadFile(
     file: Express.Multer.File,
     dir?: string
@@ -58,6 +64,15 @@ export class LocalStorageProvider implements IStorageProvider {
       "core",
       STORAGE_SETTINGS_KEY
     );
+
+    const { value: cms } = await this.settingsService.findOne<CmsSettingsModel>(
+      "core",
+      CMS_SETTINGS_KEY
+    );
+
+    const baseUrl = cms.apiUrl
+      ? cms.apiUrl
+      : `http://localhost:${process.env.PORT}`;
 
     const baseUploadPath = value.local.uploadPath;
     const uploadDirectory = this.createDirectory(baseUploadPath);
@@ -80,9 +95,14 @@ export class LocalStorageProvider implements IStorageProvider {
     return {
       filename: fileName,
       path: finalPath,
+      url: `${baseUrl}/public/${fileName}`,
     };
   }
 
+  /**
+   * Retrieves the directory tree starting from the upload root.
+   * Returns a nested DirectoryNodeModel representing files and folders.
+   */
   async getDirectoryStructure(): Promise<DirectoryNodeModel> {
     const { value } = await this.settingsService.findOne<StorageSettingsModel>(
       "core",
@@ -93,6 +113,15 @@ export class LocalStorageProvider implements IStorageProvider {
     const buildTree = async (
       currentPath: string
     ): Promise<DirectoryNodeModel> => {
+      const { value } = await this.settingsService.findOne<CmsSettingsModel>(
+        "core",
+        CMS_SETTINGS_KEY
+      );
+
+      const baseUrl = value.apiUrl
+        ? value.apiUrl
+        : `http://localhost:${process.env.PORT}`;
+
       const relativePath = path.relative(basePath, currentPath);
       const node: DirectoryNodeModel = {
         name: path.basename(currentPath),
@@ -124,6 +153,7 @@ export class LocalStorageProvider implements IStorageProvider {
             name: item,
             path: "/" + fileRelative.replace(/\\/g, "/"),
             type: "file",
+            url: `${baseUrl}/public/${fileRelative.replace(/\\/g, "/")}`,
           });
         }
       }
@@ -133,6 +163,9 @@ export class LocalStorageProvider implements IStorageProvider {
     return buildTree(basePath);
   }
 
+  /**
+   * Creates an empty directory at the specified path if it does not already exist.
+   */
   async createEmptyDirectory(directoryPath: string): Promise<void> {
     try {
       const { value } =
@@ -150,6 +183,10 @@ export class LocalStorageProvider implements IStorageProvider {
     }
   }
 
+  /**
+   * Removes a file or directory at the given path.
+   * Throws if the item does not exist.
+   */
   async removeFile(filePath: string): Promise<void> {
     try {
       const { value } =
@@ -259,12 +296,12 @@ export class LocalStorageProvider implements IStorageProvider {
         );
       }
     } catch (error) {
-      throw new BadRequestException("Errore nella copia del percorso");
+      throw new BadRequestException("Error copying the path");
     }
   }
 
   /**
-   * Private function to recursively copy a directory.
+   * Private helper to recursively copy a directory.
    * @param sourceDir - The source directory to copy.
    * @param destinationDir - The destination directory.
    */

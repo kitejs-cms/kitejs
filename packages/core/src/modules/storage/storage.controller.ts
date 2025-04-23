@@ -1,24 +1,24 @@
+import { FileInterceptor } from "@nestjs/platform-express";
+import { StorageService } from "./storage.service";
+import { RemoveFileDto } from "./dto/remove-file.dto";
+import { CreateDirectoryDto } from "./dto/create-directory.dto";
+import { RenamePathDto } from "./dto/rename-path.dto";
+import { MovePathDto } from "./dto/move-path.dto";
+import { CopyPathDto } from "./dto/copy-path.dto";
 import {
   Controller,
   Post,
   Delete,
   Get,
   Body,
-  Query,
   UploadedFile,
   UseInterceptors,
   InternalServerErrorException,
   BadRequestException,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { StorageService } from "./storage.service";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiConsumes,
-  ApiBody,
-} from "@nestjs/swagger";
+
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from "@nestjs/swagger";
+import { StorageItemDto } from "./dto/storage-response.dto";
 
 @ApiTags("Storage")
 @Controller("storage")
@@ -50,13 +50,11 @@ export class StorageController {
     },
   })
   @UseInterceptors(FileInterceptor("file"))
-  @ApiConsumes("multipart/form-data")
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Body("dir") dir?: string
   ) {
     if (!file) throw new BadRequestException("No file uploaded");
-
     try {
       const result = await this.storageService.uploadFile(file, dir);
       return {
@@ -74,21 +72,9 @@ export class StorageController {
   @ApiOperation({ summary: "Remove a file from storage" })
   @ApiResponse({ status: 200, description: "File removed successfully" })
   @ApiResponse({ status: 400, description: "Bad request or file not found" })
-  @ApiBody({
-    required: true,
-    schema: {
-      type: "object",
-      properties: {
-        filePath: {
-          type: "string",
-          description: "The full path or key of the file to remove",
-        },
-      },
-    },
-  })
-  async removeFile(@Body("filePath") filePath: string) {
-    if (!filePath) throw new BadRequestException("File path is required");
-
+  @ApiBody({ type: RemoveFileDto })
+  async removeFile(@Body() removeFileDto: RemoveFileDto) {
+    const { filePath } = removeFileDto;
     try {
       await this.storageService.removeFile(filePath);
       return { message: "File removed successfully" };
@@ -104,15 +90,11 @@ export class StorageController {
   @ApiResponse({
     status: 200,
     description: "Directory structure retrieved successfully",
+    type: StorageItemDto,
   })
-  @ApiResponse({
-    status: 400,
-    description: "Bad request or error retrieving directory structure",
-  })
-  async getDirectoryStructure() {
+  async getDirectoryStructure(): Promise<StorageItemDto> {
     try {
-      const structure = await this.storageService.getDirectoryStructure();
-      return structure;
+      return await this.storageService.getDirectoryStructure();
     } catch (error) {
       throw new InternalServerErrorException(
         `Error retrieving directory structure: ${error}`
@@ -122,32 +104,17 @@ export class StorageController {
 
   @Post("directory")
   @ApiOperation({ summary: "Create an empty directory in storage" })
-  @ApiResponse({
-    status: 200,
-    description: "Directory created successfully",
-  })
+  @ApiResponse({ status: 200, description: "Directory created successfully" })
   @ApiResponse({
     status: 400,
     description: "Bad request or error creating directory",
   })
-  @ApiBody({
-    required: true,
-    schema: {
-      type: "object",
-      properties: {
-        directoryPath: {
-          type: "string",
-          description: "The path where the empty directory should be created",
-        },
-      },
-    },
-  })
-  async createEmptyDirectory(@Body("directoryPath") directoryPath: string) {
-    if (!directoryPath)
-      throw new BadRequestException("Directory path is required");
-
+  @ApiBody({ type: CreateDirectoryDto })
+  async createEmptyDirectory(@Body() createDirectoryDto: CreateDirectoryDto) {
     try {
-      await this.storageService.createEmptyDirectory(directoryPath);
+      await this.storageService.createEmptyDirectory(
+        createDirectoryDto.directoryPath
+      );
       return { message: "Directory created successfully" };
     } catch (error) {
       throw new InternalServerErrorException(
@@ -163,31 +130,13 @@ export class StorageController {
     status: 400,
     description: "Bad request or error renaming item",
   })
-  @ApiBody({
-    required: true,
-    schema: {
-      type: "object",
-      properties: {
-        oldPath: {
-          type: "string",
-          description: "The current path of the item",
-        },
-        newPath: {
-          type: "string",
-          description: "The desired new path of the item",
-        },
-      },
-    },
-  })
-  async renamePath(
-    @Body("oldPath") oldPath: string,
-    @Body("newPath") newPath: string
-  ) {
-    if (!oldPath || !newPath)
-      throw new BadRequestException("Both oldPath and newPath are required");
-
+  @ApiBody({ type: RenamePathDto })
+  async renamePath(@Body() renameDto: RenamePathDto) {
     try {
-      await this.storageService.renamePath(oldPath, newPath);
+      await this.storageService.renamePath(
+        renameDto.oldPath,
+        renameDto.newPath
+      );
       return { message: "Item renamed successfully" };
     } catch (error) {
       throw new InternalServerErrorException(`Error renaming item: ${error}`);
@@ -198,33 +147,13 @@ export class StorageController {
   @ApiOperation({ summary: "Move a file or directory to a new location" })
   @ApiResponse({ status: 200, description: "Item moved successfully" })
   @ApiResponse({ status: 400, description: "Bad request or error moving item" })
-  @ApiBody({
-    required: true,
-    schema: {
-      type: "object",
-      properties: {
-        sourcePath: {
-          type: "string",
-          description: "The current path of the item",
-        },
-        destinationPath: {
-          type: "string",
-          description: "The new destination path for the item",
-        },
-      },
-    },
-  })
-  async movePath(
-    @Body("sourcePath") sourcePath: string,
-    @Body("destinationPath") destinationPath: string
-  ) {
-    if (!sourcePath || !destinationPath)
-      throw new BadRequestException(
-        "Both sourcePath and destinationPath are required"
-      );
-
+  @ApiBody({ type: MovePathDto })
+  async movePath(@Body() moveDto: MovePathDto) {
     try {
-      await this.storageService.movePath(sourcePath, destinationPath);
+      await this.storageService.movePath(
+        moveDto.sourcePath,
+        moveDto.destinationPath
+      );
       return { message: "Item moved successfully" };
     } catch (error) {
       throw new InternalServerErrorException(`Error moving item: ${error}`);
@@ -238,33 +167,13 @@ export class StorageController {
     status: 400,
     description: "Bad request or error copying item",
   })
-  @ApiBody({
-    required: true,
-    schema: {
-      type: "object",
-      properties: {
-        sourcePath: {
-          type: "string",
-          description: "The current path of the item",
-        },
-        destinationPath: {
-          type: "string",
-          description: "The destination path for the copy",
-        },
-      },
-    },
-  })
-  async copyPath(
-    @Body("sourcePath") sourcePath: string,
-    @Body("destinationPath") destinationPath: string
-  ) {
-    if (!sourcePath || !destinationPath)
-      throw new BadRequestException(
-        "Both sourcePath and destinationPath are required"
-      );
-
+  @ApiBody({ type: CopyPathDto })
+  async copyPath(@Body() copyDto: CopyPathDto) {
     try {
-      await this.storageService.copyPath(sourcePath, destinationPath);
+      await this.storageService.copyPath(
+        copyDto.sourcePath,
+        copyDto.destinationPath
+      );
       return { message: "Item copied successfully" };
     } catch (error) {
       throw new InternalServerErrorException(`Error copying item: ${error}`);

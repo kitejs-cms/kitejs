@@ -47,6 +47,7 @@ export class StorageService {
       filePath: uploadResult.path,
       mediaType: file.mimetype,
       size: file.size,
+      url: uploadResult.url,
     });
     await newStorage.save();
 

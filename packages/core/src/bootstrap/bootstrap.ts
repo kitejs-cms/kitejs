@@ -10,6 +10,7 @@ import cookieParser from "cookie-parser";
 import { IPlugin } from "../modules/plugins";
 import { pluginsSetup } from "./plugins";
 import { middlewareSetup } from "./middleware";
+import { staticSetup } from "./static";
 
 interface BootstrapOptions {
   modules?: Type<unknown>[];
@@ -37,6 +38,7 @@ export async function bootstrap({
   app.use(cookieParser());
   await swaggerSetup(app, settingsService, port);
   await middlewareSetup(app);
+  await staticSetup(app, settingsService);
   securitySetup(app);
   validationSetup(app);
 

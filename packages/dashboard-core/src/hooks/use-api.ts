@@ -14,6 +14,15 @@ type UseApiResult<T> = {
   error: string | null;
   meta: MetaModel | null;
   pagination: PaginationModel | null;
+  uploadFile: (
+    url: string,
+    formData: FormData,
+    options?: RequestInit
+  ) => Promise<{
+    data: T | null;
+    meta: MetaModel | null;
+    error: string | null;
+  }>;
   fetchData: (
     url: string,
     method?: "GET" | "POST" | "PUT" | "DELETE",
@@ -91,6 +100,58 @@ export function useApi<T>(): UseApiResult<T> {
     []
   );
 
+  const uploadFile = useCallback(
+    async (
+      url: string,
+      formData: FormData,
+      options?: RequestInit
+    ): Promise<{
+      data: T | null;
+      meta: MetaModel | null;
+      error: string | null;
+    }> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${baseUrl}/${url}`, {
+          credentials: "include",
+          method: "POST",
+          body: formData,
+          ...options,
+          headers: {
+            ...(options?.headers || {}),
+          },
+        });
+
+        const result: ApiResponse<T> = await response.json();
+
+        if (!response.ok || result.status !== "success") {
+          throw new Error(result.message || "Upload failed");
+        }
+
+        setData(result.data ?? null);
+        setMeta(result.meta ?? null);
+        setpagination(result.meta?.pagination ?? null);
+
+        return {
+          data: result.data ?? null,
+          meta: result.meta ?? null,
+          error: null,
+        };
+      } catch (err) {
+        const errorMessage = (err as Error).message;
+        setError(errorMessage);
+        setData(null);
+        setMeta(null);
+        return { data: null, meta: null, error: errorMessage };
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     data,
     loading,
@@ -98,5 +159,6 @@ export function useApi<T>(): UseApiResult<T> {
     meta,
     pagination,
     fetchData,
+    uploadFile,
   };
 }

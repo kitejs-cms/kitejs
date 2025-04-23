@@ -8,5 +8,6 @@ export type DirectoryNodeModel = {
 export type FileNodeModel = {
   name: string;
   path: string;
+  url: string;
   type: "file";
 };

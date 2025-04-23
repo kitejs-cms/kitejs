@@ -4,6 +4,7 @@ import { IStorageProvider } from "../storage-provider.interface";
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { UploadResultModel } from "../models/upload-result.model";
 import { DirectoryNodeModel, FileNodeModel } from "../models/fs-node.model";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   SettingsService,
   STORAGE_SETTINGS_KEY,
@@ -15,6 +16,7 @@ import {
   DeleteObjectCommand,
   ListObjectsV2Command,
   CopyObjectCommand,
+  GetObjectCommand,
 } from "@aws-sdk/client-s3";
 
 @Injectable()
@@ -65,18 +67,27 @@ export class S3StorageProvider implements IStorageProvider {
       file.originalname
     )}`;
 
-    const command = new PutObjectCommand({
+    const putCommand = new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       Body: file.buffer,
       ContentType: file.mimetype,
     });
+    await s3.send(putCommand);
 
-    await s3.send(command);
+    const getCommand = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    });
+
+    const signedUrl = await getSignedUrl(s3, getCommand, {
+      expiresIn: 3600,
+    });
 
     return {
       filename: key,
       path: `s3://${this.bucket}/${key}`,
+      url: signedUrl,
     };
   }
 
