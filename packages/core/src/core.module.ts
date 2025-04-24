@@ -9,6 +9,8 @@ import { AuthModule } from "./modules/auth";
 import { PluginsModule } from "./modules/plugins";
 import { StorageModule } from "./modules/storage";
 import { PagesModule } from "./modules/pages";
+import { SlugRegistryModule } from "./modules/slug-registry";
+
 import "multer";
 
 @Module({
@@ -25,6 +27,7 @@ import "multer";
     PluginsModule,
     StorageModule,
     PagesModule,
+    SlugRegistryModule,
   ],
   providers: [
     {

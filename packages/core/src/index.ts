@@ -11,6 +11,7 @@ export * from "./modules/plugins";
 export * from "./modules/users";
 export * from "./modules/storage";
 export * from "./modules/users";
+export * from "./modules/slug-registry";
 
 /* Constants */
 export * from "./constants";
