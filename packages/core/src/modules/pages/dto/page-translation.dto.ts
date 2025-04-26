@@ -39,6 +39,14 @@ export class PageTranslationDto implements PageTranslationModel {
   @Type(() => PageSeoDto)
   seo: PageSeoDto;
 
+  @ApiProperty({
+    description: "The page slug, used as a unique identifier in the URL",
+    example: "about-us",
+  })
+  @IsNotEmpty()
+  @IsString()
+  slug: string;
+
   constructor(partial: Partial<PageTranslationDto>) {
     Object.assign(this, partial);
   }

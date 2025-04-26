@@ -10,7 +10,7 @@ import { DashboardModule } from "./models/module.model";
 import { UsersModule } from "./modules/users";
 import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";
-import { PageBuilderModule } from "./modules/page-builder";
+import { PageBuilderModule } from "./modules/pages";
 
 interface DashboardRouterProps {
   modules?: DashboardModule[];

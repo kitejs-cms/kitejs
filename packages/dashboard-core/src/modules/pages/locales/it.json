@@ -1,0 +1,63 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "pages": "Pagine"
+  },
+  "title": {
+    "managePages": "Gestione Pagine"
+  },
+  "buttons": {
+    "edit": "Modifica",
+    "viewJson": "Visualizza JSON",
+    "add": "Aggiungi Pagina",
+    "copy": "Copia negli Appunti",
+    "download": "Download",
+    "editVisual": "Modifica Visual",
+    "revisions": "Revisioni",
+    "close": "Chiudi",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "discardChanges": "Ignora modifiche"
+  },
+  "menu": {
+    "pages": "Pagine",
+    "usersList": "Lista Utenti"
+  },
+  "search": {
+    "placeholder": "Cerca Pagine..."
+  },
+  "fields": {
+    "slug": "Slug",
+    "title": "Titolo",
+    "description": "Descrizione",
+    "tags": "Tag",
+    "status": "Stato",
+    "publishAt": "Data di pubblicazione",
+    "expireAt": "Data di scadenza",
+    "actions": "Azioni",
+    "languages": "Lingue"
+  },
+  "status": {
+    "published": "Pubblicato",
+    "draft": "Bozza",
+    "archived": "Archiviato"
+  },
+  "loading": "Caricamento in corso...",
+  "sections": {
+    "revisions": "Revisioni",
+    "content": "Contenuto",
+    "seo": "SEO",
+    "settings": "Impostazioni"
+  },
+  "seo": {
+    "metaTitle": "Titolo Meta",
+    "metaDescription": "Descrizione Meta",
+    "metaKeywords": "Parole chiave Meta",
+    "canonical": "URL canonico"
+  },
+  "unsavedChanges": {
+    "warning": "Hai modifiche non salvate—sei sicuro di voler continuare?",
+    "title": "Modifiche non salvate",
+    "message": "Ci sono modifiche non salvate. Procedendo perderai tutte le modifiche effettuate."
+  }
+}

@@ -7,9 +7,6 @@ import { SlugRegistryService } from "./slug-registry.service";
 export class SlugRegistryController {
   constructor(private readonly slugService: SlugRegistryService) {}
 
-  /**
-   * Check slug availability and get suggestions
-   */
   @Get("check")
   @ApiOperation({
     summary: "Check slug availability",

@@ -20,6 +20,9 @@ export * from "./components/ui/table";
 export * from "./components/ui/badge";
 export * from "./components/ui/alert-dialog";
 export * from "./components/ui/switch";
+export * from "./components/ui/tabs";
+export * from "./components/ui/calendar";
+export * from "./components/tag-input";
 export * from "./components/html-editor/html-editor";
 
 /* Provider */

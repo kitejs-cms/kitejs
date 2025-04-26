@@ -14,7 +14,7 @@ import {
 import * as locales from "@blocknote/core/locales";
 import { useApi } from "../../../hooks/use-api";
 
-export function Pages() {
+export function PagesEditor() {
   const { uploadFile } = useApi();
 
   async function handlerUploadFile(file: File): Promise<string> {

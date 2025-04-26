@@ -16,5 +16,9 @@
     "account": "Account",
     "settings": "Ssettings",
     "logout": "Log out"
+  },
+  "tags-input": {
+    "placeholder": "Type and press Enter to add a tag",
+    "removeAriaLabel": "Remove {{tag}}"
   }
 }

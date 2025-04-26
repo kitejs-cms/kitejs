@@ -218,6 +218,7 @@ export class SettingsService {
       siteDescription: data.siteDescription || "",
       defaultLanguage,
       allowIndexing: allowIndexing ?? true,
+      supportedLanguages: [],
     };
 
     return await this.create({ namespace, key, value, type: SettingType.CORE });

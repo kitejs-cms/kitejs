@@ -1,13 +1,13 @@
 import { PageRevisionModel } from "../models/page-revision.model";
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { PageDto } from "./page-detail.dto";
 import {
   IsString,
   IsNotEmpty,
   IsNumber,
   ValidateNested,
 } from "class-validator";
+import { PageResponseDetailDto } from "./page-response-detail.dto";
 
 export class PageRevisionDto implements PageRevisionModel {
   @ApiProperty({
@@ -35,11 +35,11 @@ export class PageRevisionDto implements PageRevisionModel {
 
   @ApiProperty({
     description: "Snapshot of the page data at the time of the revision",
-    type: PageDto,
+    type: PageResponseDetailDto,
   })
   @ValidateNested()
-  @Type(() => PageDto)
-  data: PageDto;
+  @Type(() => PageResponseDetailDto)
+  data: PageResponseDetailDto;
 
   @ApiProperty({
     description: "ID of the user who modified the page for this revision",

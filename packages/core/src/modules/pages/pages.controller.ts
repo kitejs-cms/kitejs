@@ -2,7 +2,10 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { PagesService } from "./services/pages.service";
 import { ValidateObjectIdPipe } from "../../common";
 import { PageResponseDto } from "./dto/page-response.dto";
-
+import { PaginationModel } from "../../common";
+import { PageResponseDetailDto } from "./dto/page-response-detail.dto";
+import { CreatePageDto } from "./dto/create-page.dto";
+import { PageStatus } from "./models/page-status.enum";
 import {
   Controller,
   Get,
@@ -12,12 +15,112 @@ import {
   NotFoundException,
   BadRequestException,
   HttpCode,
+  ParseIntPipe,
+  Post,
+  Body,
 } from "@nestjs/common";
 
 @ApiTags("Pages")
 @Controller("pages")
 export class PagesController {
   constructor(private readonly pagesService: PagesService) {}
+
+  @Post()
+  @HttpCode(201)
+  @ApiOperation({ summary: "Create a new page" })
+  @ApiResponse({
+    status: 201,
+    description: "The page has been successfully created",
+    type: PageResponseDto,
+  })
+  @ApiResponse({ status: 400, description: "Invalid input data" })
+  async createPage(
+    @Body() createPageDto: CreatePageDto
+  ): Promise<PageResponseDetailDto> {
+    const created = await this.pagesService.createPage(createPageDto);
+    return new PageResponseDetailDto(created);
+  }
+
+  @Get()
+  @ApiOperation({ summary: "Retrieve all pages" })
+  @ApiResponse({
+    status: 200,
+    description: "Total number of pages",
+    type: Number,
+  })
+  @ApiQuery({
+    name: "status",
+    required: false,
+    type: String,
+    enum: PageStatus,
+    description: "Filter pages by status. Optional parameter.",
+  })
+  @ApiQuery({ name: "page", required: true, type: Number })
+  @ApiQuery({ name: "itemsPerPage", required: true, type: Number })
+  @ApiResponse({
+    status: 200,
+    description: "List of pages",
+    type: [PageResponseDto],
+  })
+  async getAllPages(
+    @Query("page", ParseIntPipe) page: number,
+    @Query("itemsPerPage", ParseIntPipe) itemsPerPage: number,
+    @Query("status") status?: PageStatus
+  ) {
+    try {
+      const totalItems = await this.pagesService.countPages();
+      const data = await this.pagesService.findPages(page, itemsPerPage);
+
+      const pagination: PaginationModel = {
+        totalItems,
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / itemsPerPage),
+        pageSize: itemsPerPage,
+      };
+
+      return {
+        meta: { pagination, query: { status } },
+        data: data.map((item) => new PageResponseDetailDto(item)),
+      };
+    } catch (error) {
+      throw new BadRequestException("Failed to retrieve pages.");
+    }
+  }
+  @Get(":id")
+  @ApiOperation({
+    summary: "Retrieve page for admin backoffice",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Page response",
+    type: PageResponseDetailDto,
+  })
+  @ApiResponse({ status: 404, description: "Page or translation not found" })
+  async getPage(@Param("id") id: string) {
+    try {
+      const response = await this.pagesService.findPageById(id);
+      return new PageResponseDetailDto(response);
+    } catch (error) {
+      throw new BadRequestException("Failed to retrieve page.");
+    }
+  }
+
+  @Delete(":id")
+  @ApiOperation({ summary: "Delete a page" })
+  @ApiResponse({ status: 200, description: "The page has been deleted" })
+  @ApiResponse({ status: 404, description: "Page not found" })
+  @HttpCode(200)
+  async deletePage(@Param("id", ValidateObjectIdPipe) id: string) {
+    try {
+      const result = await this.pagesService.deletePage(id);
+      if (!result) {
+        throw new NotFoundException(`Page with ID "${id}" not found.`);
+      }
+      return { message: `Page with ID "${id}" has been deleted.` };
+    } catch (error) {
+      throw new BadRequestException("Failed to delete the page.");
+    }
+  }
 
   @Get("web/:slug")
   @ApiOperation({
@@ -56,23 +159,6 @@ export class PagesController {
       return new PageResponseDto(response);
     } catch (error) {
       throw new BadRequestException("Failed to retrieve page for web.");
-    }
-  }
-
-  @Delete(":id")
-  @ApiOperation({ summary: "Delete a page" })
-  @ApiResponse({ status: 200, description: "The page has been deleted" })
-  @ApiResponse({ status: 404, description: "Page not found" })
-  @HttpCode(200)
-  async deletePage(@Param("id", ValidateObjectIdPipe) id: string) {
-    try {
-      const result = await this.pagesService.deletePage(id);
-      if (!result) {
-        throw new NotFoundException(`Page with ID "${id}" not found.`);
-      }
-      return { message: `Page with ID "${id}" has been deleted.` };
-    } catch (error) {
-      throw new BadRequestException("Failed to delete the page.");
     }
   }
 }

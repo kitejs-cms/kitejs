@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { PageStatus } from "../models/page-detail.model";
 import { PageBlockDto } from "./page-block.dto";
 import { PageResponseModel } from "../models/page-response.model";
 import { PageSeoDto } from "./page-seo.dto";
@@ -11,6 +10,7 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
+import { PageStatus } from "../models/page-status.enum";
 
 export class PageResponseDto implements PageResponseModel {
   @ApiProperty({
@@ -79,7 +79,7 @@ export class PageResponseDto implements PageResponseModel {
   })
   @ValidateNested()
   @Type(() => PageSeoDto)
-  seo: PageSeoDto;
+  seo?: PageSeoDto;
 
   @ApiProperty({
     description: "Language code of the translation",

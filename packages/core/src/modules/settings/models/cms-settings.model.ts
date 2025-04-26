@@ -7,4 +7,5 @@ export type CmsSettingsModel = {
   siteDescription?: string;
   defaultLanguage: string;
   allowIndexing: boolean;
+  supportedLanguages: string[];
 };

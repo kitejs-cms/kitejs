@@ -1,91 +1,122 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { PageStatus } from "../models/page-status.enum";
+import { PageSeoDto } from "./page-seo.dto";
+import { PageBlockDto } from "./page-block.dto";
+import { PageCreateModel } from "../models/page-create.model";
 import {
   IsArray,
   IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested,
+  IsEnum,
+  IsDateString,
+  ArrayMinSize,
+  ValidateIf,
 } from "class-validator";
-import { Type } from "class-transformer";
-import { PageDetailModel, PageStatus } from "../models/page-detail.model";
-import { PageTranslationDto } from "./page-translation.dto";
 
-export class CreatePageDto implements Partial<PageDetailModel> {
-  @ApiProperty({
-    description: "Unique slug for the page",
-    example: "my-page",
+export class CreatePageDto implements PageCreateModel {
+  @ApiPropertyOptional({
+    description: "Optional ID for existing page updates",
+    example: "60f7c0a2d3a8f009e6f0b7d1",
   })
+  @IsOptional()
   @IsString()
+  id?: string;
+
+  @ApiProperty({
+    description: "Unique slug identifier for the page",
+    example: "home-page",
+    required: true,
+  })
   @IsNotEmpty()
+  @IsString()
   slug: string;
 
   @ApiProperty({
-    description: "Status of the page",
-    enum: PageStatus,
-    example: PageStatus.Published,
-    required: false,
+    description: "Language code for the page content",
+    example: "en",
+    required: true,
   })
+  @IsNotEmpty()
   @IsString()
-  @IsOptional()
-  status?: PageStatus;
+  language: string;
 
   @ApiProperty({
-    description: "Tags associated with the page",
-    example: ["news", "sports"],
-    required: false,
+    description: "Current status of the page",
+    enum: PageStatus,
+    example: PageStatus.Draft,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEnum(PageStatus)
+  status: PageStatus;
+
+  @ApiPropertyOptional({
+    description: "Array of tags for categorization",
+    example: ["home", "main"],
+    type: [String],
   })
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   tags?: string[];
 
-  @ApiProperty({
-    description: "Publish date of the page (ISO string)",
-    example: "2025-04-09T10:00:00Z",
-    required: false,
+  @ApiPropertyOptional({
+    description: "Scheduled publish date (ISO string)",
+    example: "2023-12-31T00:00:00.000Z",
   })
   @IsOptional()
-  @IsString()
+  @IsDateString()
   publishAt?: string;
 
-  @ApiProperty({
-    description: "Expiration date of the page (ISO string)",
-    example: "2025-04-10T10:00:00Z",
-    required: false,
+  @ApiPropertyOptional({
+    description: "Expiration date (ISO string)",
+    example: "2024-12-31T00:00:00.000Z",
   })
   @IsOptional()
-  @IsString()
+  @IsDateString()
+  @ValidateIf((o) => o.publishAt)
   expireAt?: string;
 
   @ApiProperty({
-    description: "Page translations, keyed by language code",
-    example: {
-      en: {
-        title: "Home Page",
-        description: "This is the English home page.",
-        blocks: [],
-        seo: {
-          metaTitle: "Home Page SEO",
-          metaDescription: "SEO description for the home page",
-          metaKeywords: ["home", "page"],
-          canonical: "https://example.com/home",
-        },
-      },
-      it: {
-        title: "Pagina Iniziale",
-        description: "Questa è la homepage in italiano.",
-        blocks: [],
-        seo: {
-          metaTitle: "Pagina Iniziale SEO",
-          metaDescription: "Descrizione SEO per la pagina iniziale",
-          metaKeywords: ["home", "pagina"],
-          canonical: "https://example.com/pagina-iniziale",
-        },
-      },
-    },
+    description: "Title of the page",
+    example: "Welcome to our website",
+    required: true,
   })
+  @IsNotEmpty()
+  @IsString()
+  title: string;
+
+  @ApiProperty({
+    description: "Description of the page",
+    example: "This is our main landing page",
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsString()
+  description: string;
+
+  @ApiProperty({
+    description: "Content blocks for the page",
+    type: [PageBlockDto],
+    required: true,
+  })
+  @IsArray()
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
-  @Type(() => PageTranslationDto)
-  translations: Record<string, PageTranslationDto>;
+  @Type(() => PageBlockDto)
+  blocks: PageBlockDto[];
+
+  @ApiPropertyOptional({
+    description: "SEO metadata for the page",
+    type: PageSeoDto,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PageSeoDto)
+  seo?: PageSeoDto;
 
   constructor(partial: Partial<CreatePageDto>) {
     Object.assign(this, partial);

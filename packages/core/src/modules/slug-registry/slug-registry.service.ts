@@ -191,14 +191,11 @@ export class SlugRegistryService {
    * @param entityId - The entity ID to search for
    * @returns Array of all slugs registered for this entity
    */
-  async findSlugsByEntity(
-    entityId: Types.ObjectId
-  ): Promise<{ slug: string; namespace: string; language?: string }[]> {
-    const records = await this.slugRegistryModel.find({ entityId });
-    return records.map((record) => ({
-      slug: record.slug,
-      namespace: record.namespace,
-      language: record.language,
-    }));
+  async findSlugsByEntity(entityId: Types.ObjectId) {
+    const records = await this.slugRegistryModel.find<SlugRegistry>({
+      entityId,
+    });
+
+    return records;
   }
 }

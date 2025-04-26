@@ -260,7 +260,6 @@ export class LocalStorageProvider implements IStorageProvider {
 
       await fs.promises.rename(sourceFullPath, destinationFullPath);
     } catch (error) {
-      console.log(error);
       throw new BadRequestException("Error moving the path", error);
     }
   }

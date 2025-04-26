@@ -9,9 +9,6 @@ import { SlugRegistryService } from "./slug-registry.service";
       { name: SlugRegistry.name, schema: SlugRegistrySchema },
     ]),
   ],
-  controllers: [
-    /* SlugRegistryController */
-  ],
   providers: [SlugRegistryService],
   exports: [SlugRegistryService],
 })

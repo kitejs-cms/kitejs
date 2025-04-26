@@ -33,12 +33,14 @@ const formSchema = z.object({
 export function CmsSettings() {
   const { t } = useTranslation();
   const form = useForm<CmsSettingsModel>({
-    resolver: zodResolver(formSchema) as Resolver<CmsSettingsModel>,
+    resolver: zodResolver(formSchema) as unknown as Resolver<CmsSettingsModel>,
     defaultValues: {
       siteName: "",
       siteUrl: "",
+      apiUrl: "",
       siteDescription: "",
       defaultLanguage: "en",
+      supportedLanguages: ["en"],
       allowIndexing: true,
     },
   });

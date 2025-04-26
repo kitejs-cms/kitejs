@@ -1,20 +1,14 @@
+import { PageStatus } from "./page-status.enum";
 import { PageTranslationModel } from "./page-translation.model";
 
-export enum PageStatus {
-  "Draft" = "draft",
-  "Published" = "published",
-  "Archived" = "archived",
-}
-
-export type PageDetailModel = {
+export type PageResponseDetailsModel = {
   id: string;
-  slug: string;
   createdBy: string;
   updatedBy: string;
   status: PageStatus;
   tags?: string[];
-  publishAt?: string;
-  expireAt?: string;
+  publishAt?: string | null;
+  expireAt?: string | null;
   translations: Record<string, PageTranslationModel>;
   createdAt: string;
   updatedAt: string;

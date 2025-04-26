@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaDb, Types } from "mongoose";
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, toJSON: { getters: true } })
 export class SlugRegistry extends Document {
   @Prop({ type: String, required: true })
   slug: string;

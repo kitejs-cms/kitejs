@@ -1,6 +1,6 @@
 /* Models */
 export * from "./models/page-block.model";
-export * from "./models/page-detail.model";
+export * from "./models/page-response-details.model";
 export * from "./models/page-response.model";
 export * from "./models/page-revision.model";
 export * from "./models/page-seo.model";

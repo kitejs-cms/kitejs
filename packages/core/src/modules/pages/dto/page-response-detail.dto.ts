@@ -1,9 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { PageDetailModel, PageStatus } from "../models/page-detail.model";
-import { PageTranslationModel } from "../models/page-translation.model";
+import { Exclude, Type } from "class-transformer";
+import { PageStatus } from "../models/page-status.enum";
+import { PageResponseDetailsModel } from "../models/page-response-details.model";
+import { PageSeoDto } from "./page-seo.dto";
+import { PageTranslationDto } from "./page-translation.dto";
+import { ObjectId } from "mongoose";
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from "class-validator";
 
-export class PageDto implements PageDetailModel {
+export class PageResponseDetailDto implements PageResponseDetailsModel {
   @ApiProperty({
     description: "Unique identifier of the page",
     example: "60f7c0a2d3a8f009e6f0b7d1",
@@ -13,7 +23,7 @@ export class PageDto implements PageDetailModel {
   id: string;
 
   @ApiProperty({
-    description: "Unique slug for the page",
+    description: "Base slug for the page (used for routing)",
     example: "my-page",
   })
   @IsString()
@@ -52,6 +62,7 @@ export class PageDto implements PageDetailModel {
   })
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   tags?: string[];
 
   @ApiProperty({
@@ -74,11 +85,19 @@ export class PageDto implements PageDetailModel {
 
   @ApiProperty({
     description: "Page translations, keyed by language code",
+    type: () => Map<String, PageTranslationDto>,
     example: {
       en: {
         title: "Home Page",
         description: "This is the English home page.",
-        blocks: [],
+        blocks: [
+          {
+            type: "text",
+            order: 1,
+            content: "Welcome to our website",
+            settings: { alignment: "center" },
+          },
+        ],
         seo: {
           metaTitle: "Home Page SEO",
           metaDescription: "SEO description for the home page",
@@ -86,20 +105,22 @@ export class PageDto implements PageDetailModel {
           canonical: "https://example.com/home",
         },
       },
-      it: {
-        title: "Pagina Iniziale",
-        description: "Questa è la homepage in italiano.",
-        blocks: [],
-        seo: {
-          metaTitle: "Pagina Iniziale SEO",
-          metaDescription: "Descrizione SEO per la pagina iniziale",
-          metaKeywords: ["home", "pagina"],
-          canonical: "https://example.com/pagina-iniziale",
-        },
-      },
     },
   })
-  translations: Record<string, PageTranslationModel>;
+  @ValidateNested({ each: true })
+  @Type(() => PageTranslationDto)
+  translations: Record<string, PageTranslationDto>;
+
+  @ApiProperty({
+    description:
+      "Global SEO settings for the page (fallback if not defined in translations)",
+    type: PageSeoDto,
+    required: false,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PageSeoDto)
+  seo?: Record<string, PageSeoDto>;
 
   @ApiProperty({
     description: "Creation timestamp of the page (ISO string)",
@@ -116,4 +137,11 @@ export class PageDto implements PageDetailModel {
   @IsString()
   @IsNotEmpty()
   updatedAt: string;
+
+  @Exclude()
+  _id: ObjectId;
+
+  constructor(partial: Partial<PageResponseDetailDto>) {
+    Object.assign(this, partial);
+  }
 }

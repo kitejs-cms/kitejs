@@ -16,5 +16,9 @@
     "account": "Account",
     "settings": "Impostazioni",
     "logout": "Esci"
+  },
+  "tags-input": {
+    "placeholder": "Digita e premi Invio per aggiungere un tag",
+    "removeAriaLabel": "Rimuovi {{tag}}"
   }
 }
