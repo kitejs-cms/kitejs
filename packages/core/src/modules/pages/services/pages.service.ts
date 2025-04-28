@@ -1,21 +1,24 @@
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Page } from "../schemas/page.schema";
-import { CreatePageDto } from "../dto/create-page.dto";
-import { UpdatePageDto } from "../dto/update-page.dto";
+import { PageUpsertDto } from "../dto/page-upsert.dto";
 import { PageResponseDto } from "../dto/page-response.dto";
 import { PageResponseDetailsModel } from "../models/page-response-details.model";
 import { SlugRegistryService } from "../../slug-registry";
 import { User } from "../../users/schemas/user.schema";
 import { PageTranslationModel } from "../models/page-translation.model";
+import { JwtPayloadModel } from "../../auth/models/payload-jwt.model";
 import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from "@nestjs/common";
 
 @Injectable()
 export class PagesService {
+  private readonly logger = new Logger(PagesService.name);
+
   constructor(
     @InjectModel(Page.name) private readonly pageModel: Model<Page>,
     private readonly slugService: SlugRegistryService
@@ -30,6 +33,7 @@ export class PagesService {
     try {
       return await this.pageModel.countDocuments().exec();
     } catch (error) {
+      this.logger.error(error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to count pages. ${errorMessage}`);
@@ -39,29 +43,73 @@ export class PagesService {
   /**
    * Creates a new page.
    * @param pageData Data for the new page.
+   * @param user Auth user.
    * @returns The created page.
    * @throws BadRequestException if the page cannot be created.
    */
-  async createPage(pageData: CreatePageDto): Promise<PageResponseDetailsModel> {
+  async upsertPage(
+    pageData: PageUpsertDto,
+    user: JwtPayloadModel
+  ): Promise<PageResponseDetailsModel> {
     try {
-      if (pageData.id) {
-        this.findPageById(pageData.id);
+      const { id, language, ...restData } = pageData;
+
+      const pageBaseData = {
+        status: restData.status,
+        tags: restData.tags,
+        publishAt: restData.publishAt,
+        expireAt: restData.expireAt,
+        updatedBy: user.sub,
+      };
+
+      const translationData = {
+        title: restData.title,
+        description: restData.description,
+        slug: restData.slug,
+        blocks: restData.blocks,
+        seo: restData.seo,
+      };
+
+      let page: Page;
+
+      if (id) {
+        page = await this.pageModel.findByIdAndUpdate(
+          id,
+          {
+            ...pageBaseData,
+            $set: {
+              [`translations.${language}`]: translationData,
+            },
+          },
+          { new: true, upsert: false }
+        );
+
+        if (!page) {
+          throw new NotFoundException(`Page with ID ${id} not found`);
+        }
+      } else {
+        page = await this.pageModel.create({
+          ...pageBaseData,
+          createdBy: user.sub,
+          translations: {
+            [language]: translationData,
+          },
+        });
+
+        await this.slugService.registerSlug(
+          restData.slug,
+          "page",
+          new Types.ObjectId(page.id),
+          language
+        );
       }
-      const page = new this.pageModel(pageData);
-      await page.save();
 
-      //this.slugService.registerSlug(
-      //  pageData.slug,
-      //  "page",
-      //  page._id,
-      //  pageData.
-      //);
-
-      return this.findPageById(page.id);
+      return this.findPageById(page._id.toString());
     } catch (error) {
+      this.logger.error(error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(`Failed to create page. ${errorMessage}`);
+      throw new BadRequestException(`Failed to upsert page: ${errorMessage}`);
     }
   }
 
@@ -190,6 +238,7 @@ export class PagesService {
         translations: translationsWithSlug,
       } as unknown as PageResponseDetailsModel;
     } catch (error) {
+      this.logger.error(error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new BadRequestException(
@@ -248,32 +297,10 @@ export class PagesService {
 
       return pagesRes;
     } catch (error) {
+      this.logger.error(error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to fetch pages. ${errorMessage}`);
-    }
-  }
-
-  /**
-   * Updates an existing page.
-   * @param id The page ID.
-   * @param updateData Data for updating the page.
-   * @returns The updated page or null if not found.
-   * @throws BadRequestException if the update fails.
-   */
-  async updatePage(
-    id: string,
-    updateData: UpdatePageDto
-  ): Promise<Page | null> {
-    try {
-      const updatedPage = await this.pageModel
-        .findByIdAndUpdate(id, updateData, { new: true })
-        .exec();
-      return updatedPage;
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(`Failed to update page. ${errorMessage}`);
     }
   }
 
@@ -288,6 +315,7 @@ export class PagesService {
       const result = await this.pageModel.findByIdAndDelete(id).exec();
       return result !== null;
     } catch (error) {
+      this.logger.error(error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to delete page. ${errorMessage}`);

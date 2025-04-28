@@ -16,7 +16,8 @@ import { SidebarMenuItem as ItemModule } from "../models/module.model";
 
 export function AppSidebar({
   items = [],
-  ...props
+  openSettings,
+  ...sidebarProps
 }: React.ComponentProps<typeof Sidebar> & {
   items?: ItemModule[];
   openSettings?: () => void;
@@ -38,7 +39,7 @@ export function AppSidebar({
   ];
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="inset" {...sidebarProps}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -67,7 +68,7 @@ export function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         <NavUser
-          openSettings={props.openSettings}
+          openSettings={openSettings}
           user={{
             name: `${user?.firstName} ${user?.lastName}`,
             email: user?.email,

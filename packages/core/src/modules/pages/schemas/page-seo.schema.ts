@@ -2,10 +2,10 @@ import { Prop, Schema } from "@nestjs/mongoose";
 
 @Schema({ _id: false })
 export class PageSeo {
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: false })
   metaTitle: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: false })
   metaDescription: string;
 
   @Prop({ type: [String], default: [] })

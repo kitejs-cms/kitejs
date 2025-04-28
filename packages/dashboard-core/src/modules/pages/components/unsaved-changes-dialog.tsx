@@ -27,27 +27,17 @@ export function UnsavedChangesDialog({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            {t("settings.unsaved_changes.title", "Unsaved Changes")}
-          </AlertDialogTitle>
+          <AlertDialogTitle>{t("unsavedChanges.title")}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t(
-              "settings.unsaved_changes.description",
-              "You have unsaved changes. Are you sure you want to leave?"
-            )}
+            {t("unsavedChanges.message")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>
-            {t("settings.unsaved_changes.cancel", "Cancel")}
+            {t("buttons.cancel")}
           </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => {
-              onDiscard();
-            }}
-            className="bg-red-600 text-white hover:bg-red-700"
-          >
-            {t("settings.unsaved_changes.confirm", "Close without saving")}
+          <AlertDialogAction onClick={onDiscard}>
+            {t("buttons.discardChanges")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

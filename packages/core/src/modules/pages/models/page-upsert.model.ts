@@ -2,7 +2,7 @@ import { PageBlockModel } from "./page-block.model";
 import { PageSeoModel } from "./page-seo.model";
 import { PageStatus } from "./page-status.enum";
 
-export type PageCreateModel = {
+export type PageUpsertModel = {
   id?: string;
   slug: string;
   language: string;

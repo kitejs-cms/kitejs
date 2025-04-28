@@ -5,6 +5,7 @@ export * from "./models/page-response.model";
 export * from "./models/page-revision.model";
 export * from "./models/page-seo.model";
 export * from "./models/page-translation.model";
+export * from "./models/page-upsert.model";
 
 /* Services */
 export * from "./services/page-revisions.service";

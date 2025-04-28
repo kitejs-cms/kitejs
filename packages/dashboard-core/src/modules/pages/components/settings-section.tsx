@@ -17,10 +17,10 @@ import {
   SelectContent,
   SelectItem,
 } from "../../../components/ui/select";
-import type { PageStatus } from "@kitejs-cms/core/modules/pages/models/page-status.enum";
+import { useTranslation } from "react-i18next";
 
 interface SettingsSectionProps {
-  status: PageStatus;
+  status: string;
   publishAt: string;
   expireAt: string;
   tags: string[];
@@ -34,7 +34,7 @@ interface SettingsSectionProps {
 }
 
 export function SettingsSection({
-  status,
+  status = "draft",
   publishAt,
   expireAt,
   tags,
@@ -43,47 +43,50 @@ export function SettingsSection({
   onChange,
   onViewJson,
 }: SettingsSectionProps) {
-  // format ISO to datetime-local
+  const { t } = useTranslation("pages");
   const toInputDate = (iso: string) => new Date(iso).toISOString().slice(0, 16);
 
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
       <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl">
         <div className="flex items-center justify-between">
-          <CardTitle>Settings</CardTitle>
+          <CardTitle>{t("sections.settings")}</CardTitle>
           <Button
             variant="ghost"
             size="sm"
             onClick={onViewJson}
             className="flex items-center"
+            aria-label={t("buttons.viewJson")}
           >
             <FileJson className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
+
       <Separator />
+
       <CardContent className="p-4 md:p-6 space-y-4">
-        {/* Status with controlled Select */}
+        {/* Status */}
         <div>
-          <Label className="mb-2 block">Status</Label>
+          <Label className="mb-2 block">{t("fields.status")}</Label>
           <Select
             value={status}
             onValueChange={(val) => onChange("status", val)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue placeholder={t("fields.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
+              <SelectItem value="Draft">{t("status.draft")}</SelectItem>
+              <SelectItem value="Published">{t("status.published")}</SelectItem>
+              <SelectItem value="Archived">{t("status.archived")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Publish At and Expire At as datetime-local inputs */}
+        {/* Publish At */}
         <div>
-          <Label className="mb-2 block">Publish At</Label>
+          <Label className="mb-2 block">{t("fields.publishAt")}</Label>
           <Input
             type="datetime-local"
             value={toInputDate(publishAt)}
@@ -91,27 +94,31 @@ export function SettingsSection({
             className="w-full"
           />
         </div>
+
+        {/* Expire At */}
         <div>
-          <Label className="mb-2 block">Expire At</Label>
+          <Label className="mb-2 block">{t("fields.expireAt")}</Label>
           <Input
             type="datetime-local"
-            value={toInputDate(expireAt)}
+            value={expireAt ? toInputDate(expireAt) : ""}
             onChange={(e) => onChange("expireAt", e.target.value)}
             className="w-full"
           />
         </div>
 
-        {/* Created/Modified By readonly */}
+        {/* Created By */}
         <div>
-          <Label className="mb-2 block">Created By</Label>
+          <Label className="mb-2 block">{t("fields.createdBy")}</Label>
           <Input
             value={createdBy}
             disabled
             className="w-full cursor-not-allowed"
           />
         </div>
+
+        {/* Modified By */}
         <div>
-          <Label className="mb-2 block">Modified By</Label>
+          <Label className="mb-2 block">{t("fields.updatedBy")}</Label>
           <Input
             value={updatedBy}
             disabled
@@ -121,7 +128,7 @@ export function SettingsSection({
 
         {/* Tags */}
         <div>
-          <Label className="mb-2 block">Tags</Label>
+          <Label className="mb-2 block">{t("fields.tags")}</Label>
           <TagsInput
             initialTags={tags}
             onChange={(newTags) => onChange("tags", newTags)}

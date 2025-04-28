@@ -22,7 +22,8 @@ export class PageBlockDto implements PageBlockModel {
     description: "Content of the block (can be any type of data)",
     example: "This is a sample text block content.",
   })
-  content: any;
+  @IsOptional()
+  content?: unknown;
 
   @ApiProperty({
     description: "Additional settings for the block",

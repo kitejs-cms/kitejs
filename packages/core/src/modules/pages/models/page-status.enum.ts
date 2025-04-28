@@ -1,5 +1,5 @@
 export enum PageStatus {
-  "Draft" = "draft",
-  "Published" = "published",
-  "Archived" = "archived",
+  "Draft" = "Draft",
+  "Published" = "Published",
+  "Archived" = "Archived",
 }

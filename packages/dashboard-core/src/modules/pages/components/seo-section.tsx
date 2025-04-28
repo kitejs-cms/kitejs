@@ -13,6 +13,7 @@ import type {
   PageSeoModel,
   PageTranslationModel,
 } from "@kitejs-cms/core/index";
+import { useTranslation } from "react-i18next";
 
 interface SeoSectionProps {
   activeLang: string;
@@ -29,6 +30,7 @@ export function SeoSection({
   translations,
   onChange,
 }: SeoSectionProps) {
+  const { t } = useTranslation("pages");
   const seo = translations[activeLang]?.seo || {
     metaTitle: "",
     metaDescription: "",
@@ -55,13 +57,13 @@ export function SeoSection({
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
       <CardHeader className="bg-secondary text-primary rounded-t-xl py-6">
-        <CardTitle>SEO</CardTitle>
+        <CardTitle>{t("sections.seo")}</CardTitle>
       </CardHeader>
       <Separator />
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           <div>
-            <Label className="mb-2 block">Meta Title</Label>
+            <Label className="mb-2 block">{t("seo.metaTitle")}</Label>
             <Input
               value={seo.metaTitle}
               onChange={(e) => handleMetaTitleChange(e.target.value)}
@@ -69,7 +71,7 @@ export function SeoSection({
             />
           </div>
           <div>
-            <Label className="mb-2 block">Meta Description</Label>
+            <Label className="mb-2 block">{t("seo.metaDescription")}</Label>
             <Textarea
               value={seo.metaDescription}
               onChange={(e) => handleMetaDescriptionChange(e.target.value)}
@@ -77,14 +79,14 @@ export function SeoSection({
             />
           </div>
           <div>
-            <Label className="mb-2 block">Meta Keywords</Label>
+            <Label className="mb-2 block">{t("seo.metaKeywords")}</Label>
             <TagsInput
               initialTags={seo.metaKeywords}
               onChange={handleKeywordsChange}
             />
           </div>
           <div>
-            <Label className="mb-2 block">Canonical URL</Label>
+            <Label className="mb-2 block">{t("seo.canonical")}</Label>
             <Input
               value={seo.canonical}
               onChange={(e) => handleCanonicalChange(e.target.value)}

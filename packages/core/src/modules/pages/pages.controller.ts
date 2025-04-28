@@ -1,11 +1,13 @@
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { PagesService } from "./services/pages.service";
-import { ValidateObjectIdPipe } from "../../common";
+import { GetAuthUser, ValidateObjectIdPipe } from "../../common";
 import { PageResponseDto } from "./dto/page-response.dto";
 import { PaginationModel } from "../../common";
+import { PageUpsertDto } from "./dto/page-upsert.dto";
 import { PageResponseDetailDto } from "./dto/page-response-detail.dto";
-import { CreatePageDto } from "./dto/create-page.dto";
 import { PageStatus } from "./models/page-status.enum";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { JwtPayloadModel } from "../auth/models/payload-jwt.model";
 import {
   Controller,
   Get,
@@ -18,6 +20,7 @@ import {
   ParseIntPipe,
   Post,
   Body,
+  UseGuards,
 } from "@nestjs/common";
 
 @ApiTags("Pages")
@@ -26,19 +29,21 @@ export class PagesController {
   constructor(private readonly pagesService: PagesService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @HttpCode(201)
-  @ApiOperation({ summary: "Create a new page" })
+  @ApiOperation({ summary: "Upsert page" })
   @ApiResponse({
     status: 201,
     description: "The page has been successfully created",
     type: PageResponseDto,
   })
   @ApiResponse({ status: 400, description: "Invalid input data" })
-  async createPage(
-    @Body() createPageDto: CreatePageDto
+  async upsertPage(
+    @Body() upsertPageDto: PageUpsertDto,
+    @GetAuthUser() user: JwtPayloadModel
   ): Promise<PageResponseDetailDto> {
-    const created = await this.pagesService.createPage(createPageDto);
-    return new PageResponseDetailDto(created);
+    const page = await this.pagesService.upsertPage(upsertPageDto, user);
+    return new PageResponseDetailDto(page);
   }
 
   @Get()

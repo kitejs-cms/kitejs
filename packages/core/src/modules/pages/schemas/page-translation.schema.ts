@@ -7,7 +7,7 @@ export class PageTranslation {
   @Prop({ type: String, required: true })
   title: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: false })
   description: string;
 
   @Prop({ type: [PageBlock], default: [] })

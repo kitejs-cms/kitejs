@@ -1,13 +1,21 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useApi } from "../../../hooks/use-api";
+import { useSettingsContext } from "../../../context/settings-context";
 import type {
   PageResponseDetailsModel,
   PageSeoModel,
   PageTranslationModel,
+  PageUpsertModel,
 } from "@kitejs-cms/core/index";
-import { useApi } from "../../../hooks/use-api";
-import { useSettingsContext } from "../../../context/settings-context";
+
+export interface FormErrors {
+  title?: string;
+  content?: string;
+  apiError?: string;
+  [key: string]: string | undefined;
+}
 
 export function usePageDetails() {
   const { t } = useTranslation("pages");
@@ -28,20 +36,53 @@ export function usePageDetails() {
   const [hasChanges, setHasChanges] = useState(false);
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
   const [navigateTo, setNavigateTo] = useState("");
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
-  // Fetch iniziale e reset dirty
   useEffect(() => {
-    if (!id) return;
-    (async () => {
-      const result = await fetchData(`pages/${id}`);
-      if (result?.data) {
-        setLocalData(result.data);
-        setHasChanges(false);
-      }
-    })();
-  }, [id, fetchData]);
+    if (!defaultLang) return;
 
-  // Sync activeLang
+    if (id === "create") {
+      const newPage: PageResponseDetailsModel = {
+        status: "Draft" as never,
+        tags: [],
+        publishAt: new Date().toISOString(),
+        expireAt: null,
+        translations: {
+          [defaultLang]: {
+            title: "",
+            description: "",
+            slug: "",
+            blocks: [],
+            seo: {
+              metaTitle: "",
+              metaDescription: "",
+              metaKeywords: [],
+              canonical: "",
+            },
+          },
+        },
+        createdBy: "",
+        updatedBy: "",
+        createdAt: "",
+        updatedAt: "",
+        id: "",
+      };
+      setLocalData(newPage);
+      setActiveLang(defaultLang);
+      return;
+    }
+
+    if (id) {
+      (async () => {
+        const result = await fetchData(`pages/${id}`);
+        if (result?.data) {
+          setLocalData(result.data);
+          setHasChanges(false);
+        }
+      })();
+    }
+  }, [id, fetchData, defaultLang]);
+
   useEffect(() => {
     if (!localData) return;
     const langs = Object.keys(localData.translations);
@@ -53,7 +94,6 @@ export function usePageDetails() {
     }
   }, [localData, defaultLang, activeLang]);
 
-  // beforeunload warning
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent): string | void => {
       if (hasChanges) {
@@ -65,98 +105,171 @@ export function usePageDetails() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [hasChanges, t]);
 
-  // Content change
-  function onContentChange(
-    lang: string,
-    field: keyof PageTranslationModel,
-    value: string
-  ) {
-    setLocalData((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        translations: {
-          ...prev.translations,
-          [lang]: {
-            ...prev.translations[lang],
-            [field]: value,
-          },
-        },
-      };
-    });
-    setHasChanges(true);
-  }
+  const validateForm = useCallback((): boolean => {
+    if (!localData) return false;
 
-  // SEO change
-  function onSeoChange<K extends keyof PageSeoModel>(
-    lang: string,
-    field: K,
-    value: PageSeoModel[K]
-  ) {
-    setLocalData((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        translations: {
-          ...prev.translations,
-          [lang]: {
-            ...prev.translations[lang],
-            seo: {
-              ...prev.translations[lang].seo,
+    const errors: FormErrors = {};
+    const translation = localData.translations[activeLang];
+
+    if (!translation?.title?.trim()) {
+      errors.title = t("errors.titleRequired", "Title is required");
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [localData, activeLang, t]);
+
+  const validateField = useCallback(
+    (field: string, value: string) => {
+      if (!value.trim()) {
+        setFormErrors((prev) => ({
+          ...prev,
+          [field]: t(`errors.${field}Required`, `${field} is required`),
+        }));
+      } else {
+        setFormErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+    },
+    [t]
+  );
+
+  const onContentChange = useCallback(
+    (lang: string, field: keyof PageTranslationModel, value: string) => {
+      if (field === "title") {
+        validateField("title", value);
+      }
+
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          translations: {
+            ...prev.translations,
+            [lang]: {
+              ...prev.translations[lang],
               [field]: value,
             },
           },
-        },
-      };
-    });
-    setHasChanges(true);
-  }
+        };
+      });
+      setHasChanges(true);
+    },
+    [validateField]
+  );
 
-  // Settings change: status, publishAt, expireAt, tags
-  function onSettingsChange(
-    field: "status" | "publishAt" | "expireAt" | "tags",
-    value: string | string[]
-  ) {
-    setLocalData((prev) => {
-      if (!prev) return prev;
-      if (field === "tags") {
-        return { ...prev, tags: value as string[] };
+  const onSeoChange = useCallback(
+    <K extends keyof PageSeoModel>(
+      lang: string,
+      field: K,
+      value: PageSeoModel[K]
+    ) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          translations: {
+            ...prev.translations,
+            [lang]: {
+              ...prev.translations[lang],
+              seo: {
+                ...prev.translations[lang].seo,
+                [field]: value,
+              },
+            },
+          },
+        };
+      });
+      setHasChanges(true);
+    },
+    []
+  );
+
+  const onSettingsChange = useCallback(
+    (
+      field: "status" | "publishAt" | "expireAt" | "tags",
+      value: string | string[]
+    ) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        if (field === "tags") {
+          return { ...prev, tags: value as string[] };
+        }
+        return { ...prev, [field]: value as string };
+      });
+      setHasChanges(true);
+    },
+    []
+  );
+
+  const handleNavigation = useCallback(
+    (path: string) => {
+      if (hasChanges) {
+        setNavigateTo(path);
+        setShowUnsavedAlert(true);
+      } else {
+        navigate(path);
       }
-      return { ...prev, [field]: value as string };
-    });
-    setHasChanges(true);
-  }
+    },
+    [hasChanges, navigate]
+  );
 
-  // Navigation
-  function handleNavigation(path: string) {
-    if (hasChanges) {
-      setNavigateTo(path);
-      setShowUnsavedAlert(true);
-    } else {
-      navigate(path);
-    }
-  }
-  function closeUnsavedAlert() {
+  const closeUnsavedAlert = useCallback(() => {
     setShowUnsavedAlert(false);
-  }
-  function confirmDiscard() {
+  }, []);
+
+  const confirmDiscard = useCallback(() => {
     setShowUnsavedAlert(false);
     setHasChanges(false);
-    if (localData) {
-      setLocalData((prev) => (prev ? { ...prev } : prev));
-    }
     navigate(navigateTo);
-  }
+  }, [navigate, navigateTo]);
 
-  // Save
-  function handleSave() {
-    if (!localData) return;
-    // TODO: call save API
-    console.log(localData);
-  }
+  const handleSave = useCallback(async () => {
+    if (!localData || !validateForm()) return;
 
-  // Language
-  function onAddLanguage(lang: string) {
+    try {
+      const translation = localData.translations[activeLang];
+      if (!translation) return;
+
+      const body: PageUpsertModel = {
+        id: id && id !== "create" ? localData.id : undefined,
+        tags: localData.tags,
+        status: localData.status,
+        publishAt: localData.publishAt,
+        expireAt: localData.expireAt,
+        slug: translation.slug,
+        language: activeLang,
+        title: translation.title,
+        description: translation.description,
+        blocks: translation.blocks,
+        seo: translation.seo,
+      };
+
+      const result = await fetchData("pages", "POST", body);
+      if (result?.data) {
+        setLocalData(result.data);
+        setHasChanges(false);
+        setFormErrors({});
+
+        if (id === "create") {
+          navigate(`/pages/${result.data.id}`);
+        }
+      }
+    } catch (error) {
+      console.error("Save failed:", error);
+      setFormErrors({
+        apiError: t(
+          "errors.saveFailed",
+          "Failed to save page. Please try again."
+        ),
+      });
+    }
+  }, [localData, activeLang, id, fetchData, navigate, t, validateForm]);
+
+  const onAddLanguage = useCallback((lang: string) => {
     setLocalData((prev) => {
       if (!prev) return prev;
       if (prev.translations[lang]) {
@@ -182,24 +295,35 @@ export function usePageDetails() {
         translations: { ...prev.translations, [lang]: empty },
       };
     });
-  }
+  }, []);
+
+  const onChangeActiveLang = useCallback(
+    (lang: string) => {
+      if (hasChanges) {
+        setNavigateTo("");
+        setShowUnsavedAlert(true);
+      } else {
+        setActiveLang(lang);
+      }
+    },
+    [hasChanges]
+  );
 
   return {
     data: localData,
     loading,
     activeLang,
-    setActiveLang,
+    setActiveLang: onChangeActiveLang,
     onAddLanguage,
-
     hasChanges,
     onContentChange,
     onSeoChange,
     onSettingsChange,
-
     showUnsavedAlert,
     handleNavigation,
     closeUnsavedAlert,
     confirmDiscard,
     handleSave,
+    formErrors,
   };
 }

@@ -1,6 +1,6 @@
 export type PageBlockModel = {
   type: string;
   order: number;
-  content: any;
+  content?: unknown;
   settings?: Record<string, any>;
 };

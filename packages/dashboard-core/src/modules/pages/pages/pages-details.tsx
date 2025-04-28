@@ -9,6 +9,7 @@ import { SeoSection } from "../components/seo-section";
 import { LanguageTabs } from "../components/language-tabs";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { usePageDetails } from "../hooks/use-page-details";
+import { PageEditor } from "../components/page-editor";
 
 export function PageDetailsPage() {
   const { t } = useTranslation("pages");
@@ -29,11 +30,12 @@ export function PageDetailsPage() {
     closeUnsavedAlert,
     confirmDiscard,
     handleSave,
+    formErrors,
   } = usePageDetails();
 
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
-  const [, setEditorView] = useState(false);
+  const [editorView, setEditorView] = useState(true);
 
   useEffect(() => {
     if (searchParams.get("view") === "json") setJsonView(true);
@@ -74,6 +76,8 @@ export function PageDetailsPage() {
         data={data}
       />
 
+      <PageEditor isOpen={editorView} onClose={() => setEditorView(false)} />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <LanguageTabs
           translations={data?.translations}
@@ -90,6 +94,7 @@ export function PageDetailsPage() {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <ContentSection
+            formErrors={formErrors}
             activeLang={activeLang}
             translations={data?.translations}
             onChange={onContentChange}

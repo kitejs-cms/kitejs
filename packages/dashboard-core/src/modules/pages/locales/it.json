@@ -35,14 +35,15 @@
     "publishAt": "Data di pubblicazione",
     "expireAt": "Data di scadenza",
     "actions": "Azioni",
-    "languages": "Lingue"
+    "languages": "Lingue",
+    "createdBy": "Autore",
+    "updatedBy": "Modifichato Da"
   },
   "status": {
     "published": "Pubblicato",
     "draft": "Bozza",
     "archived": "Archiviato"
   },
-  "loading": "Caricamento in corso...",
   "sections": {
     "revisions": "Revisioni",
     "content": "Contenuto",
@@ -59,5 +60,9 @@
     "warning": "Hai modifiche non salvate—sei sicuro di voler continuare?",
     "title": "Modifiche non salvate",
     "message": "Ci sono modifiche non salvate. Procedendo perderai tutte le modifiche effettuate."
+  },
+  "errors": {
+    "titleRequired": "Il titolo è obbligatorio",
+    "slugRequired": "Lo slug è obbligatorio"
   }
 }

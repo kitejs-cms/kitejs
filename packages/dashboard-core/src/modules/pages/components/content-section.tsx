@@ -4,17 +4,20 @@ import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
 import { Label } from "../../../components/ui/label";
 import { Tabs, TabsContent } from "../../../components/ui/tabs";
+import type { PageTranslationModel } from "@kitejs-cms/core/index";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from "../../../components/ui/card";
-import { PageTranslationModel } from "@kitejs-cms/core/index";
+import { FormErrors } from "../hooks/use-page-details";
 
 export interface ContentSectionProps {
   activeLang: string;
   translations: Record<string, PageTranslationModel>;
+  formErrors: FormErrors;
   onChange: (
     lang: string,
     field: keyof PageTranslationModel,
@@ -26,7 +29,9 @@ export function ContentSection({
   activeLang,
   translations,
   onChange,
+  formErrors,
 }: ContentSectionProps) {
+  const { t } = useTranslation("pages");
   const { title, description, slug } = translations[activeLang] || {
     title: "",
     description: "",
@@ -34,25 +39,43 @@ export function ContentSection({
   };
 
   const [slugTouched, setSlugTouched] = useState(false);
+  const [localErrors, setLocalErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     setSlugTouched(false);
   }, [activeLang]);
 
+  useEffect(() => {
+    const relevantErrors = Object.entries(formErrors).reduce(
+      (acc, [key, value]) => {
+        if (["title", "description", "slug", "content"].includes(key)) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as FormErrors
+    );
+
+    setLocalErrors(relevantErrors);
+  }, [formErrors]);
+
   const handleTitleChange = (value: string) => {
     onChange(activeLang, "title", value);
 
     if (!slugTouched) {
-      const generated = value
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-");
-
+      const generated = generateSlug(value);
       if (generated && generated !== slug) {
         onChange(activeLang, "slug", generated);
       }
     }
+  };
+
+  const generateSlug = (text: string): string => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-");
   };
 
   const handleSlugChange = (value: string) => {
@@ -67,35 +90,63 @@ export function ContentSection({
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
       <CardHeader className="bg-secondary text-primary py-6 rounded-t-xl">
-        <CardTitle>Content</CardTitle>
+        <CardTitle>{t("sections.content")}</CardTitle>
       </CardHeader>
       <Separator />
       <CardContent className="p-4 md:p-6">
         <Tabs value={activeLang}>
           <TabsContent value={activeLang} className="space-y-4">
+            {/* Title Field */}
             <div>
-              <Label className="mb-2 block">Title</Label>
+              <div className="flex justify-between items-center mb-2">
+                <Label>{t("fields.title")}</Label>
+                {localErrors.title && (
+                  <span className="text-sm text-destructive">
+                    {localErrors.title}
+                  </span>
+                )}
+              </div>
               <Input
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 className="w-full"
+                aria-invalid={!!localErrors.title}
               />
             </div>
+
+            {/* Slug Field */}
             <div>
-              <Label className="mb-2 block">Slug</Label>
-              <Input
-                value={slug}
-                onChange={(e) => handleSlugChange(e.target.value)}
-                className="w-full"
-              />
+              <div className="flex justify-between items-center mb-2">
+                <Label>{t("fields.slug")}</Label>
+                {localErrors.slug && (
+                  <span className="text-sm text-destructive">
+                    {localErrors.slug}
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <Input
+                  value={slug}
+                  onChange={(e) => handleSlugChange(e.target.value)}
+                  className="w-full"
+                  aria-invalid={!!localErrors.slug}
+                />
+              </div>
             </div>
+
             <div>
-              <Label className="mb-2 block">Description</Label>
+              <Label className="mb-2 block">{t("fields.description")}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
                 className="w-full min-h-[120px]"
+                aria-invalid={!!localErrors.description}
               />
+              {localErrors.description && (
+                <p className="mt-1 text-sm text-destructive">
+                  {localErrors.description}
+                </p>
+              )}
             </div>
           </TabsContent>
         </Tabs>

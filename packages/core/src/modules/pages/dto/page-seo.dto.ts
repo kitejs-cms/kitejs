@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsArray, IsOptional, IsString } from "class-validator";
 import { PageSeoModel } from "../models/page-seo.model";
 
 export class PageSeoDto implements PageSeoModel {
@@ -8,15 +8,15 @@ export class PageSeoDto implements PageSeoModel {
     example: "Page SEO Title",
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   metaTitle: string;
 
   @ApiProperty({
     description: "Meta description for SEO",
     example: "This is the SEO description for the page",
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   metaDescription: string;
 
   @ApiProperty({

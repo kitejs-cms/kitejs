@@ -3,7 +3,7 @@ import { Type } from "class-transformer";
 import { PageStatus } from "../models/page-status.enum";
 import { PageSeoDto } from "./page-seo.dto";
 import { PageBlockDto } from "./page-block.dto";
-import { PageCreateModel } from "../models/page-create.model";
+import { PageUpsertModel } from "../models/page-upsert.model";
 import {
   IsArray,
   IsNotEmpty,
@@ -12,11 +12,10 @@ import {
   ValidateNested,
   IsEnum,
   IsDateString,
-  ArrayMinSize,
   ValidateIf,
 } from "class-validator";
 
-export class CreatePageDto implements PageCreateModel {
+export class PageUpsertDto implements PageUpsertModel {
   @ApiPropertyOptional({
     description: "Optional ID for existing page updates",
     example: "60f7c0a2d3a8f009e6f0b7d1",
@@ -94,7 +93,6 @@ export class CreatePageDto implements PageCreateModel {
     example: "This is our main landing page",
     required: true,
   })
-  @IsNotEmpty()
   @IsString()
   description: string;
 
@@ -104,7 +102,6 @@ export class CreatePageDto implements PageCreateModel {
     required: true,
   })
   @IsArray()
-  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => PageBlockDto)
   blocks: PageBlockDto[];
@@ -118,7 +115,7 @@ export class CreatePageDto implements PageCreateModel {
   @Type(() => PageSeoDto)
   seo?: PageSeoDto;
 
-  constructor(partial: Partial<CreatePageDto>) {
+  constructor(partial: Partial<PageUpsertDto>) {
     Object.assign(this, partial);
   }
 }

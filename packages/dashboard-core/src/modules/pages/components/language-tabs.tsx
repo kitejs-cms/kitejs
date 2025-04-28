@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { Button } from "../../../components/ui/button";
 import { useSettingsContext } from "../../../context/settings-context";
@@ -14,7 +14,7 @@ import {
 interface LanguageTabsProps {
   translations: Record<string, PageTranslationModel>;
   activeLang: string;
-  onLanguageChange: Dispatch<SetStateAction<string>>;
+  onLanguageChange: (lang: string) => void;
   onAddLanguage: (lang: string) => void;
 }
 
