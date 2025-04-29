@@ -30,6 +30,7 @@ import {
   Download,
   Search,
   Plus,
+  LayoutTemplate,
 } from "lucide-react";
 import { StatusBadge } from "../components/status-badge";
 import { LanguagesBadge } from "../components/languages-badge";
@@ -230,7 +231,16 @@ export function PagesManagePage() {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/pages/${row.id}?view=edit`);
+                          navigate(`/pages/${row.id}?view=editor`);
+                        }}
+                      >
+                        <LayoutTemplate className="mr-2 h-4 w-4" />
+                        {t("buttons.editVisual")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/pages/${row.id}`);
                         }}
                       >
                         <Edit className="mr-2 h-4 w-4" />

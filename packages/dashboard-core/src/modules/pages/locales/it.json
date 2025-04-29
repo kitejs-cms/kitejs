@@ -4,7 +4,8 @@
     "pages": "Pagine"
   },
   "title": {
-    "managePages": "Gestione Pagine"
+    "managePages": "Gestione Pagine",
+    "editor": "Editor Pagina"
   },
   "buttons": {
     "edit": "Modifica",
@@ -12,12 +13,13 @@
     "add": "Aggiungi Pagina",
     "copy": "Copia negli Appunti",
     "download": "Download",
-    "editVisual": "Modifica Visual",
+    "editVisual": "Editor Pagina",
     "revisions": "Revisioni",
     "close": "Chiudi",
     "cancel": "Annulla",
     "save": "Salva",
-    "discardChanges": "Ignora modifiche"
+    "discardChanges": "Ignora modifiche",
+    "undo": "Annulla"
   },
   "menu": {
     "pages": "Pagine",
@@ -63,6 +65,43 @@
   },
   "errors": {
     "titleRequired": "Il titolo è obbligatorio",
-    "slugRequired": "Lo slug è obbligatorio"
+    "slugRequired": "Lo slug è obbligatorio",
+    "saveFailed": "Salvataggio fallito. Riprova.",
+    "invalidForm": "Form non valido",
+    "missingTranslation": "Traduzione mancante"
+  },
+  "toast": {
+    "loading": "Caricamento in corso...",
+    "success": {
+      "create": "Pagina creata con successo",
+      "update": "Pagina aggiornata con successo",
+      "description": "Titolo: {title}"
+    },
+    "error": {
+      "generic": "Errore durante l'operazione",
+      "server": "Errore del server",
+      "validation": "Errore di validazione"
+    },
+    "warning": {
+      "unsaved": "Modifiche non salvate",
+      "exit": "Stai per uscire senza salvare"
+    },
+    "action": {
+      "undo": "Annulla",
+      "retry": "Riprova",
+      "dismiss": "Chiudi"
+    }
+  },
+  "editor": {
+    "saveStatus": {
+      "saving": "Salvataggio...",
+      "saved": "Salvato",
+      "error": "Errore nel salvataggio"
+    },
+    "validation": {
+      "requiredField": "Campo obbligatorio",
+      "invalidSlug": "Slug non valido",
+      "duplicateSlug": "Slug già esistente"
+    }
   }
 }

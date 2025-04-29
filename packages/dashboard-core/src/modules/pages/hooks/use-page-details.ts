@@ -1,8 +1,9 @@
+import { useSettingsContext } from "../../../context/settings-context";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApi } from "../../../hooks/use-api";
-import { useSettingsContext } from "../../../context/settings-context";
+import { toast } from "sonner";
 import type {
   PageResponseDetailsModel,
   PageSeoModel,
@@ -228,11 +229,23 @@ export function usePageDetails() {
   }, [navigate, navigateTo]);
 
   const handleSave = useCallback(async () => {
-    if (!localData || !validateForm()) return;
+    if (!localData || !validateForm()) {
+      toast.error("Form non valido", {
+        description: "Controlla i campi obbligatori",
+      });
+      return;
+    }
+
+    const toastId = toast.loading("Salvataggio in corso...");
 
     try {
       const translation = localData.translations[activeLang];
-      if (!translation) return;
+      if (!translation) {
+        toast.error("Traduzione mancante", {
+          description: `Lingua ${activeLang} non configurata`,
+        });
+        return;
+      }
 
       const body: PageUpsertModel = {
         id: id && id !== "create" ? localData.id : undefined,
@@ -249,7 +262,13 @@ export function usePageDetails() {
       };
 
       const result = await fetchData("pages", "POST", body);
+
       if (result?.data) {
+        toast.success(id === "create" ? "Pagina creata" : "Pagina aggiornata", {
+          id: toastId,
+          description: `Titolo: ${translation.title}`,
+        });
+
         setLocalData(result.data);
         setHasChanges(false);
         setFormErrors({});
@@ -257,9 +276,21 @@ export function usePageDetails() {
         if (id === "create") {
           navigate(`/pages/${result.data.id}`);
         }
+      } else {
+        toast.error("Errore nel salvataggio", {
+          id: toastId,
+          description: "Nessun dato ricevuto dal server",
+        });
       }
     } catch (error) {
       console.error("Save failed:", error);
+      toast.error("Errore nel salvataggio", {
+        id: toastId,
+        description: t(
+          "errors.saveFailed",
+          "Failed to save page. Please try again."
+        ),
+      });
       setFormErrors({
         apiError: t(
           "errors.saveFailed",

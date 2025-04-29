@@ -2,6 +2,12 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { AppSidebar } from "./app-sidebar";
 import { Outlet } from "react-router-dom";
+import { useBreadcrumb } from "../context/breadcrumb-context";
+import { SidebarMenuItem } from "../models/module.model";
+import { useState } from "react";
+import { SettingsModal } from "./settings-modal";
+import { StorageExplorer } from "../modules/core/components/storage-explorer/storage-explorer";
+import { Toaster } from "./ui/toaster";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -10,11 +16,6 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "./ui/breadcrumb";
-import { useBreadcrumb } from "../context/breadcrumb-context";
-import { SidebarMenuItem } from "../models/module.model";
-import { useState } from "react";
-import { SettingsModal } from "./settings-modal";
-import { StorageExplorer } from "../modules/core/components/storage-explorer/storage-explorer";
 
 export function Layout({ menuItems }: { menuItems: SidebarMenuItem[] }) {
   const [settingsModal, setSettingsModal] = useState(false);
@@ -56,6 +57,7 @@ export function Layout({ menuItems }: { menuItems: SidebarMenuItem[] }) {
           <SettingsModal open={settingsModal} onOpenChange={setSettingsModal} />
           <div className="min-h-[100vh] flex-1 md:min-h-min">
             <Outlet />
+            <Toaster />
           </div>
         </div>
       </SidebarInset>

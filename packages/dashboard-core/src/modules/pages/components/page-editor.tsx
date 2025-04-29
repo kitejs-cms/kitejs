@@ -1,17 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../../components/ui/dialog";
 import { XIcon } from "lucide-react";
 import { Badge } from "../../../components/ui/badge";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { SuggestionMenuController, useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteSchema } from "@blocknote/core";
+import { BlockNoteSchema, PartialBlock } from "@blocknote/core";
 import "@blocknote/core/fonts/inter.css";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
@@ -20,17 +13,28 @@ import {
   locales as multiColumnLocales,
   withMultiColumn,
 } from "@blocknote/xl-multi-column";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/dialog";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as locales from "@blocknote/core/locales";
 import { useApi } from "../../../hooks/use-api";
 
-type Props = { isOpen: boolean; onClose: () => void };
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  blocks: PartialBlock[];
+};
 
-export function PageEditor({ isOpen, onClose }: Props) {
-  const { t } = useTranslation();
-
+export function PageEditor({ isOpen, onClose, blocks, onSave }: Props) {
+  const { t } = useTranslation("pages");
   const { uploadFile } = useApi();
 
   async function handlerUploadFile(file: File): Promise<string> {
@@ -38,32 +42,34 @@ export function PageEditor({ isOpen, onClose }: Props) {
     formData.append("file", file);
 
     const { data } = await uploadFile("storage/upload", formData);
-    console.log(data);
-
     return (data as { url: string }).url;
   }
 
-  const editor = useCreateBlockNote({
-    schema: withMultiColumn(BlockNoteSchema.create()),
-    dropCursor: multiColumnDropCursor,
-    dictionary: {
-      ...locales.it,
-      multi_column: multiColumnLocales["en"],
+  const editor = useCreateBlockNote(
+    {
+      schema: withMultiColumn(BlockNoteSchema.create()),
+      initialContent: blocks,
+      dropCursor: multiColumnDropCursor,
+      dictionary: {
+        ...locales.it,
+        multi_column: multiColumnLocales["en"],
+      },
+      uploadFile: handlerUploadFile,
     },
-    uploadFile: handlerUploadFile,
-  });
+    [blocks]
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="fixed inset-0 w-screen h-screen max-w-none max-h-none p-0 bg-white"
-        onInteractOutside={(e) => e.preventDefault()} // Previene la chiusura cliccando fuori
+        position="full"
+        className="p-0 flex flex-col overflow-hidden"
       >
-        <div>
-          {/* Header */}
-          <DialogHeader className="flex flex-row justify-between items-center p-4 border-b">
+        <div className="flex flex-col h-full">
+          {/* Header - Fissato in alto */}
+          <DialogHeader className="flex flex-row justify-between items-center p-4 border-b shrink-0">
             <DialogTitle className="text-xl font-semibold text-gray-900">
-              {t("json-modal.title")}
+              {t("title.editor")}
             </DialogTitle>
             <DialogClose asChild>
               <div className="flex items-center gap-2 text-gray-500 hover:text-black transition cursor-pointer">
@@ -78,26 +84,36 @@ export function PageEditor({ isOpen, onClose }: Props) {
             </DialogClose>
           </DialogHeader>
 
-          {/* Editor - Area principale a schermo intero */}
-          <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full w-full">
-              <BlockNoteView
-                editor={editor}
-                slashMenu={false}
-                className="h-full min-h-[calc(100vh-120px)]" // Altezza dinamica
-                theme="light"
-              >
-                <SuggestionMenuController triggerCharacter="/" />
-              </BlockNoteView>
-            </ScrollArea>
-          </div>
+          {/* Area editor con scroll - Occupa lo spazio rimanente */}
+          <ScrollArea className="flex-1 overflow-auto">
+            <div className="h-full w-full">
+              <div className="flex justify-center h-full min-h-[calc(100dvh-210px)]">
+                <div className="w-full max-w-7xl py-4 px-4">
+                  <BlockNoteView
+                    editor={editor}
+                    slashMenu={false}
+                    className="h-full"
+                  >
+                    <SuggestionMenuController triggerCharacter="/" />
+                  </BlockNoteView>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-3 p-4 border-t">
+          {/* Footer - Fissato in basso */}
+          <div className="flex justify-end gap-3 p-4 border-t shrink-0">
             <Button variant="outline" onClick={onClose}>
               {t("buttons.cancel")}
             </Button>
-            <Button onClick={() => null}>{t("buttons.save")}</Button>
+            <Button
+              onClick={() => {
+                onSave();
+                onClose();
+              }}
+            >
+              {t("buttons.save")}
+            </Button>
           </div>
         </div>
       </DialogContent>

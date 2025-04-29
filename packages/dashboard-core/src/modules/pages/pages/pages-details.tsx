@@ -10,6 +10,8 @@ import { LanguageTabs } from "../components/language-tabs";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { usePageDetails } from "../hooks/use-page-details";
 import { PageEditor } from "../components/page-editor";
+import { PartialBlock } from "@blocknote/core";
+import { SkeletonTabs } from "../components/skeleton-tabs";
 
 export function PageDetailsPage() {
   const { t } = useTranslation("pages");
@@ -35,38 +37,14 @@ export function PageDetailsPage() {
 
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
-  const [editorView, setEditorView] = useState(true);
+  const [editorView, setEditorView] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("view") === "json") setJsonView(true);
+    if (searchParams.get("view") === "editor") setEditorView(true);
   }, [searchParams]);
 
-  if (loading || !data) {
-    return (
-      <div className="p-6 space-y-6 animate-pulse">
-        {/* skeleton tabs */}
-        <div className="flex gap-2">
-          <div className="h-8 w-16 bg-gray-200 rounded" />
-          <div className="h-8 w-16 bg-gray-200 rounded" />
-          <div className="h-8 w-16 bg-gray-200 rounded" />
-          <div className="h-8 w-8 bg-gray-200 rounded" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="h-6 bg-gray-200 rounded" />
-            <div className="h-40 bg-gray-200 rounded" />
-            <div className="h-6 bg-gray-200 rounded mt-12" />
-            <div className="h-20 bg-gray-200 rounded" />
-          </div>
-          <div className="space-y-4">
-            <div className="h-6 bg-gray-200 rounded" />
-            <div className="h-20 bg-gray-200 rounded" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading || !data) return <SkeletonTabs />;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)] p-4 md:p-6">
@@ -76,7 +54,14 @@ export function PageDetailsPage() {
         data={data}
       />
 
-      <PageEditor isOpen={editorView} onClose={() => setEditorView(false)} />
+      <PageEditor
+        isOpen={editorView}
+        onClose={() => setEditorView(false)}
+        onSave={handleSave}
+        blocks={
+          (data?.translations[activeLang]?.blocks || [{}]) as PartialBlock[]
+        }
+      />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <LanguageTabs
