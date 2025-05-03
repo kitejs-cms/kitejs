@@ -49,5 +49,6 @@ export class PageTranslationDto implements PageTranslationModel {
 
   constructor(partial: Partial<PageTranslationDto>) {
     Object.assign(this, partial);
+    partial.blocks = partial.blocks.map((item) => new PageBlockDto(item));
   }
 }

@@ -10,7 +10,6 @@ import { LanguageTabs } from "../components/language-tabs";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { usePageDetails } from "../hooks/use-page-details";
 import { PageEditor } from "../components/page-editor";
-import { PartialBlock } from "@blocknote/core";
 import { SkeletonTabs } from "../components/skeleton-tabs";
 
 export function PageDetailsPage() {
@@ -55,12 +54,11 @@ export function PageDetailsPage() {
       />
 
       <PageEditor
+        activeLang={activeLang}
         isOpen={editorView}
         onClose={() => setEditorView(false)}
         onSave={handleSave}
-        blocks={
-          (data?.translations[activeLang]?.blocks || [{}]) as PartialBlock[]
-        }
+        blocks={data?.translations[activeLang]?.blocks}
       />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -109,7 +107,7 @@ export function PageDetailsPage() {
         <Button variant="outline" onClick={() => handleNavigation("/pages")}>
           {t("buttons.cancel")}
         </Button>
-        <Button onClick={handleSave} disabled={!hasChanges}>
+        <Button onClick={() => handleSave()} disabled={!hasChanges}>
           {t("buttons.save")}
         </Button>
       </div>

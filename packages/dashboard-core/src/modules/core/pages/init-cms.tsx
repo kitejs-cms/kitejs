@@ -362,11 +362,8 @@ export function InitCmsPage() {
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {languages.map((language) => (
-                                    <SelectItem
-                                      key={language.code}
-                                      value={language.code}
-                                    >
+                                  {languages.map((language, key) => (
+                                    <SelectItem key={key} value={language.code}>
                                       {language.name}
                                     </SelectItem>
                                   ))}

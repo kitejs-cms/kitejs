@@ -19,6 +19,6 @@ export class SlugRegistry extends Document {
 export const SlugRegistrySchema = SchemaFactory.createForClass(SlugRegistry);
 
 SlugRegistrySchema.index(
-  { slug: 1, namespace: 1, language: 1 },
+  { slug: 1, namespace: 1, language: 1, entityId: 1 },
   { unique: true }
 );

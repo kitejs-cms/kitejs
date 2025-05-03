@@ -8,6 +8,7 @@ import { SlugRegistryService } from "../../slug-registry";
 import { User } from "../../users/schemas/user.schema";
 import { PageTranslationModel } from "../models/page-translation.model";
 import { JwtPayloadModel } from "../../auth/models/payload-jwt.model";
+import { ObjectIdUtils } from "../../../common";
 import {
   Injectable,
   BadRequestException,
@@ -53,7 +54,6 @@ export class PagesService {
   ): Promise<PageResponseDetailsModel> {
     try {
       const { id, language, ...restData } = pageData;
-
       const pageBaseData = {
         status: restData.status,
         tags: restData.tags,
@@ -77,9 +77,7 @@ export class PagesService {
           id,
           {
             ...pageBaseData,
-            $set: {
-              [`translations.${language}`]: translationData,
-            },
+            $set: { [`translations.${language}`]: translationData },
           },
           { new: true, upsert: false }
         );
@@ -87,6 +85,13 @@ export class PagesService {
         if (!page) {
           throw new NotFoundException(`Page with ID ${id} not found`);
         }
+
+        this.slugService.updateSlug(
+          restData.slug,
+          "page",
+          ObjectIdUtils.toObjectId(page.id),
+          language
+        );
       } else {
         page = await this.pageModel.create({
           ...pageBaseData,
@@ -96,10 +101,10 @@ export class PagesService {
           },
         });
 
-        await this.slugService.registerSlug(
+        const slug = await this.slugService.registerSlug(
           restData.slug,
           "page",
-          new Types.ObjectId(page.id),
+          ObjectIdUtils.toObjectId(page.id),
           language
         );
       }
@@ -115,7 +120,7 @@ export class PagesService {
 
   /**
    * Retrieves a full page document by its unique identifier (slug or _id).
-   * This method returns the complete page, including all translations.
+   * This method handles cases where slugs are managed externally.
    *
    * @param identify The unique identifier (slug or _id).
    * @returns The full page document, or null if not found.
@@ -123,11 +128,28 @@ export class PagesService {
    */
   async findPage(identify: string): Promise<Page | null> {
     try {
-      const isObjectId = Types.ObjectId.isValid(identify);
-      const query = isObjectId ? { _id: identify } : { slug: identify };
-      const page = await this.pageModel.findOne(query).exec();
+      let page: Page | null;
+
+      if (Types.ObjectId.isValid(identify)) {
+        // If the identifier is a valid ObjectId, query by _id
+        page = await this.pageModel.findById(identify).exec();
+      } else {
+        // Otherwise, resolve the slug and query by _id
+        const slugEntry = await this.slugService.findEntityBySlug(
+          identify,
+          "page"
+        );
+
+        if (!slugEntry) {
+          throw new NotFoundException(`No page found for slug: ${identify}`);
+        }
+
+        page = await this.pageModel.findById(slugEntry).exec();
+      }
+
       return page;
     } catch (error) {
+      this.logger.error(error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to fetch page. ${errorMessage}`);
@@ -162,7 +184,10 @@ export class PagesService {
     const pageData = page.toJSON();
 
     // Cast translations as a record keyed by language code
-    const translations = pageData.translations as Record<string, any>;
+    const translations = pageData.translations as Record<
+      string,
+      PageTranslationModel
+    >;
 
     // Attempt to get the requested translation
     let selectedTranslation = translations[language];
@@ -226,7 +251,7 @@ export class PagesService {
       const translationsWithSlug: Record<string, PageTranslationModel> = {};
       for (const [lang, trans] of Object.entries(json.translations)) {
         translationsWithSlug[lang] = {
-          ...(trans as PageTranslationModel),
+          ...(trans as unknown as PageTranslationModel),
           slug: slugMap[lang] ?? "",
         };
       }
@@ -282,7 +307,7 @@ export class PagesService {
         const translationsWithSlug: Record<string, PageTranslationModel> = {};
         for (const [lang, trans] of Object.entries(json.translations)) {
           translationsWithSlug[lang] = {
-            ...(trans as PageTranslationModel),
+            ...(trans as unknown as PageTranslationModel),
             slug: slugMap[lang] ?? "",
           };
         }

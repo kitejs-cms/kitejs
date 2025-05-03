@@ -81,8 +81,8 @@ export function NavMain({
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={t(subItem.title)}>
+                      {item.items?.map((subItem, key) => (
+                        <SidebarMenuSubItem key={key}>
                           <SidebarMenuSubButton
                             asChild
                             isActive={window.location.pathname === subItem.url}

@@ -19,3 +19,4 @@ export * from "./pipes/validate-object-id.pipe";
 /* Utils */
 export * from "./utils/parse-time-to-ms";
 export * from "./utils/database.module";
+export * from "./utils/objectId.class";

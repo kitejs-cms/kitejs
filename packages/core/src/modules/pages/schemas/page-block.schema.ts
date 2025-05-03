@@ -10,7 +10,7 @@ export class PageBlock {
   order: number;
 
   @Prop({ type: SchemaDb.Types.Mixed, required: true })
-  content: any;
+  content: Record<string, any>;
 
   @Prop({ type: SchemaDb.Types.Mixed, default: {} })
   settings?: Record<string, any>;

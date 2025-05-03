@@ -143,5 +143,15 @@ export class PageResponseDetailDto implements PageResponseDetailsModel {
 
   constructor(partial: Partial<PageResponseDetailDto>) {
     Object.assign(this, partial);
+
+    const translations = Object.keys(partial.translations).reduce(
+      (acc, key) => {
+        acc[key] = new PageTranslationDto(partial.translations[key]);
+        return acc;
+      },
+      {}
+    );
+
+    this.translations = translations;
   }
 }

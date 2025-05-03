@@ -98,9 +98,9 @@ export function PagesManagePage() {
     const extra = tags.length - maxShow;
     return (
       <div className="flex items-center gap-1">
-        {visible.map((tag) => (
+        {visible.map((tag, key) => (
           <Badge
-            key={tag}
+            key={key}
             variant="outline"
             className="border-gray-200 bg-gray-50 font-normal"
           >
@@ -185,7 +185,7 @@ export function PagesManagePage() {
             isLoading={loading}
             columns={[
               {
-                key: "translations",
+                key: "title" as never,
                 label: t("fields.title"),
                 render: (_, row) => renderTitle(row.translations),
               },

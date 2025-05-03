@@ -55,11 +55,16 @@ export class SlugRegistryService {
     namespace: string,
     language?: string
   ): Promise<Types.ObjectId | null> {
-    const record = await this.slugRegistryModel.findOne({
+    const query: Record<string, any> = {
       slug,
       namespace,
-      language,
-    });
+    };
+
+    if (language) {
+      query.language = language;
+    }
+
+    const record = await this.slugRegistryModel.findOne(query);
     return record?.entityId || null;
   }
 
@@ -72,14 +77,13 @@ export class SlugRegistryService {
    * @param language - Optional language code
    */
   async updateSlug(
-    oldSlug: string,
     newSlug: string,
     namespace: string,
     entityId: Types.ObjectId,
     language?: string
   ): Promise<void> {
     await this.slugRegistryModel.deleteMany({
-      slug: oldSlug,
+      entityId,
       namespace,
       language,
     });

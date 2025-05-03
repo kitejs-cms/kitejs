@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useApi } from "../../../hooks/use-api";
 import { toast } from "sonner";
 import type {
+  PageBlockModel,
   PageResponseDetailsModel,
   PageSeoModel,
   PageTranslationModel,
@@ -228,77 +229,83 @@ export function usePageDetails() {
     navigate(navigateTo);
   }, [navigate, navigateTo]);
 
-  const handleSave = useCallback(async () => {
-    if (!localData || !validateForm()) {
-      toast.error("Form non valido", {
-        description: "Controlla i campi obbligatori",
-      });
-      return;
-    }
-
-    const toastId = toast.loading("Salvataggio in corso...");
-
-    try {
-      const translation = localData.translations[activeLang];
-      if (!translation) {
-        toast.error("Traduzione mancante", {
-          description: `Lingua ${activeLang} non configurata`,
+  const handleSave = useCallback(
+    async (blocks?: PageBlockModel[]) => {
+      if (!localData || !validateForm()) {
+        toast.error("Form non valido", {
+          description: "Controlla i campi obbligatori",
         });
         return;
       }
 
-      const body: PageUpsertModel = {
-        id: id && id !== "create" ? localData.id : undefined,
-        tags: localData.tags,
-        status: localData.status,
-        publishAt: localData.publishAt,
-        expireAt: localData.expireAt,
-        slug: translation.slug,
-        language: activeLang,
-        title: translation.title,
-        description: translation.description,
-        blocks: translation.blocks,
-        seo: translation.seo,
-      };
+      const toastId = toast.loading("Salvataggio in corso...");
 
-      const result = await fetchData("pages", "POST", body);
-
-      if (result?.data) {
-        toast.success(id === "create" ? "Pagina creata" : "Pagina aggiornata", {
-          id: toastId,
-          description: `Titolo: ${translation.title}`,
-        });
-
-        setLocalData(result.data);
-        setHasChanges(false);
-        setFormErrors({});
-
-        if (id === "create") {
-          navigate(`/pages/${result.data.id}`);
+      try {
+        const translation = localData.translations[activeLang];
+        if (!translation) {
+          toast.error("Traduzione mancante", {
+            description: `Lingua ${activeLang} non configurata`,
+          });
+          return;
         }
-      } else {
+
+        const body: PageUpsertModel = {
+          id: id && id !== "create" ? localData.id : undefined,
+          tags: localData.tags,
+          status: localData.status,
+          publishAt: localData.publishAt,
+          expireAt: localData.expireAt,
+          slug: translation.slug,
+          language: activeLang,
+          title: translation.title,
+          description: translation.description,
+          blocks: blocks ?? translation.blocks,
+          seo: translation.seo,
+        };
+
+        const result = await fetchData("pages", "POST", body);
+
+        if (result?.data) {
+          toast.success(
+            id === "create" ? "Pagina creata" : "Pagina aggiornata",
+            {
+              id: toastId,
+              description: `Titolo: ${translation.title}`,
+            }
+          );
+
+          setLocalData(result.data);
+          setHasChanges(false);
+          setFormErrors({});
+
+          if (id === "create") {
+            navigate(`/pages/${result.data.id}`);
+          }
+        } else {
+          toast.error("Errore nel salvataggio", {
+            id: toastId,
+            description: "Nessun dato ricevuto dal server",
+          });
+        }
+      } catch (error) {
+        console.error("Save failed:", error);
         toast.error("Errore nel salvataggio", {
           id: toastId,
-          description: "Nessun dato ricevuto dal server",
+          description: t(
+            "errors.saveFailed",
+            "Failed to save page. Please try again."
+          ),
+        });
+        setFormErrors({
+          apiError: t(
+            "errors.saveFailed",
+            "Failed to save page. Please try again."
+          ),
         });
       }
-    } catch (error) {
-      console.error("Save failed:", error);
-      toast.error("Errore nel salvataggio", {
-        id: toastId,
-        description: t(
-          "errors.saveFailed",
-          "Failed to save page. Please try again."
-        ),
-      });
-      setFormErrors({
-        apiError: t(
-          "errors.saveFailed",
-          "Failed to save page. Please try again."
-        ),
-      });
-    }
-  }, [localData, activeLang, id, fetchData, navigate, t, validateForm]);
+    },
+    [localData, activeLang, id, fetchData, navigate, t, validateForm]
+  );
 
   const onAddLanguage = useCallback((lang: string) => {
     setLocalData((prev) => {

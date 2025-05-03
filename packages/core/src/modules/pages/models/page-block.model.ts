@@ -1,6 +1,8 @@
 export type PageBlockModel = {
+  id?: string;
   type: string;
-  order: number;
-  content?: unknown;
-  settings?: Record<string, any>;
+  children?: Omit<PageBlockModel, "children">[];
+  content?: Record<string, unknown>[];
+  props?: Record<string, unknown>;
+  style?: Record<string, unknown>;
 };

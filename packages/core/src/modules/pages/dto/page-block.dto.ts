@@ -1,39 +1,40 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsArray } from "class-validator";
 import { PageBlockModel } from "../models/page-block.model";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class PageBlockDto implements PageBlockModel {
-  @ApiProperty({
-    description: 'Block type (e.g., "text", "image", etc.)',
-    example: "text",
-  })
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  id?: string;
+
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   type: string;
 
-  @ApiProperty({
-    description: "The display order of the block",
-    example: 1,
-  })
-  @IsNumber()
-  order: number;
-
-  @ApiProperty({
-    description: "Content of the block (can be any type of data)",
-    example: "This is a sample text block content.",
-  })
+  @ApiProperty()
   @IsOptional()
-  content?: unknown;
+  @IsArray()
+  content?: Record<string, unknown>[];
 
-  @ApiProperty({
-    description: "Additional settings for the block",
-    example: { alignment: "center" },
-    required: false,
-  })
+  @ApiProperty()
   @IsOptional()
-  settings?: Record<string, any>;
+  props?: Record<string, any>;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsArray()
+  children?: PageBlockDto[];
 
   constructor(partial: Partial<PageBlockDto>) {
     Object.assign(this, partial);
+
+    if (partial && partial.content !== undefined) {
+      partial.content = partial.content.map((item) => ({
+        ...item,
+        styles: item.styles || {},
+      }));
+    }
   }
 }
