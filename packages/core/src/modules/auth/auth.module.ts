@@ -13,7 +13,7 @@ import { UsersModule } from "../users";
     SettingsModule,
     JwtModule.registerAsync({
       useFactory: async (config: ConfigService) => {
-        const secret = config.get<string>("SECRET");
+        const secret = config.get<string>("API_SECRET");
 
         if (!secret) {
           throw new Error(

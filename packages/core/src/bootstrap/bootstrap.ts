@@ -33,13 +33,14 @@ export async function bootstrap({
   const configService = app.get(ConfigService);
   const settingsService = app.get(SettingsService);
 
-  const port = configService.get<number>("PORT") || 3000;
+  const port = configService.get<number>("API_PORT") || 3000;
+  const cors = configService.get<string>("API_CORS").split(",") || [];
 
   app.use(cookieParser());
   await swaggerSetup(app, settingsService, port);
   await middlewareSetup(app);
   await staticSetup(app, settingsService);
-  securitySetup(app);
+  securitySetup(app, cors);
   validationSetup(app);
 
   await app.listen(port);
