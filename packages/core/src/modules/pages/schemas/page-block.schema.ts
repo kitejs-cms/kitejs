@@ -6,12 +6,15 @@ export class PageBlock {
   @Prop({ type: String, required: true })
   type: string;
 
-  @Prop({ type: Number, required: true })
-  order: number;
+  @Prop({ type: SchemaDb.Types.Mixed, required: false })
+  props?: Record<string, unknown>;
 
   @Prop({ type: SchemaDb.Types.Mixed, required: true })
-  content: Record<string, any>;
+  content: Record<string, unknown>;
 
   @Prop({ type: SchemaDb.Types.Mixed, default: {} })
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
+
+  @Prop({ type: SchemaDb.Types.Mixed, required: false })
+  children?: Record<string, unknown>;
 }

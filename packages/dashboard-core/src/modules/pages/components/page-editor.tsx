@@ -3,13 +3,23 @@ import { Button } from "../../../components/ui/button";
 import { XIcon } from "lucide-react";
 import { Badge } from "../../../components/ui/badge";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { SuggestionMenuController, useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteSchema, PartialBlock } from "@blocknote/core";
+import {
+  getDefaultReactSlashMenuItems,
+  SuggestionMenuController,
+  useCreateBlockNote,
+} from "@blocknote/react";
+import {
+  BlockNoteSchema,
+  combineByGroup,
+  filterSuggestionItems,
+  PartialBlock,
+} from "@blocknote/core";
 import "@blocknote/core/fonts/inter.css";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useApi } from "../../../hooks/use-api";
 import {
+  getMultiColumnSlashMenuItems,
   multiColumnDropCursor,
   locales as multiColumnLocales,
   withMultiColumn,
@@ -26,7 +36,7 @@ import {
 // @ts-ignore
 import * as locales from "@blocknote/core/locales";
 import type { PageBlockModel } from "@kitejs-cms/core/index";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   isOpen: boolean;
@@ -84,6 +94,17 @@ export function PageEditor({
     [internalBlocks, activeLang]
   );
 
+  const getSlashMenuItems = useMemo(() => {
+    return async (query: string) =>
+      filterSuggestionItems(
+        combineByGroup(
+          getDefaultReactSlashMenuItems(editor),
+          getMultiColumnSlashMenuItems(editor)
+        ),
+        query
+      );
+  }, [editor]);
+
   const onCloseHandler = () => {
     onClose();
   };
@@ -127,7 +148,10 @@ export function PageEditor({
                       slashMenu={false}
                       className="h-full"
                     >
-                      <SuggestionMenuController triggerCharacter="/" />
+                      <SuggestionMenuController
+                        triggerCharacter="/"
+                        getItems={getSlashMenuItems}
+                      />
                     </BlockNoteView>
                   )}
                 </div>

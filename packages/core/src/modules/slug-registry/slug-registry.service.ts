@@ -24,11 +24,11 @@ export class SlugRegistryService {
     entityId: Types.ObjectId,
     language?: string
   ): Promise<void> {
-    const existing = await this.slugRegistryModel.findOne({
-      slug,
-      namespace,
-      language,
-    });
+    const filter = { slug, namespace, language };
+    const update = { $set: { entityId } };
+    const options = { upsert: true, new: true };
+
+    const existing = await this.slugRegistryModel.findOne(filter);
 
     if (existing && !existing.entityId.equals(entityId)) {
       throw new Error(
@@ -36,11 +36,7 @@ export class SlugRegistryService {
       );
     }
 
-    await this.slugRegistryModel.findOneAndUpdate(
-      { slug, namespace, language },
-      { $set: { entityId } },
-      { upsert: true, new: true }
-    );
+    await this.slugRegistryModel.findOneAndUpdate(filter, update, options);
   }
 
   /**
@@ -66,28 +62,6 @@ export class SlugRegistryService {
 
     const record = await this.slugRegistryModel.findOne(query);
     return record?.entityId || null;
-  }
-
-  /**
-   * Updates an existing slug to a new value
-   * @param oldSlug - The current slug value
-   * @param newSlug - The desired new slug value
-   * @param namespace - The namespace of the slug
-   * @param entityId - The associated entity ID
-   * @param language - Optional language code
-   */
-  async updateSlug(
-    newSlug: string,
-    namespace: string,
-    entityId: Types.ObjectId,
-    language?: string
-  ): Promise<void> {
-    await this.slugRegistryModel.deleteMany({
-      entityId,
-      namespace,
-      language,
-    });
-    await this.registerSlug(newSlug, namespace, entityId, language);
   }
 
   /**

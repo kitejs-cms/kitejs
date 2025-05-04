@@ -36,5 +36,13 @@ export class PageBlockDto implements PageBlockModel {
         styles: item.styles || {},
       }));
     }
+
+    if (partial && partial.props === undefined) {
+      partial.props = {};
+    }
+
+    if (partial && partial.children) {
+      partial.children = partial.children.map((item) => new PageBlockDto(item));
+    }
   }
 }

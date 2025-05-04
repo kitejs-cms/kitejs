@@ -86,7 +86,7 @@ export class PagesService {
           throw new NotFoundException(`Page with ID ${id} not found`);
         }
 
-        this.slugService.updateSlug(
+        await this.slugService.registerSlug(
           restData.slug,
           "page",
           ObjectIdUtils.toObjectId(page.id),
@@ -101,7 +101,7 @@ export class PagesService {
           },
         });
 
-        const slug = await this.slugService.registerSlug(
+        await this.slugService.registerSlug(
           restData.slug,
           "page",
           ObjectIdUtils.toObjectId(page.id),
