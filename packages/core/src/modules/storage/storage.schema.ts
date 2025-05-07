@@ -1,9 +1,14 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
+import { CORE_NAMESPACE } from "../../constants";
 
 export type StorageDocument = Storage & Document;
 
-@Schema({ timestamps: true, toJSON: { getters: true } })
+@Schema({
+  collection: `${CORE_NAMESPACE}_storages`,
+  timestamps: true,
+  toJSON: { getters: true },
+})
 export class Storage extends Document {
   @Prop({ type: String, required: true })
   fileName: string;

@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaDb, Types } from "mongoose";
 import { Page, PageSchema } from "./page.schema";
+import { CORE_NAMESPACE } from "../../../constants";
 
-@Schema({ timestamps: true })
+@Schema({ collection: `${CORE_NAMESPACE}_pagerevisions`, timestamps: true })
 export class PageRevision extends Document {
   @Prop({ type: SchemaDb.ObjectId, ref: "Page", required: true })
   pageId: Types.ObjectId;

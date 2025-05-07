@@ -13,3 +13,10 @@ export * from "./services/pages.service";
 
 /* Module */
 export * from "./pages.module";
+
+/* Schemas */
+export * from "./schemas/page-block.schema";
+export * from "./schemas/page-revision.schema";
+export * from "./schemas/page-seo.schema";
+export * from "./schemas/page-translation.schema";
+export * from "./schemas/page.schema";

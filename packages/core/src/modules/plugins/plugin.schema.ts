@@ -1,10 +1,15 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 import { PluginStatus } from "./models/plugin-response.model";
+import { CORE_NAMESPACE } from "../../constants";
 
 export type PluginDocument = Plugin & Document;
 
-@Schema({ timestamps: true, toJSON: { getters: true } })
+@Schema({
+  collection: `${CORE_NAMESPACE}_plugins`,
+  timestamps: true,
+  toJSON: { getters: true },
+})
 export class Plugin {
   @Prop({ type: String, required: true, unique: true, index: true })
   namespace: string;

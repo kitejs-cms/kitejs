@@ -1,8 +1,13 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types, Schema as SchemaDb } from 'mongoose';
-import { UserStatus } from '../models/user-status.enum';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document, Types, Schema as SchemaDb } from "mongoose";
+import { UserStatus } from "../models/user-status.enum";
+import { CORE_NAMESPACE } from "../../../constants";
 
-@Schema({ timestamps: true, toJSON: { getters: true } })
+@Schema({
+  collection: `${CORE_NAMESPACE}_users`,
+  timestamps: true,
+  toJSON: { getters: true },
+})
 export class User extends Document {
   @Prop({ type: String, required: true, unique: true })
   email: string;
@@ -27,13 +32,13 @@ export class User extends Document {
   deletedAt: Date;
 
   @Prop({
-    type: [{ type: SchemaDb.ObjectId, ref: 'Role' }],
+    type: [{ type: SchemaDb.ObjectId, ref: "Role" }],
     default: [],
   })
   roles: Types.ObjectId[];
 
   @Prop({
-    type: [{ type: SchemaDb.ObjectId, ref: 'Permission' }],
+    type: [{ type: SchemaDb.ObjectId, ref: "Permission" }],
     default: [],
   })
   permissions: Types.ObjectId[];

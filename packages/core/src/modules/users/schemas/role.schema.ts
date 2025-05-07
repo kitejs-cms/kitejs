@@ -1,7 +1,12 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types, Schema as SchemaDb } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document, Types, Schema as SchemaDb } from "mongoose";
+import { CORE_NAMESPACE } from "../../../constants";
 
-@Schema({ timestamps: true, toJSON: { getters: true } })
+@Schema({
+  collection: `${CORE_NAMESPACE}_roles`,
+  timestamps: true,
+  toJSON: { getters: true },
+})
 export class Role extends Document {
   @Prop({ type: String, required: true, unique: true })
   name: string;
@@ -10,7 +15,7 @@ export class Role extends Document {
   description: string;
 
   @Prop({
-    type: [{ type: SchemaDb.ObjectId, ref: 'Permission' }],
+    type: [{ type: SchemaDb.ObjectId, ref: "Permission" }],
     default: [],
   })
   permissions: Types.ObjectId[];

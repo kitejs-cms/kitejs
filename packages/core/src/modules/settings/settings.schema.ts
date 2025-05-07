@@ -1,10 +1,15 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { SettingType } from './models/setting-type.enum';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
+import { SettingType } from "./models/setting-type.enum";
+import { CORE_NAMESPACE } from "../../constants";
 
 export type SettingDocument = Setting & Document;
 
-@Schema({ timestamps: true, toJSON: { getters: true } })
+@Schema({
+  collection: `${CORE_NAMESPACE}_settings`,
+  timestamps: true,
+  toJSON: { getters: true },
+})
 export class Setting<T = Record<string, unknown>> {
   @Prop({ type: String, required: true })
   key: string;

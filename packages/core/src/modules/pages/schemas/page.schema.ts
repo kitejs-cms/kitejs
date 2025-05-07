@@ -1,12 +1,17 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaDb, Types } from "mongoose";
 import { PageStatus } from "../models/page-status.enum";
+import { CORE_NAMESPACE } from "../../../constants";
 import {
   PageTranslation,
   PageTranslationSchema,
 } from "./page-translation.schema";
 
-@Schema({ timestamps: true, toJSON: { getters: true } })
+@Schema({
+  collection: `${CORE_NAMESPACE}_pages`,
+  timestamps: true,
+  toJSON: { getters: true },
+})
 export class Page extends Document {
   @Prop({ type: SchemaDb.ObjectId, ref: "User", required: true })
   createdBy: Types.ObjectId;
