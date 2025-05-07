@@ -9,6 +9,7 @@ import { User } from "../../users/schemas/user.schema";
 import { PageTranslationModel } from "../models/page-translation.model";
 import { JwtPayloadModel } from "../../auth/models/payload-jwt.model";
 import { ObjectIdUtils } from "../../../common";
+import { CORE_NAMESPACE } from "../../../constants";
 import {
   Injectable,
   BadRequestException,
@@ -19,6 +20,7 @@ import {
 @Injectable()
 export class PagesService {
   private readonly logger = new Logger(PagesService.name);
+  private readonly slugNamespace = `${CORE_NAMESPACE}:pages`;
 
   constructor(
     @InjectModel(Page.name) private readonly pageModel: Model<Page>,
@@ -88,7 +90,7 @@ export class PagesService {
 
         await this.slugService.registerSlug(
           restData.slug,
-          "page",
+          this.slugNamespace,
           ObjectIdUtils.toObjectId(page.id),
           language
         );
@@ -103,7 +105,7 @@ export class PagesService {
 
         await this.slugService.registerSlug(
           restData.slug,
-          "page",
+          this.slugNamespace,
           ObjectIdUtils.toObjectId(page.id),
           language
         );
@@ -137,7 +139,7 @@ export class PagesService {
         // Otherwise, resolve the slug and query by _id
         const slugEntry = await this.slugService.findEntityBySlug(
           identify,
-          "page"
+          this.slugNamespace
         );
 
         if (!slugEntry) {

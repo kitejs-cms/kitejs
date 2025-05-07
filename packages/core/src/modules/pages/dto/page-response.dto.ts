@@ -35,9 +35,8 @@ export class PageResponseDto implements PageResponseModel {
     example: ["news", "sports"],
     required: false,
   })
-  @IsOptional()
   @IsArray()
-  tags?: string[];
+  tags: string[];
 
   @ApiProperty({
     description: "Publish date of the page (ISO string)",

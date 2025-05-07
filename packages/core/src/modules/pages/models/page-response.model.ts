@@ -5,7 +5,7 @@ import { PageStatus } from "./page-status.enum";
 export type PageResponseModel = {
   slug: string;
   status: PageStatus;
-  tags?: string[];
+  tags: string[];
   publishAt?: string;
   title: string;
   description: string;
