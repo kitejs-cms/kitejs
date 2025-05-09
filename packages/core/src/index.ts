@@ -12,6 +12,7 @@ export * from "./modules/users";
 export * from "./modules/storage";
 export * from "./modules/pages";
 export * from "./modules/slug-registry";
+export * from "./modules/auth";
 
 /* Constants */
 export * from "./constants";

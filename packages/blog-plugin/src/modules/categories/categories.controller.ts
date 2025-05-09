@@ -1,12 +1,12 @@
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { CategoriesService } from "./categories.service";
-import { JwtAuthGuard } from "@kitejs-cms/core/modules/auth/guards/jwt-auth.guard";
 import { CategoryResponseDto } from "./dto/category-response.dto";
 import { CategoryUpsertDto } from "./dto/category-upsert.dto";
-import { JwtPayloadModel } from "@kitejs-cms/core/modules/auth/models/payload-jwt.model";
 import { CategoryResponseDetailDto } from "./dto/category-response-detail.dto";
 import {
   GetAuthUser,
+  JwtAuthGuard,
+  JwtPayloadModel,
   PaginationModel,
   ValidateObjectIdPipe,
 } from "@kitejs-cms/core/index";

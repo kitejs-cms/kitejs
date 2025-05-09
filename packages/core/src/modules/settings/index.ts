@@ -8,6 +8,10 @@ export * from "./models/init-cms.model";
 export * from "./models/cms-settings.model";
 export * from "./models/storage-settings.model";
 
+/* Dto */
+export * from "./dto/init-cms.dto";
+export * from "./dto/setting-response.dto";
+
 /* Services */
 export * from "./settings.service";
 

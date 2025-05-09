@@ -1,7 +1,8 @@
 import { Module } from "@nestjs/common";
-import { CategoriesModule } from "./modules/categories/categories.module";
+import { CategoriesModule } from "./modules/categories";
+import { PostsModule } from "./modules/posts";
 
 @Module({
-  imports: [CategoriesModule],
+  imports: [CategoriesModule, PostsModule],
 })
 export class BlogPluginModule {}
