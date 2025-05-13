@@ -1,12 +1,13 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaDb, Types } from "mongoose";
+import { CORE_NAMESPACE } from "../../../constants";
 import {
   CategoryTranslation,
   CategoryTranslationSchema,
 } from "./category-translation.schema";
 
 @Schema({
-  collection: "blog-plugin_categories",
+  collection: `${CORE_NAMESPACE}_categories`,
   timestamps: true,
   toJSON: { getters: true },
 })

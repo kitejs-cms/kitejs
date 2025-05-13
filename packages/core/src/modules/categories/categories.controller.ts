@@ -1,15 +1,10 @@
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
-import { CategoriesService } from "./categories.service";
+import { GetAuthUser, PaginationModel, ValidateObjectIdPipe } from "../../common";
 import { CategoryResponseDto } from "./dto/category-response.dto";
 import { CategoryUpsertDto } from "./dto/category-upsert.dto";
 import { CategoryResponseDetailDto } from "./dto/category-response-detail.dto";
-import {
-  GetAuthUser,
-  JwtAuthGuard,
-  JwtPayloadModel,
-  PaginationModel,
-  ValidateObjectIdPipe,
-} from "@kitejs-cms/core/index";
+import { JwtAuthGuard, JwtPayloadModel } from "../../modules/auth";
+import { CategoriesService } from "./categories.service";
 import {
   Controller,
   Get,
@@ -48,6 +43,7 @@ export class CategoriesController {
       upsertCategoryDto,
       user
     );
+    
     return new CategoryResponseDetailDto(category);
   }
 
@@ -58,8 +54,7 @@ export class CategoriesController {
     description: "Total number of categories",
     type: Number,
   })
-  @ApiQuery({ name: "category", required: true, type: Number })
-  @ApiQuery({ name: "itemsPerCategory", required: true, type: Number })
+  @ApiQuery({ name: "itemsPerPage", required: true, type: Number })
   @ApiResponse({
     status: 200,
     description: "List of categories",
@@ -67,20 +62,20 @@ export class CategoriesController {
   })
   async getAllCategories(
     @Query("page", ParseIntPipe) page: number,
-    @Query("itemsPerCategory", ParseIntPipe) itemsPerCategory: number
+    @Query("itemsPerPage", ParseIntPipe) itemsPerPage: number
   ) {
     try {
       const totalItems = await this.categoriesService.countCategories();
       const data = await this.categoriesService.findCategories(
         page,
-        itemsPerCategory
+        itemsPerPage
       );
 
       const pagination: PaginationModel = {
         totalItems,
         currentPage: page,
-        totalPages: Math.ceil(totalItems / itemsPerCategory),
-        pageSize: itemsPerCategory,
+        totalPages: Math.ceil(totalItems / itemsPerPage),
+        pageSize: itemsPerPage,
       };
 
       return {

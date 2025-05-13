@@ -1,0 +1,41 @@
+{
+  "menu": {
+    "posts": "Articoli",
+    "categories": "Categorie"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "categories": "Categorie"
+  },
+  "title": {
+    "managePages": "Gestisci Categorie"
+  },
+  "search": {
+    "placeholder": "Cerca categorie..."
+  },
+  "sections": {
+    "details": "Dettagli",
+    "settings": "Impostazioni"
+  },
+  "fields": {
+    "slug": "Slug",
+    "languages": "Lingua",
+    "title": "Titolo",
+    "description": "Descrizione",
+    "tags": "Tag",
+    "createdAt": "Creato il",
+    "createdBy": "Creato da",
+    "updatedBy": "Modificato da",
+    "isActive": "Publicato",
+    "actions": "Azioni"
+  },
+  "buttons": {
+    "viewJson": "Visualizza JSON",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "add": "Aggiungi Categoria",
+    "copy": "Copia",
+    "download": "Scarica",
+    "edit": "Modifica"
+  }
+}

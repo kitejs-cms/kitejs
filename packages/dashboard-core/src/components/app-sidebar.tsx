@@ -1,4 +1,6 @@
 import * as React from "react";
+import { SidebarMenuItemModel as ItemModule } from "../models/module.model";
+import { useAuthContext } from "../context/auth-context";
 import { Command, LayoutDashboard } from "lucide-react";
 import { NavMain } from "../components/nav-main";
 import { NavUser } from "../components/nav-user";
@@ -11,8 +13,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "../components/ui/sidebar";
-import { useAuthContext } from "../context/auth-context";
-import { SidebarMenuItem as ItemModule } from "../models/module.model";
 
 export function AppSidebar({
   items = [],

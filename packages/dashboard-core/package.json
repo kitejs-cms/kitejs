@@ -39,7 +39,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@kitejs-cms/eslint-config": "workspace:^",
+    "@kitejs-cms/eslint-config": "workspace:*",
     "@kitejs-cms/tailwind-config": "workspace:*",
     "@kitejs-cms/typescript-config": "workspace:*",
     "@kitejs-cms/core": "workspace:*",
@@ -94,9 +94,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "editorjs-drag-drop": "^1.1.16",
-    "editorjs-header-with-alignment": "^1.0.1",
-    "editorjs-table": "^1.4.10",
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.4",
     "locales": "link:@blocknote/core/locales",

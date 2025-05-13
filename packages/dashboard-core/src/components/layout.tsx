@@ -3,7 +3,7 @@ import { Separator } from "@radix-ui/react-separator";
 import { AppSidebar } from "./app-sidebar";
 import { Outlet } from "react-router-dom";
 import { useBreadcrumb } from "../context/breadcrumb-context";
-import { SidebarMenuItem } from "../models/module.model";
+import { SidebarMenuItemModel } from "../models/module.model";
 import { useState } from "react";
 import { SettingsModal } from "./settings-modal";
 import { StorageExplorer } from "../modules/core/components/storage-explorer/storage-explorer";
@@ -17,7 +17,7 @@ import {
   BreadcrumbPage,
 } from "./ui/breadcrumb";
 
-export function Layout({ menuItems }: { menuItems: SidebarMenuItem[] }) {
+export function Layout({ menuItems }: { menuItems: SidebarMenuItemModel[] }) {
   const [settingsModal, setSettingsModal] = useState(false);
   const { breadcrumb } = useBreadcrumb();
 
@@ -36,16 +36,21 @@ export function Layout({ menuItems }: { menuItems: SidebarMenuItem[] }) {
             <Breadcrumb>
               <BreadcrumbList>
                 {breadcrumb.map((item, index) => (
-                  <BreadcrumbItem key={item.path}>
+                  <BreadcrumbItem
+                    key={item.path}
+                    className="max-w-[140px] truncate"
+                  >
                     {index < breadcrumb.length - 1 ? (
                       <>
-                        <BreadcrumbLink href={item.path}>
+                        <BreadcrumbLink href={item.path} className="truncate">
                           {item.label}
                         </BreadcrumbLink>
                         <BreadcrumbSeparator />
                       </>
                     ) : (
-                      <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                      <BreadcrumbPage className="truncate">
+                        {item.label}
+                      </BreadcrumbPage>
                     )}
                   </BreadcrumbItem>
                 ))}

@@ -9,7 +9,7 @@ import { useClipboardTable } from "../../../hooks/use-clipboard-table";
 import { Separator } from "../../../components/ui/separator";
 import { DataTable } from "../../../components/data-table";
 import { useApi } from "../../../hooks/use-api";
-import type { PageResponseDetailsModel } from "@kitejs-cms/core/index";
+import type { CategoryResponseDetailsModel, PageResponseDetailsModel } from "@kitejs-cms/core/index";
 import {
   Card,
   CardContent,
@@ -32,15 +32,15 @@ import {
   Plus,
   LayoutTemplate,
 } from "lucide-react";
-import { StatusBadge } from "../components/status-badge";
-import { LanguagesBadge } from "../components/languages-badge";
+import { LanguagesBadge } from "../../pages/components/languages-badge";
 
-export function PagesManagePage() {
+
+export function CategoriesManagePage() {
   const { setBreadcrumb } = useBreadcrumb();
   const { copyTable } = useClipboardTable();
   const [showSearch, setShowSearch] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { t, i18n } = useTranslation("pages");
+  const { t, i18n } = useTranslation("posts");
   const navigate = useNavigate();
 
   const itemsPerPage = 10;
@@ -48,12 +48,12 @@ export function PagesManagePage() {
   const searchQuery = searchParams.get("search") || "";
 
   const { data, loading, fetchData, pagination } =
-    useApi<PageResponseDetailsModel[]>();
+    useApi<CategoryResponseDetailsModel[]>();
 
   useEffect(() => {
     setBreadcrumb([
       { label: t("breadcrumb.home"), path: "/" },
-      { label: t("breadcrumb.pages"), path: "/pages" },
+      { label: t("breadcrumb.categories"), path: "/categories" },
     ]);
   }, [setBreadcrumb, t]);
 
@@ -64,8 +64,7 @@ export function PagesManagePage() {
     setSearchParams(params, { replace: true });
 
     fetchData(
-      `pages?page=${currentPage}&itemsPerPage=${itemsPerPage}${searchQuery ? `&search=${searchQuery}` : ""
-      }`
+      `categories?page=${currentPage}&itemsPerPage=${itemsPerPage}`
     );
   }, [fetchData, currentPage, searchQuery, setSearchParams]);
 
@@ -158,7 +157,7 @@ export function PagesManagePage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate("/pages/create")}>
+                  <DropdownMenuItem onClick={() => navigate("/categories/create")}>
                     <Plus className="mr-2 h-4 w-4" />
                     {t("buttons.add")}
                   </DropdownMenuItem>
@@ -179,7 +178,7 @@ export function PagesManagePage() {
         </CardHeader>
         <Separator />
         <CardContent className="p-0 text-sm">
-          <DataTable<PageResponseDetailsModel>
+          <DataTable<CategoryResponseDetailsModel>
             data={data}
             isLoading={loading}
             columns={[
@@ -187,11 +186,6 @@ export function PagesManagePage() {
                 key: "title" as never,
                 label: t("fields.title"),
                 render: (_, row) => renderTitle(row.translations),
-              },
-              {
-                key: "status",
-                label: t("fields.status"),
-                render: (v) => StatusBadge(v as string),
               },
               {
                 key: "translations",
@@ -204,8 +198,8 @@ export function PagesManagePage() {
                 render: (_, row) => renderTags(row.tags || []),
               },
               {
-                key: "publishAt",
-                label: t("fields.publishAt"),
+                key: "createdAt",
+                label: t("fields.createdAt"),
                 render: (v) =>
                   new Intl.DateTimeFormat("it-IT", {
                     dateStyle: "medium",
@@ -230,16 +224,7 @@ export function PagesManagePage() {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/pages/${row.id}?view=editor`);
-                        }}
-                      >
-                        <LayoutTemplate className="mr-2 h-4 w-4" />
-                        {t("buttons.editVisual")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/pages/${row.id}`);
+                          navigate(`/categories/${row.id}`);
                         }}
                       >
                         <Edit className="mr-2 h-4 w-4" />
@@ -248,7 +233,7 @@ export function PagesManagePage() {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/pages/${row.id}?view=json`);
+                          navigate(`/categories/${row.id}?view=json`);
                         }}
                       >
                         <Code className="mr-2 h-4 w-4" />
@@ -263,13 +248,13 @@ export function PagesManagePage() {
               currentPage: pagination?.currentPage,
               totalPages: pagination?.totalPages,
               onPageChange: (page) => {
-                fetchData(`pages?page=${page}&itemsPerPage=${itemsPerPage}`);
+                fetchData(`categories?page=${page}&itemsPerPage=${itemsPerPage}`);
                 const params = new URLSearchParams(searchParams);
                 params.set("page", page.toString());
                 setSearchParams(params);
               },
             }}
-            onRowClick={(row) => navigate(`/pages/${row.id}`)}
+            onRowClick={(row) => navigate(`/categories/${row.id}`)}
           />
         </CardContent>
       </Card>

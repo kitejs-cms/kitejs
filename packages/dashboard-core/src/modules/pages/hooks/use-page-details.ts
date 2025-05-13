@@ -11,6 +11,7 @@ import type {
   PageTranslationModel,
   PageUpsertModel,
 } from "@kitejs-cms/core/index";
+import { useBreadcrumb } from "../../../context/breadcrumb-context";
 
 export interface FormErrors {
   title?: string;
@@ -23,6 +24,8 @@ export function usePageDetails() {
   const { t } = useTranslation("pages");
   const navigate = useNavigate();
   const { cmsSettings } = useSettingsContext();
+  const { setBreadcrumb } = useBreadcrumb();
+
   const defaultLang = useMemo(
     () => cmsSettings?.defaultLanguage || "",
     [cmsSettings]
@@ -39,6 +42,21 @@ export function usePageDetails() {
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
   const [navigateTo, setNavigateTo] = useState("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+
+  useEffect(() => {
+    const items = [
+      { label: t("breadcrumb.home"), path: "/" },
+      { label: t("breadcrumb.pages"), path: "/pages" },
+    ];
+
+    if (id && localData && localData?.translations[activeLang]?.slug)
+      items.push({
+        label: localData.translations[activeLang].slug,
+        path: `/pages/${localData.id}`,
+      });
+
+    setBreadcrumb(items);
+  }, [activeLang, id, localData, setBreadcrumb, t]);
 
   useEffect(() => {
     if (!defaultLang) return;

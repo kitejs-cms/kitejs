@@ -2,27 +2,27 @@ import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
 import { SettingsModel } from "./settings.model";
 
-export interface ModuleRoute {
+export interface ModuleRouteModel {
   path: string;
   element: ReactNode;
   label: string;
   icon?: ReactNode;
-  children?: ModuleRoute[];
+  children?: ModuleRouteModel[];
 }
 
-export interface SidebarMenuItem {
+export interface SidebarMenuItemModel {
   title: string;
   url?: string;
   icon: LucideIcon;
-  items?: Omit<SidebarMenuItem, "items">[];
+  items?: Omit<SidebarMenuItemModel, "items">[];
 }
 
 export interface DashboardModule {
   key: string;
   name: string;
-  routes: ModuleRoute[];
+  routes: ModuleRouteModel[];
   settings?: SettingsModel;
-  menuItem?: SidebarMenuItem;
+  menuItem?: SidebarMenuItemModel;
   translations?: {
     [lang: string]: { [key: string]: string } | unknown;
   };

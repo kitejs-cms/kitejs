@@ -7,7 +7,7 @@ import { PageDetailsPage } from "./pages/pages-details";
 import it from "./locales/it.json";
 import en from "./locales/en.json";
 
-export const PageBuilderModule: DashboardModule = {
+export const PageModule: DashboardModule = {
   name: "pages",
   key: "pages",
   translations: { it, en },

@@ -13,6 +13,9 @@ import {
   toJSON: { getters: true },
 })
 export class Page extends Document {
+  @Prop({ type: String, default: "Page" })
+  type: string;
+
   @Prop({ type: SchemaDb.ObjectId, ref: "User", required: true })
   createdBy: Types.ObjectId;
 
@@ -33,6 +36,13 @@ export class Page extends Document {
 
   @Prop({ type: Map, of: PageTranslationSchema, required: true, default: {} })
   translations: Map<string, PageTranslation>;
+
+  @Prop({
+    type: [{ type: SchemaDb.ObjectId, ref: "Category" }],
+    required: false,
+    default: [],
+  })
+  categories?: Types.ObjectId[];
 }
 
 export const PageSchema = SchemaFactory.createForClass(Page);

@@ -1,30 +1,31 @@
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { ObjectIdUtils, SlugRegistryService } from "@kitejs-cms/core/index";
 import { Category } from "./schemas/categories.schema";
-import { JwtPayloadModel } from "@kitejs-cms/core/modules/auth/models/payload-jwt.model";
 import { CategoryTranslationModel } from "./models/category-translation.model";
 import { CategoryResponseDetailsModel } from "./models/category-response-details.model";
-import { User } from "@kitejs-cms/core/modules/users/schemas/user.schema";
 import { CategoryUpsertDto } from "./dto/category-upsert.dto";
 import { CategoryResponseDto } from "./dto/category-response.dto";
-import { BLOG_NAMESPACE } from "../../constants";
 import {
   Injectable,
   BadRequestException,
   NotFoundException,
   Logger,
 } from "@nestjs/common";
+import { CORE_NAMESPACE } from "../../constants";
+import { SlugRegistryService } from "../../modules/slug-registry";
+import { JwtPayloadModel } from "../../modules/auth";
+import { ObjectIdUtils } from "../../common";
+import { User } from "../../modules/users";
 
 @Injectable()
 export class CategoriesService {
   private readonly logger = new Logger(CategoriesService.name);
-  private readonly slugNamespace = `${BLOG_NAMESPACE}:categories`;
+  private readonly slugNamespace = `${CORE_NAMESPACE}:categories`;
 
   constructor(
     @InjectModel(Category.name) private readonly categoryModel: Model<Category>,
     private readonly slugService: SlugRegistryService
-  ) {}
+  ) { }
 
   /**
    * Counts the total number of categories (optional: you can pass filters in the future).
@@ -60,6 +61,7 @@ export class CategoriesService {
       const categoryBaseData = {
         tags: restData.tags,
         updatedBy: user.sub,
+        isActive: restData.isActive
       };
 
       const translationData = {
@@ -199,7 +201,7 @@ export class CategoriesService {
     if (!selectedTranslation) {
       throw new NotFoundException(
         `Translation not found for language: ${language}` +
-          (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
+        (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
       );
     }
 

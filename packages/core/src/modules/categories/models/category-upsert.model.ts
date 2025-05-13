@@ -5,4 +5,5 @@ export type CategoryUpsertModel = {
   tags: string[];
   title: string;
   description: string;
+  isActive: boolean
 };

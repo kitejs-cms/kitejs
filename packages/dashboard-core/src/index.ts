@@ -24,6 +24,7 @@ export * from "./components/ui/tabs";
 export * from "./components/ui/calendar";
 export * from "./components/tag-input";
 export * from "./components/html-editor/html-editor";
+export * from "./components/skeleton-page"
 
 /* Provider */
 export * from "./dashboard-provider";
@@ -35,6 +36,7 @@ export * from "./components/color-picker";
 /* Models */
 export * from "./models/menu-item.model";
 export * from "./models/settings.model";
+export * from "./models/module.model";
 
 /* Hooks */
 export * from "./hooks/use-api";

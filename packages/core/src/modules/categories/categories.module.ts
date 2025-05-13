@@ -1,9 +1,9 @@
-import { SlugRegistryModule } from "@kitejs-cms/core/index";
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Category, CategorySchema } from "./schemas/categories.schema";
 import { CategoriesService } from "./categories.service";
 import { CategoriesController } from "./categories.controller";
+import { SlugRegistryModule } from "../../modules/slug-registry";
 
 @Module({
   imports: [

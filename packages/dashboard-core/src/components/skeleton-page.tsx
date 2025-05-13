@@ -1,4 +1,4 @@
-export function SkeletonTabs() {
+export function SkeletonPage() {
   return (
     <div className="p-6 space-y-6 animate-pulse">
       <div className="flex gap-2">

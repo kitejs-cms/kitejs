@@ -10,7 +10,7 @@ import { LanguageTabs } from "../components/language-tabs";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { usePageDetails } from "../hooks/use-page-details";
 import { PageEditor } from "../components/page-editor";
-import { SkeletonTabs } from "../components/skeleton-tabs";
+import { SkeletonPage } from "../../../components/skeleton-page";
 
 export function PageDetailsPage() {
   const { t } = useTranslation("pages");
@@ -43,7 +43,7 @@ export function PageDetailsPage() {
     if (searchParams.get("view") === "editor") setEditorView(true);
   }, [searchParams]);
 
-  if (loading || !data) return <SkeletonTabs />;
+  if (loading || !data) return <SkeletonPage />;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)] p-4 md:p-6">

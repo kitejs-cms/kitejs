@@ -10,7 +10,8 @@ import { DashboardModule } from "./models/module.model";
 import { UsersModule } from "./modules/users";
 import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";
-import { PageBuilderModule } from "./modules/pages";
+import { PageModule } from "./modules/pages";
+import { PostModule } from "./modules/posts";
 
 interface DashboardRouterProps {
   modules?: DashboardModule[];
@@ -20,7 +21,8 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
   const coreModules: DashboardModule[] = [
     UsersModule,
     ProfileModule,
-    PageBuilderModule,
+    PageModule,
+    PostModule
   ];
   const allModules = [...coreModules, ...modules];
 
@@ -61,7 +63,7 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
             <BreadcrumbProvider>
               <I18nextProvider i18n={i18n}>
                 <Routes>
-                  {/* Rotte core */}
+                  {/* Router core */}
                   {CoreModule.routes.map((route) => (
                     <Route
                       key={`core-${route.path}`}

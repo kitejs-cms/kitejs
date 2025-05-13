@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { CategoryUpsertModel } from "../models/category-upsert.model";
-import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CategoryUpsertDto implements CategoryUpsertModel {
   @ApiPropertyOptional({
@@ -54,6 +54,14 @@ export class CategoryUpsertDto implements CategoryUpsertModel {
   })
   @IsString()
   description: string;
+
+  @ApiProperty({
+    description: "Indicates whether the category is active",
+    example: "This is our main landing category",
+    required: true,
+  })
+  @IsBoolean()
+  isActive: boolean;
 
   constructor(partial: Partial<CategoryUpsertDto>) {
     Object.assign(this, partial);
