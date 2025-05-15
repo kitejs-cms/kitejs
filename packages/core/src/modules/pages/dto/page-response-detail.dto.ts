@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Exclude, Type } from "class-transformer";
 import { PageStatus } from "../models/page-status.enum";
 import { PageResponseDetailsModel } from "../models/page-response-details.model";
@@ -7,6 +7,7 @@ import { PageTranslationDto } from "./page-translation.dto";
 import { ObjectId } from "mongoose";
 import {
   IsArray,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -138,8 +139,21 @@ export class PageResponseDetailDto implements PageResponseDetailsModel {
   @IsNotEmpty()
   updatedAt: string;
 
+
+  @ApiProperty({
+    description: "Array of category IDs associated with the page",
+    example: ["60f7c0a2d3a8f009e6f0b7d2", "60f7c0a2d3a8f009e6f0b7d3"],
+    type: [String],
+  })
+  @IsArray()
+  @IsMongoId({ each: true })
+  categories: string[];
+
   @Exclude()
   _id: ObjectId;
+
+  @Exclude()
+  __v: number;
 
   constructor(partial: Partial<PageResponseDetailDto>) {
     Object.assign(this, partial);

@@ -2,6 +2,8 @@ import { Newspaper } from "lucide-react";
 import { DashboardModule } from "../../models/module.model";
 import { CategoriesManagePage } from "./pages/categories-manage";
 import { CategoryDetailsPage } from "./pages/category-details";
+import { PostDetailsPage } from "./pages/post-details";
+import { PostsManagePage } from "./pages/posts-manage";
 
 /* i18n */
 import it from "./locales/it.json";
@@ -21,6 +23,16 @@ export const PostModule: DashboardModule = {
       path: "categories/:id",
       element: <CategoryDetailsPage />,
       label: "posts:menu.categories",
+    },
+    {
+      path: "articles",
+      element: <PostsManagePage />,
+      label: "posts:menu.posts",
+    },
+    {
+      path: "articles/:id",
+      element: <PostDetailsPage />,
+      label: "posts:menu.posts",
     },
   ],
   menuItem: {

@@ -39,7 +39,8 @@
     "actions": "Azioni",
     "languages": "Lingue",
     "createdBy": "Autore",
-    "updatedBy": "Modifichato Da"
+    "updatedBy": "Modifichato Da",
+    "categories": "Categorie"
   },
   "status": {
     "published": "Pubblicato",

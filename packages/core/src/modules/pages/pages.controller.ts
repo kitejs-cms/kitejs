@@ -26,7 +26,7 @@ import {
 @ApiTags("Pages")
 @Controller("pages")
 export class PagesController {
-  constructor(private readonly pagesService: PagesService) {}
+  constructor(private readonly pagesService: PagesService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -62,7 +62,12 @@ export class PagesController {
   })
   @ApiQuery({ name: "page", required: true, type: Number })
   @ApiQuery({ name: "itemsPerPage", required: true, type: Number })
-  @ApiResponse({
+  @ApiQuery({
+    name: "type",
+    required: false,
+    type: String,
+    description: "Filter pages by type. Optional parameter.",
+  }) @ApiResponse({
     status: 200,
     description: "List of pages",
     type: [PageResponseDto],
@@ -70,11 +75,13 @@ export class PagesController {
   async getAllPages(
     @Query("page", ParseIntPipe) page: number,
     @Query("itemsPerPage", ParseIntPipe) itemsPerPage: number,
-    @Query("status") status?: PageStatus
+    @Query("status") status?: PageStatus,
+    @Query("type") type = 'Page',
+
   ) {
     try {
-      const totalItems = await this.pagesService.countPages();
-      const data = await this.pagesService.findPages(page, itemsPerPage);
+      const totalItems = await this.pagesService.countPages({ status, type });
+      const data = await this.pagesService.findPages(page, itemsPerPage, { status, type });
 
       const pagination: PaginationModel = {
         totalItems,
@@ -84,13 +91,14 @@ export class PagesController {
       };
 
       return {
-        meta: { pagination, query: { status } },
+        meta: { pagination, query: { status, type } },
         data: data.map((item) => new PageResponseDetailDto(item)),
       };
     } catch (error) {
       throw new BadRequestException("Failed to retrieve pages.");
     }
   }
+
   @Get(":id")
   @ApiOperation({
     summary: "Retrieve page for admin backoffice",

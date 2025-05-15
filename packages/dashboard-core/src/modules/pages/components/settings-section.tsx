@@ -18,16 +18,22 @@ import {
   SelectItem,
 } from "../../../components/ui/select";
 import { useTranslation } from "react-i18next";
+import { useApi } from "../../../hooks/use-api";
+import { CategoryResponseDetailsModel } from "@kitejs-cms/core/index";
+import { useEffect, useState } from "react";
+import { MultiSelect } from "../../../components/multi-select";
 
 interface SettingsSectionProps {
   status: string;
   publishAt: string;
   expireAt: string;
   tags: string[];
+  categories?: string[];
   createdBy: string;
   updatedBy: string;
+  type: "Post" | "Page";
   onChange: (
-    field: "status" | "publishAt" | "expireAt" | "tags",
+    field: "status" | "publishAt" | "expireAt" | "tags" | "categories",
     value: string | string[]
   ) => void;
   onViewJson: () => void;
@@ -38,13 +44,39 @@ export function SettingsSection({
   publishAt,
   expireAt,
   tags,
+  categories = [],
   createdBy,
   updatedBy,
+  type,
   onChange,
   onViewJson,
 }: SettingsSectionProps) {
-  const { t } = useTranslation("pages");
-  const toInputDate = (iso: string) => new Date(iso).toISOString().slice(0, 16);
+  const { t, i18n } = useTranslation("pages");
+  const [categoryOptions, setCategoryOptions] = useState<{ value: string, label: string }[]>([]);
+  const { data, fetchData } = useApi<CategoryResponseDetailsModel[]>();
+
+  const toInputDate = (iso: string) => iso ? new Date(iso).toISOString().slice(0, 16) : "";
+
+  useEffect(() => {
+    if (type === "Post") {
+      fetchData("categories?page=1&itemsPerPage=100");
+    }
+  }, [fetchData, type]);
+
+  useEffect(() => {
+    if (data) {
+      setCategoryOptions(
+        data.map(category => ({
+          value: category.id,
+          label: category.translations[i18n.language]?.title || category.id
+        }))
+      );
+    }
+  }, [data, i18n.language]);
+
+  const handleCategoriesChange = (selectedCategories: string[]) => {
+    onChange("categories", selectedCategories);
+  };
 
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
@@ -100,9 +132,30 @@ export function SettingsSection({
           <Label className="mb-2 block">{t("fields.expireAt")}</Label>
           <Input
             type="datetime-local"
-            value={expireAt ? toInputDate(expireAt) : ""}
+            value={toInputDate(expireAt)}
             onChange={(e) => onChange("expireAt", e.target.value)}
             className="w-full"
+          />
+        </div>
+
+        {/* Categories - Mostrato solo per Post e se ci sono opzioni */}
+        {type === "Post" && categoryOptions.length > 0 && (
+          <div>
+            <Label className="mb-2 block">{t("fields.categories")}</Label>
+            <MultiSelect
+              options={categoryOptions}
+              initialTags={categories}
+              onChange={handleCategoriesChange}
+            />
+          </div>
+        )}
+
+        {/* Tags */}
+        <div>
+          <Label className="mb-2 block">{t("fields.tags")}</Label>
+          <TagsInput
+            initialTags={tags}
+            onChange={(newTags) => onChange("tags", newTags)}
           />
         </div>
 
@@ -123,15 +176,6 @@ export function SettingsSection({
             value={updatedBy}
             disabled
             className="w-full cursor-not-allowed"
-          />
-        </div>
-
-        {/* Tags */}
-        <div>
-          <Label className="mb-2 block">{t("fields.tags")}</Label>
-          <TagsInput
-            initialTags={tags}
-            onChange={(newTags) => onChange("tags", newTags)}
           />
         </div>
       </CardContent>

@@ -12,4 +12,5 @@ export type PageResponseDetailsModel = {
   translations: Record<string, PageTranslationModel>;
   createdAt: string;
   updatedAt: string;
+  categories: string[]
 };

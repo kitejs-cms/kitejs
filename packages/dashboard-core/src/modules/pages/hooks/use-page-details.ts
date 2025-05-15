@@ -20,7 +20,7 @@ export interface FormErrors {
   [key: string]: string | undefined;
 }
 
-export function usePageDetails() {
+export function usePageDetails(type: "Page" | "Post") {
   const { t } = useTranslation("pages");
   const navigate = useNavigate();
   const { cmsSettings } = useSettingsContext();
@@ -44,19 +44,26 @@ export function usePageDetails() {
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   useEffect(() => {
-    const items = [
-      { label: t("breadcrumb.home"), path: "/" },
-      { label: t("breadcrumb.pages"), path: "/pages" },
-    ];
+    const items = [{ label: t("breadcrumb.home"), path: "/" }]
 
-    if (id && localData && localData?.translations[activeLang]?.slug)
+    if (type === "Page") {
+      items.push({ label: t("breadcrumb.pages"), path: "/pages" },)
+    } else {
+      items.push({ label: t("breadcrumb.articles"), path: "/articles" },)
+    }
+
+
+    if (id && localData && localData?.translations[activeLang]?.slug) {
+      const basePath = type === "Page" ? "pages" : "articles"
+
       items.push({
         label: localData.translations[activeLang].slug,
-        path: `/pages/${localData.id}`,
+        path: `/${basePath}/${localData.id}`,
       });
+    }
 
     setBreadcrumb(items);
-  }, [activeLang, id, localData, setBreadcrumb, t]);
+  }, [activeLang, id, localData, setBreadcrumb, t, type]);
 
   useEffect(() => {
     if (!defaultLang) return;
@@ -66,6 +73,7 @@ export function usePageDetails() {
         status: "Draft" as never,
         tags: [],
         publishAt: new Date().toISOString(),
+        categories: [],
         expireAt: null,
         translations: {
           [defaultLang]: {
@@ -96,6 +104,7 @@ export function usePageDetails() {
       (async () => {
         const result = await fetchData(`pages/${id}`);
         if (result?.data) {
+
           setLocalData(result.data);
           setHasChanges(false);
         }
@@ -210,7 +219,7 @@ export function usePageDetails() {
 
   const onSettingsChange = useCallback(
     (
-      field: "status" | "publishAt" | "expireAt" | "tags",
+      field: "status" | "publishAt" | "expireAt" | "tags" | "categories",
       value: string | string[]
     ) => {
       setLocalData((prev) => {
@@ -279,6 +288,7 @@ export function usePageDetails() {
           description: translation.description,
           blocks: blocks ?? translation.blocks,
           seo: translation.seo,
+          type,
         };
 
         const result = await fetchData("pages", "POST", body);
@@ -297,7 +307,8 @@ export function usePageDetails() {
           setFormErrors({});
 
           if (id === "create") {
-            navigate(`/pages/${result.data.id}`);
+            if (type === "Page") navigate(`/pages/${result.data.id}`);
+            if (type === "Post") navigate(`/articles/${result.data.id}`);
           }
         } else {
           toast.error("Errore nel salvataggio", {
@@ -322,7 +333,7 @@ export function usePageDetails() {
         });
       }
     },
-    [localData, activeLang, id, fetchData, navigate, t, validateForm]
+    [localData, activeLang, id, fetchData, navigate, t, validateForm, type]
   );
 
   const onAddLanguage = useCallback((lang: string) => {

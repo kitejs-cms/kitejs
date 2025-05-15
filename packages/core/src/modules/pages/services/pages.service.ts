@@ -9,6 +9,7 @@ import { User } from "../../users/schemas/user.schema";
 import { PageTranslationModel } from "../models/page-translation.model";
 import { JwtPayloadModel } from "../../auth/models/payload-jwt.model";
 import { ObjectIdUtils } from "../../../common";
+import { PageStatus } from "../models/page-status.enum";
 import { CORE_NAMESPACE } from "../../../constants";
 import {
   Injectable,
@@ -25,16 +26,27 @@ export class PagesService {
   constructor(
     @InjectModel(Page.name) private readonly pageModel: Model<Page>,
     private readonly slugService: SlugRegistryService
-  ) {}
+  ) { }
 
   /**
-   * Counts the total number of pages (optional: you can pass filters in the future).
-   * @returns Total number of pages.
+   * Counts the total number of pages with optional filters.
+   * @param filters Optional filters for status and type
+   * @returns Total number of pages matching the filters.
    * @throws BadRequestException if an error occurs.
    */
-  async countPages(): Promise<number> {
+  async countPages(filters?: { status?: PageStatus; type?: string }): Promise<number> {
     try {
-      return await this.pageModel.countDocuments().exec();
+      const query: any = {};
+
+      if (filters?.status) {
+        query.status = filters.status;
+      }
+
+      if (filters?.type) {
+        query.type = filters.type;
+      }
+
+      return await this.pageModel.countDocuments(query).exec();
     } catch (error) {
       this.logger.error(error);
       const errorMessage =
@@ -202,7 +214,7 @@ export class PagesService {
     if (!selectedTranslation) {
       throw new NotFoundException(
         `Translation not found for language: ${language}` +
-          (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
+        (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
       );
     }
 
@@ -275,20 +287,32 @@ export class PagesService {
   }
 
   /**
-   * Retrieves a paginated list of pages.
+   * Retrieves a paginated list of pages with optional filters.
    * @param pageNumber Page number (default: 1).
    * @param itemsPerPage Number of items per page (default: 10).
+   * @param filters Optional filters for status and type.
    * @returns An array of pages.
    * @throws BadRequestException if the query fails.
    */
   async findPages(
     pageNumber = 1,
-    itemsPerPage = 10
+    itemsPerPage = 10,
+    filters?: { status?: PageStatus; type?: string }
   ): Promise<PageResponseDetailsModel[]> {
     try {
       const skip = (pageNumber - 1) * itemsPerPage;
+
+      // Build the base query with optional filters
+      const query: any = {};
+      if (filters?.status) {
+        query.status = filters.status;
+      }
+      if (filters?.type) {
+        query.type = filters.type;
+      }
+
       const pages = await this.pageModel
-        .find()
+        .find(query) // Apply filters here
         .skip(skip)
         .limit(itemsPerPage)
         .populate<{ createdBy: User }>("createdBy")
@@ -307,6 +331,7 @@ export class PagesService {
 
         const json = item.toJSON();
         const translationsWithSlug: Record<string, PageTranslationModel> = {};
+
         for (const [lang, trans] of Object.entries(json.translations)) {
           translationsWithSlug[lang] = {
             ...(trans as unknown as PageTranslationModel),

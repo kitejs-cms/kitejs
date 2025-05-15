@@ -35,7 +35,11 @@ import {
 import { StatusBadge } from "../components/status-badge";
 import { LanguagesBadge } from "../components/languages-badge";
 
-export function PagesManagePage() {
+export type Props = {
+  pageType?: "Post" | "Page";
+};
+
+export function PagesManagePage({ pageType = "Page" }: Props) {
   const { setBreadcrumb } = useBreadcrumb();
   const { copyTable } = useClipboardTable();
   const [showSearch, setShowSearch] = useState(false);
@@ -43,7 +47,7 @@ export function PagesManagePage() {
   const { t, i18n } = useTranslation("pages");
   const navigate = useNavigate();
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 15;
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchQuery = searchParams.get("search") || "";
 
@@ -51,11 +55,16 @@ export function PagesManagePage() {
     useApi<PageResponseDetailsModel[]>();
 
   useEffect(() => {
-    setBreadcrumb([
-      { label: t("breadcrumb.home"), path: "/" },
-      { label: t("breadcrumb.pages"), path: "/pages" },
-    ]);
-  }, [setBreadcrumb, t]);
+    const items = [{ label: t("breadcrumb.home"), path: "/" }];
+
+    if (pageType === "Page") {
+      items.push({ label: t("breadcrumb.pages"), path: "/pages" });
+    } else {
+      items.push({ label: t("breadcrumb.articles"), path: "/articles" });
+    }
+
+    setBreadcrumb(items);
+  }, [pageType, setBreadcrumb, t]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -64,10 +73,11 @@ export function PagesManagePage() {
     setSearchParams(params, { replace: true });
 
     fetchData(
-      `pages?page=${currentPage}&itemsPerPage=${itemsPerPage}${searchQuery ? `&search=${searchQuery}` : ""
+      `pages?type=${pageType}&page=${currentPage}&itemsPerPage=${itemsPerPage}${
+        searchQuery ? `&search=${searchQuery}` : ""
       }`
     );
-  }, [fetchData, currentPage, searchQuery, setSearchParams]);
+  }, [fetchData, currentPage, searchQuery, setSearchParams, pageType]);
 
   const handleCopy = () => {
     if (!data) return;
@@ -158,7 +168,13 @@ export function PagesManagePage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate("/pages/create")}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      navigate(
+                        `/${pageType === "Page" ? "pages" : "articles"}/create`
+                      )
+                    }
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     {t("buttons.add")}
                   </DropdownMenuItem>
@@ -230,7 +246,9 @@ export function PagesManagePage() {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/pages/${row.id}?view=editor`);
+                          navigate(
+                            `/${pageType === "Page" ? "pages" : "articles"}/${row.id}?view=editor`
+                          );
                         }}
                       >
                         <LayoutTemplate className="mr-2 h-4 w-4" />
@@ -239,7 +257,9 @@ export function PagesManagePage() {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/pages/${row.id}`);
+                          navigate(
+                            `/${pageType === "Page" ? "pages" : "articles"}/${row.id}`
+                          );
                         }}
                       >
                         <Edit className="mr-2 h-4 w-4" />
@@ -248,7 +268,9 @@ export function PagesManagePage() {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/pages/${row.id}?view=json`);
+                          navigate(
+                            `/${pageType === "Page" ? "pages" : "articles"}/${row.id}?view=json`
+                          );
                         }}
                       >
                         <Code className="mr-2 h-4 w-4" />
@@ -263,13 +285,19 @@ export function PagesManagePage() {
               currentPage: pagination?.currentPage,
               totalPages: pagination?.totalPages,
               onPageChange: (page) => {
-                fetchData(`pages?page=${page}&itemsPerPage=${itemsPerPage}`);
+                fetchData(
+                  `pages?type=${pageType}&page=${page}&itemsPerPage=${itemsPerPage}`
+                );
                 const params = new URLSearchParams(searchParams);
                 params.set("page", page.toString());
                 setSearchParams(params);
               },
             }}
-            onRowClick={(row) => navigate(`/pages/${row.id}`)}
+            onRowClick={(row) =>
+              navigate(
+                `/${pageType === "Page" ? "pages" : "articles"}/${row.id}`
+              )
+            }
           />
         </CardContent>
       </Card>

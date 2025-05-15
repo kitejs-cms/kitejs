@@ -4,6 +4,7 @@ import { PageStatus } from "./page-status.enum";
 
 export type PageUpsertModel = {
   id?: string;
+  type?: string
   slug: string;
   language: string;
   status: PageStatus;
@@ -14,4 +15,5 @@ export type PageUpsertModel = {
   description: string;
   blocks: PageBlockModel[];
   seo?: PageSeoModel;
+  categories?: string[]
 };

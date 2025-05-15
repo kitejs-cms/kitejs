@@ -12,7 +12,11 @@ import { usePageDetails } from "../hooks/use-page-details";
 import { PageEditor } from "../components/page-editor";
 import { SkeletonPage } from "../../../components/skeleton-page";
 
-export function PageDetailsPage() {
+export type Props = {
+  pageType?: "Post" | "Page"
+}
+
+export function PageDetailsPage({ pageType = 'Page' }: Props) {
   const { t } = useTranslation("pages");
   const {
     data,
@@ -32,7 +36,7 @@ export function PageDetailsPage() {
     confirmDiscard,
     handleSave,
     formErrors,
-  } = usePageDetails();
+  } = usePageDetails(pageType);
 
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
@@ -91,6 +95,7 @@ export function PageDetailsPage() {
 
         <div className="space-y-6">
           <SettingsSection
+            type={pageType}
             status={data?.status}
             publishAt={data?.publishAt}
             expireAt={data?.expireAt}

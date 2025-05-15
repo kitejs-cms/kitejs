@@ -13,6 +13,8 @@ import {
   IsEnum,
   IsDateString,
   ValidateIf,
+  IsMongoId,
+  IsIn,
 } from "class-validator";
 
 export class PageUpsertDto implements PageUpsertModel {
@@ -23,6 +25,18 @@ export class PageUpsertDto implements PageUpsertModel {
   @IsOptional()
   @IsString()
   id?: string;
+
+  @ApiProperty({
+    description: "Type of content (Page or Post)",
+    example: "Page",
+    enum: ["Page", "Post"],
+    required: true
+  })
+  @IsNotEmpty()
+  @IsString()
+  @IsIn(["Page", "Post"])
+  @IsOptional()
+  type?: "Page" | "Post";
 
   @ApiProperty({
     description: "Unique slug identifier for the page",
@@ -115,7 +129,22 @@ export class PageUpsertDto implements PageUpsertModel {
   @Type(() => PageSeoDto)
   seo?: PageSeoDto;
 
+  @ApiPropertyOptional({
+    description: "Array of category IDs associated with the page",
+    example: ["60f7c0a2d3a8f009e6f0b7d2", "60f7c0a2d3a8f009e6f0b7d3"],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  categories?: string[];
+
   constructor(partial: Partial<PageUpsertDto>) {
-    Object.assign(this, partial);
+    const merged = {
+      type: "Page",
+      ...partial
+    };
+
+    Object.assign(this, merged);
   }
 }
