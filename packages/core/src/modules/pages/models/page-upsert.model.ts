@@ -9,6 +9,7 @@ export type PageUpsertModel = {
   language: string;
   status: PageStatus;
   tags?: string[];
+  image?: string
   publishAt?: string;
   expireAt?: string;
   title: string;

@@ -67,7 +67,14 @@ export class PagesController {
     required: false,
     type: String,
     description: "Filter pages by type. Optional parameter.",
-  }) @ApiResponse({
+  })
+  @ApiQuery({
+    name: "category",
+    required: false,
+    type: String,
+    description: "Filter pages by category slug or id. Optional parameter.",
+  })
+  @ApiResponse({
     status: 200,
     description: "List of pages",
     type: [PageResponseDto],
@@ -77,11 +84,11 @@ export class PagesController {
     @Query("itemsPerPage", ParseIntPipe) itemsPerPage: number,
     @Query("status") status?: PageStatus,
     @Query("type") type = 'Page',
-
+    @Query("category") category?: string,
   ) {
     try {
-      const totalItems = await this.pagesService.countPages({ status, type });
-      const data = await this.pagesService.findPages(page, itemsPerPage, { status, type });
+      const totalItems = await this.pagesService.countPages({ status, type, category });
+      const data = await this.pagesService.findPages(page, itemsPerPage, { status, type, category });
 
       const pagination: PaginationModel = {
         totalItems,
@@ -91,7 +98,7 @@ export class PagesController {
       };
 
       return {
-        meta: { pagination, query: { status, type } },
+        meta: { pagination, query: { status, type, category } },
         data: data.map((item) => new PageResponseDetailDto(item)),
       };
     } catch (error) {

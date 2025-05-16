@@ -16,6 +16,13 @@ export class Page extends Document {
   @Prop({ type: String, default: "Page" })
   type: string;
 
+  @Prop({
+    type: String,
+    required: false,
+    default: null
+  })
+  image?: string;
+
   @Prop({ type: SchemaDb.ObjectId, ref: "User", required: true })
   createdBy: Types.ObjectId;
 

@@ -6,6 +6,7 @@ import { PagesService } from "./services/pages.service";
 import { PageRevisionsService } from "./services/page-revisions.service";
 import { PagesController } from "./pages.controller";
 import { SlugRegistryModule } from "../slug-registry";
+import { CategoriesModule } from "../../modules/categories";
 import {
   PageRevision,
   PageRevisionSchema,
@@ -19,9 +20,10 @@ import {
     ]),
     CacheModule,
     SlugRegistryModule,
+    CategoriesModule
   ],
   controllers: [PagesController],
   providers: [PagesService, PageRevisionsService],
   exports: [PagesService, PageRevisionsService],
 })
-export class PagesModule {}
+export class PagesModule { }

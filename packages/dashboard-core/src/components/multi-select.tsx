@@ -3,11 +3,7 @@ import { useTranslation } from "react-i18next";
 import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Checkbox } from "./ui/checkbox";
 
 interface TagItemProps {
@@ -76,7 +72,7 @@ const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
           aria-expanded={isOpen}
           className="w-full justify-between"
         >
-          {t("multi-select.selectPlaceholder")}
+          {t("multi-select.placeholder")}
           {isOpen ? (
             <ChevronUp className="h-4 w-4 ml-2" />
           ) : (

@@ -11,6 +11,7 @@ import { JwtPayloadModel } from "../../auth/models/payload-jwt.model";
 import { ObjectIdUtils } from "../../../common";
 import { PageStatus } from "../models/page-status.enum";
 import { CORE_NAMESPACE } from "../../../constants";
+import { CategoriesService, Category } from "../../categories";
 import {
   Injectable,
   BadRequestException,
@@ -18,13 +19,17 @@ import {
   Logger,
 } from "@nestjs/common";
 
+type FilterModel = { status?: PageStatus; type?: string, category?: string }
+
 @Injectable()
 export class PagesService {
   private readonly logger = new Logger(PagesService.name);
-  private readonly slugNamespace = `${CORE_NAMESPACE}:pages`;
+  private readonly slugPageNamespace = `${CORE_NAMESPACE}:pages`;
+  private readonly slugPostNamespace = `${CORE_NAMESPACE}:posts`;
 
   constructor(
     @InjectModel(Page.name) private readonly pageModel: Model<Page>,
+    private readonly categoriesService: CategoriesService,
     private readonly slugService: SlugRegistryService
   ) { }
 
@@ -34,16 +39,15 @@ export class PagesService {
    * @returns Total number of pages matching the filters.
    * @throws BadRequestException if an error occurs.
    */
-  async countPages(filters?: { status?: PageStatus; type?: string }): Promise<number> {
+  async countPages(filters?: FilterModel): Promise<number> {
     try {
-      const query: any = {};
+      const query: FilterModel & { categories?: string } = {};
+      if (filters?.status) query.status = filters.status;
+      if (filters?.type) query.type = filters.type;
 
-      if (filters?.status) {
-        query.status = filters.status;
-      }
-
-      if (filters?.type) {
-        query.type = filters.type;
+      if (filters?.category) {
+        const category = await this.categoriesService.findCategory(filters.category)
+        query.categories = category._id.toString()
       }
 
       return await this.pageModel.countDocuments(query).exec();
@@ -67,14 +71,18 @@ export class PagesService {
     user: JwtPayloadModel
   ): Promise<PageResponseDetailsModel> {
     try {
-      const { id, language, ...restData } = pageData;
+      const { id, language, type, categories, ...restData } = pageData;
       const pageBaseData = {
         status: restData.status,
         tags: restData.tags,
         publishAt: restData.publishAt,
         expireAt: restData.expireAt,
         updatedBy: user.sub,
+        type,
+        categories
       };
+
+      console.log(pageBaseData)
 
       const translationData = {
         title: restData.title,
@@ -102,7 +110,7 @@ export class PagesService {
 
         await this.slugService.registerSlug(
           restData.slug,
-          this.slugNamespace,
+          type === "Post" ? this.slugPostNamespace : this.slugPageNamespace,
           ObjectIdUtils.toObjectId(page.id),
           language
         );
@@ -117,7 +125,7 @@ export class PagesService {
 
         await this.slugService.registerSlug(
           restData.slug,
-          this.slugNamespace,
+          type === "Post" ? this.slugPostNamespace : this.slugPageNamespace,
           ObjectIdUtils.toObjectId(page.id),
           language
         );
@@ -151,7 +159,7 @@ export class PagesService {
         // Otherwise, resolve the slug and query by _id
         const slugEntry = await this.slugService.findEntityBySlug(
           identify,
-          this.slugNamespace
+          page.type === "Post" ? this.slugPostNamespace : this.slugPageNamespace,
         );
 
         if (!slugEntry) {
@@ -246,6 +254,7 @@ export class PagesService {
         .findById(id)
         .populate<{ createdBy: User }>("createdBy")
         .populate<{ updatedBy: User }>("updatedBy")
+        .populate<{ categories: Category[] }>("categories")
         .exec();
 
       if (!page) {
@@ -297,26 +306,26 @@ export class PagesService {
   async findPages(
     pageNumber = 1,
     itemsPerPage = 10,
-    filters?: { status?: PageStatus; type?: string }
+    filters?: FilterModel
   ): Promise<PageResponseDetailsModel[]> {
     try {
       const skip = (pageNumber - 1) * itemsPerPage;
 
-      // Build the base query with optional filters
-      const query: any = {};
-      if (filters?.status) {
-        query.status = filters.status;
-      }
-      if (filters?.type) {
-        query.type = filters.type;
+      const query: FilterModel & { categories?: string } = {};
+      if (filters?.status) query.status = filters.status;
+      if (filters?.type) query.type = filters.type;
+      if (filters?.category) {
+        const category = await this.categoriesService.findCategory(filters.category)
+        query.categories = category._id.toString()
       }
 
       const pages = await this.pageModel
-        .find(query) // Apply filters here
+        .find(query)
         .skip(skip)
         .limit(itemsPerPage)
         .populate<{ createdBy: User }>("createdBy")
         .populate<{ updatedBy: User }>("updatedBy")
+        .populate<{ categories: Category[] }>("categories")
         .exec();
 
       const pagesRes: PageResponseDetailsModel[] = [];
@@ -339,11 +348,19 @@ export class PagesService {
           };
         }
 
+        const categories: string[] = []
+        for (const category of json.categories) {
+          for (const [, trans] of Object.entries(category.translations)) {
+            categories.push(trans.title)
+          }
+        }
+
         pagesRes.push({
           ...json,
           translations: translationsWithSlug,
           createdBy: `${item.createdBy.firstName} ${item.createdBy.lastName}`,
           updatedBy: `${item.updatedBy.firstName} ${item.updatedBy.lastName}`,
+          categories,
         } as unknown as PageResponseDetailsModel);
       }
 

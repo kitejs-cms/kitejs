@@ -1,4 +1,5 @@
 import { useSettingsContext } from "../../../context/settings-context";
+import { useBreadcrumb } from "../../../context/breadcrumb-context";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -11,7 +12,6 @@ import type {
   PageTranslationModel,
   PageUpsertModel,
 } from "@kitejs-cms/core/index";
-import { useBreadcrumb } from "../../../context/breadcrumb-context";
 
 export interface FormErrors {
   title?: string;
@@ -277,6 +277,7 @@ export function usePageDetails(type: "Page" | "Post") {
         }
 
         const body: PageUpsertModel = {
+          type,
           id: id && id !== "create" ? localData.id : undefined,
           tags: localData.tags,
           status: localData.status,
@@ -288,7 +289,7 @@ export function usePageDetails(type: "Page" | "Post") {
           description: translation.description,
           blocks: blocks ?? translation.blocks,
           seo: translation.seo,
-          type,
+          categories: localData.categories
         };
 
         const result = await fetchData("pages", "POST", body);

@@ -13,6 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "../components/ui/sidebar";
+import { useSettingsContext } from "../context/settings-context";
 
 export function AppSidebar({
   items = [],
@@ -22,6 +23,7 @@ export function AppSidebar({
   items?: ItemModule[];
   openSettings?: () => void;
 }) {
+  const { cmsSettings } = useSettingsContext();
   const { user } = useAuthContext();
 
   const allItems = [
@@ -49,8 +51,12 @@ export function AppSidebar({
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate font-semibold">
+                    {cmsSettings?.siteName}
+                  </span>
+                  <span className="truncate text-xs">
+                    {cmsSettings?.siteUrl}
+                  </span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -67,13 +73,15 @@ export function AppSidebar({
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
-          openSettings={openSettings}
-          user={{
-            name: `${user?.firstName} ${user?.lastName}`,
-            email: user?.email,
-          }}
-        />
+        {user && (
+          <NavUser
+            openSettings={openSettings}
+            user={{
+              name: `${user?.firstName} ${user?.lastName}`,
+              email: user?.email,
+            }}
+          />
+        )}
       </SidebarFooter>
     </Sidebar>
   );

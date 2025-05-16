@@ -1,6 +1,6 @@
 import { DashboardModule } from "../../models/module.model";
 
-import { Shield, UserPlus, Users, UsersIcon } from "lucide-react";
+import { UserPlus, Users, UsersIcon } from "lucide-react";
 import { UsersManagePage } from "./pages/users-manage";
 
 export const UsersModule: DashboardModule = {
@@ -23,33 +23,32 @@ export const UsersModule: DashboardModule = {
         url: "/users",
         icon: UserPlus,
       },
-      {
-        title: "users:title.manageRoles",
-        url: "/users/roles",
-        icon: Shield,
-      },
+      //{
+      //  title: "users:title.manageRoles",
+      //  url: "/users/roles",
+      //  icon: Shield,
+      //},
     ],
   },
-  settings: {
-    key: "users",
-    title: "users:settings.title",
-    icon: <Users />,
-    description: "users:settings.description",
-    component: <div>Main</div>,
-
-    children: [
-      {
-        key: "users-management",
-        title: "users:settings.usersManagement",
-        icon: <UserPlus />,
-        component: <div>TEST</div>,
-      },
-      {
-        key: "roles",
-        title: "users:settings.roles",
-        icon: <Shield />,
-        component: <div>TEST2</div>,
-      },
-    ],
-  },
+  //settings: {
+  //  key: "users",
+  //  title: "users:settings.title",
+  //  icon: <Users />,
+  //  description: "users:settings.description",
+  //  component: <div>Main</div>,
+  //  children: [
+  //    {
+  //      key: "users-management",
+  //      title: "users:settings.usersManagement",
+  //      icon: <UserPlus />,
+  //      component: <div>TEST</div>,
+  //    },
+  //    {
+  //      key: "roles",
+  //      title: "users:settings.roles",
+  //      icon: <Shield />,
+  //      component: <div>TEST2</div>,
+  //    },
+  //  ],
+  //},
 };

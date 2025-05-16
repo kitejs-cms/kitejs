@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { PageBlockDto } from "./page-block.dto";
 import { PageResponseModel } from "../models/page-response.model";
@@ -20,6 +20,14 @@ export class PageResponseDto implements PageResponseModel {
   @IsString()
   @IsNotEmpty()
   slug: string;
+
+  @ApiPropertyOptional({
+    description: "Optional url image",
+    example: "https://img-example.com/img1",
+  })
+  @IsOptional()
+  @IsString()
+  image?: string
 
   @ApiProperty({
     description: "Status of the page",

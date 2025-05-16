@@ -52,10 +52,13 @@ export function SettingsSection({
   onViewJson,
 }: SettingsSectionProps) {
   const { t, i18n } = useTranslation("pages");
-  const [categoryOptions, setCategoryOptions] = useState<{ value: string, label: string }[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
   const { data, fetchData } = useApi<CategoryResponseDetailsModel[]>();
 
-  const toInputDate = (iso: string) => iso ? new Date(iso).toISOString().slice(0, 16) : "";
+  const toInputDate = (iso: string) =>
+    iso ? new Date(iso).toISOString().slice(0, 16) : "";
 
   useEffect(() => {
     if (type === "Post") {
@@ -65,10 +68,11 @@ export function SettingsSection({
 
   useEffect(() => {
     if (data) {
+      const local = i18n.language.split("-")[0];
       setCategoryOptions(
-        data.map(category => ({
+        data.map((category) => ({
           value: category.id,
-          label: category.translations[i18n.language]?.title || category.id
+          label: category.translations[local]?.title || category.id,
         }))
       );
     }

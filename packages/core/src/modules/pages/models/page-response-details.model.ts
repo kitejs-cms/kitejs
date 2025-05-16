@@ -3,6 +3,7 @@ import { PageTranslationModel } from "./page-translation.model";
 
 export type PageResponseDetailsModel = {
   id: string;
+  image?: string
   createdBy: string;
   updatedBy: string;
   status: PageStatus;

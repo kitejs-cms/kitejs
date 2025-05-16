@@ -23,6 +23,14 @@ export class PageResponseDetailDto implements PageResponseDetailsModel {
   @IsNotEmpty()
   id: string;
 
+  @ApiPropertyOptional({
+    description: "Optional url image",
+    example: "https://img-example.com/img1",
+  })
+  @IsOptional()
+  @IsString()
+  image?: string
+
   @ApiProperty({
     description: "Base slug for the page (used for routing)",
     example: "my-page",

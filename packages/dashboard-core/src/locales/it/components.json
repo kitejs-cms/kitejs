@@ -22,6 +22,7 @@
     "removeAriaLabel": "Rimuovi {{tag}}"
   },
   "multi-select": {
-    "placeholder": "Seleziona opzioni"
+    "placeholder": "Seleziona opzioni",
+    "removeAriaLabel": "Rimuovi {{tag}}"
   }
 }

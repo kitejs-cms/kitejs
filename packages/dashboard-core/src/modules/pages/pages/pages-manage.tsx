@@ -176,7 +176,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
                     }
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    {t("buttons.add")}
+                    {t(pageType === "Page" ? "buttons.addPage" : "buttonsPost")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleCopy}>
                     <Clipboard className="mr-2 h-4 w-4" />

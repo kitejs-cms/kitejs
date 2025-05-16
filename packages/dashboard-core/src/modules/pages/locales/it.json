@@ -1,7 +1,8 @@
 {
   "breadcrumb": {
     "home": "Home",
-    "pages": "Pagine"
+    "pages": "Pagine",
+    "articles": "Articoli"
   },
   "title": {
     "managePages": "Gestione Pagine",
@@ -10,7 +11,8 @@
   "buttons": {
     "edit": "Modifica",
     "viewJson": "Visualizza JSON",
-    "add": "Aggiungi Pagina",
+    "addPage": "Aggiungi Pagina",
+    "addPost": "Aggiungi Articolo",
     "copy": "Copia negli Appunti",
     "download": "Download",
     "editVisual": "Editor Pagina",

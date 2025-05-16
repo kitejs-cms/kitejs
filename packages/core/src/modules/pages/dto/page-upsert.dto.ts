@@ -26,6 +26,14 @@ export class PageUpsertDto implements PageUpsertModel {
   @IsString()
   id?: string;
 
+  @ApiPropertyOptional({
+    description: "Optional url image",
+    example: "https://img-example.com/img1",
+  })
+  @IsOptional()
+  @IsString()
+  image?: string
+
   @ApiProperty({
     description: "Type of content (Page or Post)",
     example: "Page",
