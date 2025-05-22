@@ -8,7 +8,7 @@ export class SlugRegistryService {
   constructor(
     @InjectModel(SlugRegistry.name)
     private readonly slugRegistryModel: Model<SlugRegistry>
-  ) {}
+  ) { }
 
   /**
    * Registers a new slug in the system

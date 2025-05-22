@@ -82,8 +82,6 @@ export class PagesService {
         categories
       };
 
-      console.log(pageBaseData)
-
       const translationData = {
         title: restData.title,
         description: restData.description,
@@ -148,10 +146,9 @@ export class PagesService {
    * @returns The full page document, or null if not found.
    * @throws BadRequestException if the query fails.
    */
-  async findPage(identify: string): Promise<Page | null> {
+  async findPage(identify: string, type: string): Promise<Page | null> {
     try {
       let page: Page | null;
-
       if (Types.ObjectId.isValid(identify)) {
         // If the identifier is a valid ObjectId, query by _id
         page = await this.pageModel.findById(identify).exec();
@@ -159,7 +156,7 @@ export class PagesService {
         // Otherwise, resolve the slug and query by _id
         const slugEntry = await this.slugService.findEntityBySlug(
           identify,
-          page.type === "Post" ? this.slugPostNamespace : this.slugPageNamespace,
+          type === "Post" ? this.slugPostNamespace : this.slugPageNamespace,
         );
 
         if (!slugEntry) {
@@ -194,10 +191,11 @@ export class PagesService {
   async findPageForWeb(
     identify: string,
     language: string,
-    fallbackLanguage?: string
+    type: string,
+    fallbackLanguage?: string,
   ): Promise<PageResponseDto> {
     // Retrieve the full page document
-    const page = await this.findPage(identify);
+    const page = await this.findPage(identify, type);
     if (!page) {
       throw new NotFoundException(`Page not found for identifier: ${identify}`);
     }

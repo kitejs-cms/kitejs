@@ -168,15 +168,21 @@ export class PagesController {
   async getPageForWeb(
     @Param("slug") slug: string,
     @Query("lang") language: string,
-    @Query("fallback") fallbackLanguage?: string
+    @Query("fallback") fallbackLanguage?: string,
+    @Query("type") type = 'Page',
+
   ) {
     try {
       const response = await this.pagesService.findPageForWeb(
         slug,
         language,
+        type,
         fallbackLanguage
       );
-      return new PageResponseDto(response);
+      return {
+        meta: { query: { lang: language, type, slug, fallbackLanguage } },
+        data: new PageResponseDto(response)
+      };
     } catch (error) {
       throw new BadRequestException("Failed to retrieve page for web.");
     }
