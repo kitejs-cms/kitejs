@@ -279,6 +279,7 @@ export class PagesService {
 
       return {
         ...json,
+        categories: json.categories.map(item => item._id.toString()),
         createdBy: `${page.createdBy.firstName} ${page.createdBy.lastName}`,
         updatedBy: `${page.updatedBy.firstName} ${page.updatedBy.lastName}`,
         translations: translationsWithSlug,
