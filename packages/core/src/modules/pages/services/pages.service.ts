@@ -234,6 +234,8 @@ export class PagesService {
       blocks: selectedTranslation.blocks,
       seo: selectedTranslation.seo,
       language: language,
+      image: pageData.image,
+
     };
 
     return response;

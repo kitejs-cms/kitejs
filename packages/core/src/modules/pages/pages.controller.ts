@@ -164,6 +164,12 @@ export class PagesController {
     description: "Page response with selected translation",
     type: PageResponseDto,
   })
+  @ApiQuery({
+    name: "type",
+    required: false,
+    type: String,
+    description: "Filter pages by type. Optional parameter.",
+  })
   @ApiResponse({ status: 404, description: "Page or translation not found" })
   async getPageForWeb(
     @Param("slug") slug: string,
