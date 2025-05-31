@@ -75,6 +75,7 @@ export function usePageDetails(type: "Page" | "Post") {
         publishAt: new Date().toISOString(),
         categories: [],
         expireAt: null,
+        image: null,
         translations: {
           [defaultLang]: {
             title: "",
@@ -219,7 +220,7 @@ export function usePageDetails(type: "Page" | "Post") {
 
   const onSettingsChange = useCallback(
     (
-      field: "status" | "publishAt" | "expireAt" | "tags" | "categories",
+      field: "status" | "publishAt" | "expireAt" | "tags" | "categories" | "image",
       value: string | string[]
     ) => {
       setLocalData((prev) => {

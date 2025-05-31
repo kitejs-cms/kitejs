@@ -24,5 +24,18 @@
   "multi-select": {
     "placeholder": "Seleziona opzioni",
     "removeAriaLabel": "Rimuovi {{tag}}"
+  },
+  "file-uploader": {
+    "defaultFileName": "file-esistente",
+    "existingFile": "File esistente",
+    "removeFile": "Rimuovi file",
+    "uploadTitle": "Carica un file",
+    "uploadDescription": "Trascina e rilascia oppure clicca per selezionare",
+    "sizes": {
+      "bytes": "Bytes",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
   }
 }

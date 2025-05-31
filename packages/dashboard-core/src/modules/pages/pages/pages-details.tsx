@@ -13,10 +13,10 @@ import { PageEditor } from "../components/page-editor";
 import { SkeletonPage } from "../../../components/skeleton-page";
 
 export type Props = {
-  pageType?: "Post" | "Page"
-}
+  pageType?: "Post" | "Page";
+};
 
-export function PageDetailsPage({ pageType = 'Page' }: Props) {
+export function PageDetailsPage({ pageType = "Page" }: Props) {
   const { t } = useTranslation("pages");
   const {
     data,
@@ -85,6 +85,14 @@ export function PageDetailsPage({ pageType = 'Page' }: Props) {
             activeLang={activeLang}
             translations={data?.translations}
             onChange={onContentChange}
+            image={data.image}
+            onChangeImage={
+              pageType === "Page"
+                ? undefined
+                : (image) => {
+                    onSettingsChange("image", image);
+                  }
+            }
           />
           <SeoSection
             activeLang={activeLang}

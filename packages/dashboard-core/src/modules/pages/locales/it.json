@@ -42,7 +42,8 @@
     "languages": "Lingue",
     "createdBy": "Autore",
     "updatedBy": "Modifichato Da",
-    "categories": "Categorie"
+    "categories": "Categorie",
+    "image": "Immagine"
   },
   "status": {
     "published": "Pubblicato",

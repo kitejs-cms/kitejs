@@ -26,6 +26,7 @@ export * from "./components/tag-input";
 export * from "./components/html-editor/html-editor";
 export * from "./components/skeleton-page";
 export * from "./components/multi-select";
+export * from "./components/file-uploader"
 
 /* Provider */
 export * from "./dashboard-provider";

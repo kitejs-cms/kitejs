@@ -6,18 +6,21 @@ import { Label } from "../../../components/ui/label";
 import { Tabs, TabsContent } from "../../../components/ui/tabs";
 import type { PageTranslationModel } from "@kitejs-cms/core/index";
 import { useTranslation } from "react-i18next";
+import { FormErrors } from "../hooks/use-page-details";
+import { FileUploader } from "../../../components/file-uploader";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from "../../../components/ui/card";
-import { FormErrors } from "../hooks/use-page-details";
 
 export interface ContentSectionProps {
   activeLang: string;
   translations: Record<string, PageTranslationModel>;
   formErrors: FormErrors;
+  image?: string | null;
+  onChangeImage?: (url: string) => void;
   onChange: (
     lang: string,
     field: keyof PageTranslationModel,
@@ -29,6 +32,8 @@ export function ContentSection({
   activeLang,
   translations,
   onChange,
+  image,
+  onChangeImage,
   formErrors,
 }: ContentSectionProps) {
   const { t } = useTranslation("pages");
@@ -48,7 +53,9 @@ export function ContentSection({
   useEffect(() => {
     const relevantErrors = Object.entries(formErrors).reduce(
       (acc, [key, value]) => {
-        if (["title", "description", "slug", "content"].includes(key)) {
+        if (
+          ["title", "description", "slug", "content", "image"].includes(key)
+        ) {
           acc[key] = value;
         }
         return acc;
@@ -134,6 +141,7 @@ export function ContentSection({
               </div>
             </div>
 
+            {/* Description Field */}
             <div>
               <Label className="mb-2 block">{t("fields.description")}</Label>
               <Textarea
@@ -148,6 +156,25 @@ export function ContentSection({
                 </p>
               )}
             </div>
+
+            {/* Image Upload Field */}
+            {onChangeImage && (
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <Label>{t("fields.image")}</Label>
+                  {localErrors.image && (
+                    <span className="text-sm text-destructive">
+                      {localErrors.image}
+                    </span>
+                  )}
+                </div>
+                <FileUploader
+                  acceptedTypes="image/*"
+                  onChange={onChangeImage}
+                  defaultUrl={image || null}
+                />
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>
