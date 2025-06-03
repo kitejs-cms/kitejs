@@ -290,7 +290,8 @@ export function usePageDetails(type: "Page" | "Post") {
           description: translation.description,
           blocks: blocks ?? translation.blocks,
           seo: translation.seo,
-          categories: localData.categories
+          categories: localData.categories,
+          image: localData.image,
         };
 
         const result = await fetchData("pages", "POST", body);

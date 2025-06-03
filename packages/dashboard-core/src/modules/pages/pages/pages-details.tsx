@@ -111,6 +111,7 @@ export function PageDetailsPage({ pageType = "Page" }: Props) {
             createdBy={data?.createdBy}
             updatedBy={data?.updatedBy}
             onChange={onSettingsChange}
+            categories={data?.categories || []}
             onViewJson={() => setJsonView(true)}
           />
         </div>

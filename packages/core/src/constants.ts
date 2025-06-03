@@ -6,6 +6,7 @@ import {
   STORAGE_SETTINGS_KEY,
   SettingModel,
 } from "./modules/settings";
+import { ARTICLE_SETTINGS_KEY } from "modules/settings/models/article-settings.models";
 
 export const CORE_NAMESPACE = "core";
 
@@ -103,4 +104,7 @@ export const CoreSetting: SettingModel[] = [
       local: { uploadPath: "assets" },
     },
   },
+  {
+    key: ARTICLE_SETTINGS_KEY, value: { customFields: [] }
+  }
 ];

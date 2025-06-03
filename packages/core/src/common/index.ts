@@ -12,6 +12,7 @@ export * from "./middlewares/auth.middleware";
 /* Models */
 export * from "./models/api-response.model";
 export * from "./models/pagination.model";
+export * from "./models/field.model";
 
 /* Pipes */
 export * from "./pipes/validate-object-id.pipe";

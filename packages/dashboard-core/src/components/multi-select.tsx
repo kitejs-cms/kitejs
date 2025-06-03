@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "./ui/badge";
@@ -8,22 +8,23 @@ import { Checkbox } from "./ui/checkbox";
 
 interface TagItemProps {
   tag: string;
+  label: string;
   onRemove: (tag: string) => void;
 }
 
-const TagItem: React.FC<TagItemProps> = ({ tag, onRemove }) => {
+const TagItem: React.FC<TagItemProps> = ({ tag, label, onRemove }) => {
   const { t } = useTranslation("components");
   return (
     <Badge
       variant="outline"
       className="border-gray-200 bg-gray-50 font-normal flex items-center gap-1"
     >
-      <span>{tag}</span>
+      <span>{label}</span>
       <button
         type="button"
         onClick={() => onRemove(tag)}
         className="rounded-full pl-0.5 cursor-pointer"
-        aria-label={t("multi-select.removeAriaLabel", { tag })}
+        aria-label={t("multi-select.removeAriaLabel", { tag: label })}
       >
         <X className="h-3 w-3" />
       </button>
@@ -33,16 +34,33 @@ const TagItem: React.FC<TagItemProps> = ({ tag, onRemove }) => {
 
 interface TagsDisplayProps {
   tags: string[];
+  options: Option[];
   onRemoveTag: (tag: string) => void;
 }
 
-const TagsDisplay: React.FC<TagsDisplayProps> = ({ tags, onRemoveTag }) => (
-  <div className="flex flex-wrap gap-2 mt-2">
-    {tags.map((tag) => (
-      <TagItem key={tag} tag={tag} onRemove={onRemoveTag} />
-    ))}
-  </div>
-);
+const TagsDisplay: React.FC<TagsDisplayProps> = ({
+  tags,
+  options,
+  onRemoveTag,
+}) => {
+  const getLabelForTag = (tagValue: string): string => {
+    const option = options.find((opt) => opt.value === tagValue);
+    return option ? option.label : tagValue;
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {tags.map((tag) => (
+        <TagItem
+          key={tag}
+          tag={tag}
+          label={getLabelForTag(tag)}
+          onRemove={onRemoveTag}
+        />
+      ))}
+    </div>
+  );
+};
 
 interface Option {
   value: string;
@@ -94,6 +112,7 @@ const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
                 className="flex-shrink-0"
               />
               <label
+                onClick={() => onTagToggle(option.value)}
                 htmlFor={option.value}
                 className="text-sm font-medium leading-none cursor-pointer flex-1"
               >
@@ -120,6 +139,10 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 }) => {
   const [tags, setTags] = useState<string[]>(initialTags);
 
+  useEffect(() => {
+    setTags(initialTags);
+  }, [initialTags]);
+
   const handleTagToggle = (tag: string) => {
     const updatedTags = tags.includes(tag)
       ? tags.filter((t) => t !== tag)
@@ -142,7 +165,11 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         selectedTags={tags}
         onTagToggle={handleTagToggle}
       />
-      <TagsDisplay tags={tags} onRemoveTag={handleRemoveTag} />
+      <TagsDisplay
+        tags={tags}
+        options={options}
+        onRemoveTag={handleRemoveTag}
+      />
     </div>
   );
 };

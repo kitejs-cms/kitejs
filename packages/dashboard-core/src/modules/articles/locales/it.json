@@ -1,6 +1,6 @@
 {
   "menu": {
-    "posts": "Articoli",
+    "articles": "Articoli",
     "categories": "Categorie"
   },
   "breadcrumb": {
@@ -16,6 +16,13 @@
   "sections": {
     "details": "Dettagli",
     "settings": "Impostazioni"
+  },
+  "settings": {
+    "title": "Impostazioni Categorie",
+    "description": "Configura le impostazioni per le categorie degli articoli.",
+    "article-filds": {
+      "title": "Campi Articolo"
+    }
   },
   "fields": {
     "slug": "Slug",

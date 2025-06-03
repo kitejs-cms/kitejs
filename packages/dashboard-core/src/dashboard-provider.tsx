@@ -11,7 +11,7 @@ import { UsersModule } from "./modules/users";
 import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";
 import { PageModule } from "./modules/pages";
-import { PostModule } from "./modules/posts";
+import { PostModule } from "./modules/articles";
 
 interface DashboardRouterProps {
   modules?: DashboardModule[];
@@ -22,7 +22,7 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
     UsersModule,
     ProfileModule,
     PageModule,
-    PostModule
+    PostModule,
   ];
   const allModules = [...coreModules, ...modules];
 

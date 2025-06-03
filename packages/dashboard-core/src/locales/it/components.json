@@ -37,5 +37,72 @@
       "mb": "MB",
       "gb": "GB"
     }
+  },
+  "custom-field-builder": {
+    "fieldTypes": {
+      "text": "Testo",
+      "textarea": "Area di testo",
+      "richText": "Rich Text",
+      "number": "Numero",
+      "boolean": "Boolean",
+      "date": "Data"
+    },
+    "general": {
+      "required": "Richiesto",
+      "cancel": "Annulla",
+      "export": "Esporta",
+      "add": "Aggiungi",
+      "create": "Crea",
+      "update": "Aggiorna",
+      "edit": "Modifica",
+      "remove": "Rimuovi",
+      "save": "Salva"
+    },
+    "labels": {
+      "fieldKey": "Chiave Campo",
+      "fieldLabel": "Etichetta",
+      "fieldType": "Tipo di Campo",
+      "requiredField": "Campo richiesto",
+      "placeholder": "Placeholder",
+      "description": "Descrizione",
+      "minLength": "Lunghezza Minima",
+      "maxLength": "Lunghezza Massima",
+      "pattern": "Pattern (RegEx)",
+      "minValue": "Valore Minimo",
+      "maxValue": "Valore Massimo"
+    },
+    "errors": {
+      "keyRequired": "La chiave è richiesta",
+      "keyInvalidFormat": "La chiave deve iniziare con una lettera e contenere solo lettere, numeri e underscore",
+      "keyAlreadyExists": "Questa chiave è già in uso",
+      "labelRequired": "L'etichetta è richiesta",
+      "minLengthGreaterThanMax": "La lunghezza minima non può essere maggiore di quella massima",
+      "minValueGreaterThanMax": "Il valore minimo non può essere maggiore di quello massimo"
+    },
+    "placeholders": {
+      "fieldKey": "es. customField1",
+      "fieldLabel": "es. Campo Personalizzato",
+      "placeholder": "Testo di esempio...",
+      "description": "Breve descrizione del campo...",
+      "pattern": "es. ^[A-Za-z]+$"
+    },
+    "titles": {
+      "customFields": "Campi Personalizzati",
+      "newField": "Nuovo Campo",
+      "editField": "Modifica Campo",
+      "validationRules": "Regole di Validazione",
+      "noCustomFields": "Nessun campo personalizzato",
+      "createFirstField": "Inizia creando il tuo primo campo personalizzato"
+    },
+    "actions": {
+      "addField": "Aggiungi Campo",
+      "createField": "Crea Campo",
+      "updateField": "Aggiorna Campo"
+    },
+    "indicators": {
+      "min": "Min",
+      "max": "Max",
+      "pattern": "Pattern"
+    }
   }
 }

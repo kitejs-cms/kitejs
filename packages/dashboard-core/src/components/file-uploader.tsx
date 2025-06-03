@@ -274,7 +274,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       onClick={() => !isUploading && fileInputRef.current?.click()}
     >
       {isUploading ? (
-        <Loader2 className="w-8 h-8 mx-auto mb-2 text-orange-500 animate-spin" />
+        <Loader2 className="w-8 h-8 mx-auto mb-2 text-gray-500 animate-spin" />
       ) : (
         <Upload
           className={`w-8 h-8 mx-auto mb-2 ${dragOver ? "text-blue-500" : "text-gray-400"}`}

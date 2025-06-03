@@ -79,7 +79,8 @@ export class PagesService {
         expireAt: restData.expireAt,
         updatedBy: user.sub,
         type,
-        categories
+        categories,
+        image: restData.image,
       };
 
       const translationData = {
@@ -235,7 +236,6 @@ export class PagesService {
       seo: selectedTranslation.seo,
       language: language,
       image: pageData.image,
-
     };
 
     return response;
