@@ -6,7 +6,7 @@ import {
   STORAGE_SETTINGS_KEY,
   SettingModel,
 } from "./modules/settings";
-import { ARTICLE_SETTINGS_KEY } from "modules/settings/models/article-settings.models";
+import { ARTICLE_SETTINGS_KEY } from "./modules/settings/models/article-settings.models";
 
 export const CORE_NAMESPACE = "core";
 

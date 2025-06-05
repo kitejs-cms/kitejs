@@ -11,6 +11,7 @@ import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { usePageDetails } from "../hooks/use-page-details";
 import { PageEditor } from "../components/page-editor";
 import { SkeletonPage } from "../../../components/skeleton-page";
+import { CustomFieldForm } from "../../../components/custom-field-form";
 
 export type Props = {
   pageType?: "Post" | "Page";
@@ -29,6 +30,9 @@ export function PageDetailsPage({ pageType = "Page" }: Props) {
     onContentChange,
     onSeoChange,
     onSettingsChange,
+    customFields,
+    customFieldsValues,
+    onChangeCustomField,
 
     showUnsavedAlert,
     handleNavigation,
@@ -113,6 +117,14 @@ export function PageDetailsPage({ pageType = "Page" }: Props) {
             onChange={onSettingsChange}
             categories={data?.categories || []}
             onViewJson={() => setJsonView(true)}
+          />
+
+          <CustomFieldForm
+            title="Campi Personalizzati"
+            fields={customFields}
+            values={customFieldsValues}
+            onChange={onChangeCustomField}
+            errors={{}}
           />
         </div>
       </div>

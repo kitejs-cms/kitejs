@@ -1,11 +1,13 @@
 import { useSettingsContext } from "../../../context/settings-context";
 import { useBreadcrumb } from "../../../context/breadcrumb-context";
+import { FormValues } from "../../../components/custom-field-form";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApi } from "../../../hooks/use-api";
 import { toast } from "sonner";
 import type {
+  FieldDefinition,
   PageBlockModel,
   PageResponseDetailsModel,
   PageSeoModel,
@@ -21,10 +23,12 @@ export interface FormErrors {
 }
 
 export function usePageDetails(type: "Page" | "Post") {
+  const { getSetting } = useSettingsContext();
   const { t } = useTranslation("pages");
   const navigate = useNavigate();
   const { cmsSettings } = useSettingsContext();
   const { setBreadcrumb } = useBreadcrumb();
+
 
   const defaultLang = useMemo(
     () => cmsSettings?.defaultLanguage || "",
@@ -42,6 +46,32 @@ export function usePageDetails(type: "Page" | "Post") {
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
   const [navigateTo, setNavigateTo] = useState("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [customFields, setCustomFields] = useState<FieldDefinition[]>([]);
+  const [customFieldsValues, setCustomFieldsValues] = useState<FormValues>({});
+
+  useEffect(() => {
+    (async () => {
+      const { value } = await getSetting<{
+        value: { customFields: FieldDefinition[] };
+      }>("core", "core:article");
+
+      if (value?.customFields) {
+        setCustomFields(value.customFields);
+
+        const extractedValues: FormValues = {};
+
+        value.customFields.forEach((field) => {
+          if (localData && localData[field.key] !== undefined) {
+            extractedValues[field.key] = localData[field.key];
+          } else if (field.defaultValue !== undefined) {
+            extractedValues[field.key] = field.defaultValue;
+          }
+        });
+
+        setCustomFieldsValues(extractedValues);
+      }
+    })()
+  }, [getSetting, localData])
 
   useEffect(() => {
     const items = [{ label: t("breadcrumb.home"), path: "/" }]
@@ -235,6 +265,21 @@ export function usePageDetails(type: "Page" | "Post") {
     []
   );
 
+
+
+  const onChangeCustomField = useCallback(
+    (values: FormValues) => {
+
+      setCustomFieldsValues((prev) => {
+        if (!prev) return prev;
+
+        return { ...prev, ...values }
+      });
+      setHasChanges(true);
+    },
+    [setHasChanges]
+  );
+
   const handleNavigation = useCallback(
     (path: string) => {
       if (hasChanges) {
@@ -279,6 +324,7 @@ export function usePageDetails(type: "Page" | "Post") {
 
         const body: PageUpsertModel = {
           type,
+          ...customFieldsValues,
           id: id && id !== "create" ? localData.id : undefined,
           tags: localData.tags,
           status: localData.status,
@@ -336,7 +382,7 @@ export function usePageDetails(type: "Page" | "Post") {
         });
       }
     },
-    [localData, activeLang, id, fetchData, navigate, t, validateForm, type]
+    [localData, validateForm, activeLang, type, customFieldsValues, id, fetchData, navigate, t]
   );
 
   const onAddLanguage = useCallback((lang: string) => {
@@ -395,5 +441,8 @@ export function usePageDetails(type: "Page" | "Post") {
     confirmDiscard,
     handleSave,
     formErrors,
+    customFields,
+    customFieldsValues,
+    onChangeCustomField
   };
 }

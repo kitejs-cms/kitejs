@@ -1,4 +1,13 @@
 import React, { ReactElement, useState } from "react";
+import { Button } from "./ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import { Checkbox } from "./ui/checkbox";
+import type { FieldType, FieldDefinition } from "@kitejs-cms/core/index";
+import { useTranslation } from "react-i18next";
+import { Badge } from "./ui/badge";
 import {
   Plus,
   Trash2,
@@ -12,17 +21,7 @@ import {
   TextCursorInput,
   Palette,
   ALargeSmall,
-  Badge,
 } from "lucide-react";
-
-import { Button } from "./ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
-import { Label } from "./ui/label";
-import { Checkbox } from "./ui/checkbox";
-import type { FieldType, FieldDefinition } from "@kitejs-cms/core/index";
-import { useTranslation } from "react-i18next";
 
 const Alert = ({
   children,
@@ -106,7 +105,9 @@ const FieldPreview: React.FC<{
                 {field.label}
               </h4>
               {field.required && (
-                <Badge>{t("custom-field-builder.general.required")}</Badge>
+                <Badge variant="outline" className="text-xs font-normal">
+                  {t("custom-field-builder.general.required")}
+                </Badge>
               )}
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -120,31 +121,31 @@ const FieldPreview: React.FC<{
             {field.validation && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {field.validation.minLength && (
-                  <Badge>
+                  <Badge variant="outline" className="text-xs font-normal">
                     {t("custom-field-builder.indicators.min")}:{" "}
                     {field.validation.minLength}
                   </Badge>
                 )}
                 {field.validation.maxLength && (
-                  <Badge>
+                  <Badge variant="outline" className="text-xs font-normal">
                     {t("custom-field-builder.indicators.max")}:{" "}
                     {field.validation.maxLength}
                   </Badge>
                 )}
                 {field.validation.minValue !== undefined && (
-                  <Badge>
+                  <Badge variant="outline" className="text-xs font-normal">
                     {t("custom-field-builder.indicators.min")}:{" "}
                     {field.validation.minValue}
                   </Badge>
                 )}
                 {field.validation.maxValue !== undefined && (
-                  <Badge>
+                  <Badge variant="outline" className="text-xs font-normal">
                     {t("custom-field-builder.indicators.max")}:{" "}
                     {field.validation.maxValue}
                   </Badge>
                 )}
                 {field.validation.pattern && (
-                  <Badge className="bg-purple-100 text-purple-700">
+                  <Badge variant="outline" className="text-xs font-normal">
                     {t("custom-field-builder.indicators.pattern")}
                   </Badge>
                 )}
@@ -517,7 +518,6 @@ const FieldForm: React.FC<{
   );
 };
 
-// Componente principale standalone
 export function CustomFieldBuilder({
   value,
   onChange,
@@ -561,7 +561,6 @@ export function CustomFieldBuilder({
     const config = {
       customFields: value,
       exportedAt: new Date().toISOString(),
-      version: "1.0.0",
     };
 
     const blob = new Blob([JSON.stringify(config, null, 2)], {

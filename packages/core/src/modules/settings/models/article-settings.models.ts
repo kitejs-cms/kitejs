@@ -1,4 +1,4 @@
-import { FieldDefinition } from "common";
+import { FieldDefinition } from "../../../common";
 
 export const ARTICLE_SETTINGS_KEY = "core:article";
 

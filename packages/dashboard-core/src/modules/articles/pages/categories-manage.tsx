@@ -9,7 +9,7 @@ import { useClipboardTable } from "../../../hooks/use-clipboard-table";
 import { Separator } from "../../../components/ui/separator";
 import { DataTable } from "../../../components/data-table";
 import { useApi } from "../../../hooks/use-api";
-import type { CategoryResponseDetailsModel, PageResponseDetailsModel } from "@kitejs-cms/core/index";
+import type { CategoryResponseDetailsModel } from "@kitejs-cms/core/index";
 import {
   Card,
   CardContent,
@@ -30,10 +30,8 @@ import {
   Download,
   Search,
   Plus,
-  LayoutTemplate,
 } from "lucide-react";
 import { LanguagesBadge } from "../../pages/components/languages-badge";
-
 
 export function CategoriesManagePage() {
   const { setBreadcrumb } = useBreadcrumb();
@@ -63,9 +61,7 @@ export function CategoriesManagePage() {
     if (searchQuery) params.set("search", searchQuery);
     setSearchParams(params, { replace: true });
 
-    fetchData(
-      `categories?page=${currentPage}&itemsPerPage=${itemsPerPage}`
-    );
+    fetchData(`categories?page=${currentPage}&itemsPerPage=${itemsPerPage}`);
   }, [fetchData, currentPage, searchQuery, setSearchParams]);
 
   const handleCopy = () => {
@@ -157,7 +153,9 @@ export function CategoriesManagePage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate("/categories/create")}>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/categories/create")}
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     {t("buttons.add")}
                   </DropdownMenuItem>
@@ -248,7 +246,9 @@ export function CategoriesManagePage() {
               currentPage: pagination?.currentPage,
               totalPages: pagination?.totalPages,
               onPageChange: (page) => {
-                fetchData(`categories?page=${page}&itemsPerPage=${itemsPerPage}`);
+                fetchData(
+                  `categories?page=${page}&itemsPerPage=${itemsPerPage}`
+                );
                 const params = new URLSearchParams(searchParams);
                 params.set("page", page.toString());
                 setSearchParams(params);
