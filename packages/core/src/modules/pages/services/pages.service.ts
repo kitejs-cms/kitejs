@@ -1,3 +1,4 @@
+import { ARTICLE_SETTINGS_KEY, ArticleSettingsModel } from "../../settings/models/article-settings.models";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Page } from "../schemas/page.schema";
@@ -12,6 +13,7 @@ import { ObjectIdUtils } from "../../../common";
 import { PageStatus } from "../models/page-status.enum";
 import { CORE_NAMESPACE } from "../../../constants";
 import { CategoriesService, Category } from "../../categories";
+import { SettingsService } from "../../settings";
 import {
   Injectable,
   BadRequestException,
@@ -30,7 +32,8 @@ export class PagesService {
   constructor(
     @InjectModel(Page.name) private readonly pageModel: Model<Page>,
     private readonly categoriesService: CategoriesService,
-    private readonly slugService: SlugRegistryService
+    private readonly slugService: SlugRegistryService,
+    private readonly settingsService: SettingsService
   ) { }
 
   /**
@@ -71,6 +74,9 @@ export class PagesService {
     user: JwtPayloadModel
   ): Promise<PageResponseDetailsModel> {
     try {
+      const { value } = await this.settingsService.findOne<ArticleSettingsModel>(CORE_NAMESPACE, ARTICLE_SETTINGS_KEY);
+      const { customFields = [] } = value || {};
+
       const { id, language, type, categories, ...restData } = pageData;
       const pageBaseData = {
         status: restData.status,
@@ -91,16 +97,35 @@ export class PagesService {
         seo: restData.seo,
       };
 
+      let customFieldsData = {};
+      if (customFields.length > 0) {
+        const customFieldNames = new Set(customFields.map(field => field.key));
+
+        customFieldsData = Object.keys(restData)
+          .filter(key => customFieldNames.has(key))
+          .reduce((obj, key) => {
+            obj[key] = restData[key];
+            return obj;
+          }, {});
+      }
+
       let page: Page;
 
       if (id) {
+        const updateData = {
+          ...pageBaseData,
+          $set: { [`translations.${language}`]: translationData },
+          ...(customFields.length > 0 ? customFieldsData : {}),
+        };
+
         page = await this.pageModel.findByIdAndUpdate(
           id,
+          updateData,
           {
-            ...pageBaseData,
-            $set: { [`translations.${language}`]: translationData },
-          },
-          { new: true, upsert: false }
+            new: true,
+            upsert: false,
+            strict: customFields.length === 0
+          }
         );
 
         if (!page) {
@@ -114,13 +139,21 @@ export class PagesService {
           language
         );
       } else {
-        page = await this.pageModel.create({
+        const createData = {
           ...pageBaseData,
           createdBy: user.sub,
           translations: {
             [language]: translationData,
           },
-        });
+          ...(customFields.length > 0 ? customFieldsData : {}),
+        };
+
+        if (customFields.length > 0) {
+          page = new this.pageModel(createData, null, { strict: false });
+          await page.save();
+        } else {
+          page = await this.pageModel.create(createData);
+        }
 
         await this.slugService.registerSlug(
           restData.slug,

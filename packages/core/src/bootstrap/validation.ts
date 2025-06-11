@@ -10,9 +10,10 @@ export async function validationSetup(app: INestApplication): Promise<void> {
   app.useGlobalPipes(
     new ValidationPipe({
       enableDebugMessages: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
+      whitelist: false,
+      forbidNonWhitelisted: false,
       transform: true,
+      validateCustomDecorators: true,
     })
   );
 }

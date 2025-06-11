@@ -39,7 +39,7 @@ export class PagesController {
   })
   @ApiResponse({ status: 400, description: "Invalid input data" })
   async upsertPage(
-    @Body() upsertPageDto: PageUpsertDto,
+    @Body() upsertPageDto,
     @GetAuthUser() user: JwtPayloadModel
   ): Promise<PageResponseDetailDto> {
     const page = await this.pagesService.upsertPage(upsertPageDto, user);

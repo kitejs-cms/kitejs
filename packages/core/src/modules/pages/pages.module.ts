@@ -11,6 +11,7 @@ import {
   PageRevision,
   PageRevisionSchema,
 } from "./schemas/page-revision.schema";
+import { SettingsModule } from "../settings";
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import {
     ]),
     CacheModule,
     SlugRegistryModule,
-    CategoriesModule
+    CategoriesModule,
+    SettingsModule
   ],
   controllers: [PagesController],
   providers: [PagesService, PageRevisionsService],

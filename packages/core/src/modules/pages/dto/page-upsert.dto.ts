@@ -147,6 +147,14 @@ export class PageUpsertDto implements PageUpsertModel {
   @IsMongoId({ each: true })
   categories?: string[];
 
+  @ApiProperty({
+    description: "Unique slug identifier for the page",
+    example: "home-page",
+    required: true,
+  })
+  @IsOptional()
+  @IsString() venue?: string;
+
   constructor(partial: Partial<PageUpsertDto>) {
     const merged = {
       type: "Page",
