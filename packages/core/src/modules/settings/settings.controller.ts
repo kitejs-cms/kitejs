@@ -1,6 +1,7 @@
 import { InitCmsDto } from "./dto/init-cms.dto";
 import { SettingsService } from "./settings.service";
 import { SettingResponseDto } from "./dto/setting-response.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 import {
   Controller,
   Get,
@@ -11,7 +12,9 @@ import {
   Query,
   NotFoundException,
   Post,
+  UseGuards,
 } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 
 @Controller("settings")
 export class SettingsController {
@@ -55,6 +58,8 @@ export class SettingsController {
    * @param body - The value to update or create for the setting.
    */
   @Put(":namespace/:key")
+  @UseGuards(AuthGuard("jwt"))
+  @ApiBearerAuth()
   async upsertSetting(
     @Param("namespace") namespace: string,
     @Param("key") key: string,
@@ -83,6 +88,8 @@ export class SettingsController {
    * @param key - The unique key of the setting within the namespace.
    */
   @Delete(":namespace/:key")
+  @UseGuards(AuthGuard("jwt"))
+  @ApiBearerAuth()
   async deleteSetting(
     @Param("namespace") namespace: string,
     @Param("key") key: string

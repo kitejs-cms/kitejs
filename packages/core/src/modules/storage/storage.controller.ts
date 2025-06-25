@@ -5,6 +5,8 @@ import { CreateDirectoryDto } from "./dto/create-directory.dto";
 import { RenamePathDto } from "./dto/rename-path.dto";
 import { MovePathDto } from "./dto/move-path.dto";
 import { CopyPathDto } from "./dto/copy-path.dto";
+import { StorageItemDto } from "./dto/storage-response.dto";
+import { JwtAuthGuard } from "../auth";
 import {
   Controller,
   Post,
@@ -15,10 +17,15 @@ import {
   UseInterceptors,
   InternalServerErrorException,
   BadRequestException,
+  UseGuards,
 } from "@nestjs/common";
-
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from "@nestjs/swagger";
-import { StorageItemDto } from "./dto/storage-response.dto";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
 
 @ApiTags("Storage")
 @Controller("storage")
@@ -49,6 +56,8 @@ export class StorageController {
       },
     },
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @UseInterceptors(FileInterceptor("file"))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
@@ -73,6 +82,8 @@ export class StorageController {
   @ApiResponse({ status: 200, description: "File removed successfully" })
   @ApiResponse({ status: 400, description: "Bad request or file not found" })
   @ApiBody({ type: RemoveFileDto })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async removeFile(@Body() removeFileDto: RemoveFileDto) {
     const { filePath } = removeFileDto;
     try {
@@ -92,6 +103,8 @@ export class StorageController {
     description: "Directory structure retrieved successfully",
     type: StorageItemDto,
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async getDirectoryStructure(): Promise<StorageItemDto> {
     try {
       return await this.storageService.getDirectoryStructure();
@@ -110,6 +123,8 @@ export class StorageController {
     description: "Bad request or error creating directory",
   })
   @ApiBody({ type: CreateDirectoryDto })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async createEmptyDirectory(@Body() createDirectoryDto: CreateDirectoryDto) {
     try {
       await this.storageService.createEmptyDirectory(
@@ -130,6 +145,8 @@ export class StorageController {
     status: 400,
     description: "Bad request or error renaming item",
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiBody({ type: RenamePathDto })
   async renamePath(@Body() renameDto: RenamePathDto) {
     try {
@@ -148,6 +165,8 @@ export class StorageController {
   @ApiResponse({ status: 200, description: "Item moved successfully" })
   @ApiResponse({ status: 400, description: "Bad request or error moving item" })
   @ApiBody({ type: MovePathDto })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async movePath(@Body() moveDto: MovePathDto) {
     try {
       await this.storageService.movePath(
@@ -168,6 +187,8 @@ export class StorageController {
     description: "Bad request or error copying item",
   })
   @ApiBody({ type: CopyPathDto })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async copyPath(@Body() copyDto: CopyPathDto) {
     try {
       await this.storageService.copyPath(

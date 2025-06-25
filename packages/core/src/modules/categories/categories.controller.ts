@@ -1,10 +1,20 @@
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
-import { GetAuthUser, PaginationModel, ValidateObjectIdPipe } from "../../common";
 import { CategoryResponseDto } from "./dto/category-response.dto";
 import { CategoryUpsertDto } from "./dto/category-upsert.dto";
 import { CategoryResponseDetailDto } from "./dto/category-response-detail.dto";
 import { JwtAuthGuard, JwtPayloadModel } from "../../modules/auth";
 import { CategoriesService } from "./categories.service";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
+import {
+  GetAuthUser,
+  PaginationModel,
+  ValidateObjectIdPipe,
+} from "../../common";
 import {
   Controller,
   Get,
@@ -34,6 +44,8 @@ export class CategoriesController {
     description: "The category has been successfully created",
     type: CategoryResponseDto,
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiResponse({ status: 400, description: "Invalid input data" })
   async upsertCategory(
     @Body() upsertCategoryDto: CategoryUpsertDto,
@@ -43,7 +55,7 @@ export class CategoriesController {
       upsertCategoryDto,
       user
     );
-    
+
     return new CategoryResponseDetailDto(category);
   }
 
@@ -60,6 +72,8 @@ export class CategoriesController {
     description: "List of categories",
     type: [CategoryResponseDto],
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async getAllCategories(
     @Query("page", ParseIntPipe) page: number,
     @Query("itemsPerPage", ParseIntPipe) itemsPerPage: number
@@ -86,6 +100,7 @@ export class CategoriesController {
       throw new BadRequestException("Failed to retrieve categories.");
     }
   }
+
   @Get(":id")
   @ApiOperation({
     summary: "Retrieve category for admin backoffice",
@@ -99,6 +114,8 @@ export class CategoriesController {
     status: 404,
     description: "Category or translation not found",
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async getCategory(@Param("id") id: string) {
     try {
       const response = await this.categoriesService.findCategoryById(id);
@@ -113,6 +130,8 @@ export class CategoriesController {
   @ApiResponse({ status: 200, description: "The category has been deleted" })
   @ApiResponse({ status: 404, description: "Category not found" })
   @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async deleteCategory(@Param("id", ValidateObjectIdPipe) id: string) {
     try {
       const result = await this.categoriesService.deleteCategory(id);

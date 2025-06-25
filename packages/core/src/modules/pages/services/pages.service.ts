@@ -1,7 +1,3 @@
-import {
-  ARTICLE_SETTINGS_KEY,
-  ArticleSettingsModel,
-} from "../../settings/models/article-settings.models";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Page } from "../schemas/page.schema";
@@ -17,6 +13,10 @@ import { PageStatus } from "../models/page-status.enum";
 import { CORE_NAMESPACE } from "../../../constants";
 import { CategoriesService, Category } from "../../categories";
 import { SettingsService } from "../../settings";
+import {
+  ARTICLE_SETTINGS_KEY,
+  ArticleSettingsModel,
+} from "../../settings/models/article-settings.models";
 import {
   Injectable,
   BadRequestException,
@@ -45,73 +45,96 @@ export class PagesService {
   ) {}
 
   /**
+   * Builds the MongoDB query object based on filters and language
+   * @param filters Optional filters for status, type, category, and search
+   * @param language Language code for translations search
+   * @returns Promise<Record<string, any>> MongoDB query object
+   */
+  private async buildPagesQuery(
+    filters?: FilterModel,
+    language = "en"
+  ): Promise<Record<string, any>> {
+    const query: any = filters ?? {};
+
+    // Handle category filter
+    if (filters?.category) {
+      try {
+        const category = await this.categoriesService.findCategory(
+          filters.category
+        );
+        query.categories = category._id.toString();
+      } catch (error) {
+        this.logger.warn(`Category not found: ${filters.category}`, error);
+        // If category not found, add an impossible condition to return no results
+        query.categories = null;
+      }
+    }
+
+    // Handle search filter
+    if (filters?.search) {
+      const searchTerm = filters.search.trim();
+
+      if (searchTerm) {
+        const searchConditions = [
+          { tags: { $regex: searchTerm, $options: "i" } },
+          {
+            [`translations.${language}.title`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.description`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.blocks.content.text`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+
+          // Search in SEO fields
+          {
+            [`translations.${language}.seo.title`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.seo.description`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.seo.keywords`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+        ];
+
+        query.$or = searchConditions;
+      }
+    }
+
+    delete query.search;
+    return query;
+  }
+
+  /**
    * Counts the total number of pages with optional filters.
    * @param filters Optional filters for status and type
    * @returns Total number of pages matching the filters.
    * @throws BadRequestException if an error occurs.
    */
-  async countPages(filters?: FilterModel): Promise<number> {
+  async countPages(filters?: FilterModel, language = "en"): Promise<number> {
     try {
-      const query: any = filters ?? {};
+      const query = await this.buildPagesQuery(filters, language);
 
-      if (filters?.category) {
-        const category = await this.categoriesService.findCategory(
-          filters.category
-        );
-        query.categories = category._id.toString();
-      }
-
-      if (filters?.search) {
-        const searchTerm = filters.search.trim();
-
-        if (searchTerm) {
-          const searchConditions = [
-            { tags: { $regex: searchTerm, $options: "i" } },
-            { "translations.title": { $regex: searchTerm, $options: "i" } },
-            {
-              "translations.description": { $regex: searchTerm, $options: "i" },
-            },
-            {
-              "translations.blocks.content.text": {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              "translations.blocks.content.html": {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              "translations.blocks.content.markdown": {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              "translations.blocks.content": {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            { "translations.seo.title": { $regex: searchTerm, $options: "i" } },
-            {
-              "translations.seo.description": {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              "translations.seo.keywords": {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-          ];
-          query.$or = searchConditions;
-        }
-      }
       return await this.pageModel.countDocuments(query).exec();
     } catch (error) {
       this.logger.error(error);
@@ -264,9 +287,92 @@ export class PagesService {
       return page;
     } catch (error) {
       this.logger.error(error);
+      if (error instanceof NotFoundException) throw error;
+
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to fetch page. ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Retrieves a paginated list of pages for frontend consumption with single translations.
+   * Returns pages with only the translation corresponding to the requested language.
+   * If the requested language is not available, an optional fallback language is used.
+   *
+   * @param skip Number of documents to skip for pagination.
+   * @param take Number of documents to take/limit.
+   * @param sort Sort by fields
+   * @param filters Optional filters for status, type, category, and search.
+   * @param language The desired language code (e.g., 'en', 'it').
+   * @returns An array of PageResponseDto with selected translations.
+   * @throws BadRequestException if the query fails.
+   */
+  async findPagesForWeb(
+    skip = 0,
+    take = 10,
+    sort?: Record<string, any>,
+    filters?: FilterModel,
+    language = "en"
+  ): Promise<PageResponseDto[]> {
+    try {
+      const query = await this.buildPagesQuery(filters, language);
+
+      const pages = await this.pageModel
+        .find(query)
+        .skip(skip)
+        .limit(take)
+        .sort(sort ?? { publishAt: -1 })
+        .exec();
+
+      const pagesRes: PageResponseDto[] = [];
+
+      for (const page of pages) {
+        const pageData = page.toJSON();
+
+        // Cast translations as a record keyed by language code
+        const translations = pageData.translations as unknown as Record<
+          string,
+          PageTranslationModel
+        >;
+
+        // Attempt to get the requested translation
+        let selectedTranslation = translations[language];
+
+        // Skip this page if no suitable translation is found
+        if (!selectedTranslation) {
+          this.logger.warn(
+            `Translation not found for page ${pageData._id} in language: ${language}`
+          );
+          continue;
+        }
+
+        const response: PageResponseDto = {
+          slug: selectedTranslation.slug,
+          status: pageData.status as PageStatus,
+          tags: pageData.tags,
+          publishAt: pageData.publishAt
+            ? pageData.publishAt.toISOString()
+            : undefined,
+          title: selectedTranslation.title,
+          description: selectedTranslation.description,
+          blocks: selectedTranslation.blocks,
+          seo: selectedTranslation.seo,
+          language: language,
+          image: pageData.image,
+        };
+
+        pagesRes.push(response);
+      }
+
+      return pagesRes;
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to fetch pages for web. ${errorMessage}`
+      );
     }
   }
 
@@ -286,8 +392,7 @@ export class PagesService {
   async findPageForWeb(
     identify: string,
     language: string,
-    type: string,
-    fallbackLanguage?: string
+    type: string
   ): Promise<PageResponseDto> {
     // Retrieve the full page document
     const page = await this.findPage(identify, type);
@@ -307,15 +412,9 @@ export class PagesService {
     // Attempt to get the requested translation
     let selectedTranslation = translations[language];
 
-    // Use fallback language if the desired translation is missing
-    if (!selectedTranslation && fallbackLanguage) {
-      selectedTranslation = translations[fallbackLanguage];
-    }
-
     if (!selectedTranslation) {
       throw new NotFoundException(
-        `Translation not found for language: ${language}` +
-          (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
+        `Translation not found for language: ${language}`
       );
     }
 
@@ -407,61 +506,7 @@ export class PagesService {
     language = "en"
   ): Promise<PageResponseDetailsModel[]> {
     try {
-      const query: any = filters ?? {};
-
-      if (filters?.category) {
-        const category = await this.categoriesService.findCategory(
-          filters.category
-        );
-        query.categories = category._id.toString();
-      }
-
-      if (filters?.search) {
-        const searchTerm = filters.search.trim();
-
-        if (searchTerm) {
-          const searchConditions = [
-            { tags: { $regex: searchTerm, $options: "i" } },
-            {
-              [`translations.${language}.title`]: {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              [`translations.${language}.description`]: {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              [`translations.${language}.blocks.content.text`]: {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              [`translations.${language}.seo.title`]: {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              [`translations.${language}.seo.description`]: {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-            {
-              [`translations.${language}.seo.keywords`]: {
-                $regex: searchTerm,
-                $options: "i",
-              },
-            },
-          ];
-          query.$or = searchConditions;
-        }
-      }
+      const query = await this.buildPagesQuery(filters, language);
 
       const pages = await this.pageModel
         .find(query)

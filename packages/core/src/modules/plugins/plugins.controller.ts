@@ -1,6 +1,7 @@
-import { ApiQuery } from '@nestjs/swagger';
-import { PluginResponseDto } from './dto/plugin-response.dto';
-import { PluginsService } from './services/plugins.service';
+import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
+import { PluginResponseDto } from "./dto/plugin-response.dto";
+import { PluginsService } from "./services/plugins.service";
+import { JwtAuthGuard } from "../auth";
 import {
   Controller,
   Get,
@@ -8,9 +9,10 @@ import {
   Post,
   Query,
   NotFoundException,
-} from '@nestjs/common';
+  UseGuards,
+} from "@nestjs/common";
 
-@Controller('plugins')
+@Controller("plugins")
 export class PluginsController {
   constructor(private readonly pluginService: PluginsService) {}
 
@@ -18,9 +20,9 @@ export class PluginsController {
    * Get a specific plugin by namespace.
    * @param namespace - The namespace of the plugin.
    */
-  @Get(':namespace')
+  @Get(":namespace")
   async getPlugin(
-    @Param('namespace') namespace: string
+    @Param("namespace") namespace: string
   ): Promise<PluginResponseDto> {
     const data = await this.pluginService.findOne(namespace);
 
@@ -38,15 +40,15 @@ export class PluginsController {
    */
   @Get()
   @ApiQuery({
-    name: 'enabledOnly',
+    name: "enabledOnly",
     required: false,
     type: Boolean,
-    description: 'If true, returns only enabled plugins',
+    description: "If true, returns only enabled plugins",
   })
   async getAllPlugins(
-    @Query('enabledOnly') enabledOnly?: string
+    @Query("enabledOnly") enabledOnly?: string
   ): Promise<PluginResponseDto[]> {
-    const isEnabled = enabledOnly === 'true';
+    const isEnabled = enabledOnly === "true";
     const data = await this.pluginService.findAll(isEnabled);
     return data.map((plugin) => new PluginResponseDto(plugin));
   }
@@ -55,9 +57,11 @@ export class PluginsController {
    * Disable a plugin by setting `enabled` to false.
    * @param namespace - The namespace of the plugin to disable.
    */
-  @Post(':namespace/disable')
+  @Post(":namespace/disable")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async disablePlugin(
-    @Param('namespace') namespace: string
+    @Param("namespace") namespace: string
   ): Promise<{ success: boolean }> {
     const disabled = await this.pluginService.disable(namespace);
     return { success: disabled };

@@ -1,9 +1,16 @@
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { UserService } from "../services/users.service";
 import { UserResponseDto } from "../dto/user-response.dto";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UpdateUserDto } from "../dto/update-user.dto";
 import { UserStatus } from "../models/user-status.enum";
+import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
 import {
   ApiPagination,
   createMetaModel,
@@ -23,6 +30,7 @@ import {
   HttpCode,
   Patch,
   InternalServerErrorException,
+  UseGuards,
 } from "@nestjs/common";
 
 @ApiTags("Users")
@@ -56,6 +64,8 @@ export class UsersController {
     description: "Search user by firstName,lastName,email",
     example: "e.g. Mario Rossi",
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiPagination()
   async getAllUsers(@Query() query: Record<string, string>) {
     try {
@@ -79,6 +89,8 @@ export class UsersController {
     description: "The user data",
     type: UserResponseDto,
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiResponse({ status: 404, description: "User not found" })
   async getUserById(@Param("id", ValidateObjectIdPipe) id: string) {
     try {
@@ -101,6 +113,8 @@ export class UsersController {
   })
   @ApiResponse({ status: 400, description: "Invalid data" })
   @HttpCode(201)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async createUser(@Body() createUserDto: CreateUserDto) {
     try {
       const newUser = await this.userService.createUser(createUserDto);
@@ -121,6 +135,8 @@ export class UsersController {
   })
   @ApiResponse({ status: 404, description: "User not found" })
   @ApiResponse({ status: 400, description: "Invalid data" })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async updateUser(
     @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto
@@ -141,6 +157,8 @@ export class UsersController {
   @ApiResponse({ status: 200, description: "The user has been deleted" })
   @ApiResponse({ status: 404, description: "User not found" })
   @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async deleteUser(@Param("id") id: string) {
     try {
       const result = await this.userService.deleteUser(id);

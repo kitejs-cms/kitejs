@@ -1,10 +1,16 @@
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { PagesService } from "./services/pages.service";
 import { PageResponseDto } from "./dto/page-response.dto";
 import { PageResponseDetailDto } from "./dto/page-response-detail.dto";
 import { PageStatus } from "./models/page-status.enum";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { JwtPayloadModel } from "../auth/models/payload-jwt.model";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
 import {
   ApiPagination,
   ApiSort,
@@ -35,7 +41,7 @@ export class PagesController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @HttpCode(201)
+  @ApiBearerAuth()
   @ApiOperation({ summary: "Upsert page" })
   @ApiResponse({
     status: 201,
@@ -49,6 +55,70 @@ export class PagesController {
   ): Promise<PageResponseDetailDto> {
     const page = await this.pagesService.upsertPage(upsertPageDto, user);
     return new PageResponseDetailDto(page);
+  }
+
+  @Get("web")
+  @ApiOperation({
+    summary: "Retrieve paginated pages for public web in specific language",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "List of pages with selected translations",
+    type: [PageResponseDto],
+  })
+  @ApiPagination()
+  @ApiSort(["createdAt", "updatedAt", "publishAt"])
+  @ApiQuery({
+    name: "status",
+    required: false,
+    type: String,
+    enum: PageStatus,
+    description: "Filter pages by status",
+  })
+  @ApiQuery({
+    name: "type",
+    required: false,
+    type: String,
+    description: "Filter pages by type",
+    example: "Page",
+  })
+  @ApiQuery({
+    name: "category",
+    required: false,
+    type: String,
+    description: "Filter pages by category slug or id",
+  })
+  @ApiQuery({
+    name: "search",
+    required: false,
+    type: String,
+    description: "Search in page titles and descriptions",
+    example: "javascript tutorial",
+  })
+  async getAllPagesForWeb(
+    @Language() language: string,
+    @Query() query: Record<string, string>,
+    @Query("type") type = "Page"
+  ) {
+    const { filter, sort, skip, take } = parseQuery(query);
+
+    const totalItems = await this.pagesService.countPages(
+      { ...filter, type },
+      language
+    );
+
+    const data = await this.pagesService.findPagesForWeb(
+      skip,
+      take,
+      sort,
+      { ...filter, type },
+      language
+    );
+
+    return {
+      meta: createMetaModel({ filter, sort, skip, take }, totalItems),
+      data: data.map((item) => new PageResponseDto(item)),
+    };
   }
 
   @Get()
@@ -87,6 +157,8 @@ export class PagesController {
     description: "Search in page titles and descriptions",
     example: "javascript tutorial",
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async getAllPages(
     @Language() language: string,
     @Query() query: Record<string, string>,
@@ -95,10 +167,11 @@ export class PagesController {
     try {
       const { filter, sort, skip, take } = parseQuery(query);
 
-      const totalItems = await this.pagesService.countPages({
-        ...filter,
-        type,
-      });
+      const totalItems = await this.pagesService.countPages(
+        { ...filter, type },
+        language
+      );
+
       const data = await this.pagesService.findPages(
         skip,
         take,
@@ -126,6 +199,8 @@ export class PagesController {
     type: PageResponseDetailDto,
   })
   @ApiResponse({ status: 404, description: "Page or translation not found" })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async getPage(@Param("id") id: string) {
     try {
       const response = await this.pagesService.findPageById(id);
@@ -140,6 +215,8 @@ export class PagesController {
   @ApiResponse({ status: 200, description: "The page has been deleted" })
   @ApiResponse({ status: 404, description: "Page not found" })
   @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async deletePage(@Param("id", ValidateObjectIdPipe) id: string) {
     try {
       const result = await this.pagesService.deletePage(id);
@@ -156,19 +233,6 @@ export class PagesController {
   @ApiOperation({
     summary: "Retrieve page for public web in specific language",
   })
-  @ApiQuery({
-    name: "lang",
-    required: true,
-    description: "Language code to get the correct translation (e.g. en, it)",
-    type: String,
-  })
-  @ApiQuery({
-    name: "fallback",
-    required: false,
-    description:
-      "Optional fallback language code if requested translation is missing",
-    type: String,
-  })
   @ApiResponse({
     status: 200,
     description: "Page response with selected translation",
@@ -182,24 +246,18 @@ export class PagesController {
   })
   @ApiResponse({ status: 404, description: "Page or translation not found" })
   async getPageForWeb(
+    @Language() language: string,
     @Param("slug") slug: string,
-    @Query("lang") language: string,
-    @Query("fallback") fallbackLanguage?: string,
     @Query("type") type = "Page"
   ) {
-    try {
-      const response = await this.pagesService.findPageForWeb(
-        slug,
-        language,
-        type,
-        fallbackLanguage
-      );
-      return {
-        meta: { query: { lang: language, type, slug, fallbackLanguage } },
-        data: new PageResponseDto(response),
-      };
-    } catch (error) {
-      throw new BadRequestException("Failed to retrieve page for web.");
-    }
+    const response = await this.pagesService.findPageForWeb(
+      slug,
+      language,
+      type
+    );
+    return {
+      meta: { query: { type, slug } },
+      data: new PageResponseDto(response),
+    };
   }
 }

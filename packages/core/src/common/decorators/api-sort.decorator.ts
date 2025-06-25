@@ -13,7 +13,7 @@ export function ApiSort(allowedFields: string[] = []) {
       required: false,
       type: String,
       description,
-      example: "-createdAt,title",
+      example: "-createdAt,publishAt",
     })
   );
 }
