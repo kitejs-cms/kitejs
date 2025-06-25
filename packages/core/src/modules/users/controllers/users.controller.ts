@@ -1,10 +1,15 @@
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
-import { PaginationModel, ValidateObjectIdPipe } from "../../../common";
 import { UserService } from "../services/users.service";
 import { UserResponseDto } from "../dto/user-response.dto";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UpdateUserDto } from "../dto/update-user.dto";
 import { UserStatus } from "../models/user-status.enum";
+import {
+  ApiPagination,
+  createMetaModel,
+  parseQuery,
+  ValidateObjectIdPipe,
+} from "../../../common";
 import {
   Controller,
   Get,
@@ -16,7 +21,6 @@ import {
   NotFoundException,
   BadRequestException,
   HttpCode,
-  ParseIntPipe,
   Patch,
   InternalServerErrorException,
 } from "@nestjs/common";
@@ -40,32 +44,28 @@ export class UsersController {
     enum: UserStatus,
     description: "Filter users by status. Optional parameter.",
   })
-  @ApiQuery({ name: "page", required: true, type: Number })
-  @ApiQuery({ name: "itemsPerPage", required: true, type: Number })
   @ApiResponse({
     status: 200,
     description: "List of users",
     type: [UserResponseDto],
   })
-  async getAllUsers(
-    @Query("page", ParseIntPipe) page: number,
-    @Query("itemsPerPage", ParseIntPipe) itemsPerPage: number,
-    @Query("status") status?: UserStatus
-  ) {
+  @ApiQuery({
+    name: "search",
+    required: false,
+    type: String,
+    description: "Search user by firstName,lastName,email",
+    example: "e.g. Mario Rossi",
+  })
+  @ApiPagination()
+  async getAllUsers(@Query() query: Record<string, string>) {
     try {
-      const totalItems = await this.userService.countUsers(status);
-      const data = await this.userService.findUsers(page, itemsPerPage, status);
-
-      const pagination: PaginationModel = {
-        totalItems,
-        currentPage: page,
-        totalPages: Math.ceil(totalItems / itemsPerPage),
-        pageSize: itemsPerPage,
-      };
+      const { filter, sort, skip, take } = parseQuery(query);
+      const totalItems = await this.userService.countUsers(filter);
+      const data = await this.userService.findUsers(skip, take, sort, filter);
 
       return {
+        meta: createMetaModel({ filter, sort, skip, take }, totalItems),
         data: data.map((item) => new UserResponseDto(item)),
-        meta: { pagination, query: { status } },
       };
     } catch (error) {
       throw new BadRequestException("Failed to retrieve users.");

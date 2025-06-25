@@ -5,6 +5,7 @@ export type MetaModel = {
   query?: Record<string, unknown>;
   [key: string]: any;
   pagination?: PaginationModel;
+  sort?: Record<string, string>
 };
 
 export type ApiResponse<T = unknown> = {

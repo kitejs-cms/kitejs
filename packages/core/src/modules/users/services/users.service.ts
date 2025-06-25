@@ -2,7 +2,6 @@ import { Injectable, BadRequestException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { User } from "../schemas/user.schema";
-import { UserStatus } from "../models/user-status.enum";
 import { Role } from "../schemas/role.schema";
 import { Permission } from "../schemas/permission.schema";
 import { UserResponseModel } from "../models/user-response.model";
@@ -18,7 +17,7 @@ export class UserService {
     @InjectModel(User.name) private userModel: Model<User>,
     private readonly permissionService: PermissionsService,
     private readonly roleService: RolesService
-  ) {}
+  ) { }
 
   /**
    * Creates a new user.
@@ -53,9 +52,61 @@ export class UserService {
    * @param status Optional status to filter users.
    * @returns The total number of matching users.
    */
-  async countUsers(status?: string): Promise<number> {
+  async countUsers(filters?: Record<string, any>): Promise<number> {
     try {
-      const query = status ? { status, deletedAt: null } : { deletedAt: null };
+      const { search, ...otherFilters } = filters || {};
+      const query: any = { ...otherFilters, deletedAt: null };
+
+      if (search && typeof search === 'string' && search.trim()) {
+        const searchTerm = search.trim();
+
+        const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
+
+        if (searchWords.length === 1) {
+          const singleWordRegex = new RegExp(searchWords[0], 'i');
+          query.$or = [
+            { firstName: { $regex: singleWordRegex } },
+            { lastName: { $regex: singleWordRegex } },
+            { email: { $regex: singleWordRegex } }
+          ];
+        } else if (searchWords.length >= 2) {
+          const [firstWord, secondWord, ...otherWords] = searchWords;
+          const firstWordRegex = new RegExp(firstWord, 'i');
+          const secondWordRegex = new RegExp(secondWord, 'i');
+          const allWordsRegex = searchWords.map(word => new RegExp(word, 'i'));
+
+          query.$or = [
+            { firstName: { $regex: new RegExp(searchTerm, 'i') } },
+            { lastName: { $regex: new RegExp(searchTerm, 'i') } },
+            { email: { $regex: new RegExp(searchTerm, 'i') } },
+            {
+              $and: [
+                { firstName: { $regex: firstWordRegex } },
+                { lastName: { $regex: secondWordRegex } }
+              ]
+            },
+            {
+              $and: [
+                { firstName: { $regex: secondWordRegex } },
+                { lastName: { $regex: firstWordRegex } }
+              ]
+            },
+
+            ...(otherWords.length > 0 ? [{
+              $and: allWordsRegex.map(regex => ({
+                $or: [
+                  { firstName: { $regex: regex } },
+                  { lastName: { $regex: regex } },
+                  { email: { $regex: regex } }
+                ]
+              }))
+            }] : []),
+
+            { email: { $regex: new RegExp(searchWords.join('|'), 'i') } }
+          ];
+        }
+      }
+
       return await this.userModel.countDocuments(query).exec();
     } catch (error) {
       const errorMessage =
@@ -66,28 +117,89 @@ export class UserService {
 
   /**
    * Retrieves all users based on optional status filter and pagination.
-   * @param page Page number for pagination (default: 1).
-   * @param itemsPerPage Number of items per page (default: 10).
-   * @param status Optional status to filter users.
+   * @param skip Number of documents to skip for pagination.
+   * @param take Number of documents to take/limit.
+   * @param sort sort by fields
+   * @param filters Optional filters for status and type.
    * @returns A paginated result with users and their permissions/roles.
    */
   async findUsers(
-    page = 1,
-    itemsPerPage = 10,
-    status?: UserStatus
+    skip = 0,
+    take = 10,
+    sort?: Record<string, any>,
+    filters?: Record<string, any>,
   ): Promise<UserResponseModel[]> {
     try {
-      const query = status ? { status, deletedAt: null } : { deletedAt: null };
-      const skip = (page - 1) * itemsPerPage;
+      // Estrai il parametro search dai filtri
+      const { search, ...otherFilters } = filters || {};
+
+      // Costruisci la query base
+      const query: any = { ...otherFilters, deletedAt: null };
+
+      // Se c'è un parametro search, aggiungi le condizioni di ricerca
+      if (search && typeof search === 'string' && search.trim()) {
+        const searchTerm = search.trim();
+
+        // Dividi il termine di ricerca in parole
+        const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
+
+        if (searchWords.length === 1) {
+          // Ricerca con una sola parola
+          const singleWordRegex = new RegExp(searchWords[0], 'i');
+          query.$or = [
+            { firstName: { $regex: singleWordRegex } },
+            { lastName: { $regex: singleWordRegex } },
+            { email: { $regex: singleWordRegex } }
+          ];
+        } else if (searchWords.length >= 2) {
+          // Ricerca con più parole - gestisce sia "Mario Rossi" che "Rossi Mario"
+          const [firstWord, secondWord, ...otherWords] = searchWords;
+
+          const firstWordRegex = new RegExp(firstWord, 'i');
+          const secondWordRegex = new RegExp(secondWord, 'i');
+          const allWordsRegex = searchWords.map(word => new RegExp(word, 'i'));
+
+          query.$or = [
+            { firstName: { $regex: new RegExp(searchTerm, 'i') } },
+            { lastName: { $regex: new RegExp(searchTerm, 'i') } },
+            { email: { $regex: new RegExp(searchTerm, 'i') } },
+            {
+              $and: [
+                { firstName: { $regex: firstWordRegex } },
+                { lastName: { $regex: secondWordRegex } }
+              ]
+            },
+            {
+              $and: [
+                { firstName: { $regex: secondWordRegex } },
+                { lastName: { $regex: firstWordRegex } }
+              ]
+            },
+
+            ...(otherWords.length > 0 ? [{
+              $and: allWordsRegex.map(regex => ({
+                $or: [
+                  { firstName: { $regex: regex } },
+                  { lastName: { $regex: regex } },
+                  { email: { $regex: regex } }
+                ]
+              }))
+            }] : []),
+
+            { email: { $regex: new RegExp(searchWords.join('|'), 'i') } }
+          ];
+        }
+      }
 
       const users = await this.userModel
         .find(query)
         .skip(skip)
-        .limit(itemsPerPage)
+        .limit(take)
         .populate<{
           roles: Role[];
           permissions: Permission[];
         }>("roles permissions")
+        .sort(sort ?? { createdAt: -1 })
         .exec();
 
       const data: UserResponseModel[] = users.map((user) => {
@@ -112,7 +224,6 @@ export class UserService {
       throw new BadRequestException(`Failed to fetch users. ${errorMessage}`);
     }
   }
-
   /**
    * Retrieves a user by a unique identifier, which can be an ID or an email.
    * @param identify The unique identifier (ID or email).

@@ -1,4 +1,7 @@
-import { ARTICLE_SETTINGS_KEY, ArticleSettingsModel } from "../../settings/models/article-settings.models";
+import {
+  ARTICLE_SETTINGS_KEY,
+  ArticleSettingsModel,
+} from "../../settings/models/article-settings.models";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Page } from "../schemas/page.schema";
@@ -21,7 +24,12 @@ import {
   Logger,
 } from "@nestjs/common";
 
-type FilterModel = { status?: PageStatus; type?: string, category?: string }
+type FilterModel = {
+  status?: PageStatus;
+  type?: string;
+  category?: string;
+  search?: string;
+};
 
 @Injectable()
 export class PagesService {
@@ -34,7 +42,7 @@ export class PagesService {
     private readonly categoriesService: CategoriesService,
     private readonly slugService: SlugRegistryService,
     private readonly settingsService: SettingsService
-  ) { }
+  ) {}
 
   /**
    * Counts the total number of pages with optional filters.
@@ -44,15 +52,66 @@ export class PagesService {
    */
   async countPages(filters?: FilterModel): Promise<number> {
     try {
-      const query: FilterModel & { categories?: string } = {};
-      if (filters?.status) query.status = filters.status;
-      if (filters?.type) query.type = filters.type;
+      const query: any = filters ?? {};
 
       if (filters?.category) {
-        const category = await this.categoriesService.findCategory(filters.category)
-        query.categories = category._id.toString()
+        const category = await this.categoriesService.findCategory(
+          filters.category
+        );
+        query.categories = category._id.toString();
       }
 
+      if (filters?.search) {
+        const searchTerm = filters.search.trim();
+
+        if (searchTerm) {
+          const searchConditions = [
+            { tags: { $regex: searchTerm, $options: "i" } },
+            { "translations.title": { $regex: searchTerm, $options: "i" } },
+            {
+              "translations.description": { $regex: searchTerm, $options: "i" },
+            },
+            {
+              "translations.blocks.content.text": {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              "translations.blocks.content.html": {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              "translations.blocks.content.markdown": {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              "translations.blocks.content": {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            { "translations.seo.title": { $regex: searchTerm, $options: "i" } },
+            {
+              "translations.seo.description": {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              "translations.seo.keywords": {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+          ];
+          query.$or = searchConditions;
+        }
+      }
       return await this.pageModel.countDocuments(query).exec();
     } catch (error) {
       this.logger.error(error);
@@ -74,7 +133,11 @@ export class PagesService {
     user: JwtPayloadModel
   ): Promise<PageResponseDetailsModel> {
     try {
-      const { value } = await this.settingsService.findOne<ArticleSettingsModel>(CORE_NAMESPACE, ARTICLE_SETTINGS_KEY);
+      const { value } =
+        await this.settingsService.findOne<ArticleSettingsModel>(
+          CORE_NAMESPACE,
+          ARTICLE_SETTINGS_KEY
+        );
       const { customFields = [] } = value || {};
 
       const { id, language, type, categories, ...restData } = pageData;
@@ -99,10 +162,12 @@ export class PagesService {
 
       let customFieldsData = {};
       if (customFields.length > 0) {
-        const customFieldNames = new Set(customFields.map(field => field.key));
+        const customFieldNames = new Set(
+          customFields.map((field) => field.key)
+        );
 
         customFieldsData = Object.keys(restData)
-          .filter(key => customFieldNames.has(key))
+          .filter((key) => customFieldNames.has(key))
           .reduce((obj, key) => {
             obj[key] = restData[key];
             return obj;
@@ -118,15 +183,11 @@ export class PagesService {
           ...(customFields.length > 0 ? customFieldsData : {}),
         };
 
-        page = await this.pageModel.findByIdAndUpdate(
-          id,
-          updateData,
-          {
-            new: true,
-            upsert: false,
-            strict: customFields.length === 0
-          }
-        );
+        page = await this.pageModel.findByIdAndUpdate(id, updateData, {
+          new: true,
+          upsert: false,
+          strict: customFields.length === 0,
+        });
 
         if (!page) {
           throw new NotFoundException(`Page with ID ${id} not found`);
@@ -190,7 +251,7 @@ export class PagesService {
         // Otherwise, resolve the slug and query by _id
         const slugEntry = await this.slugService.findEntityBySlug(
           identify,
-          type === "Post" ? this.slugPostNamespace : this.slugPageNamespace,
+          type === "Post" ? this.slugPostNamespace : this.slugPageNamespace
         );
 
         if (!slugEntry) {
@@ -226,7 +287,7 @@ export class PagesService {
     identify: string,
     language: string,
     type: string,
-    fallbackLanguage?: string,
+    fallbackLanguage?: string
   ): Promise<PageResponseDto> {
     // Retrieve the full page document
     const page = await this.findPage(identify, type);
@@ -254,7 +315,7 @@ export class PagesService {
     if (!selectedTranslation) {
       throw new NotFoundException(
         `Translation not found for language: ${language}` +
-        (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
+          (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
       );
     }
 
@@ -314,7 +375,7 @@ export class PagesService {
 
       return {
         ...json,
-        categories: json.categories.map(item => item._id.toString()),
+        categories: json.categories.map((item) => item._id.toString()),
         createdBy: `${page.createdBy.firstName} ${page.createdBy.lastName}`,
         updatedBy: `${page.updatedBy.firstName} ${page.updatedBy.lastName}`,
         translations: translationsWithSlug,
@@ -331,35 +392,85 @@ export class PagesService {
 
   /**
    * Retrieves a paginated list of pages with optional filters.
-   * @param pageNumber Page number (default: 1).
-   * @param itemsPerPage Number of items per page (default: 10).
+   * @param skip Number of documents to skip for pagination.
+   * @param take Number of documents to take/limit.
+   * @param sort sort by fields
    * @param filters Optional filters for status and type.
    * @returns An array of pages.
    * @throws BadRequestException if the query fails.
    */
   async findPages(
-    pageNumber = 1,
-    itemsPerPage = 10,
-    filters?: FilterModel
+    skip = 0,
+    take = 10,
+    sort?: Record<string, any>,
+    filters?: FilterModel,
+    language = "en"
   ): Promise<PageResponseDetailsModel[]> {
     try {
-      const skip = (pageNumber - 1) * itemsPerPage;
+      const query: any = filters ?? {};
 
-      const query: FilterModel & { categories?: string } = {};
-      if (filters?.status) query.status = filters.status;
-      if (filters?.type) query.type = filters.type;
       if (filters?.category) {
-        const category = await this.categoriesService.findCategory(filters.category)
-        query.categories = category._id.toString()
+        const category = await this.categoriesService.findCategory(
+          filters.category
+        );
+        query.categories = category._id.toString();
+      }
+
+      if (filters?.search) {
+        const searchTerm = filters.search.trim();
+
+        if (searchTerm) {
+          const searchConditions = [
+            { tags: { $regex: searchTerm, $options: "i" } },
+            {
+              [`translations.${language}.title`]: {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              [`translations.${language}.description`]: {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              [`translations.${language}.blocks.content.text`]: {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              [`translations.${language}.seo.title`]: {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              [`translations.${language}.seo.description`]: {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+            {
+              [`translations.${language}.seo.keywords`]: {
+                $regex: searchTerm,
+                $options: "i",
+              },
+            },
+          ];
+          query.$or = searchConditions;
+        }
       }
 
       const pages = await this.pageModel
         .find(query)
         .skip(skip)
-        .limit(itemsPerPage)
+        .limit(take)
         .populate<{ createdBy: User }>("createdBy")
         .populate<{ updatedBy: User }>("updatedBy")
         .populate<{ categories: Category[] }>("categories")
+        .sort(sort ?? { publishAt: -1 })
         .exec();
 
       const pagesRes: PageResponseDetailsModel[] = [];
@@ -382,10 +493,10 @@ export class PagesService {
           };
         }
 
-        const categories: string[] = []
+        const categories: string[] = [];
         for (const category of json.categories) {
           for (const [, trans] of Object.entries(category.translations)) {
-            categories.push(trans.title)
+            categories.push(trans.title);
           }
         }
 

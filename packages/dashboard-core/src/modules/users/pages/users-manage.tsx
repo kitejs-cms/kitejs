@@ -60,7 +60,7 @@ export function UsersManagePage() {
     setSearchParams(queryParams, { replace: true });
 
     fetchData(
-      `users?page=${currentPage}&itemsPerPage=${itemsPerPage}${searchQuery ? `&search=${searchQuery}` : ""}`
+      `users?pgae[number]=${currentPage}&pgae[size]=${itemsPerPage}${searchQuery ? `&search=${searchQuery}` : ""}`
     );
   }, [fetchData, currentPage, searchQuery, setSearchParams, searchParams]);
 
@@ -202,7 +202,9 @@ export function UsersManagePage() {
               currentPage: pagination?.currentPage,
               totalPages: pagination?.totalPages,
               onPageChange: (page) => {
-                fetchData(`users?page=${page}&itemsPerPage=${itemsPerPage}`);
+                fetchData(
+                  `users?pgae[number]=${page}&pgae[size]=${itemsPerPage}`
+                );
                 searchParams.set("page", page.toString());
               },
             }}

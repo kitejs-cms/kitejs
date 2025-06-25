@@ -61,7 +61,9 @@ export function CategoriesManagePage() {
     if (searchQuery) params.set("search", searchQuery);
     setSearchParams(params, { replace: true });
 
-    fetchData(`categories?page=${currentPage}&itemsPerPage=${itemsPerPage}`);
+    fetchData(
+      `categories?page[number]=${currentPage}&page[size]=${itemsPerPage}`
+    );
   }, [fetchData, currentPage, searchQuery, setSearchParams]);
 
   const handleCopy = () => {
@@ -247,7 +249,7 @@ export function CategoriesManagePage() {
               totalPages: pagination?.totalPages,
               onPageChange: (page) => {
                 fetchData(
-                  `categories?page=${page}&itemsPerPage=${itemsPerPage}`
+                  `categories?page[number]=${page}&page[size]=${itemsPerPage}`
                 );
                 const params = new URLSearchParams(searchParams);
                 params.set("page", page.toString());

@@ -73,7 +73,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
     setSearchParams(params, { replace: true });
 
     fetchData(
-      `pages?type=${pageType}&page=${currentPage}&itemsPerPage=${itemsPerPage}${
+      `pages?type=${pageType}&pgae[number]=${currentPage}&pgae[size]=${itemsPerPage}${
         searchQuery ? `&search=${searchQuery}` : ""
       }`
     );
@@ -290,7 +290,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
               totalPages: pagination?.totalPages,
               onPageChange: (page) => {
                 fetchData(
-                  `pages?type=${pageType}&page=${page}&itemsPerPage=${itemsPerPage}`
+                  `pages?type=${pageType}&pgae[number]=${page}&pgae[size]=${itemsPerPage}`
                 );
                 const params = new URLSearchParams(searchParams);
                 params.set("page", page.toString());

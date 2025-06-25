@@ -62,7 +62,7 @@ export function SettingsSection({
 
   useEffect(() => {
     if (type === "Post") {
-      fetchData("categories?page=1&itemsPerPage=100");
+      fetchData("categories?pgae[number]=1&pgae[size]=100");
     }
   }, [fetchData, type]);
 

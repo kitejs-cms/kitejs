@@ -1,13 +1,19 @@
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { PagesService } from "./services/pages.service";
-import { GetAuthUser, ValidateObjectIdPipe } from "../../common";
 import { PageResponseDto } from "./dto/page-response.dto";
-import { PaginationModel } from "../../common";
-import { PageUpsertDto } from "./dto/page-upsert.dto";
 import { PageResponseDetailDto } from "./dto/page-response-detail.dto";
 import { PageStatus } from "./models/page-status.enum";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { JwtPayloadModel } from "../auth/models/payload-jwt.model";
+import {
+  ApiPagination,
+  ApiSort,
+  createMetaModel,
+  GetAuthUser,
+  Language,
+  parseQuery,
+  ValidateObjectIdPipe,
+} from "../../common";
 import {
   Controller,
   Get,
@@ -17,7 +23,6 @@ import {
   NotFoundException,
   BadRequestException,
   HttpCode,
-  ParseIntPipe,
   Post,
   Body,
   UseGuards,
@@ -26,7 +31,7 @@ import {
 @ApiTags("Pages")
 @Controller("pages")
 export class PagesController {
-  constructor(private readonly pagesService: PagesService) { }
+  constructor(private readonly pagesService: PagesService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -50,55 +55,60 @@ export class PagesController {
   @ApiOperation({ summary: "Retrieve all pages" })
   @ApiResponse({
     status: 200,
-    description: "Total number of pages",
-    type: Number,
+    description: "List of pages",
+    type: [PageResponseDto],
   })
+  @ApiPagination()
+  @ApiSort(["createdAt", "updatedAt", "publishAt"])
   @ApiQuery({
     name: "status",
     required: false,
     type: String,
     enum: PageStatus,
-    description: "Filter pages by status. Optional parameter.",
+    description: "Filter pages by status",
   })
-  @ApiQuery({ name: "page", required: true, type: Number })
-  @ApiQuery({ name: "itemsPerPage", required: true, type: Number })
   @ApiQuery({
     name: "type",
     required: false,
     type: String,
-    description: "Filter pages by type. Optional parameter.",
+    description: "Filter pages by type",
+    example: "Page",
   })
   @ApiQuery({
     name: "category",
     required: false,
     type: String,
-    description: "Filter pages by category slug or id. Optional parameter.",
+    description: "Filter pages by category slug or id",
   })
-  @ApiResponse({
-    status: 200,
-    description: "List of pages",
-    type: [PageResponseDto],
+  @ApiQuery({
+    name: "search",
+    required: false,
+    type: String,
+    description: "Search in page titles and descriptions",
+    example: "javascript tutorial",
   })
   async getAllPages(
-    @Query("page", ParseIntPipe) page: number,
-    @Query("itemsPerPage", ParseIntPipe) itemsPerPage: number,
-    @Query("status") status?: PageStatus,
-    @Query("type") type = 'Page',
-    @Query("category") category?: string,
+    @Language() language: string,
+    @Query() query: Record<string, string>,
+    @Query("type") type = "Page"
   ) {
     try {
-      const totalItems = await this.pagesService.countPages({ status, type, category });
-      const data = await this.pagesService.findPages(page, itemsPerPage, { status, type, category });
+      const { filter, sort, skip, take } = parseQuery(query);
 
-      const pagination: PaginationModel = {
-        totalItems,
-        currentPage: page,
-        totalPages: Math.ceil(totalItems / itemsPerPage),
-        pageSize: itemsPerPage,
-      };
+      const totalItems = await this.pagesService.countPages({
+        ...filter,
+        type,
+      });
+      const data = await this.pagesService.findPages(
+        skip,
+        take,
+        sort,
+        { ...filter, type },
+        language
+      );
 
       return {
-        meta: { pagination, query: { status, type, category } },
+        meta: createMetaModel({ filter, sort, skip, take }, totalItems),
         data: data.map((item) => new PageResponseDetailDto(item)),
       };
     } catch (error) {
@@ -175,8 +185,7 @@ export class PagesController {
     @Param("slug") slug: string,
     @Query("lang") language: string,
     @Query("fallback") fallbackLanguage?: string,
-    @Query("type") type = 'Page',
-
+    @Query("type") type = "Page"
   ) {
     try {
       const response = await this.pagesService.findPageForWeb(
@@ -187,7 +196,7 @@ export class PagesController {
       );
       return {
         meta: { query: { lang: language, type, slug, fallbackLanguage } },
-        data: new PageResponseDto(response)
+        data: new PageResponseDto(response),
       };
     } catch (error) {
       throw new BadRequestException("Failed to retrieve page for web.");
