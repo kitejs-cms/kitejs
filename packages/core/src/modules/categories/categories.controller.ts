@@ -11,8 +11,13 @@ import {
   ApiBearerAuth,
 } from "@nestjs/swagger";
 import {
+  ApiPagination,
+  ApiSort,
+  createMetaModel,
   GetAuthUser,
+  Language,
   PaginationModel,
+  parseQuery,
   ValidateObjectIdPipe,
 } from "../../common";
 import {
@@ -61,39 +66,39 @@ export class CategoriesController {
 
   @Get()
   @ApiOperation({ summary: "Retrieve all categories" })
-  @ApiResponse({
-    status: 200,
-    description: "Total number of categories",
-    type: Number,
+  @ApiPagination()
+  @ApiQuery({
+    name: "search",
+    required: false,
+    type: String,
+    description: "Search in page titles and descriptions",
+    example: "news",
   })
-  @ApiQuery({ name: "itemsPerPage", required: true, type: Number })
-  @ApiResponse({
-    status: 200,
-    description: "List of categories",
-    type: [CategoryResponseDto],
-  })
+  @ApiSort(["createdAt"])
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async getAllCategories(
-    @Query("page", ParseIntPipe) page: number,
-    @Query("itemsPerPage", ParseIntPipe) itemsPerPage: number
+    @Language() language: string,
+    @Query() query: Record<string, string>
   ) {
     try {
-      const totalItems = await this.categoriesService.countCategories();
-      const data = await this.categoriesService.findCategories(
-        page,
-        itemsPerPage
+      const { filter, sort, skip, take } = parseQuery(query);
+
+      const totalItems = await this.categoriesService.countCategories(
+        filter,
+        language
       );
 
-      const pagination: PaginationModel = {
-        totalItems,
-        currentPage: page,
-        totalPages: Math.ceil(totalItems / itemsPerPage),
-        pageSize: itemsPerPage,
-      };
+      const data = await this.categoriesService.findCategories(
+        skip,
+        take,
+        sort,
+        filter,
+        language
+      );
 
       return {
-        meta: { pagination },
+        meta: createMetaModel({ filter, sort, skip, take }, totalItems),
         data: data.map((item) => new CategoryResponseDetailDto(item)),
       };
     } catch (error) {

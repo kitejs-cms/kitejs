@@ -12,7 +12,11 @@ import { ObjectIdUtils } from "../../../common";
 import { PageStatus } from "../models/page-status.enum";
 import { CORE_NAMESPACE } from "../../../constants";
 import { CategoriesService, Category } from "../../categories";
-import { SettingsService } from "../../settings";
+import {
+  CMS_SETTINGS_KEY,
+  CmsSettingsModel,
+  SettingsService,
+} from "../../settings";
 import {
   ARTICLE_SETTINGS_KEY,
   ArticleSettingsModel,
@@ -62,6 +66,8 @@ export class PagesService {
         const category = await this.categoriesService.findCategory(
           filters.category
         );
+
+        delete filters.category;
         query.categories = category._id.toString();
       } catch (error) {
         this.logger.warn(`Category not found: ${filters.category}`, error);
@@ -119,9 +125,9 @@ export class PagesService {
 
         query.$or = searchConditions;
       }
+      delete query.search;
     }
 
-    delete query.search;
     return query;
   }
 
@@ -316,6 +322,18 @@ export class PagesService {
     language = "en"
   ): Promise<PageResponseDto[]> {
     try {
+      const { value: articleSettings } =
+        await this.settingsService.findOne<ArticleSettingsModel>(
+          CORE_NAMESPACE,
+          ARTICLE_SETTINGS_KEY
+        );
+
+      const { value: cmsSettings } =
+        await this.settingsService.findOne<CmsSettingsModel>(
+          CORE_NAMESPACE,
+          CMS_SETTINGS_KEY
+        );
+
       const query = await this.buildPagesQuery(filters, language);
 
       const pages = await this.pageModel
@@ -339,12 +357,18 @@ export class PagesService {
         // Attempt to get the requested translation
         let selectedTranslation = translations[language];
 
-        // Skip this page if no suitable translation is found
+        // Use fallback language if the desired translation is missing
+        if (!selectedTranslation && cmsSettings.defaultLanguage) {
+          selectedTranslation = translations[cmsSettings.defaultLanguage];
+        }
+
         if (!selectedTranslation) {
-          this.logger.warn(
-            `Translation not found for page ${pageData._id} in language: ${language}`
+          throw new NotFoundException(
+            `Translation not found for language: ${language}` +
+              (cmsSettings.defaultLanguage
+                ? ` and fallback: ${cmsSettings.defaultLanguage}`
+                : "")
           );
-          continue;
         }
 
         const response: PageResponseDto = {
@@ -361,6 +385,14 @@ export class PagesService {
           language: language,
           image: pageData.image,
         };
+
+        if (articleSettings?.customFields) {
+          for (const field of articleSettings.customFields) {
+            if (pageData.hasOwnProperty(field.key)) {
+              response[field.key] = pageData[field.key];
+            }
+          }
+        }
 
         pagesRes.push(response);
       }
@@ -394,6 +426,18 @@ export class PagesService {
     language: string,
     type: string
   ): Promise<PageResponseDto> {
+    const { value: articleSettings } =
+      await this.settingsService.findOne<ArticleSettingsModel>(
+        CORE_NAMESPACE,
+        ARTICLE_SETTINGS_KEY
+      );
+
+    const { value: cmsSettings } =
+      await this.settingsService.findOne<CmsSettingsModel>(
+        CORE_NAMESPACE,
+        CMS_SETTINGS_KEY
+      );
+
     // Retrieve the full page document
     const page = await this.findPage(identify, type);
     if (!page) {
@@ -412,9 +456,17 @@ export class PagesService {
     // Attempt to get the requested translation
     let selectedTranslation = translations[language];
 
+    // Use fallback language if the desired translation is missing
+    if (!selectedTranslation && cmsSettings.defaultLanguage) {
+      selectedTranslation = translations[cmsSettings.defaultLanguage];
+    }
+
     if (!selectedTranslation) {
       throw new NotFoundException(
-        `Translation not found for language: ${language}`
+        `Translation not found for language: ${language}` +
+          (cmsSettings.defaultLanguage
+            ? ` and fallback: ${cmsSettings.defaultLanguage}`
+            : "")
       );
     }
 
@@ -430,6 +482,14 @@ export class PagesService {
       language: language,
       image: pageData.image,
     };
+
+    if (articleSettings?.customFields) {
+      for (const field of articleSettings.customFields) {
+        if (pageData.hasOwnProperty(field.key)) {
+          response[field.key] = pageData[field.key];
+        }
+      }
+    }
 
     return response;
   }

@@ -25,16 +25,63 @@ export class CategoriesService {
   constructor(
     @InjectModel(Category.name) private readonly categoryModel: Model<Category>,
     private readonly slugService: SlugRegistryService
-  ) { }
+  ) {}
+
+  /**
+   * Builds the MongoDB query object based on filters and language for categories
+   * @param filters Optional filters for isActive, parent, and search
+   * @param language Language code for translations search
+   * @returns Record<string, any> MongoDB query object
+   */
+  private buildCategoryQuery(
+    filters?: Record<string, string>,
+    language = "en"
+  ): Record<string, any> {
+    const query: any = { ...filters, deletedAt: null };
+
+    // Handle search filter
+    if (filters.search) {
+      const searchTerm = filters.search.trim();
+
+      if (searchTerm) {
+        const searchConditions = [
+          { tags: { $regex: searchTerm, $options: "i" } },
+          { description: { $regex: searchTerm, $options: "i" } },
+          {
+            [`translations.${language}.title`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.description`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+        ];
+
+        query.$or = searchConditions;
+      }
+      delete query.search;
+    }
+
+    return query;
+  }
 
   /**
    * Counts the total number of categories (optional: you can pass filters in the future).
    * @returns Total number of categories.
    * @throws BadRequestException if an error occurs.
    */
-  async countCategories(): Promise<number> {
+  async countCategories(
+    filters?: Record<string, string>,
+    language = "en"
+  ): Promise<number> {
     try {
-      return await this.categoryModel.countDocuments().exec();
+      const query = await this.buildCategoryQuery(filters, language);
+
+      return await this.categoryModel.countDocuments(query).exec();
     } catch (error) {
       this.logger.error(error);
       const errorMessage =
@@ -61,7 +108,7 @@ export class CategoriesService {
       const categoryBaseData = {
         tags: restData.tags,
         updatedBy: user.sub,
-        isActive: restData.isActive
+        isActive: restData.isActive,
       };
 
       const translationData = {
@@ -201,7 +248,7 @@ export class CategoriesService {
     if (!selectedTranslation) {
       throw new NotFoundException(
         `Translation not found for language: ${language}` +
-        (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
+          (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
       );
     }
 
@@ -279,17 +326,22 @@ export class CategoriesService {
    * @throws BadRequestException if the query fails.
    */
   async findCategories(
-    pageNumber = 1,
-    itemsPerPage = 10
+    skip = 0,
+    take = 10,
+    sort?: Record<string, any>,
+    filters?: Record<string, string>,
+    language = "en"
   ): Promise<CategoryResponseDetailsModel[]> {
     try {
-      const skip = (pageNumber - 1) * itemsPerPage;
+      const query = await this.buildCategoryQuery(filters, language);
+
       const categories = await this.categoryModel
-        .find()
+        .find(query)
         .skip(skip)
-        .limit(itemsPerPage)
+        .limit(take)
         .populate<{ createdBy: User }>("createdBy")
         .populate<{ updatedBy: User }>("updatedBy")
+        .sort(sort ?? { createdAt: -1 })
         .exec();
 
       const categoriesRes: CategoryResponseDetailsModel[] = [];
