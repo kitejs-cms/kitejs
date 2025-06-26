@@ -8,7 +8,7 @@ import { SlugRegistryService } from "../../slug-registry";
 import { User } from "../../users/schemas/user.schema";
 import { PageTranslationModel } from "../models/page-translation.model";
 import { JwtPayloadModel } from "../../auth/models/payload-jwt.model";
-import { ObjectIdUtils } from "../../../common";
+import { ObjectIdUtils, processCustomFields } from "../../../common";
 import { PageStatus } from "../models/page-status.enum";
 import { CORE_NAMESPACE } from "../../../constants";
 import { CategoriesService, Category } from "../../categories";
@@ -191,16 +191,7 @@ export class PagesService {
 
       let customFieldsData = {};
       if (customFields.length > 0) {
-        const customFieldNames = new Set(
-          customFields.map((field) => field.key)
-        );
-
-        customFieldsData = Object.keys(restData)
-          .filter((key) => customFieldNames.has(key))
-          .reduce((obj, key) => {
-            obj[key] = restData[key];
-            return obj;
-          }, {});
+        customFieldsData = processCustomFields(customFields, restData);
       }
 
       let page: Page;

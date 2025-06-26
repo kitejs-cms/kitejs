@@ -27,3 +27,4 @@ export * from "./utils/objectId.class";
 export * from "./utils/query-parser.util";
 export * from "./utils/meta-response.util";
 export * from "./utils/string.util";
+export * from "./utils/convert-custom-fields";
