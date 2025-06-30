@@ -38,7 +38,7 @@ export function CategoriesManagePage() {
   const { copyTable } = useClipboardTable();
   const [showSearch, setShowSearch] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { t, i18n } = useTranslation("posts");
+  const { t, i18n } = useTranslation("articles");
   const navigate = useNavigate();
 
   const itemsPerPage = 10;

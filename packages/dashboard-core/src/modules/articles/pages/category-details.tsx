@@ -6,7 +6,12 @@ import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { TagsInput } from "../../../components/tag-input";
 import { Button } from "../../../components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../../components/ui/card";
 import { useCategoryDetails } from "../hooks/use-category-details";
 import { LanguageTabs } from "../components/language-tabs";
 import { SkeletonPage } from "../../../components/skeleton-page";
@@ -16,7 +21,7 @@ import { Switch } from "../../../components/ui/switch";
 import { Textarea } from "../../../components/ui/textarea";
 
 export function CategoryDetailsPage() {
-  const { t } = useTranslation("posts");
+  const { t } = useTranslation("articles");
   const {
     data,
     activeLang,
@@ -26,15 +31,14 @@ export function CategoryDetailsPage() {
     onAddLanguage,
     handleNavigation,
     handleSave,
-    onChange
+    onChange,
   } = useCategoryDetails();
 
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get("view") === "json")
-      setJsonView(true);
+    if (searchParams.get("view") === "json") setJsonView(true);
   }, [searchParams]);
 
   if (loading || !data) return <SkeletonPage />;
@@ -86,7 +90,9 @@ export function CategoryDetailsPage() {
                 </div>
 
                 <div>
-                  <Label className="mb-2 block">{t("fields.description")}</Label>
+                  <Label className="mb-2 block">
+                    {t("fields.description")}
+                  </Label>
                   <Textarea
                     value={data.translations[activeLang]?.description || ""}
                     onChange={(e) => onChange("description", e.target.value)}

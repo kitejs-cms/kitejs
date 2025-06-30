@@ -119,13 +119,15 @@ export function PageDetailsPage({ pageType = "Page" }: Props) {
             onViewJson={() => setJsonView(true)}
           />
 
-          <CustomFieldForm
-            title="Campi Personalizzati"
-            fields={customFields}
-            values={customFieldsValues}
-            onChange={onChangeCustomField}
-            errors={{}}
-          />
+          {pageType === "Post" && (
+            <CustomFieldForm
+              title="Campi Personalizzati"
+              fields={customFields}
+              values={customFieldsValues}
+              onChange={onChangeCustomField}
+              errors={{}}
+            />
+          )}
         </div>
       </div>
 

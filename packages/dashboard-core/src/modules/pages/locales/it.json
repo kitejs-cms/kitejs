@@ -21,7 +21,8 @@
     "cancel": "Annulla",
     "save": "Salva",
     "discardChanges": "Ignora modifiche",
-    "undo": "Annulla"
+    "undo": "Annulla",
+    "delete": "Elimina"
   },
   "menu": {
     "pages": "Pagine",
@@ -107,5 +108,11 @@
       "invalidSlug": "Slug non valido",
       "duplicateSlug": "Slug già esistente"
     }
+  },
+  "deleteDialog": {
+    "title": "Conferma eliminazione",
+    "message": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata.",
+    "messageWithNamePrefix": "Sei sicuro di voler eliminare",
+    "messageWithNameSuffix": "? Questa azione non può essere annullata."
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useBreadcrumb } from "../../../context/breadcrumb-context";
@@ -10,6 +10,7 @@ import { Separator } from "../../../components/ui/separator";
 import { DataTable } from "../../../components/data-table";
 import { useApi } from "../../../hooks/use-api";
 import type { PageResponseDetailsModel } from "@kitejs-cms/core/index";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -31,9 +32,12 @@ import {
   Search,
   Plus,
   LayoutTemplate,
+  Trash,
 } from "lucide-react";
 import { StatusBadge } from "../components/status-badge";
 import { LanguagesBadge } from "../components/languages-badge";
+import { useDebounce } from "../../../hooks/use-debounce";
+import { DeleteDialog } from "../components/delete-dialog";
 
 export type Props = {
   pageType?: "Post" | "Page";
@@ -44,15 +48,24 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
   const { copyTable } = useClipboardTable();
   const [showSearch, setShowSearch] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [searchInput, setSearchInput] = useState("");
+  const [selctedForDelete, setSelectedForDelete] =
+    useState<PageResponseDetailsModel | null>(null);
+
   const { t, i18n } = useTranslation("pages");
   const navigate = useNavigate();
 
   const itemsPerPage = 15;
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchQuery = searchParams.get("search") || "";
+  const debouncedSearchInput = useDebounce(searchInput, 500);
 
   const { data, loading, fetchData, pagination } =
     useApi<PageResponseDetailsModel[]>();
+
+  useEffect(() => {
+    setSearchInput(searchQuery);
+  }, [searchQuery]);
 
   useEffect(() => {
     const items = [{ label: t("breadcrumb.home"), path: "/" }];
@@ -66,18 +79,43 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
     setBreadcrumb(items);
   }, [pageType, setBreadcrumb, t]);
 
+  const buildApiUrl = useCallback(
+    (page: number, search: string) => {
+      const searchParam =
+        search && search.length >= 3
+          ? `&search=${encodeURIComponent(search)}`
+          : "";
+      return `pages?type=${pageType}&pgae[number]=${page}&pgae[size]=${itemsPerPage}${searchParam}`;
+    },
+    [pageType, itemsPerPage]
+  );
+
   useEffect(() => {
+    const effectiveSearch =
+      debouncedSearchInput.length >= 3 ? debouncedSearchInput : "";
+
     const params = new URLSearchParams();
     params.set("page", currentPage.toString());
-    if (searchQuery) params.set("search", searchQuery);
-    setSearchParams(params, { replace: true });
+    if (effectiveSearch) {
+      params.set("search", effectiveSearch);
+    }
 
-    fetchData(
-      `pages?type=${pageType}&pgae[number]=${currentPage}&pgae[size]=${itemsPerPage}${
-        searchQuery ? `&search=${searchQuery}` : ""
-      }`
-    );
-  }, [fetchData, currentPage, searchQuery, setSearchParams, pageType]);
+    const currentParams = searchParams.toString();
+    const newParams = params.toString();
+    if (currentParams !== newParams) {
+      setSearchParams(params, { replace: true });
+    }
+
+    fetchData(buildApiUrl(currentPage, effectiveSearch));
+  }, [
+    debouncedSearchInput,
+    currentPage,
+    pageType,
+    fetchData,
+    setSearchParams,
+    searchParams,
+    buildApiUrl,
+  ]);
 
   const handleCopy = () => {
     if (!data) return;
@@ -99,6 +137,44 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
     }
     const first = Object.values(translations)[0];
     return first.title;
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (currentPage !== 1) {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      setSearchParams(params);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    const effectiveSearch = searchInput.length >= 3 ? searchInput : "";
+    fetchData(buildApiUrl(page, effectiveSearch));
+
+    const params = new URLSearchParams(searchParams);
+    params.set("page", page.toString());
+    if (effectiveSearch) {
+      params.set("search", effectiveSearch);
+    }
+    setSearchParams(params);
+  };
+
+  const handleDelete = async () => {
+    if (!selctedForDelete) return;
+    const { data } = await fetchData(`pages/${selctedForDelete.id}`, "DELETE");
+    const toastId = toast.loading("Eliminazione in corso...");
+    if (data) {
+      toast.success(
+        pageType === "Page" ? "Pagina eliminata" : "Articolo eliminato",
+        {
+          id: toastId,
+          description: `Titolo: ${selctedForDelete.translations ? renderTitle(selctedForDelete.translations) : "N/A"}`,
+        }
+      );
+      setSelectedForDelete(null);
+      fetchData(buildApiUrl(currentPage, searchInput));
+    }
   };
 
   const renderTags = (tags: string[]) => {
@@ -149,16 +225,14 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
                     type="text"
                     placeholder={t("search.placeholder")}
                     className="w-[200px] animate-in fade-in slide-in-from-right-1 duration-300 bg-white shadow-muted"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const params = new URLSearchParams(searchParams);
-                      if (value) params.set("search", value);
-                      else params.delete("search");
-                      params.set("page", "1");
-                      setSearchParams(params);
-                    }}
+                    value={searchInput}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                   />
+                  {searchInput.length > 0 && searchInput.length < 3 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Inserisci almeno 3 caratteri per cercare
+                    </p>
+                  )}
                 </div>
               )}
               <DropdownMenu>
@@ -211,7 +285,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
               {
                 key: "status",
                 label: t("fields.status"),
-                render: (v) => StatusBadge(v as string),
+                render: (v) => <StatusBadge status={v as string} />,
               },
               {
                 key: "translations",
@@ -272,6 +346,15 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
+                          setSelectedForDelete(row);
+                        }}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        {t("buttons.delete")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
                           navigate(
                             `/${pageType === "Page" ? "pages" : "articles"}/${row.id}?view=json`
                           );
@@ -288,14 +371,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
             pagination={{
               currentPage: pagination?.currentPage,
               totalPages: pagination?.totalPages,
-              onPageChange: (page) => {
-                fetchData(
-                  `pages?type=${pageType}&pgae[number]=${page}&pgae[size]=${itemsPerPage}`
-                );
-                const params = new URLSearchParams(searchParams);
-                params.set("page", page.toString());
-                setSearchParams(params);
-              },
+              onPageChange: handlePageChange,
             }}
             onRowClick={(row) =>
               navigate(
@@ -305,6 +381,14 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
           />
         </CardContent>
       </Card>
+      <DeleteDialog
+        isOpen={!!selctedForDelete}
+        onClose={() => setSelectedForDelete(null)}
+        onDelete={handleDelete}
+        name={
+          selctedForDelete ? renderTitle(selctedForDelete?.translations) : ""
+        }
+      />
     </div>
   );
 }

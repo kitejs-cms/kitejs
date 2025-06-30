@@ -26,7 +26,7 @@ export * from "./components/tag-input";
 export * from "./components/html-editor/html-editor";
 export * from "./components/skeleton-page";
 export * from "./components/multi-select";
-export * from "./components/file-uploader"
+export * from "./components/file-uploader";
 
 /* Provider */
 export * from "./dashboard-provider";
@@ -45,6 +45,7 @@ export * from "./hooks/use-api";
 export * from "./hooks/use-mobile";
 export * from "./hooks/use-clipboard-table";
 export * from "./context/breadcrumb-context";
+export * from "./hooks/use-debounce";
 
 /* Context */
 export * from "./context/auth-context";
