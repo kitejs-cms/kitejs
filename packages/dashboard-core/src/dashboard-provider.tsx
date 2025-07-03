@@ -12,6 +12,7 @@ import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";
 import { PageModule } from "./modules/pages";
 import { PostModule } from "./modules/articles";
+import { DashboardPage } from "./modules/core/pages/dashboard";
 
 interface DashboardRouterProps {
   modules?: DashboardModule[];
@@ -63,7 +64,7 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
             <BreadcrumbProvider>
               <I18nextProvider i18n={i18n}>
                 <Routes>
-                  {/* Router core */}
+                  {/* Router core - Routes che stanno fuori dal Layout */}
                   {CoreModule.routes.map((route) => (
                     <Route
                       key={`core-${route.path}`}
@@ -72,10 +73,16 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
                     />
                   ))}
 
-                  <Route path="/*" element={<Layout menuItems={menuItems} />}>
-                    {moduleRoutes.filter((item) => item.key)}
+                  {/* Routes che stanno dentro al Layout */}
+                  <Route path="/" element={<Layout menuItems={menuItems} />}>
+                    {/* Dashboard route - homepage */}
+                    <Route index element={<DashboardPage />} />
+
+                    {/* Module routes */}
+                    {moduleRoutes}
                   </Route>
 
+                  {/* Catch-all - redirect to homepage */}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </I18nextProvider>

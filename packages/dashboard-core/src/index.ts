@@ -27,6 +27,7 @@ export * from "./components/html-editor/html-editor";
 export * from "./components/skeleton-page";
 export * from "./components/multi-select";
 export * from "./components/file-uploader";
+export * from "./components/filter-modal";
 
 /* Provider */
 export * from "./dashboard-provider";
@@ -51,3 +52,6 @@ export * from "./hooks/use-debounce";
 export * from "./context/auth-context";
 export * from "./context/settings-context";
 export * from "./context/theme-context";
+
+/* Utils */
+export * from "./lib/generate-id";

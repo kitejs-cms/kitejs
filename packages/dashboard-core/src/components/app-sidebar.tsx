@@ -32,7 +32,7 @@ export function AppSidebar({
       items: [
         {
           title: "Dashboard",
-          url: "#dashboard",
+          url: "/",
           icon: LayoutDashboard,
         },
         ...items,

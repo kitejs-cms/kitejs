@@ -16,6 +16,7 @@ export * from "./middlewares/auth.middleware";
 export * from "./models/api-response.model";
 export * from "./models/pagination.model";
 export * from "./models/field.model";
+export * from "./models/filter-model";
 
 /* Pipes */
 export * from "./pipes/validate-object-id.pipe";

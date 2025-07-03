@@ -6,7 +6,83 @@ import {
   STORAGE_SETTINGS_KEY,
   SettingModel,
 } from "./modules/settings";
-import { ARTICLE_SETTINGS_KEY } from "./modules/settings/models/article-settings.models";
+import {
+  ARTICLE_SETTINGS_KEY,
+  PAGE_SETTINGS_KEY,
+} from "./modules/settings/models/article-settings.models";
+import { FilterFieldConfig, FilterView } from "./common";
+import { PageStatus } from "./modules/pages/models/page-status.enum";
+
+const PageFilterFields: FilterFieldConfig[] = [
+  {
+    key: "tags",
+    label: "Tags",
+    type: "array",
+    operators: ["in", "nin", "contains"],
+    placeholder: "Filter by tags",
+  },
+  {
+    key: "publishAt",
+    label: "Publish Date",
+    type: "date",
+    operators: ["equals", "ne", "gt", "gte", "lt", "lte", "exists"],
+    placeholder: "Filter by publish date",
+  },
+  {
+    key: "status",
+    label: "Status",
+    type: "select",
+    operators: ["equals", "ne", "in", "nin"],
+    options: [
+      { value: "Published", label: "Published" },
+      { value: "Draft", label: "Draft" },
+      { value: "Archived", label: "Archived" },
+    ],
+    placeholder: "Filter by status",
+  },
+];
+
+const PageViews: FilterView[] = [
+  {
+    id: "published",
+    name: "Published Pages",
+    description: "Pages that are currently published",
+    conditions: [
+      {
+        id: "status-published",
+        field: "status",
+        operator: "equals",
+        value: PageStatus.Published,
+      },
+    ],
+  },
+  {
+    id: "drafts",
+    name: "Draft Pages",
+    description: "Pages in draft status",
+    conditions: [
+      {
+        id: "status-draft",
+        field: "status",
+        operator: "equals",
+        value: PageStatus.Draft,
+      },
+    ],
+  },
+  {
+    id: "drafts",
+    name: "Archived Pages",
+    description: "Pages in archived status",
+    conditions: [
+      {
+        id: "status-archived",
+        field: "status",
+        operator: "equals",
+        value: PageStatus.Archived,
+      },
+    ],
+  },
+];
 
 export const CORE_NAMESPACE = "core";
 
@@ -105,6 +181,15 @@ export const CoreSetting: SettingModel[] = [
     },
   },
   {
-    key: ARTICLE_SETTINGS_KEY, value: { customFields: [] }
-  }
+    key: ARTICLE_SETTINGS_KEY,
+    value: {
+      customFields: [],
+      filterFields: PageFilterFields,
+      views: PageViews,
+    },
+  },
+  {
+    key: PAGE_SETTINGS_KEY,
+    value: { filterFields: PageFilterFields, views: PageViews },
+  },
 ];

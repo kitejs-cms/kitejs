@@ -9,7 +9,17 @@ import { useClipboardTable } from "../../../hooks/use-clipboard-table";
 import { Separator } from "../../../components/ui/separator";
 import { DataTable } from "../../../components/data-table";
 import { useApi } from "../../../hooks/use-api";
-import type { PageResponseDetailsModel } from "@kitejs-cms/core/index";
+import {
+  ArticleSettingsModel,
+  type FilterCondition,
+  type FilterView,
+  type PageResponseDetailsModel,
+} from "@kitejs-cms/core/index";
+import { StatusBadge } from "../components/status-badge";
+import { LanguagesBadge } from "../components/languages-badge";
+import { useDebounce } from "../../../hooks/use-debounce";
+import { DeleteDialog } from "../components/delete-dialog";
+import { FilterModal } from "../../../components/filter-modal";
 import { toast } from "sonner";
 import {
   Card,
@@ -33,24 +43,28 @@ import {
   Plus,
   LayoutTemplate,
   Trash,
+  ListFilter,
 } from "lucide-react";
-import { StatusBadge } from "../components/status-badge";
-import { LanguagesBadge } from "../components/languages-badge";
-import { useDebounce } from "../../../hooks/use-debounce";
-import { DeleteDialog } from "../components/delete-dialog";
+import { useSettingsContext } from "../../../context/settings-context";
+import { buildFilterQuery } from "../../../lib/query-builder";
 
-export type Props = {
-  pageType?: "Post" | "Page";
-};
+export type Props = { pageType?: "Post" | "Page" };
 
 export function PagesManagePage({ pageType = "Page" }: Props) {
+  const { getSetting, updateSetting } = useSettingsContext();
   const { setBreadcrumb } = useBreadcrumb();
   const { copyTable } = useClipboardTable();
+
+  const [config, setConfig] = useState<ArticleSettingsModel>(null);
+  const [showFilter, setShowFilter] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchInput, setSearchInput] = useState("");
   const [selctedForDelete, setSelectedForDelete] =
     useState<PageResponseDetailsModel | null>(null);
+
+  const [activeFilters, setActiveFilters] = useState<FilterCondition[]>([]);
+  const [activeView, setActiveView] = useState<FilterView | null>(null);
 
   const { t, i18n } = useTranslation("pages");
   const navigate = useNavigate();
@@ -71,21 +85,56 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
     const items = [{ label: t("breadcrumb.home"), path: "/" }];
 
     if (pageType === "Page") {
+      (async () => {
+        const { value } = await getSetting<{
+          value: ArticleSettingsModel;
+        }>("core", "core:page");
+
+        if (value) setConfig(value);
+      })();
+
       items.push({ label: t("breadcrumb.pages"), path: "/pages" });
     } else {
+      (async () => {
+        const { value } = await getSetting<{
+          value: ArticleSettingsModel;
+        }>("core", "core:article");
+
+        if (value) setConfig(value);
+      })();
       items.push({ label: t("breadcrumb.articles"), path: "/articles" });
     }
 
     setBreadcrumb(items);
-  }, [pageType, setBreadcrumb, t]);
+  }, [getSetting, pageType, setBreadcrumb, t]);
 
+  // Modifica buildApiUrl per includere i filtri
   const buildApiUrl = useCallback(
-    (page: number, search: string) => {
-      const searchParam =
-        search && search.length >= 3
-          ? `&search=${encodeURIComponent(search)}`
-          : "";
-      return `pages?type=${pageType}&pgae[number]=${page}&pgae[size]=${itemsPerPage}${searchParam}`;
+    (page: number, search: string, filters: FilterCondition[] = []) => {
+      const params = new URLSearchParams();
+
+      // Parametri base
+      params.set("type", pageType);
+      params.set("page[number]", page.toString());
+      params.set("page[size]", itemsPerPage.toString());
+
+      if (search && search.length >= 3) {
+        params.set("search", search);
+      }
+
+      if (filters.length > 0) {
+        const filterQuery = buildFilterQuery(filters);
+
+        Object.entries(filterQuery).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            params.set(key, value.join(","));
+          } else {
+            params.set(key, String(value));
+          }
+        });
+      }
+
+      return `pages?${params.toString()}`;
     },
     [pageType, itemsPerPage]
   );
@@ -106,7 +155,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
       setSearchParams(params, { replace: true });
     }
 
-    fetchData(buildApiUrl(currentPage, effectiveSearch));
+    fetchData(buildApiUrl(currentPage, effectiveSearch, activeFilters));
   }, [
     debouncedSearchInput,
     currentPage,
@@ -115,6 +164,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
     setSearchParams,
     searchParams,
     buildApiUrl,
+    activeFilters,
   ]);
 
   const handleCopy = () => {
@@ -150,7 +200,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
 
   const handlePageChange = (page: number) => {
     const effectiveSearch = searchInput.length >= 3 ? searchInput : "";
-    fetchData(buildApiUrl(page, effectiveSearch));
+    fetchData(buildApiUrl(page, effectiveSearch, activeFilters));
 
     const params = new URLSearchParams(searchParams);
     params.set("page", page.toString());
@@ -173,8 +223,90 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
         }
       );
       setSelectedForDelete(null);
-      fetchData(buildApiUrl(currentPage, searchInput));
+      fetchData(buildApiUrl(currentPage, searchInput, activeFilters));
     }
+  };
+
+  const handleApplyFilters = (filters: FilterCondition[]) => {
+    setActiveFilters(filters);
+    setActiveView(null);
+
+    if (currentPage !== 1) {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      setSearchParams(params);
+    }
+
+    toast.success("Filtri applicati", {
+      description: `${filters.length} filtri attivi`,
+    });
+  };
+
+  const handleSaveView = async (view: FilterView) => {
+    if (!config) return;
+
+    try {
+      const updatedViews = [...(config.views || []), view];
+      const updatedConfig = { ...config, views: updatedViews };
+
+      await updateSetting(
+        "core",
+        `core:${pageType === "Page" ? "page" : "article"}`,
+        updatedConfig
+      );
+      setConfig(updatedConfig);
+
+      toast.success("Vista salvata", {
+        description: `Vista "${view.name}" salvata con successo`,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error("Errore nel salvare la vista");
+    }
+  };
+
+  const handleDeleteView = async (id: string) => {
+    if (!config) return;
+
+    try {
+      const viewToDelete = config.views?.find((v) => v.id === id);
+      const updatedViews = config.views?.filter((v) => v.id !== id) || [];
+      const updatedConfig = { ...config, views: updatedViews };
+
+      await updateSetting(
+        "core",
+        `core:${pageType === "Page" ? "page" : "article"}`,
+        updatedConfig
+      );
+      setConfig(updatedConfig);
+
+      if (activeView?.id === id) {
+        setActiveView(null);
+        setActiveFilters([]);
+      }
+
+      toast.success("Vista eliminata", {
+        description: `Vista "${viewToDelete?.name || "Sconosciuta"}" eliminata con successo`,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error("Errore nell'eliminare la vista");
+    }
+  };
+
+  const handleLoadView = (view: FilterView) => {
+    setActiveView(view);
+    setActiveFilters(view.conditions);
+
+    if (currentPage !== 1) {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      setSearchParams(params);
+    }
+
+    toast.success("Vista caricata", {
+      description: `Vista "${view.name}" applicata`,
+    });
   };
 
   const renderTags = (tags: string[]) => {
@@ -204,13 +336,47 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
     );
   };
 
+  const hasActiveFilters = activeFilters.length > 0;
+  const activeFilterCount = activeFilters.length;
+
   return (
     <div className="flex flex-col items-center justify-center p-4">
       <Card className="w-full shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl">
           <div className="flex items-center justify-between">
-            <CardTitle>{t("title.managePages")}</CardTitle>
+            <div className="flex flex-col gap-2">
+              <CardTitle>{t("title.managePages")}</CardTitle>
+              {/* Indicatori filtri e vista attiva - A CAPO sotto il titolo */}
+              {(hasActiveFilters || activeView) && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {hasActiveFilters && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-800 text-xs"
+                    >
+                      {activeFilterCount} filtri attivi
+                    </Badge>
+                  )}
+                  {activeView && (
+                    <Badge
+                      variant="outline"
+                      className="bg-green-100 text-green-800 border-green-300 text-xs"
+                    >
+                      Vista: {activeView.name}
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant={hasActiveFilters ? "default" : "outline"}
+                size="icon"
+                className="cursor-pointer shadow-none"
+                onClick={() => setShowFilter(true)}
+              >
+                <ListFilter className="h-4 w-4" />
+              </Button>
               <Button
                 variant="outline"
                 size="icon"
@@ -219,6 +385,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
               >
                 <Search className="h-4 w-4 text-neutral-500" />
               </Button>
+
               {showSearch && (
                 <div className="transform transition-all duration-500 ease-in-out origin-right">
                   <Input
@@ -266,6 +433,19 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
                     <Download className="mr-2 h-4 w-4" />
                     {t("buttons.download")}
                   </DropdownMenuItem>
+                  {/* Azione per pulire i filtri */}
+                  {hasActiveFilters && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setActiveFilters([]);
+                        setActiveView(null);
+                        toast.success("Filtri rimossi");
+                      }}
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Rimuovi filtri
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -389,6 +569,22 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
           selctedForDelete ? renderTitle(selctedForDelete?.translations) : ""
         }
       />
+      {config && (
+        <FilterModal
+          onApplyFilters={handleApplyFilters}
+          isOpen={showFilter}
+          onClose={() => setShowFilter(false)}
+          config={{
+            fields: config.filterFields,
+            views: config.views,
+            allowSaveViews: true,
+          }}
+          onDeleteView={handleDeleteView}
+          onSaveView={handleSaveView}
+          onLoadView={handleLoadView}
+          initialConditions={activeFilters}
+        />
+      )}
     </div>
   );
 }
