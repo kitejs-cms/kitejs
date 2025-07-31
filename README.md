@@ -1,84 +1,73 @@
-# Turborepo starter
+# KiteJS CMS Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+This repository contains the Blog API backend, the Dashboard frontend and a set of shared packages.
 
-## Using this example
+## Install dependencies
 
-Run the following command:
+Use [pnpm](https://pnpm.io/) and run the command below from the repository root:
 
-```sh
-npx create-turbo@latest
+```bash
+pnpm install
 ```
 
-## What's inside?
+This installs all workspace packages defined in `pnpm-workspace.yaml`.
 
-This Turborepo includes the following packages/apps:
+## Blog API
 
-### Apps and Packages
+The API lives in `apps/blog`. It expects a `.env` file in that directory with the following variables:
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@kitejs-cms/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@kitejs-cms/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@kitejs-cms/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+```env
+API_DB_URL= # MongoDB connection string
+API_PORT=3000 # Port for the API server
+API_CORS=http://localhost:5173 # Comma separated list of allowed origins
+API_SECRET=change-me # JWT secret for authentication
+# Optional
+PORT=3000 # Used by the storage provider when generating URLs
+NODE_ENV=development
 ```
 
-### Develop
+Run the API during development:
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
+```bash
+pnpm --filter @kitejs-cms/blog dev
 ```
 
-### Remote Caching
+Build it for production:
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+```bash
+pnpm --filter @kitejs-cms/blog build
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+## Dashboard
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+The dashboard application is located in `apps/dashboard`. Create a `.env` file in that folder and set the API base url:
 
+```env
+VITE_API_URL=http://localhost:3000
 ```
-npx turbo link
+
+Start the dashboard:
+
+```bash
+pnpm --filter @kitejs-cms/dashboard dev
 ```
 
-## Useful Links
+Build the dashboard:
 
-Learn more about the power of Turborepo:
+```bash
+pnpm --filter @kitejs-cms/dashboard build
+```
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+## Monorepo commands
+
+Running `pnpm dev` from the repository root executes the `dev` script in every package using Turbo. Likewise, `pnpm build` builds all packages and apps.
+
+## Publishing packages
+
+Packages under `packages/*` can be published to GitHub Packages with:
+
+```bash
+pnpm node scripts/publish.mjs
+```
+
+The script prompts for the package name, version and release tag, then builds and publishes the selected package.
