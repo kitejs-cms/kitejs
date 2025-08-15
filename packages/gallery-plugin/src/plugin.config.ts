@@ -1,25 +1,29 @@
-// import { Logger } from "@nestjs/common";
-// import { CORE_NAMESPACE, CorePermissions, CoreSetting } from "./constants";
-// import { CoreModule } from "./core.module";
-// import { IPlugin } from "./modules/plugins";
-// import { version } from "../package.json";
-//
-// const logger = new Logger("CorePluginConfig");
-//
-// const CorePluginConfig: IPlugin = {
-//   namespace: CORE_NAMESPACE,
-//   name: "Gallery Plugin",
-//   version,
-//   description: "Default configuration for the CMS core",
-//   settings: CoreSetting,
-//   permissions: CorePermissions,
-//   initialize: async () => {
-//     logger.log("Initializing the CMS core");
-//   },
-//   getModule: () => {
-//     return CoreModule;
-//   },
-// };
-//
-// export default CorePluginConfig;
-//
+import { Logger } from "@nestjs/common";
+import {
+  GALLERY_PLUGIN_NAMESPACE,
+  GalleryPermissions,
+  GallerySetting,
+} from "./constants";
+import { GalleryPluginModule } from "./gallery-plugin.module";
+import { IPlugin } from "@kitejs-cms/core";
+import { version } from "../package.json";
+
+const logger = new Logger("GalleryPluginConfig");
+
+const GalleryPluginConfig: IPlugin = {
+  namespace: GALLERY_PLUGIN_NAMESPACE,
+  name: "Gallery Plugin",
+  version,
+  description: "Plugin providing gallery functionality",
+  settings: GallerySetting,
+  permissions: GalleryPermissions,
+  initialize: async () => {
+    logger.log("Initializing gallery plugin");
+  },
+  getModule: () => {
+    return GalleryPluginModule;
+  },
+};
+
+export default GalleryPluginConfig;
+
