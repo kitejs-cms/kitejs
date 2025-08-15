@@ -7,7 +7,10 @@ export * from "./models/gallery-upsert.model";
 export * from "./models/gallery-response.model";
 
 /* Dto */
+export * from "./dto/gallery-item.dto";
+export * from "./dto/gallery-seo.dto";
 export * from "./dto/gallery-upsert.dto";
+export * from "./dto/gallery-sort.dto";
 export * from "./dto/gallery-response.dto";
 
 /* Services */

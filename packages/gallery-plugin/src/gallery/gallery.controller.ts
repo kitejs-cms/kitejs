@@ -20,6 +20,8 @@ import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { GalleryService } from "./services/gallery.service";
 import { GalleryResponseDto } from "./dto/gallery-response.dto";
 import { GalleryUpsertDto } from "./dto/gallery-upsert.dto";
+import { GalleryItemDto } from "./dto/gallery-item.dto";
+import { GallerySortDto } from "./dto/gallery-sort.dto";
 
 @ApiTags("Gallery")
 @Controller("galleries")
@@ -53,19 +55,58 @@ export class GalleryController {
     return new GalleryResponseDto(gallery);
   }
 
-  @Get(":id")
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Get gallery by id" })
-  async getGallery(@Param("id") id: string) {
-    const gallery = await this.galleryService.findGalleryById(id);
-    return new GalleryResponseDto(gallery);
-  }
+    @Get(":id")
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Get gallery by id" })
+    async getGallery(@Param("id") id: string) {
+      const gallery = await this.galleryService.findGalleryById(id);
+      return new GalleryResponseDto(gallery);
+    }
 
-  @Delete(":id")
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @HttpCode(200)
+    @Post(":id/items")
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Add item to gallery" })
+    async addItem(
+      @Param("id", ValidateObjectIdPipe) id: string,
+      @Body() dto: GalleryItemDto,
+      @GetAuthUser() user: JwtPayloadModel
+    ) {
+      const gallery = await this.galleryService.addItem(id, dto, user);
+      return new GalleryResponseDto(gallery);
+    }
+
+    @Delete(":id/items/:itemId")
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Remove item from gallery" })
+    async removeItem(
+      @Param("id", ValidateObjectIdPipe) id: string,
+      @Param("itemId", ValidateObjectIdPipe) itemId: string,
+      @GetAuthUser() user: JwtPayloadModel
+    ) {
+      const gallery = await this.galleryService.removeItem(id, itemId, user);
+      return new GalleryResponseDto(gallery);
+    }
+
+    @Post(":id/items/sort")
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Sort gallery items" })
+    async sortItems(
+      @Param("id", ValidateObjectIdPipe) id: string,
+      @Body() dto: GallerySortDto,
+      @GetAuthUser() user: JwtPayloadModel
+    ) {
+      const gallery = await this.galleryService.sortItems(id, dto.itemIds, user);
+      return new GalleryResponseDto(gallery);
+    }
+
+    @Delete(":id")
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(200)
   @ApiOperation({ summary: "Delete gallery" })
   async deleteGallery(@Param("id", ValidateObjectIdPipe) id: string) {
     const result = await this.galleryService.deleteGallery(id);
