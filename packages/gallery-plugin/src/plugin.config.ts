@@ -10,7 +10,7 @@ import { version } from "../package.json";
 
 const logger = new Logger("GalleryPluginConfig");
 
-const GalleryPluginConfig: IPlugin = {
+export const GalleryPlugin: IPlugin = {
   namespace: GALLERY_PLUGIN_NAMESPACE,
   name: "Gallery Plugin",
   version,
@@ -24,6 +24,3 @@ const GalleryPluginConfig: IPlugin = {
     return GalleryPluginModule;
   },
 };
-
-export default GalleryPluginConfig;
-
