@@ -13,17 +13,21 @@ import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { GALLERY_SLUG_NAMESPACE } from "../../constants";
 import { GalleryResponseModel } from "../models/gallery-response.model";
 import { GalleryTranslationModel } from "../models/gallery-translation.model";
+import { GalleryStatus } from "../models/gallery-status.enum";
+import { GalleryItem } from "../schemas/gallery-item.schema";
+import { CategoriesService } from "@kitejs-cms/core";
 
 @Injectable()
 export class GalleryService {
   constructor(
     @InjectModel(Gallery.name) private readonly galleryModel: Model<Gallery>,
-    private readonly slugService: SlugRegistryService
+    private readonly slugService: SlugRegistryService,
+    private readonly categoriesService: CategoriesService,
   ) {}
 
   async upsertGallery(
     dto: GalleryUpsertDto,
-    user: JwtPayloadModel
+    user: JwtPayloadModel,
   ): Promise<GalleryResponseModel> {
     const { id, slug, language, ...rest } = dto;
 
@@ -33,7 +37,12 @@ export class GalleryService {
       seo: rest.seo,
     };
 
-    const baseData: any = {
+    type BaseData = Pick<
+      GalleryUpsertDto,
+      "status" | "tags" | "publishAt" | "expireAt" | "items" | "categories"
+    >;
+
+    const baseData: BaseData = {
       status: rest.status,
       tags: rest.tags,
       publishAt: rest.publishAt,
@@ -70,7 +79,7 @@ export class GalleryService {
       slug,
       GALLERY_SLUG_NAMESPACE,
       gallery._id as Types.ObjectId,
-      language
+      language,
     );
 
     return this.findGalleryById(gallery._id.toString());
@@ -84,7 +93,7 @@ export class GalleryService {
       }
 
       const slugs = await this.slugService.findSlugsByEntity(
-        gallery._id as Types.ObjectId
+        gallery._id as Types.ObjectId,
       );
 
       const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
@@ -112,14 +121,132 @@ export class GalleryService {
     }
   }
 
+  private async buildGalleryQuery(
+    filters?: {
+      status?: GalleryStatus;
+      category?: string;
+      search?: string;
+    },
+    language = "en",
+  ): Promise<Record<string, unknown>> {
+    const query: Record<string, unknown> = { ...filters };
+
+    if (filters?.category) {
+      try {
+        const category = await this.categoriesService.findCategory(
+          filters.category,
+        );
+        query.categories = category?._id.toString();
+      } catch {
+        query.categories = null;
+      }
+      delete query.category;
+    }
+
+    if (filters?.search) {
+      const searchTerm = filters.search.trim();
+      if (searchTerm) {
+        query.$or = [
+          { tags: { $regex: searchTerm, $options: "i" } },
+          {
+            [`translations.${language}.title`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.description`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+        ];
+      }
+      delete query.search;
+    }
+
+    return query;
+  }
+
+  async countGalleries(
+    filters?: { status?: GalleryStatus; category?: string; search?: string },
+    language = "en",
+  ): Promise<number> {
+    try {
+      const query = await this.buildGalleryQuery(filters, language);
+      return this.galleryModel.countDocuments(query).exec();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to count galleries. ${message}`);
+    }
+  }
+
+  async findGalleries(
+    skip = 0,
+    take = 10,
+    sort?: Record<string, 1 | -1>,
+    filters?: { status?: GalleryStatus; category?: string; search?: string },
+    language = "en",
+  ): Promise<GalleryResponseModel[]> {
+    try {
+      const query = await this.buildGalleryQuery(filters, language);
+      const galleries = await this.galleryModel
+        .find(query)
+        .skip(skip)
+        .limit(take)
+        .sort(sort ?? { updatedAt: -1 })
+        .exec();
+
+      const results: GalleryResponseModel[] = [];
+      for (const gallery of galleries) {
+        results.push(await this.findGalleryById(gallery._id.toString()));
+      }
+      return results;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to fetch galleries. ${message}`);
+    }
+  }
+
+  async findGalleriesForWeb(
+    skip = 0,
+    take = 10,
+    sort?: Record<string, 1 | -1>,
+    filters?: { status?: GalleryStatus; category?: string; search?: string },
+    language = "en",
+  ): Promise<GalleryResponseModel[]> {
+    const baseFilters = {
+      ...filters,
+      status: filters?.status ?? GalleryStatus.Published,
+    };
+    const query = await this.buildGalleryQuery(baseFilters, language);
+    const now = new Date();
+    query.$and = [
+      { $or: [{ publishAt: null }, { publishAt: { $lte: now } }] },
+      { $or: [{ expireAt: null }, { expireAt: { $gte: now } }] },
+    ];
+
+    const galleries = await this.galleryModel
+      .find(query)
+      .skip(skip)
+      .limit(take)
+      .sort(sort ?? { publishAt: -1 })
+      .exec();
+
+    const results: GalleryResponseModel[] = [];
+    for (const gallery of galleries) {
+      results.push(await this.findGalleryById(gallery._id.toString()));
+    }
+    return results;
+  }
   async findGalleryForWeb(
     slug: string,
-    language: string
+    language: string,
   ): Promise<GalleryResponseModel> {
     const entityId = await this.slugService.findEntityBySlug(
       slug,
       GALLERY_SLUG_NAMESPACE,
-      language
+      language,
     );
 
     if (!entityId) {
@@ -142,12 +269,12 @@ export class GalleryService {
   async addItem(
     galleryId: string,
     item: GalleryItemDto,
-    user: JwtPayloadModel
+    user: JwtPayloadModel,
   ): Promise<GalleryResponseModel> {
     const gallery = await this.galleryModel.findByIdAndUpdate(
       galleryId,
       { $push: { items: item }, updatedBy: user.sub },
-      { new: true }
+      { new: true },
     );
 
     if (!gallery) {
@@ -160,17 +287,17 @@ export class GalleryService {
   async removeItem(
     galleryId: string,
     itemId: string,
-    user: JwtPayloadModel
+    user: JwtPayloadModel,
   ): Promise<GalleryResponseModel> {
     const gallery = await this.galleryModel.findByIdAndUpdate(
       galleryId,
       { $pull: { items: { _id: itemId } }, updatedBy: user.sub },
-      { new: true }
+      { new: true },
     );
 
     if (!gallery) {
       throw new NotFoundException(
-        `Gallery with ID ${galleryId} or item ${itemId} not found`
+        `Gallery with ID ${galleryId} or item ${itemId} not found`,
       );
     }
 
@@ -180,24 +307,29 @@ export class GalleryService {
   async sortItems(
     galleryId: string,
     itemIds: string[],
-    user: JwtPayloadModel
+    user: JwtPayloadModel,
   ): Promise<GalleryResponseModel> {
     const gallery = await this.galleryModel.findById(galleryId).exec();
     if (!gallery) {
       throw new NotFoundException(`Gallery with ID ${galleryId} not found`);
     }
 
-    const itemsMap = new Map(
-      gallery.items.map((item: any) => [item._id.toString(), item])
+    type GalleryItemWithId = GalleryItem & { _id: Types.ObjectId };
+
+    const itemsMap = new Map<string, GalleryItemWithId>(
+      gallery.items.map((item) => {
+        const itemWithId = item as unknown as GalleryItemWithId;
+        return [(itemWithId._id as Types.ObjectId).toString(), itemWithId];
+      }),
     );
 
-    const reordered: typeof gallery.items = [];
+    const reordered: GalleryItemWithId[] = [];
     for (let index = 0; index < itemIds.length; index++) {
       const id = itemIds[index];
       const item = itemsMap.get(id);
       if (!item) {
         throw new BadRequestException(
-          `Item with ID ${id} not found in gallery`
+          `Item with ID ${id} not found in gallery`,
         );
       }
       item.order = index;
@@ -210,11 +342,9 @@ export class GalleryService {
       reordered.push(item);
     }
 
-    gallery.items = reordered as any;
-    (gallery as any).updatedBy = user.sub;
+    gallery.set({ items: reordered, updatedBy: user.sub });
     await gallery.save();
 
     return this.findGalleryById(galleryId);
   }
 }
-
