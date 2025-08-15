@@ -1,6 +1,7 @@
-import { Module, DynamicModule, Type } from "@nestjs/common";
+import { Module } from "@nestjs/common";
+import { GalleryModule } from "./gallery";
 
 @Module({
-  imports: [],
+  imports: [GalleryModule],
 })
 export class GalleryPluginModule {}
