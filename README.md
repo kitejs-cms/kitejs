@@ -1,88 +1,65 @@
-# Turborepo starter
+# KiteJS
 
-This Turborepo starter is maintained by the Turborepo core team.
+KiteJS is a monorepo for a headless CMS. It includes a NestJS-based backend and a React/Vite dashboard along with shared libraries and configuration packages.
 
-## Using this example
+## Project structure
 
-Run the following command:
+- **apps/** – runnable applications
+  - **blog/** – example backend API using `@kitejs-cms/core`
+  - **dashboard/** – administrative dashboard for managing content
+- **packages/** – shared libraries and tooling
+  - **core/** – NestJS CMS core modules
+  - **dashboard-core/** – reusable dashboard components
+  - **eslint-config/**, **tailwind-config/**, **typescript-config/** – development configuration
+
+## Requirements
+
+- Node.js 18 or newer
+- [pnpm](https://pnpm.io) (v10+)
+
+Install dependencies with:
 
 ```sh
-npx create-turbo@latest
+pnpm install
 ```
 
-## What's inside?
+## Common commands
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@kitejs-cms/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@kitejs-cms/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@kitejs-cms/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+```sh
+pnpm dev    # run all apps in development mode
+pnpm build  # build all apps and packages
 ```
 
-### Develop
+You can target a single app:
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
+```sh
+pnpm dev --filter @kitejs-cms/blog       # start backend
+pnpm dev --filter @kitejs-cms/dashboard  # start dashboard
 ```
 
-### Remote Caching
+## Environment variables
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+Create a `.env` file in the repository root:
 
 ```
-cd my-turborepo
-npx turbo login
+API_PORT=3000
+PORT=3000
+API_DB_URL=mongodb://localhost:27017/kite
+API_SECRET=change-me
+API_CORS=http://localhost:5173
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+Adjust the values (database URL, CORS origins, secret keys) as needed.
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+## Starting the apps
 
-```
-npx turbo link
-```
+1. **Backend** – runs the NestJS server on `API_PORT`:
+   ```sh
+   pnpm dev --filter @kitejs-cms/blog
+   ```
+2. **Dashboard** – launches the Vite development server:
+   ```sh
+   pnpm dev --filter @kitejs-cms/dashboard
+   ```
 
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+Running `pnpm dev` without filters starts both applications and watches shared packages using Turborepo.
