@@ -10,7 +10,8 @@
     "isolatedModules": false,
     "skipLibCheck": true,
     "module": "ES2022",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "bundler"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

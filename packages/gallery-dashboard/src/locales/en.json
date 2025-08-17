@@ -1,5 +1,46 @@
 {
   "menu": {
     "galleries": "Galleries"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "galleries": "Galleries"
+  },
+  "title": {
+    "manageGalleries": "Galleries",
+    "noGalleries": "No galleries available"
+  },
+  "fields": {
+    "slug": "Slug",
+    "title": "Title",
+    "tags": "Tags",
+    "status": "Status",
+    "publishAt": "Publish at",
+    "languages": "Languages",
+    "actions": "Actions"
+  },
+  "buttons": {
+    "create": "Create",
+    "addGallery": "Add Gallery",
+    "copy": "Copy",
+    "download": "Download",
+    "delete": "Delete",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "viewJson": "View JSON"
+  },
+  "search": {
+    "placeholder": "Search galleries..."
+  },
+  "status": {
+    "published": "Published",
+    "draft": "Draft",
+    "archived": "Archived"
+  },
+  "deleteDialog": {
+    "title": "Confirm deletion",
+    "message": "Are you sure you want to delete this item? This action cannot be undone.",
+    "messageWithNamePrefix": "Are you sure you want to delete ",
+    "messageWithNameSuffix": "? This action cannot be undone."
   }
 }
