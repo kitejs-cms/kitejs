@@ -1,5 +1,16 @@
 {
   "menu": {
     "galleries": "Galleries"
+  },
+  "title": {
+    "manageGalleries": "Galleries",
+    "noGalleries": "No galleries available"
+  },
+  "fields": {
+    "slug": "Slug",
+    "title": "Title"
+  },
+  "buttons": {
+    "create": "Create"
   }
 }
