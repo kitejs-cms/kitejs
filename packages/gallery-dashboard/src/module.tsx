@@ -1,8 +1,7 @@
 import { Image } from "lucide-react";
 import type { DashboardModule } from "@kitejs-cms/dashboard-core";
 import { GalleriesManagePage } from "./pages/galleries-manage";
-import { GalleryCreatePage } from "./pages/gallery-create";
-import { GalleryEditPage } from "./pages/gallery-edit";
+import { GalleryDetailsPage } from "./pages/gallery-details";
 
 /* i18n */
 import it from "./locales/it.json";
@@ -18,8 +17,7 @@ export const GalleryModule: DashboardModule = {
       element: <GalleriesManagePage />,
       label: "gallery:menu.galleries",
     },
-    { path: "galleries/create", element: <GalleryCreatePage /> },
-    { path: "galleries/:id", element: <GalleryEditPage /> },
+    { path: "galleries/:id", element: <GalleryDetailsPage /> },
   ],
   menuItem: {
     title: "gallery:menu.galleries",

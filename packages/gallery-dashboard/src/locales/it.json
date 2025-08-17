@@ -21,6 +21,13 @@
     "languages": "Lingue",
     "actions": "Azioni"
   },
+  "sections": {
+    "items": "Immagini"
+  },
+  "errors": {
+    "titleRequired": "Il titolo è obbligatorio",
+    "slugRequired": "Lo slug è obbligatorio"
+  },
   "buttons": {
     "create": "Crea",
     "addGallery": "Aggiungi Galleria",
