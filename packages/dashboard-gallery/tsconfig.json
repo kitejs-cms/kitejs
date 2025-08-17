@@ -1,0 +1,17 @@
+{
+  "extends": "@kitejs-cms/typescript-config/react-library.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "strictPropertyInitialization": false,
+    "isolatedModules": false,
+    "skipLibCheck": true,
+    "module": "ES2022",
+    "esModuleInterop": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

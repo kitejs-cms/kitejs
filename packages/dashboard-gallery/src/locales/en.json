@@ -1,0 +1,11 @@
+{
+  "menu": {
+    "galleries": "Galleries"
+  },
+  "settings": {
+    "description": "Configure gallery settings",
+    "fields": {
+      "title": "Gallery Fields"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "menu": {
+    "galleries": "Gallerie"
+  },
+  "settings": {
+    "description": "Configura le impostazioni della galleria",
+    "fields": {
+      "title": "Campi galleria"
+    }
+  }
+}

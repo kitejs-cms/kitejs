@@ -12,6 +12,7 @@ import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";
 import { PageModule } from "./modules/pages";
 import { PostModule } from "./modules/articles";
+import { GalleryModule } from "@kitejs-cms/dashboard-gallery";
 import { DashboardPage } from "./modules/core/pages/dashboard";
 
 interface DashboardRouterProps {
@@ -24,11 +25,12 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
     ProfileModule,
     PageModule,
     PostModule,
+    GalleryModule,
   ];
   const allModules = [...coreModules, ...modules];
 
   const modulesWithTranslations = [CoreModule, ...allModules].filter(
-    (mod) => mod.translations
+    (mod) => mod.translations,
   );
   modulesWithTranslations.forEach((mod) => {
     Object.entries(mod.translations!).forEach(([lang, translations]) => {
@@ -53,7 +55,7 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
         path={route.path}
         element={route.element}
       />
-    ))
+    )),
   );
 
   return (

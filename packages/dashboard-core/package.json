@@ -51,6 +51,7 @@
     "typescript": "5.7.3"
   },
   "dependencies": {
+    "@kitejs-cms/dashboard-gallery": "workspace:*",
     "@aws-sdk/s3-request-presigner": "^3.787.0",
     "@blocknote/core": "^0.33.0",
     "@blocknote/mantine": "^0.33.0",
