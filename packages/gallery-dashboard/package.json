@@ -1,0 +1,29 @@
+{
+  "name": "@kitejs-cms/gallery-dashboard",
+  "version": "0.1.0-alpha.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@kitejs-cms/dashboard-core": "workspace:*",
+    "lucide-react": "^0.475.0"
+  },
+  "devDependencies": {
+    "@kitejs-cms/eslint-config": "workspace:*",
+    "@kitejs-cms/typescript-config": "workspace:*",
+    "@types/react": "19.0.8",
+    "@types/react-dom": "19.0.3",
+    "eslint": "^9.20.0",
+    "typescript": "5.7.3"
+  }
+}
