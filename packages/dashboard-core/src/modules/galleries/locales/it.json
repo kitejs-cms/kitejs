@@ -1,0 +1,21 @@
+{
+  "menu": {
+    "galleries": "Gallerie"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "galleries": "Gallerie"
+  },
+  "actions": {
+    "create": "Crea",
+    "delete": "Elimina",
+    "sort": "Ordina"
+  },
+  "fields": {
+    "title": "Titolo"
+  },
+  "messages": {
+    "created": "Galleria creata",
+    "deleted": "Galleria eliminata"
+  }
+}
