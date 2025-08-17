@@ -14,11 +14,96 @@
   },
   "nav-user": {
     "account": "Account",
-    "settings": "Ssettings",
+    "settings": "Settings",
     "logout": "Log out"
   },
   "tags-input": {
     "placeholder": "Type and press Enter to add a tag",
     "removeAriaLabel": "Remove {{tag}}"
+  },
+  "multi-select": {
+    "placeholder": "Select options",
+    "removeAriaLabel": "Remove {{tag}}"
+  },
+  "file-uploader": {
+    "defaultFileName": "existing-file",
+    "existingFile": "Existing File",
+    "removeFile": "Remove file",
+    "uploadTitle": "Upload a file",
+    "uploadDescription": "Drag and drop or click to select",
+    "sizes": {
+      "bytes": "Bytes",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  },
+  "custom-field-builder": {
+    "fieldTypes": {
+      "text": "Text",
+      "textarea": "Textarea",
+      "richText": "Rich Text",
+      "number": "Number",
+      "boolean": "Boolean",
+      "date": "Date"
+    },
+    "general": {
+      "required": "Required",
+      "cancel": "Cancel",
+      "export": "Export",
+      "add": "Add",
+      "create": "Create",
+      "update": "Update",
+      "edit": "Edit",
+      "remove": "Remove",
+      "save": "Save"
+    },
+    "labels": {
+      "fieldKey": "Field Key",
+      "fieldLabel": "Label",
+      "fieldType": "Field Type",
+      "requiredField": "Required field",
+      "placeholder": "Placeholder",
+      "description": "Description",
+      "minLength": "Min Length",
+      "maxLength": "Max Length",
+      "pattern": "Pattern (RegEx)",
+      "minValue": "Min Value",
+      "maxValue": "Max Value"
+    },
+    "errors": {
+      "keyRequired": "Key is required",
+      "keyInvalidFormat": "Key must start with a letter and contain only letters, numbers and underscores",
+      "keyAlreadyExists": "This key is already in use",
+      "labelRequired": "Label is required",
+      "minLengthGreaterThanMax": "Min length cannot be greater than max length",
+      "minValueGreaterThanMax": "Min value cannot be greater than max value"
+    },
+    "placeholders": {
+      "fieldKey": "e.g. customField1",
+      "fieldLabel": "e.g. Custom Field",
+      "placeholder": "Sample text...",
+      "description": "Short description of the field...",
+      "pattern": "e.g. ^[A-Za-z]+$"
+    },
+    "titles": {
+      "customFields": "Custom Fields",
+      "newField": "New Field",
+      "editField": "Edit Field",
+      "validationRules": "Validation Rules",
+      "noCustomFields": "No custom fields",
+      "createFirstField": "Start by creating your first custom field"
+    },
+    "actions": {
+      "addField": "Add Field",
+      "createField": "Create Field",
+      "updateField": "Update Field"
+    },
+    "indicators": {
+      "min": "Min",
+      "max": "Max",
+      "pattern": "Pattern"
+    }
   }
 }
+

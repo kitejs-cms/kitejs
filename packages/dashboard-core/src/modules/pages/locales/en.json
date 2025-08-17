@@ -1,1 +1,119 @@
-{}
+{
+  "breadcrumb": {
+    "home": "Home",
+    "pages": "Pages",
+    "articles": "Articles"
+  },
+  "title": {
+    "managePages": "Manage Pages",
+    "editor": "Page Editor"
+  },
+  "buttons": {
+    "edit": "Edit",
+    "viewJson": "View JSON",
+    "addPage": "Add Page",
+    "addPost": "Add Article",
+    "copy": "Copy to Clipboard",
+    "download": "Download",
+    "editVisual": "Page Editor",
+    "revisions": "Revisions",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "discardChanges": "Discard changes",
+    "undo": "Undo",
+    "delete": "Delete"
+  },
+  "menu": {
+    "pages": "Pages",
+    "usersList": "Users List"
+  },
+  "search": {
+    "placeholder": "Search Pages..."
+  },
+  "fields": {
+    "slug": "Slug",
+    "title": "Title",
+    "description": "Description",
+    "tags": "Tags",
+    "status": "Status",
+    "publishAt": "Publish Date",
+    "expireAt": "Expiration Date",
+    "actions": "Actions",
+    "languages": "Languages",
+    "createdBy": "Created By",
+    "updatedBy": "Updated By",
+    "categories": "Categories",
+    "image": "Image"
+  },
+  "status": {
+    "published": "Published",
+    "draft": "Draft",
+    "archived": "Archived"
+  },
+  "sections": {
+    "revisions": "Revisions",
+    "content": "Content",
+    "seo": "SEO",
+    "settings": "Settings"
+  },
+  "seo": {
+    "metaTitle": "Meta Title",
+    "metaDescription": "Meta Description",
+    "metaKeywords": "Meta Keywords",
+    "canonical": "Canonical URL"
+  },
+  "unsavedChanges": {
+    "warning": "You have unsaved changes—are you sure you want to continue?",
+    "title": "Unsaved changes",
+    "message": "There are unsaved changes. Proceeding will discard all changes."
+  },
+  "errors": {
+    "titleRequired": "Title is required",
+    "slugRequired": "Slug is required",
+    "saveFailed": "Save failed. Please try again.",
+    "invalidForm": "Invalid form",
+    "missingTranslation": "Missing translation"
+  },
+  "toast": {
+    "loading": "Loading...",
+    "success": {
+      "create": "Page created successfully",
+      "update": "Page updated successfully",
+      "description": "Title: {title}"
+    },
+    "error": {
+      "generic": "Error during operation",
+      "server": "Server error",
+      "validation": "Validation error"
+    },
+    "warning": {
+      "unsaved": "Unsaved changes",
+      "exit": "You are about to exit without saving"
+    },
+    "action": {
+      "undo": "Undo",
+      "retry": "Retry",
+      "dismiss": "Dismiss"
+    }
+  },
+  "editor": {
+    "saveStatus": {
+      "saving": "Saving...",
+      "saved": "Saved",
+      "error": "Error saving"
+    },
+    "validation": {
+      "requiredField": "Required field",
+      "invalidSlug": "Invalid slug",
+      "duplicateSlug": "Slug already exists"
+    }
+  },
+  "deleteDialog": {
+    "title": "Confirm deletion",
+    "message": "Are you sure you want to delete this item? This action cannot be undone.",
+    "messageWithNamePrefix": "Are you sure you want to delete",
+    "messageWithNameSuffix": "? This action cannot be undone."
+  }
+}
+
