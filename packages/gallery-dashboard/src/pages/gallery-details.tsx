@@ -1,17 +1,13 @@
 import { useTranslation } from "react-i18next";
-import {
-  Button,
-  SkeletonPage,
-} from "@kitejs-cms/dashboard-core";
-import { LanguageTabs } from "@kitejs-cms/dashboard-core/modules/pages/components/language-tabs";
-import { ContentSection } from "@kitejs-cms/dashboard-core/modules/pages/components/content-section";
-import { SeoSection } from "@kitejs-cms/dashboard-core/modules/pages/components/seo-section";
-import { SettingsSection } from "@kitejs-cms/dashboard-core/modules/pages/components/settings-section";
-import { UnsavedChangesDialog } from "@kitejs-cms/dashboard-core/modules/pages/components/unsaved-changes-dialog";
-import type { PageTranslationModel, PageSeoModel } from "@kitejs-cms/core";
-import type { FormErrors as PageFormErrors } from "@kitejs-cms/dashboard-core/modules/pages/hooks/use-page-details";
+import { Button, SkeletonPage } from "@kitejs-cms/dashboard-core";
+import { LanguageTabs } from "../components/language-tabs";
+import { ContentSection } from "../components/content-section";
+import { SeoSection } from "../components/seo-section";
+import { SettingsSection } from "../components/settings-section";
+import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { GalleryItemsSection } from "../components/items-section";
 import { useGalleryDetails } from "../hooks/use-gallery-details";
+import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
 
 type SettingsChangeHandler = (
   field: "status" | "publishAt" | "expireAt" | "tags" | "categories",
@@ -42,8 +38,7 @@ export function GalleryDetailsPage() {
 
   if (loading || !data) return <SkeletonPage />;
 
-  const translations =
-    data.translations as unknown as Record<string, PageTranslationModel>;
+  const translations = data.translations as Record<string, GalleryTranslationModel>;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)] p-4 md:p-6">
@@ -61,25 +56,13 @@ export function GalleryDetailsPage() {
           <ContentSection
             activeLang={activeLang}
             translations={translations}
-            onChange={
-              onContentChange as unknown as (
-                lang: string,
-                field: keyof PageTranslationModel,
-                value: string
-              ) => void
-            }
-            formErrors={formErrors as unknown as PageFormErrors}
+            onChange={onContentChange}
+            formErrors={formErrors}
           />
           <SeoSection
             activeLang={activeLang}
             translations={translations}
-            onChange={
-              onSeoChange as unknown as (
-                lang: string,
-                field: keyof PageSeoModel,
-                value: string | string[]
-              ) => void
-            }
+            onChange={onSeoChange}
           />
           <GalleryItemsSection
             items={data.items}
@@ -89,7 +72,6 @@ export function GalleryDetailsPage() {
         </div>
         <div className="space-y-6">
           <SettingsSection
-            type="Page"
             status={data.status}
             publishAt={data.publishAt || ""}
             expireAt={data.expireAt || ""}
@@ -97,7 +79,7 @@ export function GalleryDetailsPage() {
             createdBy={data.createdBy}
             updatedBy={data.updatedBy}
             categories={data.categories || []}
-            onChange={onSettingsChange as unknown as SettingsChangeHandler}
+            onChange={onSettingsChange as SettingsChangeHandler}
             onViewJson={() => {}}
           />
         </div>

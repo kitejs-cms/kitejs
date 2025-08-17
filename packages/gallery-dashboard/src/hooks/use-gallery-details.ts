@@ -6,40 +6,20 @@ import {
   useBreadcrumb,
   useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
+import type {
+  GalleryResponseModel,
+  GalleryTranslationModel,
+  GalleryItemModel,
+  GalleryUpsertModel,
+} from "@kitejs-cms/gallery-plugin";
 
-export interface GalleryItem {
+interface GalleryItem extends GalleryItemModel {
   id: string;
-  assetId: string;
-  caption?: string;
-  altOverride?: string;
-  linkUrl?: string;
-  visibility?: "visible" | "hidden";
 }
 
-export interface GalleryTranslation {
-  title: string;
-  description?: string;
-  slug: string;
-  seo: {
-    metaTitle: string;
-    metaDescription: string;
-    metaKeywords: string[];
-    canonical?: string | null;
-  };
-}
-
-export interface GalleryDetails {
-  id: string;
-  status: string;
-  tags: string[];
-  publishAt?: string | null;
-  expireAt?: string | null;
-  translations: Record<string, GalleryTranslation>;
+type GalleryDetails = Omit<GalleryResponseModel, "items"> & {
   items: GalleryItem[];
-  categories?: string[];
-  createdBy: string;
-  updatedBy: string;
-}
+};
 
 export interface FormErrors {
   title?: string;
@@ -135,7 +115,11 @@ export function useGalleryDetails() {
   }, [data, defaultLang, activeLang]);
 
   const onContentChange = useCallback(
-    (lang: string, field: keyof GalleryTranslation, value: string) => {
+    (
+      lang: string,
+      field: keyof GalleryTranslationModel,
+      value: string
+    ) => {
       setData((prev) => {
         if (!prev) return prev;
         return {
@@ -157,7 +141,7 @@ export function useGalleryDetails() {
   const onSeoChange = useCallback(
     (
       lang: string,
-      field: keyof GalleryTranslation["seo"],
+      field: keyof GalleryTranslationModel["seo"],
       value: string | string[]
     ) => {
       setData((prev) => {
@@ -232,14 +216,14 @@ export function useGalleryDetails() {
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    const body = {
+    const body: GalleryUpsertModel = {
       id: data.id || undefined,
       slug: translation.slug,
       language: activeLang,
       status: data.status,
       tags: data.tags,
-      publishAt: data.publishAt,
-      expireAt: data.expireAt,
+      publishAt: data.publishAt || undefined,
+      expireAt: data.expireAt || undefined,
       title: translation.title,
       description: translation.description,
       items: data.items.map((it, idx) => ({ assetId: it.assetId, order: idx })),
@@ -292,9 +276,7 @@ export function useGalleryDetails() {
         );
         if (updated) {
           setData((prev) =>
-            prev
-              ? { ...prev, items: (updated as { items: GalleryItem[] }).items }
-              : prev
+            prev ? { ...prev, items: (updated as GalleryDetails).items } : prev
           );
         }
       }
@@ -312,9 +294,7 @@ export function useGalleryDetails() {
       );
       if (updated) {
         setData((prev) =>
-          prev
-            ? { ...prev, items: (updated as { items: GalleryItem[] }).items }
-            : prev
+          prev ? { ...prev, items: (updated as GalleryDetails).items } : prev
         );
       }
     },

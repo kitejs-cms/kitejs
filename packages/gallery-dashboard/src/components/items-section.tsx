@@ -8,10 +8,10 @@ import {
   Separator,
   Input,
 } from "@kitejs-cms/dashboard-core";
+import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
 
-interface Item {
+interface Item extends GalleryItemModel {
   id: string;
-  assetId: string;
 }
 
 interface Props {

@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@kitejs-cms/dashboard-core": "workspace:*",
+    "@kitejs-cms/gallery-plugin": "workspace:*",
     "lucide-react": "^0.475.0"
   },
   "devDependencies": {
