@@ -50,7 +50,7 @@ export interface FormErrors {
 export function useGalleryDetails() {
   const { t } = useTranslation("gallery");
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams() as { id?: string };
   const { setBreadcrumb } = useBreadcrumb();
   const { cmsSettings } = useSettingsContext();
   const defaultLang = useMemo(
@@ -58,7 +58,7 @@ export function useGalleryDetails() {
     [cmsSettings]
   );
 
-  const { loading, fetchData } = useApi<GalleryDetails>();
+  const { loading, fetchData, uploadFile } = useApi<GalleryDetails>();
 
   const [data, setData] = useState<GalleryDetails | null>(null);
   const [activeLang, setActiveLang] = useState(defaultLang);
@@ -224,10 +224,10 @@ export function useGalleryDetails() {
 
     const errors: FormErrors = {};
     if (!translation.title?.trim()) {
-      errors.title = t("errors.titleRequired", "Title is required");
+      errors.title = t("errors.titleRequired");
     }
     if (!translation.slug?.trim()) {
-      errors.slug = t("errors.slugRequired", "Slug is required");
+      errors.slug = t("errors.slugRequired");
     }
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
@@ -283,7 +283,7 @@ export function useGalleryDetails() {
       if (!data) return;
       const form = new FormData();
       form.append("file", file);
-      const { data: asset } = await fetchData("assets", "POST", form);
+      const { data: asset } = await uploadFile("assets", form);
       if (asset?.id) {
         const { data: updated } = await fetchData(
           `galleries/${data.id || ""}/items`,
@@ -299,7 +299,7 @@ export function useGalleryDetails() {
         }
       }
     },
-    [data, fetchData]
+    [data, uploadFile, fetchData]
   );
 
   const sortItems = useCallback(

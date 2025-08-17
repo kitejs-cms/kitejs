@@ -42,7 +42,7 @@ export function GalleryItemsSection({ items, onUpload, onSort }: Props) {
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
       <CardHeader className="bg-secondary text-primary py-6 rounded-t-xl">
-        <CardTitle>{t("sections.items", "Images")}</CardTitle>
+        <CardTitle>{t("sections.items")}</CardTitle>
       </CardHeader>
       <Separator />
       <CardContent className="p-4 md:p-6 space-y-4">

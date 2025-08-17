@@ -8,7 +8,7 @@ import { ContentSection } from "@kitejs-cms/dashboard-core/modules/pages/compone
 import { SeoSection } from "@kitejs-cms/dashboard-core/modules/pages/components/seo-section";
 import { SettingsSection } from "@kitejs-cms/dashboard-core/modules/pages/components/settings-section";
 import { UnsavedChangesDialog } from "@kitejs-cms/dashboard-core/modules/pages/components/unsaved-changes-dialog";
-import type { PageTranslationModel, PageSeoModel } from "@kitejs-cms/core/index";
+import type { PageTranslationModel, PageSeoModel } from "@kitejs-cms/core";
 import type { FormErrors as PageFormErrors } from "@kitejs-cms/dashboard-core/modules/pages/hooks/use-page-details";
 import { GalleryItemsSection } from "../components/items-section";
 import { useGalleryDetails } from "../hooks/use-gallery-details";
