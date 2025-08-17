@@ -17,7 +17,11 @@ export const GalleryModule: DashboardModule = {
       element: <GalleriesManagePage />,
       label: "gallery:menu.galleries",
     },
-    { path: "galleries/:id", element: <GalleryDetailsPage /> },
+    {
+      path: "galleries/:id",
+      element: <GalleryDetailsPage />,
+      label: "",
+    },
   ],
   menuItem: {
     title: "gallery:menu.galleries",

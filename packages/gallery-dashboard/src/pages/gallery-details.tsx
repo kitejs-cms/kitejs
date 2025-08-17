@@ -38,7 +38,10 @@ export function GalleryDetailsPage() {
 
   if (loading || !data) return <SkeletonPage />;
 
-  const translations = data.translations as Record<string, GalleryTranslationModel>;
+  const translations = data.translations as Record<
+    string,
+    GalleryTranslationModel
+  >;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)] p-4 md:p-6">
@@ -73,11 +76,19 @@ export function GalleryDetailsPage() {
         <div className="space-y-6">
           <SettingsSection
             status={data.status}
-            publishAt={data.publishAt || ""}
-            expireAt={data.expireAt || ""}
+            publishAt={
+              data.publishAt instanceof Date
+                ? data.publishAt.toISOString()
+                : data.publishAt || ""
+            }
+            expireAt={
+              data.expireAt instanceof Date
+                ? data.expireAt.toISOString()
+                : data.expireAt || ""
+            }
             tags={data.tags}
-            createdBy={data.createdBy}
-            updatedBy={data.updatedBy}
+            createdBy={""}
+            updatedBy={""}
             categories={data.categories || []}
             onChange={onSettingsChange as SettingsChangeHandler}
             onViewJson={() => {}}
@@ -86,7 +97,10 @@ export function GalleryDetailsPage() {
       </div>
 
       <div className="sticky bottom-0 bg-background border-t py-4 mt-6 flex justify-end gap-3">
-        <Button variant="outline" onClick={() => handleNavigation("/galleries")}>
+        <Button
+          variant="outline"
+          onClick={() => handleNavigation("/galleries")}
+        >
           {t("buttons.cancel")}
         </Button>
         <Button onClick={() => handleSave()} disabled={!hasChanges}>
@@ -102,4 +116,3 @@ export function GalleryDetailsPage() {
     </div>
   );
 }
-

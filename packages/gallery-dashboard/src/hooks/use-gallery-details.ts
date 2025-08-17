@@ -6,11 +6,12 @@ import {
   useBreadcrumb,
   useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
-import type {
-  GalleryResponseModel,
-  GalleryTranslationModel,
-  GalleryItemModel,
-  GalleryUpsertModel,
+import {
+  type GalleryResponseModel,
+  type GalleryTranslationModel,
+  type GalleryItemModel,
+  type GalleryUpsertModel,
+  type GalleryStatus,
 } from "@kitejs-cms/gallery-plugin";
 
 interface GalleryItem extends GalleryItemModel {
@@ -65,14 +66,14 @@ export function useGalleryDetails() {
     if (id === "create") {
       const empty: GalleryDetails = {
         id: "",
-        status: "Draft",
+        status: "Draft" as GalleryStatus,
         tags: [],
-        publishAt: new Date().toISOString(),
+        publishAt: new Date(),
         expireAt: null,
         categories: [],
-        createdBy: "",
-        updatedBy: "",
         items: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
         translations: {
           [defaultLang]: {
             title: "",
@@ -115,11 +116,7 @@ export function useGalleryDetails() {
   }, [data, defaultLang, activeLang]);
 
   const onContentChange = useCallback(
-    (
-      lang: string,
-      field: keyof GalleryTranslationModel,
-      value: string
-    ) => {
+    (lang: string, field: keyof GalleryTranslationModel, value: string) => {
       setData((prev) => {
         if (!prev) return prev;
         return {
@@ -222,8 +219,12 @@ export function useGalleryDetails() {
       language: activeLang,
       status: data.status,
       tags: data.tags,
-      publishAt: data.publishAt || undefined,
-      expireAt: data.expireAt || undefined,
+      publishAt: data.publishAt
+        ? new Date(data.publishAt).toISOString()
+        : undefined,
+      expireAt: data.expireAt
+        ? new Date(data.expireAt).toISOString()
+        : undefined,
       title: translation.title,
       description: translation.description,
       items: data.items.map((it, idx) => ({ assetId: it.assetId, order: idx })),
@@ -231,7 +232,11 @@ export function useGalleryDetails() {
       categories: data.categories,
     };
 
-    const result = await fetchData("galleries", "POST", body);
+    const result = await fetchData(
+      "galleries",
+      "POST",
+      body as unknown as Record<string, unknown>
+    );
     if (result?.data) {
       setData(result.data as unknown as GalleryDetails);
       setHasChanges(false);
@@ -321,4 +326,3 @@ export function useGalleryDetails() {
     confirmDiscard,
   };
 }
-
