@@ -8,7 +8,9 @@
   },
   "title": {
     "manageGalleries": "Gallerie",
-    "noGalleries": "Nessuna galleria disponibile"
+    "noGalleries": "Nessuna galleria disponibile",
+    "createGallery": "Crea Galleria",
+    "editGallery": "Modifica Galleria"
   },
   "fields": {
     "slug": "Slug",
@@ -22,6 +24,9 @@
   "buttons": {
     "create": "Crea",
     "addGallery": "Aggiungi Galleria",
+    "save": "Salva",
+    "uploadImage": "Carica immagine",
+    "deleteGallery": "Elimina Galleria",
     "copy": "Copia",
     "download": "Download",
     "delete": "Elimina",

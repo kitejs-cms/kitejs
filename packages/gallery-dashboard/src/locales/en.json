@@ -8,7 +8,9 @@
   },
   "title": {
     "manageGalleries": "Galleries",
-    "noGalleries": "No galleries available"
+    "noGalleries": "No galleries available",
+    "createGallery": "Create Gallery",
+    "editGallery": "Edit Gallery"
   },
   "fields": {
     "slug": "Slug",
@@ -22,6 +24,9 @@
   "buttons": {
     "create": "Create",
     "addGallery": "Add Gallery",
+    "save": "Save",
+    "uploadImage": "Upload image",
+    "deleteGallery": "Delete Gallery",
     "copy": "Copy",
     "download": "Download",
     "delete": "Delete",
