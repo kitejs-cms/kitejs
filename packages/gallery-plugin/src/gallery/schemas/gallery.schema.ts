@@ -1,0 +1,84 @@
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document, Schema as SchemaDb, Types } from "mongoose";
+import { GalleryItem, GalleryItemSchema } from "./gallery-item.schema";
+import { GalleryStatus } from "../models/gallery-status.enum";
+import {
+  GallerySettings,
+  GallerySettingsSchema,
+} from "./gallery-settings.schema";
+import {
+  GalleryTranslation,
+  GalleryTranslationSchema,
+} from "./gallery-translation.schema";
+import { GALLERY_PLUGIN_NAMESPACE } from "../../constants";
+
+/**
+ * Documento principale della gallery
+ * segue lo stile del tuo Page (type, createdBy/updatedBy, status, tags, publish/expire, translations Map)
+ */
+@Schema({
+  collection: `${GALLERY_PLUGIN_NAMESPACE}_galleries`,
+  timestamps: true,
+  toJSON: { getters: true },
+})
+export class Gallery extends Document {
+  @Prop({ type: String, default: "Gallery" })
+  type: string;
+
+  // opzionale: slug pubblico (se ti serve esporre /galleries/:slug)
+  @Prop({ type: String, required: false, default: null, index: true })
+  slug?: string;
+
+  @Prop({ type: SchemaDb.ObjectId, ref: "User", required: true })
+  createdBy: Types.ObjectId;
+
+  @Prop({ type: SchemaDb.ObjectId, ref: "User", required: true })
+  updatedBy: Types.ObjectId;
+
+  @Prop({ type: String, enum: GalleryStatus, default: GalleryStatus.Draft })
+  status: string;
+
+  @Prop({ type: [String], default: [] })
+  tags: string[];
+
+  @Prop({ type: Date, default: null })
+  publishAt?: Date;
+
+  @Prop({ type: Date, default: null })
+  expireAt?: Date;
+
+  // cover opzionale: referenza a un asset Media
+  @Prop({ type: SchemaDb.ObjectId, ref: "Media", default: null })
+  coverAssetId?: Types.ObjectId;
+
+  @Prop({
+    type: Map,
+    of: GalleryTranslationSchema,
+    required: true,
+    default: {},
+  })
+  translations: Map<string, GalleryTranslation>;
+
+  // items della gallery (subdocumenti)
+  @Prop({ type: [GalleryItemSchema], default: [] })
+  items: GalleryItem[];
+
+  // impostazioni di layout/rendering
+  @Prop({ type: GallerySettingsSchema, default: {} })
+  settings?: GallerySettings;
+
+  // opzionale: categorizzazione, se già la usi anche per Page
+  @Prop({
+    type: [{ type: SchemaDb.ObjectId, ref: "Category" }],
+    required: false,
+    default: [],
+  })
+  categories?: Types.ObjectId[];
+}
+
+export const GallerySchema = SchemaFactory.createForClass(Gallery);
+
+// Indici utili
+GallerySchema.index({ status: 1, updatedAt: -1 });
+GallerySchema.index({ slug: 1 }, { unique: true, sparse: true });
+GallerySchema.index({ "items.assetId": 1 }); // per trovare dove è usato un Media
