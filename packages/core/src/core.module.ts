@@ -11,7 +11,6 @@ import { StorageModule } from "./modules/storage";
 import { PagesModule } from "./modules/pages";
 import { CategoriesModule } from "./modules/categories";
 import { SlugRegistryModule } from "./modules/slug-registry";
-import { GalleriesModule } from "./modules/galleries";
 
 import "multer";
 
@@ -29,7 +28,6 @@ import "multer";
     PluginsModule,
     StorageModule,
     PagesModule,
-    GalleriesModule,
     SlugRegistryModule,
     CategoriesModule,
   ],

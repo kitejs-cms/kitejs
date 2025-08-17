@@ -25,7 +25,7 @@ type UseApiResult<T> = {
   }>;
   fetchData: (
     url: string,
-    method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+    method?: "GET" | "POST" | "PUT" | "DELETE",
     body?: Record<string, unknown>,
     options?: RequestInit
   ) => Promise<{
@@ -45,7 +45,7 @@ export function useApi<T>(): UseApiResult<T> {
   const fetchData = useCallback(
     async (
       url: string,
-      method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET",
+      method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
       body?: Record<string, unknown>,
       options?: RequestInit
     ): Promise<{

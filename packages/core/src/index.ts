@@ -14,7 +14,6 @@ export * from "./modules/pages";
 export * from "./modules/slug-registry";
 export * from "./modules/auth";
 export * from "./modules/categories";
-export * from "./modules/galleries";
 
 /* Constants */
 export * from "./constants";
