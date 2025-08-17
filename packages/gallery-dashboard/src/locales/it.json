@@ -2,15 +2,45 @@
   "menu": {
     "galleries": "Gallerie"
   },
+  "breadcrumb": {
+    "home": "Home",
+    "galleries": "Gallerie"
+  },
   "title": {
     "manageGalleries": "Gallerie",
     "noGalleries": "Nessuna galleria disponibile"
   },
   "fields": {
     "slug": "Slug",
-    "title": "Titolo"
+    "title": "Titolo",
+    "tags": "Tag",
+    "status": "Stato",
+    "publishAt": "Data di pubblicazione",
+    "languages": "Lingue",
+    "actions": "Azioni"
   },
   "buttons": {
-    "create": "Crea"
+    "create": "Crea",
+    "addGallery": "Aggiungi Galleria",
+    "copy": "Copia",
+    "download": "Download",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "cancel": "Annulla",
+    "viewJson": "Visualizza JSON"
+  },
+  "search": {
+    "placeholder": "Cerca Gallerie..."
+  },
+  "status": {
+    "published": "Pubblicata",
+    "draft": "Bozza",
+    "archived": "Archiviata"
+  },
+  "deleteDialog": {
+    "title": "Conferma eliminazione",
+    "message": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata.",
+    "messageWithNamePrefix": "Sei sicuro di voler eliminare ",
+    "messageWithNameSuffix": "? Questa azione non può essere annullata."
   }
 }
