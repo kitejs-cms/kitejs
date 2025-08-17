@@ -1,5 +1,5 @@
 import { Image } from "lucide-react";
-import type { DashboardModule } from "@kitejs-cms/dashboard-core/models/module.model";
+import type { DashboardModule } from "@kitejs-cms/dashboard-core";
 import { GalleriesManagePage } from "./pages/galleries-manage";
 
 /* i18n */
