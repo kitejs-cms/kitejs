@@ -8,26 +8,48 @@
   },
   "title": {
     "manageGalleries": "Galleries",
-    "noGalleries": "No galleries available"
+    "noGalleries": "No galleries available",
+    "createGallery": "Create Gallery",
+    "editGallery": "Edit Gallery"
   },
   "fields": {
     "slug": "Slug",
     "title": "Title",
+    "description": "Description",
     "tags": "Tags",
     "status": "Status",
     "publishAt": "Publish at",
+    "expireAt": "Expire at",
     "languages": "Languages",
-    "actions": "Actions"
+    "actions": "Actions",
+    "categories": "Categories",
+    "image": "Image",
+    "createdBy": "Created by",
+    "updatedBy": "Updated by"
+  },
+  "sections": {
+    "items": "Images",
+    "content": "Content",
+    "seo": "SEO",
+    "settings": "Settings"
+  },
+  "errors": {
+    "titleRequired": "Title is required",
+    "slugRequired": "Slug is required"
   },
   "buttons": {
     "create": "Create",
     "addGallery": "Add Gallery",
+    "save": "Save",
+    "uploadImage": "Upload image",
+    "deleteGallery": "Delete Gallery",
     "copy": "Copy",
     "download": "Download",
     "delete": "Delete",
     "edit": "Edit",
     "cancel": "Cancel",
-    "viewJson": "View JSON"
+    "viewJson": "View JSON",
+    "discardChanges": "Discard changes"
   },
   "search": {
     "placeholder": "Search galleries..."
@@ -36,6 +58,16 @@
     "published": "Published",
     "draft": "Draft",
     "archived": "Archived"
+  },
+  "seo": {
+    "metaTitle": "Meta title",
+    "metaDescription": "Meta description",
+    "metaKeywords": "Meta keywords",
+    "canonical": "Canonical URL"
+  },
+  "unsavedChanges": {
+    "title": "Unsaved changes",
+    "message": "You have unsaved changes. Continue without saving?"
   },
   "deleteDialog": {
     "title": "Confirm deletion",

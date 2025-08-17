@@ -8,26 +8,48 @@
   },
   "title": {
     "manageGalleries": "Gallerie",
-    "noGalleries": "Nessuna galleria disponibile"
+    "noGalleries": "Nessuna galleria disponibile",
+    "createGallery": "Crea Galleria",
+    "editGallery": "Modifica Galleria"
   },
   "fields": {
     "slug": "Slug",
     "title": "Titolo",
+    "description": "Descrizione",
     "tags": "Tag",
     "status": "Stato",
     "publishAt": "Data di pubblicazione",
+    "expireAt": "Data di scadenza",
     "languages": "Lingue",
-    "actions": "Azioni"
+    "actions": "Azioni",
+    "categories": "Categorie",
+    "image": "Immagine",
+    "createdBy": "Autore",
+    "updatedBy": "Modificato da"
+  },
+  "sections": {
+    "items": "Immagini",
+    "content": "Contenuto",
+    "seo": "SEO",
+    "settings": "Impostazioni"
+  },
+  "errors": {
+    "titleRequired": "Il titolo è obbligatorio",
+    "slugRequired": "Lo slug è obbligatorio"
   },
   "buttons": {
     "create": "Crea",
     "addGallery": "Aggiungi Galleria",
+    "save": "Salva",
+    "uploadImage": "Carica immagine",
+    "deleteGallery": "Elimina Galleria",
     "copy": "Copia",
     "download": "Download",
     "delete": "Elimina",
     "edit": "Modifica",
     "cancel": "Annulla",
-    "viewJson": "Visualizza JSON"
+    "viewJson": "Visualizza JSON",
+    "discardChanges": "Ignora modifiche"
   },
   "search": {
     "placeholder": "Cerca Gallerie..."
@@ -36,6 +58,16 @@
     "published": "Pubblicata",
     "draft": "Bozza",
     "archived": "Archiviata"
+  },
+  "seo": {
+    "metaTitle": "Titolo Meta",
+    "metaDescription": "Descrizione Meta",
+    "metaKeywords": "Parole chiave Meta",
+    "canonical": "URL canonico"
+  },
+  "unsavedChanges": {
+    "title": "Modifiche non salvate",
+    "message": "Ci sono modifiche non salvate. Continuare senza salvare?"
   },
   "deleteDialog": {
     "title": "Conferma eliminazione",
