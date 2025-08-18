@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, SkeletonPage } from "@kitejs-cms/dashboard-core";
+import { JsonModal } from "@kitejs-cms/dashboard-core/components/json-modal";
 import { LanguageTabs } from "../components/language-tabs";
 import { ContentSection } from "../components/content-section";
 import { SeoSection } from "../components/seo-section";
@@ -16,6 +19,8 @@ type SettingsChangeHandler = (
 
 export function GalleryDetailsPage() {
   const { t } = useTranslation("gallery");
+  const [searchParams] = useSearchParams();
+  const [jsonView, setJsonView] = useState(false);
   const {
     data,
     loading,
@@ -36,6 +41,10 @@ export function GalleryDetailsPage() {
     confirmDiscard,
   } = useGalleryDetails();
 
+  useEffect(() => {
+    if (searchParams.get("view") === "json") setJsonView(true);
+  }, [searchParams]);
+
   if (loading || !data) return <SkeletonPage />;
 
   const translations = data.translations as Record<
@@ -45,6 +54,12 @@ export function GalleryDetailsPage() {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)] p-4 md:p-6">
+      <JsonModal
+        isOpen={jsonView}
+        onClose={() => setJsonView(false)}
+        data={data}
+      />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <LanguageTabs
           translations={translations}
@@ -90,7 +105,7 @@ export function GalleryDetailsPage() {
             createdBy={data.createdBy}
             updatedBy={data.updatedBy}
             onChange={onSettingsChange as SettingsChangeHandler}
-            onViewJson={() => {}}
+            onViewJson={() => setJsonView(true)}
           />
         </div>
       </div>
