@@ -1,19 +1,33 @@
-import { z } from "zod";
+import { plainToInstance } from "class-transformer";
+import { IsNotEmpty, IsNumber, IsOptional, IsString, validateSync } from "class-validator";
 
-const envSchema = z.object({
-  API_PORT: z.coerce.number().default(3000),
-  API_DB_URL: z.string().url(),
-  API_SECRET: z.string().min(1),
-  API_CORS: z.string().default("http://localhost:5173"),
-});
+class EnvironmentVariables {
+  @IsNumber()
+  @IsOptional()
+  API_PORT: number = 3000;
+
+  @IsString()
+  @IsNotEmpty()
+  API_DB_URL!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  API_SECRET!: string;
+
+  @IsString()
+  @IsOptional()
+  API_CORS: string = "http://localhost:5173";
+}
 
 export function validate(config: Record<string, unknown>) {
-  const parsed = envSchema.safeParse(config);
-  if (!parsed.success) {
-    const formatted = parsed.error.issues
-      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-      .join(', ');
-    throw new Error(`Config validation error: ${formatted}`);
+  const validatedConfig = plainToInstance(EnvironmentVariables, config, {
+    enableImplicitConversion: true,
+  });
+  const errors = validateSync(validatedConfig, {
+    skipMissingProperties: false,
+  });
+  if (errors.length > 0) {
+    throw new Error(errors.toString());
   }
-  return parsed.data;
+  return validatedConfig;
 }
