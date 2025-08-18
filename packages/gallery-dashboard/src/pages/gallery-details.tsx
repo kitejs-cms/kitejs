@@ -10,7 +10,7 @@ import { useGalleryDetails } from "../hooks/use-gallery-details";
 import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
 
 type SettingsChangeHandler = (
-  field: "status" | "publishAt" | "expireAt" | "tags" | "categories",
+  field: "status" | "publishAt" | "expireAt" | "tags",
   value: string | string[]
 ) => void;
 
@@ -87,9 +87,8 @@ export function GalleryDetailsPage() {
                 : data.expireAt || ""
             }
             tags={data.tags}
-            createdBy={""}
-            updatedBy={""}
-            categories={data.categories || []}
+            createdBy={data.createdBy}
+            updatedBy={data.updatedBy}
             onChange={onSettingsChange as SettingsChangeHandler}
             onViewJson={() => {}}
           />

@@ -70,10 +70,11 @@ export function useGalleryDetails() {
         tags: [],
         publishAt: new Date(),
         expireAt: null,
-        categories: [],
         items: [],
         createdAt: new Date(),
         updatedAt: new Date(),
+        createdBy: "",
+        updatedBy: "",
         translations: {
           [defaultLang]: {
             title: "",
@@ -165,7 +166,7 @@ export function useGalleryDetails() {
 
   const onSettingsChange = useCallback(
     (
-      field: "status" | "publishAt" | "expireAt" | "tags" | "categories",
+      field: "status" | "publishAt" | "expireAt" | "tags",
       value: string | string[]
     ) => {
       setData((prev) => (prev ? { ...prev, [field]: value } : prev));
@@ -229,7 +230,6 @@ export function useGalleryDetails() {
       description: translation.description,
       items: data.items.map((it, idx) => ({ assetId: it.assetId, order: idx })),
       seo: translation.seo,
-      categories: data.categories,
     };
 
     const result = await fetchData(

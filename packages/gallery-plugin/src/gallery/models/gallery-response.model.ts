@@ -10,7 +10,8 @@ export interface GalleryResponseModel {
   expireAt?: Date;
   translations: Record<string, GalleryTranslationModel>;
   items: GalleryItemModel[];
-  categories?: string[];
+  createdBy: string;
+  updatedBy: string;
   createdAt: Date;
   updatedAt: Date;
 }

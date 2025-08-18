@@ -14,6 +14,5 @@ export interface GalleryUpsertModel {
   description?: string;
   items?: GalleryItemModel[];
   seo?: GallerySeoModel;
-  categories?: string[];
 }
 

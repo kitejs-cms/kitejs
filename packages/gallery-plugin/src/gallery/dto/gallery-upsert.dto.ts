@@ -4,7 +4,6 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
-  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -73,12 +72,6 @@ export class GalleryUpsertDto {
   @ValidateNested()
   @Type(() => GallerySeoDto)
   seo?: GallerySeoDto;
-
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
-  categories?: string[];
 
   constructor(partial: Partial<GalleryUpsertDto>) {
     Object.assign(this, partial);
