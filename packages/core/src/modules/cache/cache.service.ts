@@ -1,7 +1,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { InjectConnection } from '@nestjs/mongoose';
 import { Cache } from 'cache-manager';
-import { Connection } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import {
   CACHE_SETTINGS_KEY,
   CacheSettingsModel,
@@ -12,7 +12,7 @@ import {
   Logger,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { Setting } from '../settings/settings.schema';
+import { Setting, SettingDocument } from '../settings/settings.schema';
 
 @Injectable()
 export class CacheService {
@@ -20,12 +20,13 @@ export class CacheService {
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    @InjectConnection() private readonly connection: Connection
+    @InjectModel(Setting.name)
+    private readonly settingModel: Model<SettingDocument>
   ) {
-    if (!this.connection) {
-      this.logger.error('Database connection is undefined!');
+    if (!this.settingModel) {
+      this.logger.error('Setting model is undefined!');
       throw new InternalServerErrorException(
-        'Database connection is not available'
+        'Setting model is not available'
       );
     }
   }
@@ -41,7 +42,7 @@ export class CacheService {
   /**
    * Retrieves the cache configuration from the database.
    * If the configuration is already cached, it returns the cached version.
-   * Throws an exception if the database connection fails.
+   * Throws an exception if the configuration retrieval fails.
    */
   private async getCacheConfig(): Promise<CacheSettingsModel> {
     try {
@@ -50,23 +51,13 @@ export class CacheService {
       );
       if (config) return config;
 
-      if (!this.connection.db) {
-        this.logger.error(
-          'Database connection lost while fetching cache config.'
-        );
-        throw new InternalServerErrorException(
-          'Failed to retrieve cache config: No DB connection.'
-        );
-      }
-
       // Fetch configuration from the database (specific to "core" namespace)
-      const settingsCollection = this.connection.db.collection('settings');
-      const dbConfig = await settingsCollection.findOne<
-        Setting<CacheSettingsModel>
-      >({
-        key: CACHE_SETTINGS_KEY,
-        namespace: 'core',
-      });
+      const dbConfig = await this.settingModel
+        .findOne<Setting<CacheSettingsModel>>({
+          key: CACHE_SETTINGS_KEY,
+          namespace: 'core',
+        })
+        .exec();
 
       config = dbConfig?.value ?? { ttl: 0, enabled: false };
 
