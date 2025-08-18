@@ -8,7 +8,6 @@ export class DatabaseModule {
     return {
       module: DatabaseModule,
       imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: ".env" }),
         MongooseModule.forRootAsync({
           imports: [ConfigModule],
           useFactory: (configService: ConfigService) => ({
