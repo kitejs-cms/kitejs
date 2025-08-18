@@ -29,7 +29,7 @@ export class SettingResponseDto {
 
   @ApiProperty({
     description: 'Value of the setting.',
-    example: { value: 10 },
+    example: { itemsPerPage: 10 },
   })
   @IsObject()
   @IsNotEmpty()

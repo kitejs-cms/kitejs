@@ -119,11 +119,11 @@ export class SettingsService {
   /**
    * Update an existing setting or create it if it does not exist.
    */
-  async upsert(
+  async upsert<T = Record<string, unknown>>(
     namespace: string,
     key: string,
-    value: unknown
-  ): Promise<Setting> {
+    value: T
+  ): Promise<Setting<T>> {
     try {
       const updatedSetting = await this.settingModel
         .findOneAndUpdate(
@@ -133,7 +133,7 @@ export class SettingsService {
         )
         .exec();
 
-      const settingDataJson = updatedSetting.toJSON();
+      const settingDataJson = updatedSetting.toJSON() as unknown as Setting<T>;
 
       const cacheKey = this.generateCacheKey(key);
       await this.cache.set(namespace, cacheKey, settingDataJson);
