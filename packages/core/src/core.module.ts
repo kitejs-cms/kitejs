@@ -1,5 +1,6 @@
 import { Module, DynamicModule, Type } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { validate } from "./env.validation";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { DatabaseModule, ResponseInterceptor } from "./common";
 import { CacheModule } from "./modules/cache";
@@ -19,6 +20,7 @@ import "multer";
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ".env",
+      validate,
     }),
     DatabaseModule.register(),
     CacheModule,

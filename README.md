@@ -39,17 +39,25 @@ pnpm dev --filter @kitejs-cms/dashboard  # start dashboard
 
 ## Environment variables
 
-Create a `.env` file in the repository root:
+The backend validates required settings at startup. Define them in a `.env` file in the repository root:
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `API_PORT` | Port for the NestJS server | `3000` |
+| `API_DB_URL` | MongoDB connection string | **required** |
+| `API_SECRET` | Secret used to sign JWT tokens | **required** |
+| `API_CORS` | Comma-separated list of allowed origins | `http://localhost:5173` |
+
+Example `.env`:
 
 ```
 API_PORT=3000
-PORT=3000
 API_DB_URL=mongodb://localhost:27017/kite
 API_SECRET=change-me
 API_CORS=http://localhost:5173
 ```
 
-Adjust the values (database URL, CORS origins, secret keys) as needed.
+Adjust the values as needed.
 
 ## Starting the apps
 
