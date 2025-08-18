@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -34,13 +35,32 @@ interface ChangePasswordFormProps {
 export function ChangePasswordForm({ isOpen, onClose }: ChangePasswordFormProps) {
   const { t } = useTranslation("profile");
   const { fetchData } = useApi();
+  const [strength, setStrength] = useState(0);
+  const calculateStrength = (value: string) => {
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    return score;
+  };
+  const strengthClasses = [
+    "bg-red-500",
+    "bg-orange-500",
+    "bg-yellow-500",
+    "bg-green-500",
+    "bg-green-700",
+  ];
 
   const schema = z
     .object({
       oldPassword: z.string().min(1, { message: t("validation.required") }),
       newPassword: z
         .string()
-        .min(8, { message: t("validation.passwordMin") }),
+        .min(8, { message: t("validation.passwordMin") })
+        .refine((val) => calculateStrength(val) >= 3, {
+          message: t("validation.passwordWeak"),
+        }),
       confirmPassword: z.string().min(1, { message: t("validation.required") }),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
@@ -68,7 +88,13 @@ export function ChangePasswordForm({ isOpen, onClose }: ChangePasswordFormProps)
     );
 
     if (error) {
-      toast.error(error);
+      const errorKey: Record<string, string> = {
+        "Old password is incorrect.": "errors.oldPasswordIncorrect",
+        "New password cannot be the same as the old password.":
+          "errors.passwordSame",
+        "User not found.": "errors.userNotFound",
+      };
+      toast.error(t(errorKey[error] || "errors.generic"));
       return;
     }
 
@@ -132,8 +158,18 @@ export function ChangePasswordForm({ isOpen, onClose }: ChangePasswordFormProps)
                         {...field}
                         type="password"
                         placeholder={t("password.placeholders.newPassword")}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setStrength(calculateStrength(e.target.value));
+                        }}
                       />
                     </FormControl>
+                    <div className="h-1 w-full bg-gray-200 rounded mt-1">
+                      <div
+                        className={`h-full rounded ${strengthClasses[strength]}`}
+                        style={{ width: `${((strength + 1) / 5) * 100}%` }}
+                      />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

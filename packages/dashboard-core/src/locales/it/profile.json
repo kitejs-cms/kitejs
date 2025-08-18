@@ -32,7 +32,14 @@
   "validation": {
     "required": "Campo obbligatorio.",
     "passwordMismatch": "Le password non coincidono.",
-    "passwordMin": "La password deve contenere almeno 8 caratteri."
+    "passwordMin": "La password deve contenere almeno 8 caratteri.",
+    "passwordWeak": "La password è troppo debole."
+  },
+  "errors": {
+    "oldPasswordIncorrect": "La password attuale non è corretta.",
+    "passwordSame": "La nuova password non può essere uguale alla precedente.",
+    "userNotFound": "Utente non trovato.",
+    "generic": "Si è verificato un errore. Riprova."
   },
   "success": {
     "passwordChanged": "Password aggiornata con successo"

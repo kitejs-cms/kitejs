@@ -32,7 +32,14 @@
   "validation": {
     "required": "This field is required.",
     "passwordMismatch": "Passwords do not match.",
-    "passwordMin": "Password must be at least 8 characters."
+    "passwordMin": "Password must be at least 8 characters.",
+    "passwordWeak": "Password is too weak."
+  },
+  "errors": {
+    "oldPasswordIncorrect": "Current password is incorrect.",
+    "passwordSame": "New password cannot be the same as the old password.",
+    "userNotFound": "User not found.",
+    "generic": "An error occurred. Please try again."
   },
   "success": {
     "passwordChanged": "Password updated successfully"
