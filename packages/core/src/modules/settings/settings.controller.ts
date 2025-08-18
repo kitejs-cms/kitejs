@@ -1,7 +1,7 @@
 import { InitCmsDto } from "./dto/init-cms.dto";
 import { SettingsService } from "./settings.service";
 import { SettingResponseDto } from "./dto/setting-response.dto";
-import { ApiBearerAuth } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody } from "@nestjs/swagger";
 import {
   Controller,
   Get,
@@ -13,6 +13,7 @@ import {
   NotFoundException,
   Post,
   UseGuards,
+  BadRequestException,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 
@@ -60,12 +61,33 @@ export class SettingsController {
   @Put(":namespace/:key")
   @UseGuards(AuthGuard("jwt"))
   @ApiBearerAuth()
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        value: {
+          type: "object",
+          example: { itemsPerPage: 10 },
+        },
+      },
+      required: ["value"],
+    },
+  })
   async upsertSetting(
     @Param("namespace") namespace: string,
     @Param("key") key: string,
-    @Body("value") value: string
+    @Body("value") value: unknown
   ): Promise<SettingResponseDto> {
-    const data = await this.settingsService.upsert(namespace, key, value);
+    let parsedValue = value;
+    if (typeof value === "string") {
+      try {
+        parsedValue = JSON.parse(value);
+      } catch {
+        throw new BadRequestException("Invalid JSON for value");
+      }
+    }
+
+    const data = await this.settingsService.upsert(namespace, key, parsedValue);
 
     return new SettingResponseDto(data);
   }
