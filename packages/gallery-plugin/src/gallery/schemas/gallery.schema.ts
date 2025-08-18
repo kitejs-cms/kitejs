@@ -25,10 +25,6 @@ export class Gallery extends Document {
   @Prop({ type: String, default: "Gallery" })
   type: string;
 
-  // opzionale: slug pubblico (se ti serve esporre /galleries/:slug)
-  @Prop({ type: String, required: false, default: null, index: true })
-  slug?: string;
-
   @Prop({ type: SchemaDb.ObjectId, ref: "User", required: true })
   createdBy: Types.ObjectId;
 
@@ -47,10 +43,6 @@ export class Gallery extends Document {
   @Prop({ type: Date, default: null })
   expireAt?: Date;
 
-  // cover opzionale: referenza a un asset Media
-  @Prop({ type: SchemaDb.ObjectId, ref: "Media", default: null })
-  coverAssetId?: Types.ObjectId;
-
   @Prop({
     type: Map,
     of: GalleryTranslationSchema,
@@ -59,7 +51,6 @@ export class Gallery extends Document {
   })
   translations: Map<string, GalleryTranslation>;
 
-  // items della gallery (subdocumenti)
   @Prop({ type: [GalleryItemSchema], default: [] })
   items: GalleryItem[];
 
