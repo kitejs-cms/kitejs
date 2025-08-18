@@ -4,6 +4,7 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { AuthService } from "./auth.service";
 import { Response as ExpressResponse } from "express";
 import { LoginDto } from "./dto/login.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { JwtPayloadModel } from "./models/payload-jwt.model";
 import { UserResponseDto } from "../users/dto/user-response.dto";
 import {
@@ -62,6 +63,15 @@ export class AuthController {
   async getProfile(@GetAuthUser() user: JwtPayloadModel) {
     const data = await this.authService.getAuthUser(user.sub);
     return new UserResponseDto(data);
+  }
+
+  @Post("change-password")
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @GetAuthUser() user: JwtPayloadModel,
+    @Body() dto: ChangePasswordDto
+  ) {
+    return this.authService.changePassword(user.sub, dto);
   }
 
   @Delete("logout")
