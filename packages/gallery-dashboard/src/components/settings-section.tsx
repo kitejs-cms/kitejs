@@ -13,24 +13,19 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-  useApi,
-  MultiSelect,
 } from "@kitejs-cms/dashboard-core";
 import { FileJson } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
-import type { CategoryResponseDetailsModel } from "@kitejs-cms/core";
 
 interface SettingsSectionProps {
   status: string;
   publishAt: string;
   expireAt: string;
   tags: string[];
-  categories?: string[];
   createdBy: string;
   updatedBy: string;
   onChange: (
-    field: "status" | "publishAt" | "expireAt" | "tags" | "categories",
+    field: "status" | "publishAt" | "expireAt" | "tags",
     value: string | string[]
   ) => void;
   onViewJson: () => void;
@@ -41,40 +36,15 @@ export function SettingsSection({
   publishAt,
   expireAt,
   tags,
-  categories = [],
   createdBy,
   updatedBy,
   onChange,
   onViewJson,
 }: SettingsSectionProps) {
-  const { t, i18n } = useTranslation("gallery");
-  const [categoryOptions, setCategoryOptions] = useState<
-    { value: string; label: string }[]
-  >([]);
-  const { data, fetchData } = useApi<CategoryResponseDetailsModel[]>();
+  const { t } = useTranslation("gallery");
 
   const toInputDate = (iso: string) =>
     iso ? new Date(iso).toISOString().slice(0, 16) : "";
-
-  useEffect(() => {
-    fetchData("categories?page[number]=1&page[size]=100");
-  }, [fetchData]);
-
-  useEffect(() => {
-    if (data) {
-      const local = i18n.language.split("-")[0];
-      setCategoryOptions(
-        data.map((category) => ({
-          value: category.id,
-          label: category.translations[local]?.title || category.id,
-        }))
-      );
-    }
-  }, [data, i18n.language]);
-
-  const handleCategoriesChange = (selectedCategories: string[]) => {
-    onChange("categories", selectedCategories);
-  };
 
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
@@ -129,17 +99,6 @@ export function SettingsSection({
             className="w-full"
           />
         </div>
-
-        {categoryOptions.length > 0 && (
-          <div>
-            <Label className="mb-2 block">{t("fields.categories")}</Label>
-            <MultiSelect
-              options={categoryOptions}
-              initialTags={categories}
-              onChange={handleCategoriesChange}
-            />
-          </div>
-        )}
 
         <div>
           <Label className="mb-2 block">{t("fields.tags")}</Label>

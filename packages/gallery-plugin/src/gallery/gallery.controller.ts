@@ -71,12 +71,6 @@ export class GalleryController {
     description: "Filter galleries by status",
   })
   @ApiQuery({
-    name: "category",
-    required: false,
-    type: String,
-    description: "Filter galleries by category slug or id",
-  })
-  @ApiQuery({
     name: "search",
     required: false,
     type: String,
@@ -87,15 +81,16 @@ export class GalleryController {
     @Query() query: Record<string, string>,
   ) {
     const { filter, sort, skip, take } = parseQuery(query);
+    const typedFilter = filter as { status?: GalleryStatus; search?: string };
     const totalItems = await this.galleryService.countGalleries(
-      filter,
+      typedFilter,
       language,
     );
     const data = await this.galleryService.findGalleriesForWeb(
       skip,
       take,
       sort,
-      filter,
+      typedFilter,
       language,
     );
     return {
@@ -122,12 +117,6 @@ export class GalleryController {
     description: "Filter galleries by status",
   })
   @ApiQuery({
-    name: "category",
-    required: false,
-    type: String,
-    description: "Filter galleries by category slug or id",
-  })
-  @ApiQuery({
     name: "search",
     required: false,
     type: String,
@@ -138,15 +127,16 @@ export class GalleryController {
     @Query() query: Record<string, string>,
   ) {
     const { filter, sort, skip, take } = parseQuery(query);
+    const typedFilter = filter as { status?: GalleryStatus; search?: string };
     const totalItems = await this.galleryService.countGalleries(
-      filter,
+      typedFilter,
       language,
     );
     const data = await this.galleryService.findGalleries(
       skip,
       take,
       sort,
-      filter,
+      typedFilter,
       language,
     );
     return {

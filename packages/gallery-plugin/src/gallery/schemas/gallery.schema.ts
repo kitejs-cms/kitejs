@@ -66,14 +66,6 @@ export class Gallery extends Document {
   // impostazioni di layout/rendering
   @Prop({ type: GallerySettingsSchema, default: {} })
   settings?: GallerySettings;
-
-  // opzionale: categorizzazione, se già la usi anche per Page
-  @Prop({
-    type: [{ type: SchemaDb.ObjectId, ref: "Category" }],
-    required: false,
-    default: [],
-  })
-  categories?: Types.ObjectId[];
 }
 
 export const GallerySchema = SchemaFactory.createForClass(Gallery);

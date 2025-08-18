@@ -24,8 +24,11 @@ export class GalleryResponseDto implements GalleryResponseModel {
   @ApiProperty({ type: Object })
   items: GalleryResponseModel["items"];
 
-  @ApiProperty({ type: [String] })
-  categories?: string[];
+  @ApiProperty()
+  createdBy: string;
+
+  @ApiProperty()
+  updatedBy: string;
 
   @ApiProperty()
   createdAt: Date;

@@ -15,14 +15,13 @@ import { GalleryResponseModel } from "../models/gallery-response.model";
 import { GalleryTranslationModel } from "../models/gallery-translation.model";
 import { GalleryStatus } from "../models/gallery-status.enum";
 import { GalleryItem } from "../schemas/gallery-item.schema";
-import { CategoriesService } from "@kitejs-cms/core";
+import { User } from "@kitejs-cms/core";
 
 @Injectable()
 export class GalleryService {
   constructor(
     @InjectModel(Gallery.name) private readonly galleryModel: Model<Gallery>,
     private readonly slugService: SlugRegistryService,
-    private readonly categoriesService: CategoriesService,
   ) {}
 
   async upsertGallery(
@@ -39,7 +38,7 @@ export class GalleryService {
 
     type BaseData = Pick<
       GalleryUpsertDto,
-      "status" | "tags" | "publishAt" | "expireAt" | "items" | "categories"
+      "status" | "tags" | "publishAt" | "expireAt" | "items"
     >;
 
     const baseData: BaseData = {
@@ -48,7 +47,6 @@ export class GalleryService {
       publishAt: rest.publishAt,
       expireAt: rest.expireAt,
       items: rest.items,
-      categories: rest.categories,
     };
 
     let gallery: Gallery;
@@ -87,7 +85,11 @@ export class GalleryService {
 
   async findGalleryById(id: string): Promise<GalleryResponseModel> {
     try {
-      const gallery = await this.galleryModel.findById(id).exec();
+      const gallery = await this.galleryModel
+        .findById(id)
+        .populate<{ createdBy: User }>("createdBy")
+        .populate<{ updatedBy: User }>("updatedBy")
+        .exec();
       if (!gallery) {
         throw new NotFoundException(`Gallery with ID ${id} not found`);
       }
@@ -113,6 +115,8 @@ export class GalleryService {
       return {
         ...json,
         id: json._id.toString(),
+        createdBy: `${(json.createdBy as User).firstName} ${(json.createdBy as User).lastName}`,
+        updatedBy: `${(json.updatedBy as User).firstName} ${(json.updatedBy as User).lastName}`,
         translations: translationsWithSlug,
       } as unknown as GalleryResponseModel;
     } catch (error) {
@@ -122,26 +126,10 @@ export class GalleryService {
   }
 
   private async buildGalleryQuery(
-    filters?: {
-      status?: GalleryStatus;
-      category?: string;
-      search?: string;
-    },
+    filters?: { status?: GalleryStatus; search?: string },
     language = "en",
   ): Promise<Record<string, unknown>> {
     const query: Record<string, unknown> = { ...filters };
-
-    if (filters?.category) {
-      try {
-        const category = await this.categoriesService.findCategory(
-          filters.category,
-        );
-        query.categories = category?._id.toString();
-      } catch {
-        query.categories = null;
-      }
-      delete query.category;
-    }
 
     if (filters?.search) {
       const searchTerm = filters.search.trim();
@@ -169,7 +157,7 @@ export class GalleryService {
   }
 
   async countGalleries(
-    filters?: { status?: GalleryStatus; category?: string; search?: string },
+    filters?: { status?: GalleryStatus; search?: string },
     language = "en",
   ): Promise<number> {
     try {
@@ -185,7 +173,7 @@ export class GalleryService {
     skip = 0,
     take = 10,
     sort?: Record<string, 1 | -1>,
-    filters?: { status?: GalleryStatus; category?: string; search?: string },
+    filters?: { status?: GalleryStatus; search?: string },
     language = "en",
   ): Promise<GalleryResponseModel[]> {
     try {
@@ -212,7 +200,7 @@ export class GalleryService {
     skip = 0,
     take = 10,
     sort?: Record<string, 1 | -1>,
-    filters?: { status?: GalleryStatus; category?: string; search?: string },
+    filters?: { status?: GalleryStatus; search?: string },
     language = "en",
   ): Promise<GalleryResponseModel[]> {
     const baseFilters = {
