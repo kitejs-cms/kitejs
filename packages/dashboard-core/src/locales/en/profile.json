@@ -2,7 +2,10 @@
   "buttons": {
     "copy": "Copy",
     "editProfile": "Edit Profile",
-    "viewJson": "View JSON"
+    "viewJson": "View JSON",
+    "changePassword": "Change Password",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "fields": {
     "firstName": "Name",
@@ -12,6 +15,27 @@
     "roles": "Roles",
     "createdAt": "Created At",
     "updatedAt": "Last Updated"
+  },
+  "password": {
+    "title": "Change Password",
+    "fields": {
+      "oldPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password"
+    },
+    "placeholders": {
+      "oldPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Repeat new password"
+    }
+  },
+  "validation": {
+    "required": "This field is required.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordMin": "Password must be at least 8 characters."
+  },
+  "success": {
+    "passwordChanged": "Password updated successfully"
   },
   "empty": "-"
 }

@@ -63,3 +63,22 @@ Adjust the values (database URL, CORS origins, secret keys) as needed.
    ```
 
 Running `pnpm dev` without filters starts both applications and watches shared packages using Turborepo.
+
+## Authentication
+
+Authenticated users can update their credentials via the `POST /auth/change-password` endpoint. The route requires a valid JWT token and accepts the following payload:
+
+```http
+POST /auth/change-password
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "oldPassword": "OldPass123!",
+  "newPassword": "NewStrongPass123!"
+}
+```
+
+The service verifies the current password before storing the new hashed password.
+
+The dashboard profile page includes a form to change the current user's password, which communicates with the same endpoint.

@@ -7,7 +7,7 @@ import { CORE_NAMESPACE } from "../../constants";
 import { JwtPayloadModel } from "./models/payload-jwt.model";
 import { parseTimeToMs } from "../../common";
 import { AUTH_SETTINGS_KEY, AuthSettingsModel } from "../settings";
-import { ChangePasswordModel } from "./models/change-password.model";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import {
   BadRequestException,
   Injectable,
@@ -165,28 +165,34 @@ export class AuthService {
    * @throws {BadRequestException} If the old password is incorrect or update fails.
    * @returns A success message if the password is updated.
    */
-  // async changePassword(userId: string, changePasswordDto: ChangePasswordModel) {
-  //   const { oldPassword, newPassword } = changePasswordDto;
-  //
-  //   const user = await this.userService.findUser(userId);
-  //   if (!user) {
-  //     throw new BadRequestException("User not found.");
-  //   }
-  //
-  //   const isPasswordValid = await argon2.verify(user.password, oldPassword);
-  //   if (!isPasswordValid) {
-  //     throw new BadRequestException("Old password is incorrect.");
-  //   }
-  //
-  //   if (await argon2.verify(user.password, newPassword)) {
-  //     throw new BadRequestException(
-  //       "New password cannot be the same as the old password."
-  //     );
-  //   }
-  //
-  //   const hashedPassword = await argon2.hash(newPassword);
-  //   await this.userService.updateUser(userId, { password: hashedPassword });
-  //
-  //   return { updatedAt: new Date() };
-  // }
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto
+  ) {
+    const { oldPassword, newPassword } = changePasswordDto;
+
+    const user = await this.userService.findUser(userId);
+    if (!user) {
+      throw new BadRequestException("User not found.");
+    }
+
+    const isPasswordValid = await argon2.verify(
+      user.password as string,
+      oldPassword
+    );
+    if (!isPasswordValid) {
+      throw new BadRequestException("Old password is incorrect.");
+    }
+
+    if (await argon2.verify(user.password as string, newPassword)) {
+      throw new BadRequestException(
+        "New password cannot be the same as the old password."
+      );
+    }
+
+    const hashedPassword = await argon2.hash(newPassword);
+    await this.userService.updateUser(userId, { password: hashedPassword });
+
+    return { updatedAt: new Date() };
+  }
 }
