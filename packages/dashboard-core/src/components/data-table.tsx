@@ -41,6 +41,12 @@ interface TableProps<T> {
   onRowClick?: (row: T) => void;
 }
 
+const alignClass = {
+  left: "text-left",
+  center: "text-center",
+  right: "text-right",
+} as const;
+
 export function DataTable<T>({
   data,
   columns,
@@ -55,7 +61,7 @@ export function DataTable<T>({
           {columns.map((col) => (
             <TableHead
               key={String(col.key)}
-              className={`p-4 text-${col.align || "left"}`}
+              className={`p-4 ${alignClass[col.align ?? "left"]}`}
             >
               {col.label}
             </TableHead>
@@ -79,7 +85,7 @@ export function DataTable<T>({
               {columns.map((col) => (
                 <TableCell
                   key={String(col.key)}
-                  className={`p-4 text-${col.align || "left"}`}
+                  className={`p-4 ${alignClass[col.align ?? "left"]}`}
                 >
                   {col.render
                     ? col.render(row[col.key], row)
