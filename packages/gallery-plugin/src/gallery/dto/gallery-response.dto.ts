@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { GalleryResponseModel } from "../models/gallery-response.model";
 import { GalleryStatus } from "../models/gallery-status.enum";
+import { Exclude } from "class-transformer";
+import type { ObjectId } from "mongoose";
 
 export class GalleryResponseDto implements GalleryResponseModel {
   @ApiProperty()
@@ -36,9 +38,14 @@ export class GalleryResponseDto implements GalleryResponseModel {
   @ApiProperty()
   updatedAt: Date;
 
+  @Exclude()
+  _id: ObjectId;
+
+  @Exclude()
+  __v: number;
+
   constructor(model: GalleryResponseModel) {
     Object.assign(this, model);
     this.id = model.id;
   }
 }
-
