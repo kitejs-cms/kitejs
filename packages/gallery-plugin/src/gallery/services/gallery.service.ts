@@ -8,7 +8,7 @@ import { Model, Types } from "mongoose";
 import { Gallery } from "../schemas/gallery.schema";
 import { GalleryUpsertDto } from "../dto/gallery-upsert.dto";
 import { GalleryItemDto } from "../dto/gallery-item.dto";
-import { SlugRegistryService } from "@kitejs-cms/core";
+import { SlugRegistryService, StorageService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { GALLERY_SLUG_NAMESPACE } from "../../constants";
 import { GalleryResponseModel } from "../models/gallery-response.model";
@@ -22,6 +22,7 @@ export class GalleryService {
   constructor(
     @InjectModel(Gallery.name) private readonly galleryModel: Model<Gallery>,
     private readonly slugService: SlugRegistryService,
+    private readonly storageService: StorageService,
   ) {}
 
   async upsertGallery(
@@ -252,6 +253,16 @@ export class GalleryService {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to delete gallery. ${message}`);
     }
+  }
+
+  async uploadItemFile(
+    galleryId: string,
+    file: Express.Multer.File,
+  ): Promise<{ assetId: string; filename: string; path: string; url: string }> {
+    const dir = `galleries/${galleryId}`;
+    await this.storageService.createEmptyDirectory(`/${dir}`);
+    const result = await this.storageService.uploadFile(file, dir);
+    return { assetId: result.path, ...result };
   }
 
   async addItem(

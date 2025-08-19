@@ -9,9 +9,13 @@ import {
   Post,
   Query,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -34,6 +38,7 @@ import { GalleryUpsertDto } from "./dto/gallery-upsert.dto";
 import { GalleryItemDto } from "./dto/gallery-item.dto";
 import { GallerySortDto } from "./dto/gallery-sort.dto";
 import { GalleryStatus } from "./models/gallery-status.enum";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @ApiTags("Gallery")
 @Controller("galleries")
@@ -163,6 +168,28 @@ export class GalleryController {
   async getGallery(@Param("id") id: string) {
     const gallery = await this.galleryService.findGalleryById(id);
     return new GalleryResponseDto(gallery);
+  }
+
+  @Post(":id/items/upload")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    required: true,
+    schema: {
+      type: "object",
+      properties: {
+        file: { type: "string", format: "binary" },
+      },
+    },
+  })
+  @ApiOperation({ summary: "Upload item image" })
+  async uploadItem(
+    @Param("id", ValidateObjectIdPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.galleryService.uploadItemFile(id, file);
   }
 
   @Post(":id/items")
