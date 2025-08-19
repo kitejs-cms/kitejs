@@ -11,7 +11,6 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-  useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
 import {
   Dialog,
@@ -54,12 +53,6 @@ export function GalleryEditorModal({
   onGridChange,
 }: GalleryEditorModalProps) {
   const { t } = useTranslation("gallery");
-  const { cmsSettings } = useSettingsContext();
-
-  const getImageUrl = (assetId: string) =>
-    cmsSettings?.apiUrl
-      ? `${cmsSettings.apiUrl}/public/${assetId}`
-      : `/public/${assetId}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -86,7 +79,7 @@ export function GalleryEditorModal({
                   className="overflow-hidden"
                 >
                   <img
-                    src={getImageUrl(item.assetId)}
+                    src={item.linkUrl}
                     alt=""
                     className="w-full h-full object-cover"
                   />
@@ -100,53 +93,57 @@ export function GalleryEditorModal({
               <TabsTrigger value="grid">{t("sections.grid")}</TabsTrigger>
             </TabsList>
             <TabsContent value="items" className="mt-4">
-              <GalleryItemsSection items={items} onUpload={onUpload} onSort={onSort} />
+              <GalleryItemsSection
+                items={items}
+                onUpload={onUpload}
+                onSort={onSort}
+              />
             </TabsContent>
             <TabsContent value="grid" className="mt-4">
               <SettingsSection title={t("sections.grid")}>
-              <div>
-                <Label className="mb-2 block">{t("fields.layout")}</Label>
-                <Select
-                  value={gridSettings.layout}
-                  onValueChange={(val) => onGridChange("layout", val)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("fields.layout")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="grid">Grid</SelectItem>
-                    <SelectItem value="masonry">Masonry</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="mb-2 block">{t("fields.columns")}</Label>
-                <Input
-                  type="number"
-                  value={gridSettings.columns}
-                  onChange={(e) => onGridChange("columns", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <Label className="mb-2 block">{t("fields.gap")}</Label>
-                <Input
-                  type="number"
-                  value={gridSettings.gap}
-                  onChange={(e) => onGridChange("gap", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <Label className="mb-2 block">{t("fields.ratio")}</Label>
-                <Input
-                  value={gridSettings.ratio}
-                  onChange={(e) => onGridChange("ratio", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-            </SettingsSection>
-          </TabsContent>
+                <div>
+                  <Label className="mb-2 block">{t("fields.layout")}</Label>
+                  <Select
+                    value={gridSettings.layout}
+                    onValueChange={(val) => onGridChange("layout", val)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("fields.layout")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grid">Grid</SelectItem>
+                      <SelectItem value="masonry">Masonry</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="mb-2 block">{t("fields.columns")}</Label>
+                  <Input
+                    type="number"
+                    value={gridSettings.columns}
+                    onChange={(e) => onGridChange("columns", e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-2 block">{t("fields.gap")}</Label>
+                  <Input
+                    type="number"
+                    value={gridSettings.gap}
+                    onChange={(e) => onGridChange("gap", e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-2 block">{t("fields.ratio")}</Label>
+                  <Input
+                    value={gridSettings.ratio}
+                    onChange={(e) => onGridChange("ratio", e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              </SettingsSection>
+            </TabsContent>
           </Tabs>
         </div>
       </DialogContent>
