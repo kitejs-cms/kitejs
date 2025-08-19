@@ -24,13 +24,18 @@
     "actions": "Azioni",
     "image": "Immagine",
     "createdBy": "Autore",
-    "updatedBy": "Modificato da"
+    "updatedBy": "Modificato da",
+    "layout": "Layout",
+    "columns": "Colonne",
+    "gap": "Spaziatura",
+    "ratio": "Proporzioni"
   },
   "sections": {
     "items": "Immagini",
     "content": "Contenuto",
     "seo": "SEO",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "grid": "Impostazioni griglia"
   },
   "errors": {
     "titleRequired": "Il titolo è obbligatorio",
@@ -46,6 +51,7 @@
     "download": "Download",
     "delete": "Elimina",
     "edit": "Modifica",
+    "editGallery": "Modifica galleria",
     "cancel": "Annulla",
     "viewJson": "Visualizza JSON",
     "discardChanges": "Ignora modifiche"
