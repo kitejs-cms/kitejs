@@ -15,7 +15,7 @@ import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
 
 type SettingsChangeHandler = (
   field: "status" | "publishAt" | "expireAt" | "tags",
-  value: string | string[]
+  value: string | string[],
 ) => void;
 
 export function GalleryDetailsPage() {
@@ -40,6 +40,7 @@ export function GalleryDetailsPage() {
     onAddLanguage,
     uploadItem,
     sortItems,
+    removeItem,
     handleSave,
     hasChanges,
     formErrors,
@@ -144,6 +145,7 @@ export function GalleryDetailsPage() {
         items={data.items}
         onUpload={uploadItem}
         onSort={sortItems}
+        onDelete={removeItem}
         gridSettings={gridSettings}
         onGridChange={(field, value) =>
           setGridSettings((prev) => ({ ...prev, [field]: value }))

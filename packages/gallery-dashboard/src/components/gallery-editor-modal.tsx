@@ -1,9 +1,7 @@
+import { useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
+  Button,
   Label,
   Input,
   Select,
@@ -18,9 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@kitejs-cms/dashboard-core/components/ui/dialog";
+import { X, Settings2 } from "lucide-react";
 import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
-import { GalleryItemsSection } from "./items-section";
-import { SettingsSection } from "./settings-section";
 
 interface Item extends GalleryItemModel {
   id: string;
@@ -40,6 +37,7 @@ interface GalleryEditorModalProps {
   gridSettings: GridSettings;
   onUpload: (file: File) => void;
   onSort: (ids: string[]) => void;
+  onDelete: (id: string) => void;
   onGridChange: (field: keyof GridSettings, value: string) => void;
 }
 
@@ -50,57 +48,84 @@ export function GalleryEditorModal({
   gridSettings,
   onUpload,
   onSort,
+  onDelete,
   onGridChange,
 }: GalleryEditorModalProps) {
   const { t } = useTranslation("gallery");
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(true);
+
+  const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onUpload(file);
+  };
+
+  const handleDragStart = (idx: number) => setDragIndex(idx);
+  const handleDrop = (idx: number) => {
+    if (dragIndex === null || dragIndex === idx) return;
+    const reordered = [...items];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(idx, 0, moved);
+    onSort(reordered.map((i) => i.id));
+    setDragIndex(null);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{t("title.editGallery")}</DialogTitle>
-        </DialogHeader>
-        <div className="mt-4 space-y-4">
-          <div>
-            <h3 className="mb-2 text-lg font-medium">
-              {t("sections.preview")}
-            </h3>
-            <div
-              className="grid"
-              style={{
-                gridTemplateColumns: `repeat(${gridSettings.columns}, 1fr)`,
-                gap: `${gridSettings.gap}px`,
-              }}
-            >
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  style={{ aspectRatio: gridSettings.ratio }}
-                  className="overflow-hidden"
-                >
-                  <img
-                    src={item.linkUrl}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
+      <DialogContent position="full" className="h-full p-0 rounded-none">
+        <div className="flex flex-col h-full">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle>{t("title.editGallery")}</DialogTitle>
+          </DialogHeader>
+          <div className="relative flex flex-1">
+            <div className="flex-1 p-4 overflow-auto">
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns: `repeat(${gridSettings.columns}, 1fr)`,
+                  gap: `${gridSettings.gap}px`,
+                }}
+              >
+                {items.map((item, index) => (
+                  <div
+                    key={item.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => handleDrop(index)}
+                    style={{ aspectRatio: gridSettings.ratio }}
+                    className="relative group overflow-hidden cursor-move"
+                  >
+                    <img
+                      src={item.linkUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => onDelete(item.id)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <Input type="file" onChange={handleUpload} />
+              </div>
             </div>
-          </div>
-          <Tabs defaultValue="items">
-            <TabsList>
-              <TabsTrigger value="items">{t("sections.items")}</TabsTrigger>
-              <TabsTrigger value="grid">{t("sections.grid")}</TabsTrigger>
-            </TabsList>
-            <TabsContent value="items" className="mt-4">
-              <GalleryItemsSection
-                items={items}
-                onUpload={onUpload}
-                onSort={onSort}
-              />
-            </TabsContent>
-            <TabsContent value="grid" className="mt-4">
-              <SettingsSection title={t("sections.grid")}>
+            {settingsOpen && (
+              <div className="w-full max-w-md border-l p-4 overflow-y-auto space-y-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-auto"
+                  onClick={() => setSettingsOpen(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
                 <div>
                   <Label className="mb-2 block">{t("fields.layout")}</Label>
                   <Select
@@ -142,9 +167,19 @@ export function GalleryEditorModal({
                     className="w-full"
                   />
                 </div>
-              </SettingsSection>
-            </TabsContent>
-          </Tabs>
+              </div>
+            )}
+            {!settingsOpen && (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-4 right-4"
+                onClick={() => setSettingsOpen(true)}
+              >
+                <Settings2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
