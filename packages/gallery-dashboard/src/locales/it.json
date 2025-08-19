@@ -35,7 +35,8 @@
     "content": "Contenuto",
     "seo": "SEO",
     "settings": "Impostazioni",
-    "grid": "Impostazioni griglia"
+    "grid": "Impostazioni griglia",
+    "preview": "Anteprima"
   },
   "errors": {
     "titleRequired": "Il titolo è obbligatorio",

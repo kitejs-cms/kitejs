@@ -11,6 +11,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
+  useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
 import {
   Dialog,
@@ -53,6 +54,12 @@ export function GalleryEditorModal({
   onGridChange,
 }: GalleryEditorModalProps) {
   const { t } = useTranslation("gallery");
+  const { cmsSettings } = useSettingsContext();
+
+  const getImageUrl = (assetId: string) =>
+    cmsSettings?.apiUrl
+      ? `${cmsSettings.apiUrl}/public/${assetId}`
+      : `/public/${assetId}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -60,16 +67,43 @@ export function GalleryEditorModal({
         <DialogHeader>
           <DialogTitle>{t("title.editGallery")}</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="items" className="mt-4">
-          <TabsList>
-            <TabsTrigger value="items">{t("sections.items")}</TabsTrigger>
-            <TabsTrigger value="grid">{t("sections.grid")}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="items" className="mt-4">
-            <GalleryItemsSection items={items} onUpload={onUpload} onSort={onSort} />
-          </TabsContent>
-          <TabsContent value="grid" className="mt-4">
-            <SettingsSection title={t("sections.grid")}> 
+        <div className="mt-4 space-y-4">
+          <div>
+            <h3 className="mb-2 text-lg font-medium">
+              {t("sections.preview")}
+            </h3>
+            <div
+              className="grid"
+              style={{
+                gridTemplateColumns: `repeat(${gridSettings.columns}, 1fr)`,
+                gap: `${gridSettings.gap}px`,
+              }}
+            >
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  style={{ aspectRatio: gridSettings.ratio }}
+                  className="overflow-hidden"
+                >
+                  <img
+                    src={getImageUrl(item.assetId)}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          <Tabs defaultValue="items">
+            <TabsList>
+              <TabsTrigger value="items">{t("sections.items")}</TabsTrigger>
+              <TabsTrigger value="grid">{t("sections.grid")}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="items" className="mt-4">
+              <GalleryItemsSection items={items} onUpload={onUpload} onSort={onSort} />
+            </TabsContent>
+            <TabsContent value="grid" className="mt-4">
+              <SettingsSection title={t("sections.grid")}>
               <div>
                 <Label className="mb-2 block">{t("fields.layout")}</Label>
                 <Select
@@ -113,7 +147,8 @@ export function GalleryEditorModal({
               </div>
             </SettingsSection>
           </TabsContent>
-        </Tabs>
+          </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );

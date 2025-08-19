@@ -7,6 +7,7 @@ import {
   CardContent,
   Separator,
   Input,
+  useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
 import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
 
@@ -23,6 +24,12 @@ interface Props {
 export function GalleryItemsSection({ items, onUpload, onSort }: Props) {
   const { t } = useTranslation("gallery");
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const { cmsSettings } = useSettingsContext();
+
+  const getImageUrl = (assetId: string) =>
+    cmsSettings?.apiUrl
+      ? `${cmsSettings.apiUrl}/public/${assetId}`
+      : `/public/${assetId}`;
 
   const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,9 +62,14 @@ export function GalleryItemsSection({ items, onUpload, onSort }: Props) {
               onDragStart={() => handleDragStart(index)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(index)}
-              className="border rounded p-2 bg-white cursor-move text-sm"
+              className="border rounded p-2 bg-white cursor-move text-sm flex items-center gap-2"
             >
-              {item.assetId}
+              <img
+                src={getImageUrl(item.assetId)}
+                alt=""
+                className="w-16 h-16 object-cover rounded"
+              />
+              <span className="truncate">{item.assetId}</span>
             </li>
           ))}
         </ul>

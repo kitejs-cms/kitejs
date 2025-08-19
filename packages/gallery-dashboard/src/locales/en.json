@@ -35,7 +35,8 @@
     "content": "Content",
     "seo": "SEO",
     "settings": "Settings",
-    "grid": "Grid settings"
+    "grid": "Grid settings",
+    "preview": "Preview"
   },
   "errors": {
     "titleRequired": "Title is required",
