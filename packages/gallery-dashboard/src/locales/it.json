@@ -10,7 +10,7 @@
     "manageGalleries": "Gallerie",
     "noGalleries": "Nessuna galleria disponibile",
     "createGallery": "Crea Galleria",
-    "editGallery": "Modifica Galleria"
+    "editGallery": "Editor Galleria"
   },
   "fields": {
     "slug": "Slug",

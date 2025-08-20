@@ -40,6 +40,7 @@ export function GalleryDetailsPage() {
     onAddLanguage,
     uploadItem,
     sortItems,
+    removeItem,
     handleSave,
     hasChanges,
     formErrors,
@@ -75,7 +76,7 @@ export function GalleryDetailsPage() {
           onLanguageChange={setActiveLang}
           onAddLanguage={onAddLanguage}
         />
-        <Button onClick={() => setEditorOpen(true)}>
+        <Button size="sm" onClick={() => setEditorOpen(true)}>
           {t("buttons.editGallery")}
         </Button>
       </div>
@@ -144,6 +145,7 @@ export function GalleryDetailsPage() {
         items={data.items}
         onUpload={uploadItem}
         onSort={sortItems}
+        onDelete={removeItem}
         gridSettings={gridSettings}
         onGridChange={(field, value) =>
           setGridSettings((prev) => ({ ...prev, [field]: value }))
