@@ -121,12 +121,13 @@ export function GalleryEditorModal({
         <div className="relative flex flex-1 pb-20">
           {/* pb per non coprire dal footer fisso */}
           {/* Preview area */}
-          <ScrollArea
+          <div
             className="flex-1 p-4"
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDropUpload}
           >
-            {items.length === 0 ? (
+            <ScrollArea className="h-full">
+              {items.length === 0 ? (
               // EMPTY STATE (nessun bordo arrotondato)
               <div
                 className="h-[70vh] border-2 border-dashed flex flex-col items-center justify-center text-center gap-4"
@@ -182,7 +183,8 @@ export function GalleryEditorModal({
                 ))}
               </div>
             )}
-          </ScrollArea>
+            </ScrollArea>
+          </div>
 
           {/* Right settings + upload */}
           {settingsOpen && (
