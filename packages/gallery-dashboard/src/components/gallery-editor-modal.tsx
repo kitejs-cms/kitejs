@@ -51,6 +51,7 @@ export function GalleryEditorModal({
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const markDirty = () => setDirty(true);
@@ -79,6 +80,18 @@ export function GalleryEditorModal({
     markDirty();
   };
 
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    if (Array.from(e.dataTransfer.types).includes("Files")) {
+      setIsDraggingFile(true);
+    }
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDraggingFile(false);
+    }
+  };
+
   const handleDropUpload = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -87,6 +100,7 @@ export function GalleryEditorModal({
       onUpload(file);
       markDirty();
     }
+    setIsDraggingFile(false);
   };
 
   // Valori di fallback richiesti: 1 colonna e 0 spazio
@@ -122,10 +136,18 @@ export function GalleryEditorModal({
           {/* pb per non coprire dal footer fisso */}
           {/* Preview area */}
           <div
-            className="flex-1 p-4"
+            className="relative flex-1 p-4"
             onDragOver={(e) => e.preventDefault()}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDrop={handleDropUpload}
           >
+            {isDraggingFile && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center rounded-md border-2 border-dashed bg-white/70 text-gray-600">
+                <UploadCloud className="mb-2 h-10 w-10" />
+                <p className="text-lg font-medium">Rilascia il file per caricare</p>
+              </div>
+            )}
             <ScrollArea className="h-full">
               {items.length === 0 ? (
               // EMPTY STATE (nessun bordo arrotondato)
