@@ -15,7 +15,7 @@ import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
 
 type SettingsChangeHandler = (
   field: "status" | "publishAt" | "expireAt" | "tags",
-  value: string | string[],
+  value: string | string[]
 ) => void;
 
 export function GalleryDetailsPage() {
@@ -76,7 +76,7 @@ export function GalleryDetailsPage() {
           onLanguageChange={setActiveLang}
           onAddLanguage={onAddLanguage}
         />
-        <Button onClick={() => setEditorOpen(true)}>
+        <Button size="sm" onClick={() => setEditorOpen(true)}>
           {t("buttons.editGallery")}
         </Button>
       </div>
