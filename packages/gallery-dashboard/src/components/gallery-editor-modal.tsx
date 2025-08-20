@@ -1,4 +1,9 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import {
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+} from "react";
 import { Button, Label, Input, Badge } from "@kitejs-cms/dashboard-core";
 import {
   Dialog,
@@ -62,7 +67,9 @@ export function GalleryEditorModal({
   const handleBrowseClick = () => fileInputRef.current?.click();
 
   const handleDragStart = (idx: number) => setDragIndex(idx);
-  const handleDropReorder = (idx: number) => {
+  const handleDropReorder = (e: DragEvent<HTMLDivElement>, idx: number) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (dragIndex === null || dragIndex === idx) return;
     const reordered = [...items];
     const [moved] = reordered.splice(dragIndex, 1);
@@ -72,8 +79,9 @@ export function GalleryEditorModal({
     markDirty();
   };
 
-  const handleDropUpload = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDropUpload = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     const file = e.dataTransfer.files?.[0];
     if (file) {
       onUpload(file);
@@ -113,12 +121,14 @@ export function GalleryEditorModal({
         <div className="relative flex flex-1 pb-20">
           {/* pb per non coprire dal footer fisso */}
           {/* Preview area */}
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea
+            className="flex-1 p-4"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDropUpload}
+          >
             {items.length === 0 ? (
               // EMPTY STATE (nessun bordo arrotondato)
               <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDropUpload}
                 className="h-[70vh] border-2 border-dashed flex flex-col items-center justify-center text-center gap-4"
                 style={{ borderColor: "#e5e7eb" }}
               >
@@ -126,7 +136,7 @@ export function GalleryEditorModal({
                 <div className="space-y-1">
                   <p className="text-lg font-medium">Galleria vuota</p>
                   <p className="text-sm text-gray-500">
-                    Trascina qui un'immagine oppure usa il pulsante a destra
+                    Trascina qui un&apos;immagine oppure usa il pulsante a destra
                   </p>
                 </div>
                 <Button onClick={handleBrowseClick}>Carica immagine</Button>
@@ -143,7 +153,13 @@ export function GalleryEditorModal({
                     draggable
                     onDragStart={() => handleDragStart(index)}
                     onDragOver={(e) => e.preventDefault()}
-                    onDrop={() => handleDropReorder(index)}
+                    onDrop={(e) => {
+                      if (e.dataTransfer.files?.length) {
+                        handleDropUpload(e);
+                      } else {
+                        handleDropReorder(e, index);
+                      }
+                    }}
                     className="relative group overflow-hidden mb-4 break-inside-avoid cursor-move shadow-sm hover:shadow-lg transition-shadow"
                   >
                     <img

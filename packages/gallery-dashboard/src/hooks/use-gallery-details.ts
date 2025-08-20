@@ -269,15 +269,19 @@ export function useGalleryDetails() {
   // Items management
   const uploadItem = useCallback(
     async (file: File) => {
-      if (!data) return;
+      if (!data?.id) return;
       const form = new FormData();
       form.append("file", file);
-      const { data: asset } = await uploadFile("assets", form);
-      if (asset?.id) {
+      const { data: asset } = await uploadFile(
+        `galleries/${data.id}/items/upload`,
+        form,
+      );
+      const assetId = (asset as { assetId?: string })?.assetId;
+      if (assetId) {
         const { data: updated } = await fetchData(
-          `galleries/${data.id || ""}/items`,
+          `galleries/${data.id}/items`,
           "POST",
-          { assetId: asset.id },
+          { assetId },
         );
         if (updated) {
           setData((prev) =>
