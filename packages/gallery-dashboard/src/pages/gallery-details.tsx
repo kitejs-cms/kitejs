@@ -9,6 +9,7 @@ import { SeoSection } from "../components/seo-section";
 import { SettingsSection } from "../components/settings-section";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { GalleryItemsSection } from "../components/items-section";
+import { GalleryEditorModal } from "../components/gallery-editor-modal";
 import { useGalleryDetails } from "../hooks/use-gallery-details";
 import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
 
@@ -21,6 +22,13 @@ export function GalleryDetailsPage() {
   const { t } = useTranslation("gallery");
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [gridSettings, setGridSettings] = useState({
+    layout: "grid",
+    columns: "3",
+    gap: "0",
+    ratio: "16:9",
+  });
   const {
     data,
     loading,
@@ -32,6 +40,7 @@ export function GalleryDetailsPage() {
     onAddLanguage,
     uploadItem,
     sortItems,
+    removeItem,
     handleSave,
     hasChanges,
     formErrors,
@@ -67,6 +76,9 @@ export function GalleryDetailsPage() {
           onLanguageChange={setActiveLang}
           onAddLanguage={onAddLanguage}
         />
+        <Button size="sm" onClick={() => setEditorOpen(true)}>
+          {t("buttons.editGallery")}
+        </Button>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -126,6 +138,18 @@ export function GalleryDetailsPage() {
         isOpen={showUnsavedAlert}
         onClose={closeUnsavedAlert}
         onDiscard={confirmDiscard}
+      />
+      <GalleryEditorModal
+        isOpen={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        items={data.items}
+        onUpload={uploadItem}
+        onSort={sortItems}
+        onDelete={removeItem}
+        gridSettings={gridSettings}
+        onGridChange={(field, value) =>
+          setGridSettings((prev) => ({ ...prev, [field]: value }))
+        }
       />
     </div>
   );

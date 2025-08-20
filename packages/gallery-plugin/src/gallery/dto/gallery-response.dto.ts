@@ -1,8 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { GalleryResponseModel } from "../models/gallery-response.model";
 import { GalleryStatus } from "../models/gallery-status.enum";
-import { Exclude } from "class-transformer";
+import { Exclude, Type } from "class-transformer";
 import type { ObjectId } from "mongoose";
+import { ValidateNested } from "class-validator";
+import { GalleryItemDto } from "./gallery-item.dto";
 
 export class GalleryResponseDto implements GalleryResponseModel {
   @ApiProperty()
@@ -23,8 +25,10 @@ export class GalleryResponseDto implements GalleryResponseModel {
   @ApiProperty({ type: Object })
   translations: GalleryResponseModel["translations"];
 
-  @ApiProperty({ type: Object })
-  items: GalleryResponseModel["items"];
+  @ApiProperty({ type: () => [GalleryItemDto] })
+  @ValidateNested({ each: true })
+  @Type(() => GalleryItemDto)
+  items: GalleryItemDto[];
 
   @ApiProperty()
   createdBy: string;

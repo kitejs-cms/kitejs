@@ -24,13 +24,19 @@
     "actions": "Actions",
     "image": "Image",
     "createdBy": "Created by",
-    "updatedBy": "Updated by"
+    "updatedBy": "Updated by",
+    "layout": "Layout",
+    "columns": "Columns",
+    "gap": "Gap",
+    "ratio": "Ratio"
   },
   "sections": {
     "items": "Images",
     "content": "Content",
     "seo": "SEO",
-    "settings": "Settings"
+    "settings": "Settings",
+    "grid": "Grid settings",
+    "preview": "Preview"
   },
   "errors": {
     "titleRequired": "Title is required",
@@ -46,6 +52,7 @@
     "download": "Download",
     "delete": "Delete",
     "edit": "Edit",
+    "editGallery": "Edit Gallery",
     "cancel": "Cancel",
     "viewJson": "View JSON",
     "discardChanges": "Discard changes"

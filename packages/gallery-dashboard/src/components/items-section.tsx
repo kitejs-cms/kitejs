@@ -55,9 +55,14 @@ export function GalleryItemsSection({ items, onUpload, onSort }: Props) {
               onDragStart={() => handleDragStart(index)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(index)}
-              className="border rounded p-2 bg-white cursor-move text-sm"
+              className="border rounded p-2 bg-white cursor-move text-sm flex items-center gap-2"
             >
-              {item.assetId}
+              <img
+                src={item.linkUrl}
+                alt=""
+                className="w-16 h-16 object-cover rounded"
+              />
+              <span className="truncate">{item.assetId}</span>
             </li>
           ))}
         </ul>
@@ -65,4 +70,3 @@ export function GalleryItemsSection({ items, onUpload, onSort }: Props) {
     </Card>
   );
 }
-
