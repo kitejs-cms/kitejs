@@ -9,14 +9,17 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
+  Badge,
 } from "@kitejs-cms/dashboard-core";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@kitejs-cms/dashboard-core/components/ui/dialog";
-import { X, Settings2 } from "lucide-react";
+import { ScrollArea } from "@kitejs-cms/dashboard-core/components/ui/scroll-area";
+import { XIcon, Settings2 } from "lucide-react";
 import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
 
 interface Item extends GalleryItemModel {
@@ -69,16 +72,35 @@ export function GalleryEditorModal({
     onSort(reordered.map((i) => i.id));
     setDragIndex(null);
   };
+  const aspectRatio = gridSettings.ratio.includes(":")
+    ? gridSettings.ratio.replace(":", " / ")
+    : gridSettings.ratio;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent position="full" className="h-full p-0 rounded-none">
-        <div className="flex flex-col h-full">
-          <DialogHeader className="p-4 border-b">
-            <DialogTitle>{t("title.editGallery")}</DialogTitle>
-          </DialogHeader>
-          <div className="relative flex flex-1">
-            <div className="flex-1 p-4 overflow-auto">
+      <DialogContent
+        position="full"
+        className="p-0 flex flex-col overflow-hidden rounded-none h-full"
+      >
+        <DialogHeader className="flex flex-row justify-between items-center p-4 border-b shrink-0">
+          <DialogTitle className="text-xl font-semibold">
+            {t("title.editGallery")}
+          </DialogTitle>
+          <DialogClose asChild>
+            <div className="flex items-center gap-2 text-gray-500 hover:text-tesrblack transition cursor-pointer">
+              <Badge
+                variant="outline"
+                className="bg-gray-100 text-gray-400 border-gray-400 font-medium px-2 py-0.5"
+              >
+                Esc
+              </Badge>
+              <XIcon className="w-5 h-5" />
+            </div>
+          </DialogClose>
+        </DialogHeader>
+        <div className="relative flex flex-1">
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4">
               <div
                 className="grid"
                 style={{
@@ -93,13 +115,13 @@ export function GalleryEditorModal({
                     onDragStart={() => handleDragStart(index)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(index)}
-                    style={{ aspectRatio: gridSettings.ratio }}
+                    style={{ aspectRatio }}
                     className="relative group overflow-hidden cursor-move"
                   >
                     <img
                       src={item.linkUrl}
                       alt=""
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                     <Button
                       variant="destructive"
@@ -107,24 +129,24 @@ export function GalleryEditorModal({
                       className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => onDelete(item.id)}
                     >
-                      <X className="w-4 h-4" />
+                      <XIcon className="w-4 h-4" />
                     </Button>
                   </div>
                 ))}
               </div>
-              <div className="mt-4">
-                <Input type="file" onChange={handleUpload} />
-              </div>
+              <Input type="file" onChange={handleUpload} />
             </div>
-            {settingsOpen && (
-              <div className="w-full max-w-md border-l p-4 overflow-y-auto space-y-4">
+          </ScrollArea>
+          {settingsOpen && (
+            <ScrollArea className="w-full max-w-md border-l p-4 h-full">
+              <div className="space-y-4">
                 <Button
                   variant="ghost"
                   size="icon"
                   className="ml-auto"
                   onClick={() => setSettingsOpen(false)}
                 >
-                  <X className="w-4 h-4" />
+                  <XIcon className="w-4 h-4" />
                 </Button>
                 <div>
                   <Label className="mb-2 block">{t("fields.layout")}</Label>
@@ -168,18 +190,18 @@ export function GalleryEditorModal({
                   />
                 </div>
               </div>
-            )}
-            {!settingsOpen && (
-              <Button
-                variant="secondary"
-                size="icon"
-                className="absolute top-4 right-4"
-                onClick={() => setSettingsOpen(true)}
-              >
-                <Settings2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
+            </ScrollArea>
+          )}
+          {!settingsOpen && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className="absolute top-4 right-4 z-10"
+              onClick={() => setSettingsOpen(true)}
+            >
+              <Settings2 className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
