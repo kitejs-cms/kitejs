@@ -92,7 +92,7 @@ export function GalleryEditorModal({
   const [dirty, setDirty] = useState<boolean>(false);
 
   // Anteprima dispositivi
-  const [preview, setPreview] = useState<PreviewMode>("desktop");
+  const [preview, setPreview] = useState<PreviewMode>("tablet");
   const previewMaxWidth = useMemo<number>(() => {
     switch (preview) {
       case "mobile":
@@ -324,7 +324,7 @@ export function GalleryEditorModal({
             {/* Canvas con larghezza fissa per device - SCROLL FIX */}
             <div className="w-full h-full min-h-0">
               <div
-                className="mx-auto border rounded-lg bg-white shadow-sm flex flex-col h-full max-h-[calc(100vh-220px)] min-h-0"
+                className="mx-auto border rounded-lg flex flex-col h-full max-h-[calc(100vh-220px)] min-h-0"
                 style={{ maxWidth: `${previewMaxWidth}px` }}
               >
                 {(preview === "mobile" || preview === "tablet") && (
