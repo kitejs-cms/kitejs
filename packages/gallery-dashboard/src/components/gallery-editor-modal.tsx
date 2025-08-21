@@ -71,7 +71,7 @@ const DEFAULT_RULES: ResponsiveRules = {
 function hasFilePayload(dt: DataTransfer | null): boolean {
   if (!dt) return false;
   const types: readonly string[] = Array.from(
-    dt?.types as unknown as Iterable<string>
+    dt?.types as unknown as Iterable<string>,
   );
   return types.includes("Files");
 }
@@ -130,7 +130,7 @@ export function GalleryEditorModal({
   const handleDragStart = (idx: number): void => setDragIndex(idx);
   const handleDropReorder = (
     e: ReactDragEvent<HTMLDivElement>,
-    idx: number
+    idx: number,
   ): void => {
     e.preventDefault();
     e.stopPropagation();
@@ -212,7 +212,7 @@ export function GalleryEditorModal({
   const handleRuleChange = (
     bp: PreviewMode,
     field: keyof BreakpointRule,
-    value: string
+    value: string,
   ): void => {
     const parsed = Math.max(0, Number(value) || 0);
     setRules((prev) => ({
@@ -250,7 +250,7 @@ export function GalleryEditorModal({
         </DialogHeader>
 
         {/* Body */}
-        <div className="relative flex flex-1 min-h-0 pb-20">
+        <div className="relative flex flex-1 min-h-0">
           {/* PREVIEW */}
           <div
             className="relative flex-1 min-h-0 p-4"
@@ -335,7 +335,7 @@ export function GalleryEditorModal({
                   </div>
                 )}
 
-                <ScrollArea className="flex-1 p-4 h-full">
+                <ScrollArea className="flex-1 p-4 h-full pb-8">
                   {items.length === 0 ? (
                     <div className="h-[60vh] flex flex-col items-center justify-center text-center gap-4 text-gray-600">
                       <UploadCloud className="w-10 h-10" />
@@ -416,49 +416,50 @@ export function GalleryEditorModal({
 
           {/* RIGHT: impostazioni + upload */}
           {settingsOpen && (
-            <ScrollArea className="w-full max-w-md border-l p-4 h-full min-h-0">
-              <div className="space-y-6">
-                {/* Upload */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Aggiungi media</p>
-                    <p className="text-xs text-gray-500">
-                      Trascina nella preview o clicca qui sotto
-                    </p>
+            <div className="relative w-full max-w-md border-l h-full min-h-0">
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-16 right-4 z-10"
+                onClick={() => setSettingsOpen(false)}
+                title="Chiudi impostazioni"
+                aria-label="Chiudi impostazioni"
+              >
+                <XIcon className="w-4 h-4" />
+              </Button>
+              <ScrollArea className="p-4 pt-20 h-full min-h-0">
+                <div className="space-y-6">
+                  {/* Upload */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Aggiungi media</p>
+                      <p className="text-xs text-gray-500">
+                        Trascina nella preview o clicca qui sotto
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={handleInputChange}
+                        aria-label="Seleziona file da caricare"
+                      />
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleBrowseClick}
+                      >
+                        <UploadCloud className="w-4 h-4 mr-2" />
+                        Carica
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      ref={fileInputRef}
-                      type="file"
-                      className="hidden"
-                      onChange={handleInputChange}
-                      aria-label="Seleziona file da caricare"
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleBrowseClick}
-                    >
-                      <UploadCloud className="w-4 h-4 mr-2" />
-                      Carica
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="ml-1"
-                      onClick={() => setSettingsOpen(false)}
-                      title="Chiudi impostazioni"
-                      aria-label="Chiudi impostazioni"
-                    >
-                      <XIcon className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
 
-                <div className="h-px bg-gray-200" />
+                  <div className="h-px bg-gray-200" />
 
-                {/* Toggle regole responsive */}
-                <div className="space-y-2">
+                  {/* Toggle regole responsive */}
+                  <div className="space-y-2">
                   <Label className="block text-sm font-medium">
                     Regole responsive di default
                   </Label>
@@ -522,7 +523,7 @@ export function GalleryEditorModal({
                           inputMode="numeric"
                         />
                       </div>
-                    )
+                    ),
                   )}
                 </div>
 
@@ -562,7 +563,8 @@ export function GalleryEditorModal({
                   </p>
                 </div>
               </div>
-            </ScrollArea>
+              </ScrollArea>
+            </div>
           )}
 
           {/* Toggle pannello impostazioni */}
@@ -570,7 +572,7 @@ export function GalleryEditorModal({
             <Button
               variant="secondary"
               size="icon"
-              className="absolute top-4 right-4 z-10"
+              className="absolute top-16 right-4 z-10"
               onClick={() => setSettingsOpen(true)}
               title="Apri impostazioni"
               aria-label="Apri impostazioni"
