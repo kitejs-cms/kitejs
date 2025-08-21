@@ -6,7 +6,7 @@ import {
   type ChangeEvent,
   type DragEvent as ReactDragEvent,
 } from "react";
-import { Button, Label, Input, Badge } from "@kitejs-cms/dashboard-core";
+import { Button, Label, Input, Badge, Switch } from "@kitejs-cms/dashboard-core";
 import {
   Dialog,
   DialogContent,
@@ -320,7 +320,7 @@ export function GalleryEditorModal({
             {/* Canvas con larghezza fissa per device - SCROLL FIX */}
             <div className="w-full h-full min-h-0">
               <div
-                className="mx-auto border rounded-lg bg-white shadow-sm flex flex-col max-h-[calc(100vh-220px)]"
+                className="mx-auto border rounded-lg bg-white shadow-sm flex flex-col h-full max-h-[calc(100vh-220px)] min-h-0"
                 style={{ maxWidth: `${previewMaxWidth}px` }}
               >
                 {(preview === "mobile" || preview === "tablet") && (
@@ -331,7 +331,7 @@ export function GalleryEditorModal({
                   </div>
                 )}
 
-                <ScrollArea className="flex-1 p-4">
+                <ScrollArea className="flex-1 p-4 h-full">
                   {items.length === 0 ? (
                     <div className="h-[60vh] flex flex-col items-center justify-center text-center gap-4 text-gray-600">
                       <UploadCloud className="w-10 h-10" />
@@ -459,12 +459,10 @@ export function GalleryEditorModal({
                     Regole responsive di default
                   </Label>
                   <div className="flex items-center gap-2">
-                    <input
+                    <Switch
                       id="use-responsive"
-                      type="checkbox"
-                      className="h-4 w-4"
                       checked={useResponsive}
-                      onChange={(e) => setUseResponsive(e.target.checked)}
+                      onCheckedChange={setUseResponsive}
                     />
                     <Label
                       htmlFor="use-responsive"
