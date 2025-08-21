@@ -88,7 +88,9 @@ export function GalleryEditorModal({
   onSave,
 }: GalleryEditorModalProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState<boolean>(true);
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(
+    typeof window !== "undefined" ? window.innerWidth >= 768 : true,
+  );
   const [dirty, setDirty] = useState<boolean>(false);
 
   // Anteprima dispositivi
@@ -250,7 +252,7 @@ export function GalleryEditorModal({
         </DialogHeader>
 
         {/* Body */}
-        <div className="relative flex flex-1 min-h-0">
+        <div className="relative flex flex-1 min-h-0 flex-col md:flex-row">
           {/* PREVIEW */}
           <div
             className="relative flex-1 min-h-0 p-4"
@@ -393,9 +395,9 @@ export function GalleryEditorModal({
                             draggable={false}
                           />
                           <Button
-                            variant="destructive"
+                            variant="outline"
                             size="icon"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 text-red-600 border-red-200 hover:bg-white hover:text-red-700"
                             onClick={() => {
                               onDelete(item.id);
                               markDirty();
@@ -416,18 +418,8 @@ export function GalleryEditorModal({
 
           {/* RIGHT: impostazioni + upload */}
           {settingsOpen && (
-            <div className="relative w-full max-w-md border-l h-full min-h-0">
-              <Button
-                variant="secondary"
-                size="icon"
-                className="absolute top-16 right-4 z-10"
-                onClick={() => setSettingsOpen(false)}
-                title="Chiudi impostazioni"
-                aria-label="Chiudi impostazioni"
-              >
-                <XIcon className="w-4 h-4" />
-              </Button>
-              <ScrollArea className="p-4 pt-20 h-full min-h-0">
+            <div className="relative w-full md:max-w-md md:border-l border-t md:border-t-0 h-full min-h-0">
+              <ScrollArea className="p-4 h-full min-h-0">
                 <div className="space-y-6">
                   {/* Upload */}
                   <div className="flex items-center justify-between gap-2">
@@ -438,6 +430,15 @@ export function GalleryEditorModal({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => setSettingsOpen(false)}
+                        title="Chiudi impostazioni"
+                        aria-label="Chiudi impostazioni"
+                      >
+                        <XIcon className="w-4 h-4" />
+                      </Button>
                       <Input
                         ref={fileInputRef}
                         type="file"
