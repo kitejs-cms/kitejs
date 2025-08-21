@@ -22,7 +22,7 @@ export function GalleryDetailsPage() {
   const { t } = useTranslation("gallery");
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
-  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(true);
   const [gridSettings, setGridSettings] = useState({
     layout: "grid",
     columns: "3",
