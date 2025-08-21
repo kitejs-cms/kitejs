@@ -6,7 +6,16 @@ import {
   type ChangeEvent,
   type DragEvent as ReactDragEvent,
 } from "react";
-import { Button, Label, Input, Badge, Switch } from "@kitejs-cms/dashboard-core";
+import {
+  Button,
+  Label,
+  Input,
+  Badge,
+  Switch,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@kitejs-cms/dashboard-core";
 import {
   Dialog,
   DialogContent,
@@ -254,34 +263,31 @@ export function GalleryEditorModal({
             aria-label="Area anteprima galleria. Trascina un file per caricarlo oppure riordina gli elementi."
           >
             {/* Toolbar anteprima */}
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-white/80 backdrop-blur-sm border rounded-lg p-1 shadow-sm">
-              <Button
-                variant={preview === "desktop" ? "default" : "ghost"}
-                size="icon"
-                onClick={() => setPreview("desktop")}
-                aria-label="Anteprima desktop"
-                title="Desktop"
+            <div className="absolute top-4 right-4 flex items-center">
+              <Tabs
+                value={preview}
+                onValueChange={(value) => setPreview(value as PreviewMode)}
               >
-                <Monitor className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={preview === "tablet" ? "default" : "ghost"}
-                size="icon"
-                onClick={() => setPreview("tablet")}
-                aria-label="Anteprima tablet"
-                title="Tablet"
-              >
-                <Tablet className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={preview === "mobile" ? "default" : "ghost"}
-                size="icon"
-                onClick={() => setPreview("mobile")}
-                aria-label="Anteprima mobile"
-                title="Mobile"
-              >
-                <Smartphone className="w-4 h-4" />
-              </Button>
+                <TabsList className="flex-wrap h-auto">
+                  <TabsTrigger value="desktop" className="text-sm">
+                    <Monitor className="w-4 h-4" />
+                  </TabsTrigger>
+                  <TabsTrigger
+                    aria-label="Anteprima tablet"
+                    value="tablet"
+                    className="text-sm"
+                  >
+                    <Tablet className="w-4 h-4" />
+                  </TabsTrigger>
+                  <TabsTrigger
+                    aria-label="Anteprima mobile"
+                    value="mobile"
+                    className="text-sm"
+                  >
+                    <Smartphone className="w-4 h-4" />
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
 
             {/* Overlay globale */}
@@ -294,7 +300,6 @@ export function GalleryEditorModal({
                 </p>
               </div>
             )}
-
             {/* Banner d’aiuto */}
             <div
               className="mb-3 inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs text-gray-600"
@@ -316,7 +321,6 @@ export function GalleryEditorModal({
                 <Info className="w-3 h-3" /> supporta JPG/PNG/WEBP
               </span>
             </div>
-
             {/* Canvas con larghezza fissa per device - SCROLL FIX */}
             <div className="w-full h-full min-h-0">
               <div
