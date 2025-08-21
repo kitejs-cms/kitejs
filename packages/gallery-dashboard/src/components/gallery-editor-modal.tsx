@@ -91,6 +91,7 @@ export function GalleryEditorModal({
   const [settingsOpen, setSettingsOpen] = useState<boolean>(
     typeof window !== "undefined" ? window.innerWidth >= 768 : true,
   );
+  const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
   const [dirty, setDirty] = useState<boolean>(false);
 
   // Anteprima dispositivi
@@ -116,6 +117,13 @@ export function GalleryEditorModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const markDirty = () => setDirty(true);
+
+  useEffect(() => {
+    const update = () => setIsSmallScreen(window.innerWidth < 768);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   // Upload (input)
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -223,6 +231,8 @@ export function GalleryEditorModal({
     }));
   };
 
+  const hideTopControls = isSmallScreen && !settingsOpen;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -265,32 +275,40 @@ export function GalleryEditorModal({
             aria-label="Area anteprima galleria. Trascina un file per caricarlo oppure riordina gli elementi."
           >
             {/* Toolbar anteprima */}
-            <div className="absolute top-4 right-4 flex items-center">
-              <Tabs
-                value={preview}
-                onValueChange={(value) => setPreview(value as PreviewMode)}
+            {!hideTopControls && (
+              <div
+                className={
+                  isSmallScreen
+                    ? "mb-3 w-full flex items-center justify-end"
+                    : "absolute top-4 right-4 flex items-center"
+                }
               >
-                <TabsList className="flex-wrap h-auto">
-                  <TabsTrigger value="desktop" className="text-sm">
-                    <Monitor className="w-4 h-4" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    aria-label="Anteprima tablet"
-                    value="tablet"
-                    className="text-sm"
-                  >
-                    <Tablet className="w-4 h-4" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    aria-label="Anteprima mobile"
-                    value="mobile"
-                    className="text-sm"
-                  >
-                    <Smartphone className="w-4 h-4" />
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+                <Tabs
+                  value={preview}
+                  onValueChange={(value) => setPreview(value as PreviewMode)}
+                >
+                  <TabsList className="flex-wrap h-auto">
+                    <TabsTrigger value="desktop" className="text-sm">
+                      <Monitor className="w-4 h-4" />
+                    </TabsTrigger>
+                    <TabsTrigger
+                      aria-label="Anteprima tablet"
+                      value="tablet"
+                      className="text-sm"
+                    >
+                      <Tablet className="w-4 h-4" />
+                    </TabsTrigger>
+                    <TabsTrigger
+                      aria-label="Anteprima mobile"
+                      value="mobile"
+                      className="text-sm"
+                    >
+                      <Smartphone className="w-4 h-4" />
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            )}
 
             {/* Overlay globale */}
             {isDraggingFile && (
@@ -303,26 +321,28 @@ export function GalleryEditorModal({
               </div>
             )}
             {/* Banner d’aiuto */}
-            <div
-              className="mb-3 inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs text-gray-600"
-              style={{ borderColor: "#e5e7eb" }}
-            >
-              <UploadCloud className="w-4 h-4" />
-              <span className="font-medium">Trascina qui per caricare</span>
-              <span className="opacity-70">oppure</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBrowseClick}
-                className="h-7"
-                aria-label="Scegli file"
+            {!hideTopControls && (
+              <div
+                className="mb-3 inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs text-gray-600"
+                style={{ borderColor: "#e5e7eb" }}
               >
-                Scegli file
-              </Button>
-              <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-gray-500">
-                <Info className="w-3 h-3" /> supporta JPG/PNG/WEBP
-              </span>
-            </div>
+                <UploadCloud className="w-4 h-4" />
+                <span className="font-medium">Trascina qui per caricare</span>
+                <span className="opacity-70">oppure</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBrowseClick}
+                  className="h-7"
+                  aria-label="Scegli file"
+                >
+                  Scegli file
+                </Button>
+                <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-gray-500">
+                  <Info className="w-3 h-3" /> supporta JPG/PNG/WEBP
+                </span>
+              </div>
+            )}
             {/* Canvas con larghezza fissa per device - SCROLL FIX */}
             <div className="w-full h-full min-h-0">
               <div
