@@ -4,12 +4,33 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./*": {
+      "import": "./dist/*.js",
+      "require": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
+  },
   "scripts": {
-    "build": "tsc -b",
-    "dev": "tsc -b --watch",
+    "build:ts": "tsc -b",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css",
+    "build": "pnpm run build:ts && pnpm run build:css",
+    "dev": "pnpm run dev:ts & pnpm run dev:css",
+    "dev:ts": "tsc -b --watch",
+    "dev:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
+    "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
   },
   "peerDependencies": {
@@ -30,6 +51,7 @@
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
     "eslint": "^9.20.0",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "5.7.3"
   }
 }
