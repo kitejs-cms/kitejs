@@ -1,4 +1,5 @@
 export interface GalleryItemModel {
+  id: string;
   assetId: string;
   order?: number;
   caption?: string;

@@ -10,7 +10,10 @@ import { SettingsSection } from "../components/settings-section";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { GalleryEditorModal } from "../components/gallery-editor-modal";
 import { useGalleryDetails } from "../hooks/use-gallery-details";
-import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
+import type {
+  GalleryTranslationModel,
+  GallerySettingsModel,
+} from "@kitejs-cms/gallery-plugin";
 
 type SettingsChangeHandler = (
   field: "status" | "publishAt" | "expireAt" | "tags",
@@ -47,11 +50,23 @@ export function GalleryDetailsPage() {
     handleNavigation,
     closeUnsavedAlert,
     confirmDiscard,
+    onGallerySettingsChange,
   } = useGalleryDetails();
 
   useEffect(() => {
     if (searchParams.get("view") === "json") setJsonView(true);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (data?.settings) {
+      setGridSettings({
+        layout: data.settings.layout || "grid",
+        columns: String(data.settings.columns ?? "0"),
+        gap: String(data.settings.gap ?? "0"),
+        ratio: data.settings.ratio || "16:9",
+      });
+    }
+  }, [data]);
 
   if (loading || !data) return <SkeletonPage />;
 
@@ -141,9 +156,12 @@ export function GalleryDetailsPage() {
         onSort={sortItems}
         onDelete={removeItem}
         gridSettings={gridSettings}
-        onGridChange={(field, value) =>
-          setGridSettings((prev) => ({ ...prev, [field]: value }))
-        }
+        onGridChange={(field, value) => {
+          setGridSettings((prev) => ({ ...prev, [field]: value }));
+          const parsed =
+            field === "columns" || field === "gap" ? Number(value) : value;
+          onGallerySettingsChange(field as keyof GallerySettingsModel, parsed);
+        }}
       />
     </div>
   );

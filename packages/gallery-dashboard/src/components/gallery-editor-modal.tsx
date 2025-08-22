@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
 
-type Item = GalleryItemModel & { id: string };
+type Item = GalleryItemModel;
 
 interface GridSettings {
   columns: string;

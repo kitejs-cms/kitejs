@@ -1,6 +1,7 @@
 import { GallerySeoModel } from "./gallery-seo.model";
 import { GalleryStatus } from "./gallery-status.enum";
 import { GalleryItemModel } from "./gallery-item.model";
+import { GallerySettingsModel } from "./gallery-settings.model";
 
 export interface GalleryUpsertModel {
   id?: string;
@@ -13,6 +14,7 @@ export interface GalleryUpsertModel {
   title: string;
   description?: string;
   items?: GalleryItemModel[];
+  settings?: GallerySettingsModel;
   seo?: GallerySeoModel;
 }
 

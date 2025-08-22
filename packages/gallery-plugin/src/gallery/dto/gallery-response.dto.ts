@@ -5,6 +5,7 @@ import { Exclude, Type } from "class-transformer";
 import type { ObjectId } from "mongoose";
 import { ValidateNested } from "class-validator";
 import { GalleryItemDto } from "./gallery-item.dto";
+import { GallerySettingsDto } from "./gallery-settings.dto";
 
 export class GalleryResponseDto implements GalleryResponseModel {
   @ApiProperty()
@@ -29,6 +30,11 @@ export class GalleryResponseDto implements GalleryResponseModel {
   @ValidateNested({ each: true })
   @Type(() => GalleryItemDto)
   items: GalleryItemDto[];
+
+  @ApiProperty({ type: () => GallerySettingsDto, required: false })
+  @ValidateNested()
+  @Type(() => GallerySettingsDto)
+  settings?: GallerySettingsDto;
 
   @ApiProperty()
   createdBy: string;

@@ -9,18 +9,12 @@ import {
 import {
   type GalleryResponseModel,
   type GalleryTranslationModel,
-  type GalleryItemModel,
   type GalleryUpsertModel,
   type GalleryStatus,
+  type GallerySettingsModel,
 } from "@kitejs-cms/gallery-plugin";
 
-interface GalleryItem extends GalleryItemModel {
-  id: string;
-}
-
-type GalleryDetails = Omit<GalleryResponseModel, "items"> & {
-  items: GalleryItem[];
-};
+type GalleryDetails = GalleryResponseModel;
 
 export interface FormErrors {
   title?: string;
@@ -75,6 +69,15 @@ export function useGalleryDetails() {
         updatedAt: new Date(),
         createdBy: "",
         updatedBy: "",
+        settings: {
+          layout: "grid",
+          columns: 3,
+          gap: 0,
+          ratio: "16:9",
+          autoplay: false,
+          loop: false,
+          lightbox: true,
+        },
         translations: {
           [defaultLang]: {
             title: "",
@@ -175,6 +178,16 @@ export function useGalleryDetails() {
     [],
   );
 
+  const onGallerySettingsChange = useCallback(
+    (field: keyof GallerySettingsModel, value: string | number | boolean | null) => {
+      setData((prev) =>
+        prev ? { ...prev, settings: { ...prev.settings, [field]: value } } : prev,
+      );
+      setHasChanges(true);
+    },
+    [],
+  );
+
   const onAddLanguage = useCallback((lang: string) => {
     setData((prev) => {
       if (!prev) return prev;
@@ -228,7 +241,16 @@ export function useGalleryDetails() {
         : undefined,
       title: translation.title,
       description: translation.description,
-      items: data.items.map((it, idx) => ({ assetId: it.assetId, order: idx })),
+      items: data.items.map((it, idx) => ({
+        id: it.id,
+        assetId: it.assetId,
+        order: idx,
+        caption: it.caption,
+        altOverride: it.altOverride,
+        linkUrl: it.linkUrl,
+        visibility: it.visibility,
+      })),
+      settings: data.settings,
       seo: translation.seo,
     };
 
@@ -345,5 +367,6 @@ export function useGalleryDetails() {
     handleNavigation,
     closeUnsavedAlert,
     confirmDiscard,
+    onGallerySettingsChange,
   };
 }

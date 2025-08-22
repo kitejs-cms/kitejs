@@ -5,6 +5,12 @@ import { Exclude, Transform } from "class-transformer";
 import type { ObjectId } from "mongoose";
 
 export class GalleryItemDto implements GalleryItemModel {
+  @ApiPropertyOptional({ description: "Item ID", example: "60f7c0a2d3a8f009e6f0b7d1" })
+  @IsOptional()
+  @IsMongoId()
+  @Transform(({ obj, value }) => value ?? obj._id?.toString())
+  id!: string;
+
   @ApiProperty({ description: "Asset ID", example: "60f7c0a2d3a8f009e6f0b7d1" })
   @IsMongoId()
   @Transform(({ value }) => value.toString())

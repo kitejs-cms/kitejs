@@ -39,7 +39,7 @@ export class GalleryService {
 
     type BaseData = Pick<
       GalleryUpsertDto,
-      "status" | "tags" | "publishAt" | "expireAt" | "items"
+      "status" | "tags" | "publishAt" | "expireAt" | "items" | "settings"
     >;
 
     const baseData: BaseData = {
@@ -47,7 +47,17 @@ export class GalleryService {
       tags: rest.tags,
       publishAt: rest.publishAt,
       expireAt: rest.expireAt,
-      items: rest.items,
+      items:
+        rest.items?.map((item, idx) => ({
+          ...(item.id ? { _id: new Types.ObjectId(item.id) } : {}),
+          assetId: new Types.ObjectId(item.assetId),
+          order: item.order ?? idx,
+          caption: item.caption,
+          altOverride: item.altOverride,
+          linkUrl: item.linkUrl,
+          visibility: item.visibility,
+        })) as unknown as GalleryItemDto[],
+      settings: rest.settings,
     };
 
     let gallery: Gallery;
