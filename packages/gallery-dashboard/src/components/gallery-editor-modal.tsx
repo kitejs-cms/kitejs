@@ -71,7 +71,7 @@ const DEFAULT_RULES: ResponsiveRules = {
 function hasFilePayload(dt: DataTransfer | null): boolean {
   if (!dt) return false;
   const types: readonly string[] = Array.from(
-    dt?.types as unknown as Iterable<string>,
+    dt?.types as unknown as Iterable<string>
   );
   return types.includes("Files");
 }
@@ -89,7 +89,7 @@ export function GalleryEditorModal({
 }: GalleryEditorModalProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState<boolean>(
-    typeof window !== "undefined" ? window.innerWidth >= 768 : true,
+    typeof window !== "undefined" ? window.innerWidth >= 768 : true
   );
   const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
   const [dirty, setDirty] = useState<boolean>(false);
@@ -140,7 +140,7 @@ export function GalleryEditorModal({
   const handleDragStart = (idx: number): void => setDragIndex(idx);
   const handleDropReorder = (
     e: ReactDragEvent<HTMLDivElement>,
-    idx: number,
+    idx: number
   ): void => {
     e.preventDefault();
     e.stopPropagation();
@@ -222,7 +222,7 @@ export function GalleryEditorModal({
   const handleRuleChange = (
     bp: PreviewMode,
     field: keyof BreakpointRule,
-    value: string,
+    value: string
   ): void => {
     const parsed = Math.max(0, Number(value) || 0);
     setRules((prev) => ({
@@ -231,7 +231,13 @@ export function GalleryEditorModal({
     }));
   };
 
-  const hideTopControls = isSmallScreen && !settingsOpen;
+  // Nascondi controlli su mobile quando il pannello impostazioni è aperto
+  const hideTopControls = isSmallScreen && settingsOpen;
+
+  // Classi/composizioni utili
+  const toolbarWrapperClass = isSmallScreen
+    ? "mb-3 w-full flex items-center justify-between gap-2"
+    : "absolute top-4 right-4 flex items-center gap-2";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -274,15 +280,18 @@ export function GalleryEditorModal({
             onDrop={handleDropUpload}
             aria-label="Area anteprima galleria. Trascina un file per caricarlo oppure riordina gli elementi."
           >
-            {/* Toolbar anteprima */}
+            {/* input file nascosto per 'Scegli file' */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleInputChange}
+              className="hidden"
+            />
+
+            {/* Toolbar anteprima (tabs device + settings toggle su mobile) */}
             {!hideTopControls && (
-              <div
-                className={
-                  isSmallScreen
-                    ? "mb-3 w-full flex items-center justify-end"
-                    : "absolute top-4 right-4 flex items-center"
-                }
-              >
+              <div className={toolbarWrapperClass}>
                 <Tabs
                   value={preview}
                   onValueChange={(value) => setPreview(value as PreviewMode)}
@@ -307,6 +316,18 @@ export function GalleryEditorModal({
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
+
+                {isSmallScreen && !settingsOpen && (
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => setSettingsOpen(true)}
+                    title="Apri impostazioni"
+                    aria-label="Apri impostazioni"
+                  >
+                    <Settings2 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
             )}
 
@@ -320,7 +341,8 @@ export function GalleryEditorModal({
                 </p>
               </div>
             )}
-            {/* Banner d’aiuto */}
+
+            {/* Banner d’aiuto — ORA rimosso dal DOM quando hideTopControls=true */}
             {!hideTopControls && (
               <div
                 className="mb-3 inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs text-gray-600"
@@ -343,19 +365,22 @@ export function GalleryEditorModal({
                 </span>
               </div>
             )}
+
             {/* Canvas con larghezza fissa per device - SCROLL FIX */}
             <div className="w-full h-full min-h-0">
               <div
                 className="mx-auto border rounded-lg flex flex-col h-full max-h-[calc(100vh-220px)] min-h-0"
                 style={{ maxWidth: `${previewMaxWidth}px` }}
               >
-                {(preview === "mobile" || preview === "tablet") && (
-                  <div className="h-6 w-full border-b bg-gray-50 rounded-t-lg flex items-center justify-center text-[10px] text-gray-500">
-                    {preview === "mobile"
-                      ? "Mobile · ~390px"
-                      : "Tablet · ~834px"}
-                  </div>
-                )}
+                {/* Intestazione device: visibile solo quando !hideTopControls */}
+                {(preview === "mobile" || preview === "tablet") &&
+                  !hideTopControls && (
+                    <div className="h-6 w-full border-b bg-gray-50 rounded-t-lg flex items-center justify-center text-[10px] text-gray-500">
+                      {preview === "mobile"
+                        ? "Mobile · ~390px"
+                        : "Tablet · ~834px"}
+                    </div>
+                  )}
 
                 <ScrollArea className="flex-1 p-4 h-full pb-8">
                   {items.length === 0 ? (
@@ -415,9 +440,8 @@ export function GalleryEditorModal({
                             draggable={false}
                           />
                           <Button
-                            variant="outline"
                             size="icon"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 text-red-600 border-red-200 hover:bg-white hover:text-red-700"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
                             onClick={() => {
                               onDelete(item.id);
                               markDirty();
@@ -441,13 +465,11 @@ export function GalleryEditorModal({
             <div className="relative w-full md:max-w-md md:border-l border-t md:border-t-0 h-full min-h-0">
               <ScrollArea className="p-4 h-full min-h-0">
                 <div className="space-y-6">
-                  {/* Upload */}
+                  {/* Header impostazioni */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Aggiungi media</p>
-                      <p className="text-xs text-gray-500">
-                        Trascina nella preview o clicca qui sotto
-                      </p>
+                      <p className="text-sm font-medium">Impostazioni</p>
+                      <p className="text-xs text-gray-500">Layout galleria</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -459,21 +481,6 @@ export function GalleryEditorModal({
                       >
                         <XIcon className="w-4 h-4" />
                       </Button>
-                      <Input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        onChange={handleInputChange}
-                        aria-label="Seleziona file da caricare"
-                      />
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleBrowseClick}
-                      >
-                        <UploadCloud className="w-4 h-4 mr-2" />
-                        Carica
-                      </Button>
                     </div>
                   </div>
 
@@ -481,115 +488,114 @@ export function GalleryEditorModal({
 
                   {/* Toggle regole responsive */}
                   <div className="space-y-2">
-                  <Label className="block text-sm font-medium">
-                    Regole responsive di default
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="use-responsive"
-                      checked={useResponsive}
-                      onCheckedChange={setUseResponsive}
-                    />
-                    <Label
-                      htmlFor="use-responsive"
-                      className="text-sm text-gray-600"
-                    >
-                      Applica colonne/gap automatici per Desktop/Tablet/Mobile
-                      (solo anteprima)
+                    <Label className="block text-sm font-medium">
+                      Regole responsive di default
                     </Label>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="use-responsive"
+                        checked={useResponsive}
+                        onCheckedChange={setUseResponsive}
+                      />
+                      <Label
+                        htmlFor="use-responsive"
+                        className="text-sm text-gray-600"
+                      >
+                        Applica colonne/gap automatici per Desktop/Tablet/Mobile
+                      </Label>
+                    </div>
+                  </div>
+
+                  {/* Editor regole per breakpoint */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {(["desktop", "tablet", "mobile"] as PreviewMode[]).map(
+                      (bp) => (
+                        <div key={bp} className="rounded-lg border p-3">
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="text-xs font-semibold uppercase text-gray-600">
+                              {bp === "desktop"
+                                ? "Desktop"
+                                : bp === "tablet"
+                                  ? "Tablet"
+                                  : "Mobile"}
+                            </span>
+                            {bp === "desktop" ? (
+                              <Monitor className="w-4 h-4" />
+                            ) : bp === "tablet" ? (
+                              <Tablet className="w-4 h-4" />
+                            ) : (
+                              <Smartphone className="w-4 h-4" />
+                            )}
+                          </div>
+                          <Label className="mb-1 block text-xs">Colonne</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            value={rules[bp].columns}
+                            onChange={(e) => {
+                              handleRuleChange(bp, "columns", e.target.value);
+                            }}
+                            inputMode="numeric"
+                          />
+                          <Label className="mt-2 mb-1 block text-xs">
+                            Gap (px)
+                          </Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={rules[bp].gap}
+                            onChange={(e) => {
+                              handleRuleChange(bp, "gap", e.target.value);
+                            }}
+                            inputMode="numeric"
+                          />
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  <div className="h-px bg-gray-200" />
+
+                  {/* Impostazioni manuali (quando il toggle è OFF) */}
+                  <div
+                    className={`${useResponsive ? "opacity-60 pointer-events-none" : ""}`}
+                  >
+                    <Label className="mb-2 block">Colonne (manuale)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={gridSettings.columns}
+                      onChange={(e) => {
+                        onGridChange("columns", e.target.value);
+                        markDirty();
+                      }}
+                      inputMode="numeric"
+                    />
+                    <Label className="mt-3 mb-2 block">
+                      Spazio (px) (manuale)
+                    </Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={gridSettings.gap}
+                      onChange={(e) => {
+                        onGridChange("gap", e.target.value);
+                        markDirty();
+                      }}
+                      inputMode="numeric"
+                    />
+                    <p className="mt-2 text-xs text-gray-500">
+                      I valori manuali vengono usati solo se disattivi le regole
+                      responsive di default.
+                    </p>
                   </div>
                 </div>
-
-                {/* Editor regole per breakpoint */}
-                <div className="grid grid-cols-3 gap-4">
-                  {(["desktop", "tablet", "mobile"] as PreviewMode[]).map(
-                    (bp) => (
-                      <div key={bp} className="rounded-lg border p-3">
-                        <div className="mb-2 flex items-center justify-between">
-                          <span className="text-xs font-semibold uppercase text-gray-600">
-                            {bp === "desktop"
-                              ? "Desktop"
-                              : bp === "tablet"
-                                ? "Tablet"
-                                : "Mobile"}
-                          </span>
-                          {bp === "desktop" ? (
-                            <Monitor className="w-4 h-4" />
-                          ) : bp === "tablet" ? (
-                            <Tablet className="w-4 h-4" />
-                          ) : (
-                            <Smartphone className="w-4 h-4" />
-                          )}
-                        </div>
-                        <Label className="mb-1 block text-xs">Colonne</Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          value={rules[bp].columns}
-                          onChange={(e) => {
-                            handleRuleChange(bp, "columns", e.target.value);
-                          }}
-                          inputMode="numeric"
-                        />
-                        <Label className="mt-2 mb-1 block text-xs">
-                          Gap (px)
-                        </Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={rules[bp].gap}
-                          onChange={(e) => {
-                            handleRuleChange(bp, "gap", e.target.value);
-                          }}
-                          inputMode="numeric"
-                        />
-                      </div>
-                    ),
-                  )}
-                </div>
-
-                <div className="h-px bg-gray-200" />
-
-                {/* Impostazioni manuali (quando il toggle è OFF) */}
-                <div
-                  className={`${useResponsive ? "opacity-60 pointer-events-none" : ""}`}
-                >
-                  <Label className="mb-2 block">Colonne (manuale)</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={gridSettings.columns}
-                    onChange={(e) => {
-                      onGridChange("columns", e.target.value);
-                      markDirty();
-                    }}
-                    inputMode="numeric"
-                  />
-                  <Label className="mt-3 mb-2 block">
-                    Spazio (px) (manuale)
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={gridSettings.gap}
-                    onChange={(e) => {
-                      onGridChange("gap", e.target.value);
-                      markDirty();
-                    }}
-                    inputMode="numeric"
-                  />
-                  <p className="mt-2 text-xs text-gray-500">
-                    I valori manuali vengono usati solo se disattivi le regole
-                    responsive di default.
-                  </p>
-                </div>
-              </div>
               </ScrollArea>
             </div>
           )}
 
-          {/* Toggle pannello impostazioni */}
-          {!settingsOpen && (
+          {/* Toggle pannello impostazioni DESKTOP ONLY (su mobile è nella toolbar) */}
+          {!isSmallScreen && !settingsOpen && (
             <Button
               variant="secondary"
               size="icon"
