@@ -63,7 +63,7 @@
     "minChars": "Inserisci almeno 3 caratteri per cercare"
   },
   "filters": {
-    "active": "{{count}} filtri attivi",
+    "active": "{count} filtri attivi",
     "applied": "Filtri applicati",
     "removed": "Filtri rimossi"
   },

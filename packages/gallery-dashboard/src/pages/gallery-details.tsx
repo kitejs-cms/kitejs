@@ -8,7 +8,6 @@ import { ContentSection } from "../components/content-section";
 import { SeoSection } from "../components/seo-section";
 import { SettingsSection } from "../components/settings-section";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
-import { GalleryItemsSection } from "../components/items-section";
 import { GalleryEditorModal } from "../components/gallery-editor-modal";
 import { useGalleryDetails } from "../hooks/use-gallery-details";
 import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
@@ -22,7 +21,7 @@ export function GalleryDetailsPage() {
   const { t } = useTranslation("gallery");
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
-  const [editorOpen, setEditorOpen] = useState(true);
+  const [editorOpen, setEditorOpen] = useState(false);
   const [gridSettings, setGridSettings] = useState({
     layout: "grid",
     columns: "3",
@@ -93,11 +92,6 @@ export function GalleryDetailsPage() {
             activeLang={activeLang}
             translations={translations}
             onChange={onSeoChange}
-          />
-          <GalleryItemsSection
-            items={data.items}
-            onUpload={uploadItem}
-            onSort={sortItems}
           />
         </div>
         <div className="space-y-6">

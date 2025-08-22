@@ -63,7 +63,7 @@
     "minChars": "Enter at least 3 characters to search"
   },
   "filters": {
-    "active": "{{count}} active filters",
+    "active": "{count} active filters",
     "applied": "Filters applied",
     "removed": "Filters removed"
   },
