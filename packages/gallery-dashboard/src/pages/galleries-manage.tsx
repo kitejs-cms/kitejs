@@ -67,7 +67,6 @@ interface FilterCondition {
   value: unknown;
 }
 
-
 export function GalleriesManagePage() {
   const { t, i18n } = useTranslation("gallery");
   const navigate = useNavigate();
@@ -85,7 +84,9 @@ export function GalleriesManagePage() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchInput, setSearchInput] = useState("");
-  const [selectedForDelete, setSelectedForDelete] = useState<Gallery | null>(null);
+  const [selectedForDelete, setSelectedForDelete] = useState<Gallery | null>(
+    null
+  );
   const [activeFilters, setActiveFilters] = useState<FilterCondition[]>([]);
 
   const debouncedSearchInput = useDebounce(searchInput, 500);
@@ -281,7 +282,10 @@ export function GalleriesManagePage() {
                     variant="secondary"
                     className="bg-blue-100 text-blue-800 text-xs"
                   >
-                    {t("filters.active", { count: activeFilterCount })}
+                    {t("filters.active").replace(
+                      "{count}",
+                      activeFilterCount.toString()
+                    )}
                   </Badge>
                 </div>
               )}
@@ -336,9 +340,7 @@ export function GalleriesManagePage() {
                     <Clipboard className="mr-2 h-4 w-4" />
                     {t("buttons.copy")}
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {}}
-                  >
+                  <DropdownMenuItem onClick={() => {}}>
                     <Download className="mr-2 h-4 w-4" />
                     {t("buttons.download")}
                   </DropdownMenuItem>
