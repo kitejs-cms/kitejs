@@ -195,7 +195,6 @@ export function GalleriesManagePage() {
       params.set("page", "1");
       setSearchParams(params);
     }
-    console.log("Filtri applicati", filters);
   };
 
   const handleCopy = () => {
@@ -261,7 +260,6 @@ export function GalleriesManagePage() {
       "DELETE"
     );
     if (data) {
-      console.log("Deleted", renderTitle(selectedForDelete.translations));
       setSelectedForDelete(null);
       fetchData(buildApiUrl(currentPage, searchInput, activeFilters));
     }
@@ -283,7 +281,7 @@ export function GalleriesManagePage() {
                     variant="secondary"
                     className="bg-blue-100 text-blue-800 text-xs"
                   >
-                    {activeFilterCount} filtri attivi
+                    {t("filters.active", { count: activeFilterCount })}
                   </Badge>
                 </div>
               )}
@@ -316,7 +314,7 @@ export function GalleriesManagePage() {
                   />
                   {searchInput.length > 0 && searchInput.length < 3 && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Inserisci almeno 3 caratteri per cercare
+                      {t("search.minChars")}
                     </p>
                   )}
                 </div>
@@ -339,7 +337,7 @@ export function GalleriesManagePage() {
                     {t("buttons.copy")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => console.log(t("buttons.download"))}
+                    onClick={() => {}}
                   >
                     <Download className="mr-2 h-4 w-4" />
                     {t("buttons.download")}
@@ -348,11 +346,10 @@ export function GalleriesManagePage() {
                     <DropdownMenuItem
                       onClick={() => {
                         setActiveFilters([]);
-                        console.log("Filtri rimossi");
                       }}
                     >
                       <Trash className="mr-2 h-4 w-4" />
-                      Rimuovi filtri
+                      {t("buttons.clearFilters")}
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
