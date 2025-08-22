@@ -115,6 +115,9 @@ export class GalleryService {
       }, {});
 
       const json = gallery.toJSON();
+      const sortedItems = [...json.items].sort(
+        (a, b) => (a.order ?? 0) - (b.order ?? 0),
+      );
       const translationsWithSlug: Record<string, GalleryTranslationModel> = {};
       for (const [lang, trans] of Object.entries(json.translations)) {
         translationsWithSlug[lang] = {
@@ -125,6 +128,7 @@ export class GalleryService {
 
       return {
         ...json,
+        items: sortedItems,
         id: json._id.toString(),
         createdBy: `${(json.createdBy as User).firstName} ${(json.createdBy as User).lastName}`,
         updatedBy: `${(json.updatedBy as User).firstName} ${(json.updatedBy as User).lastName}`,
