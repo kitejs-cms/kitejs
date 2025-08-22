@@ -104,5 +104,43 @@
       "max": "Max",
       "pattern": "Pattern"
     }
+  },
+  "filter-modal": {
+    "saveNewView": "Salva Nuova Vista",
+    "deleteView": "Elimina Vista",
+    "advancedFilters": "Filtri Avanzati",
+    "activeFilters": "{{count}} filtro attivo",
+    "activeFilters_plural": "{{count}} filtri attivi",
+    "savedViews": "Viste Salvate",
+    "reset": "Reset",
+    "viewName": "Nome Vista *",
+    "viewNamePlaceholder": "Es. Clienti Attivi Q1...",
+    "description": "Descrizione",
+    "viewDescriptionPlaceholder": "Descrizione opzionale della vista...",
+    "cannotBeUndone": "Questa azione non può essere annullata",
+    "confirmDeleteView": "Sei sicuro di voler eliminare la vista \"{name}\"?",
+    "fieldPlaceholder": "Campo...",
+    "operatorPlaceholder": "Operatore...",
+    "addFilter": "Aggiungi Filtro",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "saveView": "Salva Vista",
+    "applyFilters": "Applica Filtri",
+    "operators": {
+      "equals": "Uguale a",
+      "notEquals": "Diverso da",
+      "greaterThan": "Maggiore di",
+      "greaterOrEqual": "Maggiore o uguale",
+      "lessThan": "Minore di",
+      "lessOrEqual": "Minore o uguale",
+      "in": "Include",
+      "notIn": "Non include",
+      "contains": "Contiene",
+      "startsWith": "Inizia con",
+      "endsWith": "Finisce con",
+      "exists": "Esiste",
+      "regex": "Espressione regolare"
+    }
   }
 }
