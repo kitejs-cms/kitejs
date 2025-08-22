@@ -624,9 +624,9 @@ export function FilterModal({
 
             <ScrollArea className="flex-1 overflow-auto p-6">
               <div className="space-y-4">
-                {conditions.map((condition, index) => (
+                {conditions.map((condition) => (
                   <div
-                    key={index}
+                    key={condition.id}
                     className="flex items-start gap-2 p-3 border rounded-lg bg-gray-50"
                   >
                     <div className="w-1/4">
