@@ -418,6 +418,7 @@ export function GalleryEditorModal({
                               e.dataTransfer.dropEffect = "move";
                             }
                           }}
+                          onDragEnd={() => setDragIndex(null)}
                           onDrop={(e: ReactDragEvent<HTMLDivElement>) => {
                             if (e.dataTransfer.files?.length) {
                               handleDropUpload(e);
