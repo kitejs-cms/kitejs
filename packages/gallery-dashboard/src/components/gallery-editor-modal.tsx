@@ -32,6 +32,7 @@ import {
   Monitor,
   Tablet,
   Smartphone,
+  GripVertical,
 } from "lucide-react";
 import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
 
@@ -363,6 +364,11 @@ export function GalleryEditorModal({
                 <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-gray-500">
                   <Info className="w-3 h-3" /> supporta JPG/PNG/WEBP
                 </span>
+                {items.length > 0 && (
+                  <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-gray-500">
+                    <GripVertical className="w-3 h-3" /> riordina trascinando
+                  </span>
+                )}
               </div>
             )}
 
@@ -434,6 +440,9 @@ export function GalleryEditorModal({
                           aria-label="Elemento galleria. Trascina per riordinare."
                           title="Trascina per riordinare. Trascina un file per caricare."
                         >
+                          <div className="pointer-events-none absolute top-2 left-2 z-10 rounded-md bg-black/50 p-1 text-white">
+                            <GripVertical className="w-3 h-3" />
+                          </div>
                           <img
                             src={item.linkUrl}
                             alt=""
