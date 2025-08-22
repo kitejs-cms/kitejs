@@ -55,10 +55,17 @@
     "editGallery": "Edit Gallery",
     "cancel": "Cancel",
     "viewJson": "View JSON",
-    "discardChanges": "Discard changes"
+    "discardChanges": "Discard changes",
+    "clearFilters": "Clear filters"
   },
   "search": {
-    "placeholder": "Search galleries..."
+    "placeholder": "Search galleries...",
+    "minChars": "Enter at least 3 characters to search"
+  },
+  "filters": {
+    "active": "{{count}} active filters",
+    "applied": "Filters applied",
+    "removed": "Filters removed"
   },
   "status": {
     "published": "Published",

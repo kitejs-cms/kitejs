@@ -55,10 +55,17 @@
     "editGallery": "Modifica galleria",
     "cancel": "Annulla",
     "viewJson": "Visualizza JSON",
-    "discardChanges": "Ignora modifiche"
+    "discardChanges": "Ignora modifiche",
+    "clearFilters": "Rimuovi filtri"
   },
   "search": {
-    "placeholder": "Cerca Gallerie..."
+    "placeholder": "Cerca Gallerie...",
+    "minChars": "Inserisci almeno 3 caratteri per cercare"
+  },
+  "filters": {
+    "active": "{{count}} filtri attivi",
+    "applied": "Filtri applicati",
+    "removed": "Filtri rimossi"
   },
   "status": {
     "published": "Pubblicata",
