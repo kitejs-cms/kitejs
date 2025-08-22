@@ -39,8 +39,8 @@ import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
 type Item = GalleryItemModel & { id: string };
 
 interface GridSettings {
-  columns: string; // numerico in string
-  gap: string; // numerico in string (px)
+  columns: string;
+  gap: string;
 }
 
 type PreviewMode = "desktop" | "tablet" | "mobile";
@@ -49,6 +49,7 @@ interface BreakpointRule {
   columns: number;
   gap: number; // px
 }
+
 type ResponsiveRules = Record<PreviewMode, BreakpointRule>;
 
 interface GalleryEditorModalProps {
@@ -88,15 +89,20 @@ export function GalleryEditorModal({
   onGridChange,
   onSave,
 }: GalleryEditorModalProps) {
+  const [localItems, setLocalItems] = useState<Item[]>(items);
+  useEffect(() => {
+    setLocalItems(items);
+  }, [isOpen, items]);
+
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState<boolean>(
     typeof window !== "undefined" ? window.innerWidth >= 768 : true
   );
   const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
   const [dirty, setDirty] = useState<boolean>(false);
 
-  // Anteprima dispositivi
-  const [preview, setPreview] = useState<PreviewMode>("tablet");
+  const [preview, setPreview] = useState<PreviewMode>("desktop");
   const previewMaxWidth = useMemo<number>(() => {
     switch (preview) {
       case "mobile":
@@ -108,11 +114,9 @@ export function GalleryEditorModal({
     }
   }, [preview]);
 
-  // Regole responsive
   const [useResponsive, setUseResponsive] = useState<boolean>(true);
   const [rules, setRules] = useState<ResponsiveRules>(DEFAULT_RULES);
 
-  // DnD upload globale
   const [isDraggingFile, setIsDraggingFile] = useState<boolean>(false);
   const dragFilesDepth = useRef<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -126,7 +130,6 @@ export function GalleryEditorModal({
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // Upload (input)
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (file) {
@@ -137,24 +140,42 @@ export function GalleryEditorModal({
   };
   const handleBrowseClick = (): void => fileInputRef.current?.click();
 
-  // Reorder (drag sugli item)
-  const handleDragStart = (idx: number): void => setDragIndex(idx);
+  const handleDragStart = (
+    idx: number,
+    e?: ReactDragEvent<HTMLDivElement>
+  ): void => {
+    setDragIndex(idx);
+    setHoverIndex(idx);
+    if (e?.dataTransfer) {
+      try {
+        e.dataTransfer.setData("text/plain", String(idx));
+      } catch {}
+      e.dataTransfer.effectAllowed = "move";
+    }
+  };
+
   const handleDropReorder = (
     e: ReactDragEvent<HTMLDivElement>,
     idx: number
   ): void => {
     e.preventDefault();
     e.stopPropagation();
-    if (dragIndex === null || dragIndex === idx) return;
-    const reordered = [...items];
-    const [moved] = reordered.splice(dragIndex, 1);
-    reordered.splice(idx, 0, moved);
-    onSort(reordered.map((i) => i.id));
+    if (dragIndex === null || dragIndex === idx) {
+      setHoverIndex(null);
+      setDragIndex(null);
+      return;
+    }
+    setLocalItems((prev) => {
+      const reordered = [...prev];
+      const [moved] = reordered.splice(dragIndex, 1);
+      reordered.splice(idx, 0, moved);
+      return reordered;
+    });
     setDragIndex(null);
+    setHoverIndex(null);
     markDirty();
   };
 
-  // Upload (drop)
   const handleDropUpload = (e: ReactDragEvent<HTMLDivElement>): void => {
     e.preventDefault();
     e.stopPropagation();
@@ -165,12 +186,14 @@ export function GalleryEditorModal({
     }
     dragFilesDepth.current = 0;
     setIsDraggingFile(false);
+    setHoverIndex(null);
+    setDragIndex(null);
   };
 
-  // Overlay globale
   useEffect(() => {
     const onDragEnter = (e: globalThis.DragEvent) => {
       if (hasFilePayload(e.dataTransfer ?? null)) {
+        e.preventDefault();
         dragFilesDepth.current += 1;
         setIsDraggingFile(true);
       }
@@ -181,11 +204,14 @@ export function GalleryEditorModal({
         if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
       }
     };
-    const onDragLeave = () => {
+    const onDragLeave = (e: globalThis.DragEvent) => {
+      e.preventDefault();
       dragFilesDepth.current = Math.max(0, dragFilesDepth.current - 1);
       if (dragFilesDepth.current === 0) setIsDraggingFile(false);
     };
-    const onDrop = () => {
+    const onDrop = (e: globalThis.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       dragFilesDepth.current = 0;
       setIsDraggingFile(false);
     };
@@ -202,7 +228,6 @@ export function GalleryEditorModal({
     };
   }, []);
 
-  // Valori effettivi per la preview: responsive oppure manuali
   const effectiveColumns = useMemo<number>(() => {
     if (useResponsive) {
       const col = rules[preview].columns;
@@ -219,7 +244,6 @@ export function GalleryEditorModal({
     return `${Math.max(0, Number(gridSettings.gap) || 0)}px`;
   }, [useResponsive, rules, preview, gridSettings.gap]);
 
-  // Helpers UI rules
   const handleRuleChange = (
     bp: PreviewMode,
     field: keyof BreakpointRule,
@@ -232,10 +256,8 @@ export function GalleryEditorModal({
     }));
   };
 
-  // Nascondi controlli su mobile quando il pannello impostazioni è aperto
   const hideTopControls = isSmallScreen && settingsOpen;
 
-  // Classi/composizioni utili
   const toolbarWrapperClass = isSmallScreen
     ? "mb-3 w-full flex items-center justify-between gap-2"
     : "absolute top-4 right-4 flex items-center gap-2";
@@ -277,11 +299,11 @@ export function GalleryEditorModal({
               e.preventDefault();
               if (hasFilePayload(e.dataTransfer ?? null))
                 e.dataTransfer.dropEffect = "copy";
+              else e.dataTransfer.dropEffect = "move";
             }}
             onDrop={handleDropUpload}
             aria-label="Area anteprima galleria. Trascina un file per caricarlo oppure riordina gli elementi."
           >
-            {/* input file nascosto per 'Scegli file' */}
             <input
               ref={fileInputRef}
               type="file"
@@ -290,7 +312,6 @@ export function GalleryEditorModal({
               className="hidden"
             />
 
-            {/* Toolbar anteprima (tabs device + settings toggle su mobile) */}
             {!hideTopControls && (
               <div className={toolbarWrapperClass}>
                 <Tabs
@@ -332,7 +353,6 @@ export function GalleryEditorModal({
               </div>
             )}
 
-            {/* Overlay globale */}
             {isDraggingFile && (
               <div className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center rounded-md bg-white/80 text-gray-700">
                 <UploadCloud className="mb-3 h-12 w-12" />
@@ -343,7 +363,6 @@ export function GalleryEditorModal({
               </div>
             )}
 
-            {/* Banner d’aiuto — ORA rimosso dal DOM quando hideTopControls=true */}
             {!hideTopControls && (
               <div
                 className="mb-3 inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs text-gray-600"
@@ -364,21 +383,14 @@ export function GalleryEditorModal({
                 <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-gray-500">
                   <Info className="w-3 h-3" /> supporta JPG/PNG/WEBP
                 </span>
-                {items.length > 0 && (
-                  <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-gray-500">
-                    <GripVertical className="w-3 h-3" /> riordina trascinando
-                  </span>
-                )}
               </div>
             )}
 
-            {/* Canvas con larghezza fissa per device - SCROLL FIX */}
             <div className="w-full h-full min-h-0">
               <div
                 className="mx-auto border rounded-lg flex flex-col h-full max-h-[calc(100vh-220px)] min-h-0"
                 style={{ maxWidth: `${previewMaxWidth}px` }}
               >
-                {/* Intestazione device: visibile solo quando !hideTopControls */}
                 {(preview === "mobile" || preview === "tablet") &&
                   !hideTopControls && (
                     <div className="h-6 w-full border-b bg-gray-50 rounded-t-lg flex items-center justify-center text-[10px] text-gray-500">
@@ -389,7 +401,7 @@ export function GalleryEditorModal({
                   )}
 
                 <ScrollArea className="flex-1 p-4 h-full pb-8">
-                  {items.length === 0 ? (
+                  {localItems.length === 0 ? (
                     <div className="h-[60vh] flex flex-col items-center justify-center text-center gap-4 text-gray-600">
                       <UploadCloud className="w-10 h-10" />
                       <div className="space-y-1">
@@ -411,58 +423,89 @@ export function GalleryEditorModal({
                         columnGap: effectiveGapPx,
                       }}
                     >
-                      {items.map((item, index) => (
-                        <div
-                          key={item.id}
-                          draggable={!isDraggingFile}
-                          onDragStart={() => handleDragStart(index)}
-                          onDragOver={(e: ReactDragEvent<HTMLDivElement>) => {
-                            e.preventDefault();
-                            if (hasFilePayload(e.dataTransfer ?? null)) {
-                              e.dataTransfer.dropEffect = "copy";
-                            } else {
-                              e.dataTransfer.dropEffect = "move";
-                            }
-                          }}
-                          onDragEnd={() => setDragIndex(null)}
-                          onDrop={(e: ReactDragEvent<HTMLDivElement>) => {
-                            if (e.dataTransfer.files?.length) {
-                              handleDropUpload(e);
-                            } else {
-                              handleDropReorder(e, index);
-                            }
-                          }}
-                          className={`relative group overflow-hidden mb-4 break-inside-avoid transition-shadow ${
-                            dragIndex === index
-                              ? "cursor-grabbing"
-                              : "cursor-grab"
-                          } shadow-sm hover:shadow-lg`}
-                          aria-label="Elemento galleria. Trascina per riordinare."
-                          title="Trascina per riordinare. Trascina un file per caricare."
-                        >
-                          <div className="pointer-events-none absolute top-2 left-2 z-10 rounded-md bg-black/50 p-1 text-white">
-                            <GripVertical className="w-3 h-3" />
-                          </div>
-                          <img
-                            src={item.linkUrl}
-                            alt=""
-                            className="w-full h-auto block transition-transform duration-300 group-hover:scale-[1.02]"
-                            draggable={false}
-                          />
-                          <Button
-                            size="icon"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
-                            onClick={() => {
-                              onDelete(item.id);
-                              markDirty();
+                      {localItems.map((item, index) => (
+                        <div key={item.id} className="break-inside-avoid">
+                          {/* Placeholder slot visivo prima dell'elemento */}
+                          {dragIndex !== null && hoverIndex === index && (
+                            <div
+                              className="mb-4 h-8 rounded-md border-2 border-dashed"
+                              aria-hidden
+                            />
+                          )}
+
+                          <div
+                            draggable={!isDraggingFile}
+                            onDragStart={(e) => handleDragStart(index, e)}
+                            onDragOver={(e: ReactDragEvent<HTMLDivElement>) => {
+                              e.preventDefault();
+                              if (hasFilePayload(e.dataTransfer ?? null)) {
+                                e.dataTransfer.dropEffect = "copy";
+                              } else {
+                                e.dataTransfer.dropEffect = "move";
+                                setHoverIndex(index);
+                              }
                             }}
-                            aria-label="Elimina immagine"
-                            title="Elimina"
+                            onDragEnter={(e) => {
+                              e.preventDefault();
+                              if (!hasFilePayload(e.dataTransfer ?? null))
+                                setHoverIndex(index);
+                            }}
+                            onDragEnd={() => {
+                              setDragIndex(null);
+                              setHoverIndex(null);
+                            }}
+                            onDrop={(e: ReactDragEvent<HTMLDivElement>) => {
+                              if (e.dataTransfer.files?.length)
+                                handleDropUpload(e);
+                              else handleDropReorder(e, index);
+                            }}
+                            className={`relative group overflow-hidden mb-4 transition-shadow ${
+                              dragIndex === index
+                                ? "cursor-grabbing"
+                                : "cursor-grab"
+                            } shadow-sm hover:shadow-lg ${
+                              hoverIndex === index && dragIndex !== null
+                                ? "ring-2 ring-offset-2"
+                                : ""
+                            }`}
+                            aria-label="Elemento galleria. Trascina per riordinare."
+                            title="Trascina per riordinare. Trascina un file per caricare."
                           >
-                            <XIcon className="w-4 h-4" />
-                          </Button>
+                            <div className="pointer-events-none absolute top-2 left-2 z-10 rounded-md bg-black/50 p-1 text-white">
+                              <GripVertical className="w-3 h-3" />
+                            </div>
+                            <img
+                              src={item.linkUrl}
+                              alt=""
+                              className="w-full h-auto block transition-transform duration-300 group-hover:scale-[1.02]"
+                              draggable={false}
+                            />
+                            <Button
+                              size="icon"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
+                              onClick={() => {
+                                onDelete(item.id);
+                                setLocalItems((prev) =>
+                                  prev.filter((i) => i.id !== item.id)
+                                );
+                                markDirty();
+                              }}
+                              aria-label="Elimina immagine"
+                              title="Elimina"
+                            >
+                              <XIcon className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
+
+                      {dragIndex !== null &&
+                        hoverIndex === localItems.length && (
+                          <div
+                            className="mb-4 h-8 rounded-md border-2 border-dashed"
+                            aria-hidden
+                          />
+                        )}
                     </div>
                   )}
                 </ScrollArea>
@@ -470,12 +513,10 @@ export function GalleryEditorModal({
             </div>
           </div>
 
-          {/* RIGHT: impostazioni + upload */}
           {settingsOpen && (
             <div className="relative w-full md:max-w-md md:border-l border-t md:border-t-0 h-full min-h-0">
               <ScrollArea className="p-4 h-full min-h-0">
                 <div className="space-y-6">
-                  {/* Header impostazioni */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="space-y-1">
                       <p className="text-sm font-medium">Impostazioni</p>
@@ -496,7 +537,6 @@ export function GalleryEditorModal({
 
                   <div className="h-px bg-gray-200" />
 
-                  {/* Toggle regole responsive */}
                   <div className="space-y-2">
                     <Label className="block text-sm font-medium">
                       Regole responsive di default
@@ -516,7 +556,6 @@ export function GalleryEditorModal({
                     </div>
                   </div>
 
-                  {/* Editor regole per breakpoint */}
                   <div className="grid grid-cols-3 gap-4">
                     {(["desktop", "tablet", "mobile"] as PreviewMode[]).map(
                       (bp) => (
@@ -566,7 +605,6 @@ export function GalleryEditorModal({
 
                   <div className="h-px bg-gray-200" />
 
-                  {/* Impostazioni manuali (quando il toggle è OFF) */}
                   <div
                     className={`${useResponsive ? "opacity-60 pointer-events-none" : ""}`}
                   >
@@ -604,7 +642,6 @@ export function GalleryEditorModal({
             </div>
           )}
 
-          {/* Toggle pannello impostazioni DESKTOP ONLY (su mobile è nella toolbar) */}
           {!isSmallScreen && !settingsOpen && (
             <Button
               variant="secondary"
@@ -627,6 +664,7 @@ export function GalleryEditorModal({
           <Button
             disabled={!dirty}
             onClick={() => {
+              onSort(localItems.map((i) => i.id));
               onSave?.();
               setDirty(false);
             }}
