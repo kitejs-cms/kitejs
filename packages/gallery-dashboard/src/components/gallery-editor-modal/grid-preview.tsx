@@ -2,6 +2,7 @@ import { useState, type DragEvent as ReactDragEvent } from "react";
 import { Button } from "@kitejs-cms/dashboard-core";
 import { GripVertical, XIcon } from "lucide-react";
 import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
+import { useTranslation } from "react-i18next";
 
 type GridPreviewProps = {
   items: GalleryItemModel[];
@@ -22,6 +23,7 @@ export function GridPreview({
 }: GridPreviewProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const { t } = useTranslation("gallery");
 
   const handleDragStart = (idx: number, e?: ReactDragEvent<HTMLDivElement>) => {
     setDragIndex(idx);
@@ -108,8 +110,8 @@ export function GridPreview({
                 ? "ring-2 ring-offset-2"
                 : ""
             }`}
-            aria-label="Elemento galleria. Trascina per riordinare."
-            title="Trascina per riordinare. Trascina un file per caricare."
+            aria-label={t("editor.grid.itemAria")}
+            title={t("editor.grid.itemTitle")}
           >
             <div className="pointer-events-none absolute top-2 left-2 z-10 rounded-md bg-black/50 p-1 text-white">
               <GripVertical className="w-3 h-3" />
@@ -127,8 +129,8 @@ export function GridPreview({
                 size="icon"
                 className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
                 onClick={() => onDelete(item.id)}
-                aria-label="Elimina immagine"
-                title="Elimina"
+                aria-label={t("editor.grid.deleteAria")}
+                title={t("buttons.delete")}
               >
                 <XIcon className="w-4 h-4" />
               </Button>

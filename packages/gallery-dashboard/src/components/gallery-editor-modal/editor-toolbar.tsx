@@ -13,6 +13,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { useMinWidth } from "../../hooks/use-min-width";
+import { useTranslation } from "react-i18next";
 
 export type PreviewMode = "desktop" | "tablet" | "mobile";
 
@@ -31,6 +32,7 @@ export function EditorToolbar({
   onOpenSettings,
   onBrowseClick,
 }: EditorToolbarProps) {
+  const { t } = useTranslation("gallery");
   const is1120Up = useMinWidth(1120);
 
   const baseCss = is1120Up
@@ -42,19 +44,19 @@ export function EditorToolbar({
       {/* Upload File */}
       <div className="flex items-center gap-2 text-xs text-gray-600 sm:w-auto border p-2 rounded-md">
         <UploadCloud className="w-4 h-4 shrink-0" />
-        <span className="font-medium">Trascina qui per caricare</span>
-        <span className="opacity-70">oppure</span>
+        <span className="font-medium">{t("editor.toolbar.dragHere")}</span>
+        <span className="opacity-70">{t("editor.toolbar.or")}</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={onBrowseClick}
           className="h-7"
-          aria-label="Scegli file"
+          aria-label={t("editor.toolbar.browse")}
         >
-          Scegli file
+          {t("editor.toolbar.browse")}
         </Button>
         <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
-          <Info className="w-3 h-3" /> supporta JPG/PNG/WEBP
+          <Info className="w-3 h-3" /> {t("editor.toolbar.support")}
         </span>
       </div>
 
@@ -68,21 +70,21 @@ export function EditorToolbar({
             <TabsTrigger
               value="desktop"
               className="text-sm"
-              aria-label="Anteprima Desktop"
+              aria-label={t("editor.toolbar.previewDesktop")}
             >
               <Monitor className="w-4 h-4" />
             </TabsTrigger>
             <TabsTrigger
               value="tablet"
               className="text-sm"
-              aria-label="Anteprima Tablet"
+              aria-label={t("editor.toolbar.previewTablet")}
             >
               <Tablet className="w-4 h-4" />
             </TabsTrigger>
             <TabsTrigger
               value="mobile"
               className="text-sm"
-              aria-label="Anteprima Mobile"
+              aria-label={t("editor.toolbar.previewMobile")}
             >
               <Smartphone className="w-4 h-4" />
             </TabsTrigger>
@@ -95,8 +97,8 @@ export function EditorToolbar({
             size="icon"
             className="shrink-0"
             onClick={onOpenSettings}
-            title="Apri impostazioni"
-            aria-label="Apri impostazioni"
+            title={t("editor.toolbar.openSettings")}
+            aria-label={t("editor.toolbar.openSettings")}
           >
             <Settings2 className="w-4 h-4" />
           </Button>

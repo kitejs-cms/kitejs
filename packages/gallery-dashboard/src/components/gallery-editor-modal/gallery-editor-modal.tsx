@@ -17,6 +17,7 @@ import type {
 import { SettingsPanel } from "./settings-panel";
 import { EditorToolbar, type PreviewMode } from "./editor-toolbar";
 import { GridPreview } from "./grid-preview";
+import { useTranslation } from "react-i18next";
 
 interface GalleryEditorModalProps {
   isOpen: boolean;
@@ -43,12 +44,6 @@ const PREVIEW_WIDTH: Record<PreviewMode, number> = {
   desktop: 1200,
   tablet: 834,
   mobile: 390,
-};
-
-const PREVIEW_LABEL: Record<PreviewMode, string> = {
-  desktop: "Desktop · ~1200px",
-  tablet: "Tablet · ~834px",
-  mobile: "Mobile · ~390px",
 };
 
 function effectiveRule(
@@ -81,6 +76,7 @@ export function GalleryEditorModal({
   const [localItems, setLocalItems] = useState<GalleryItemModel[]>(items);
   const [localSettings, setLocalSettings] =
     useState<GallerySettingsModel>(settings);
+  const { t } = useTranslation("gallery");
 
   useEffect(() => setLocalItems(items), [isOpen, items]);
   useEffect(() => setLocalSettings(settings), [isOpen, settings]);
@@ -166,6 +162,15 @@ export function GalleryEditorModal({
   // calcolo regole effettive per preview corrente
   const { columns, gap } = effectiveRule(localSettings, preview);
 
+  const previewLabels = useMemo(
+    () => ({
+      desktop: t("editor.previewLabel.desktop"),
+      tablet: t("editor.previewLabel.tablet"),
+      mobile: t("editor.previewLabel.mobile"),
+    }),
+    [t]
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -175,13 +180,13 @@ export function GalleryEditorModal({
         {/* Header */}
         <DialogHeader className="flex flex-row justify-between items-center p-4 border-b shrink-0">
           <DialogTitle className="text-xl font-semibold">
-            Modifica galleria
+            {t("buttons.editGallery")}
           </DialogTitle>
           <DialogClose asChild>
             <div
               className="flex items-center gap-2 text-gray-500 hover:text-black transition cursor-pointer"
-              aria-label="Chiudi (Esc)"
-              title="Chiudi (Esc)"
+              aria-label={t("editor.close")}
+              title={t("editor.close")}
             >
               <Badge
                 variant="outline"
@@ -241,10 +246,10 @@ export function GalleryEditorModal({
                   <div className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center rounded-md bg-white/80 text-gray-700">
                     <UploadCloud className="mb-3 h-12 w-12" />
                     <p className="text-lg font-semibold">
-                      Rilascia per caricare
+                      {t("editor.overlay.dropToUpload")}
                     </p>
                     <p className="text-sm text-gray-600">
-                      JPG, PNG, WEBP — max 25MB
+                      {t("editor.overlay.formats")}
                     </p>
                   </div>
                 )}
@@ -257,7 +262,7 @@ export function GalleryEditorModal({
                   >
                     {/* bandella sempre visibile, anche in Desktop */}
                     <div className="h-6 w-full border-b bg-gray-50 rounded-t-lg flex items-center justify-center text-[10px] text-gray-500">
-                      {PREVIEW_LABEL[preview]}
+                      {previewLabels[preview]}
                     </div>
 
                     <div className="flex-1 p-4 overflow-auto">
@@ -267,11 +272,10 @@ export function GalleryEditorModal({
                           <UploadCloud className="w-10 h-10" />
                           <div className="space-y-1">
                             <p className="text-lg font-medium">
-                              Galleria vuota
+                              {t("editor.empty.title")}
                             </p>
                             <p className="text-sm text-gray-500">
-                              Trascina qui un’immagine oppure usa il pulsante in
-                              alto
+                              {t("editor.empty.description")}
                             </p>
                           </div>
                         </div>
@@ -295,8 +299,10 @@ export function GalleryEditorModal({
                         />
                       ) : (
                         <div className="border border-dashed rounded-md p-6 text-center text-sm text-gray-600">
-                          <div className="font-medium mb-1">Slider Preview</div>
-                          <div>Placeholder di test (implementazione WIP)</div>
+                          <div className="font-medium mb-1">
+                            {t("editor.slider.title")}
+                          </div>
+                          <div>{t("editor.slider.description")}</div>
                         </div>
                       )}
                     </div>
@@ -323,7 +329,7 @@ export function GalleryEditorModal({
         {/* Footer */}
         <div className="sticky bottom-0 left-0 right-0 border-t bg-white p-3 flex items-center justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
-            Annulla
+            {t("buttons.cancel")}
           </Button>
           <Button
             disabled={!dirty}
@@ -333,7 +339,7 @@ export function GalleryEditorModal({
               setDirty(false);
             }}
           >
-            Salva
+            {t("buttons.save")}
           </Button>
         </div>
       </DialogContent>

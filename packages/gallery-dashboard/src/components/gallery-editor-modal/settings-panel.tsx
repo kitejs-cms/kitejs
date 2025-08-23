@@ -3,6 +3,7 @@ import { Button, Label, Input, Switch } from "@kitejs-cms/dashboard-core";
 import { XIcon, Monitor, Tablet, Smartphone } from "lucide-react";
 import { DEFAULT_SETTINGS } from "../../constant/empty-gallery";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   GallerySettingsModel,
   GalleryMode,
@@ -22,6 +23,7 @@ export function SettingsPanel({
   onClose,
 }: SettingsPanelProps) {
   const [draft, setDraft] = useState<GallerySettingsModel>(settings);
+  const { t } = useTranslation("gallery");
 
   useEffect(() => setDraft(settings), [settings]);
 
@@ -94,16 +96,20 @@ export function SettingsPanel({
           {/* header */}
           <div className="flex items-center justify-between gap-2">
             <div className="space-y-1">
-              <p className="text-sm font-medium">Impostazioni</p>
-              <p className="text-xs text-gray-500">Layout galleria</p>
+              <p className="text-sm font-medium">
+                {t("editor.settings.title")}
+              </p>
+              <p className="text-xs text-gray-500">
+                {t("editor.settings.subtitle")}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
                 size="icon"
                 onClick={onClose}
-                title="Chiudi impostazioni"
-                aria-label="Chiudi impostazioni"
+                title={t("editor.settings.close")}
+                aria-label={t("editor.settings.close")}
               >
                 <XIcon className="w-4 h-4" />
               </Button>
@@ -135,7 +141,7 @@ export function SettingsPanel({
           {/* mode */}
           <div className="space-y-2">
             <Label className="block text-sm font-medium">
-              Modalità colonne/gap
+              {t("editor.settings.mode")}
             </Label>
             <div className="flex items-center gap-2">
               <Switch
@@ -147,8 +153,8 @@ export function SettingsPanel({
               />
               <Label htmlFor="mode-switch" className="text-sm text-gray-600">
                 {currentMode === "responsive"
-                  ? "Responsive per Desktop/Tablet/Mobile"
-                  : "Manuale (valori unici)"}
+                  ? t("editor.settings.responsive")
+                  : t("editor.settings.manual")}
               </Label>
             </div>
           </div>
@@ -172,15 +178,13 @@ export function SettingsPanel({
                   <div key={bp} className="rounded-lg border p-3">
                     <div className="mb-2 flex items-center justify-between">
                       <span className="text-xs font-semibold uppercase text-gray-600">
-                        {bp === "desktop"
-                          ? "Desktop"
-                          : bp === "tablet"
-                            ? "Tablet"
-                            : "Mobile"}
+                        {t(`editor.settings.breakpoint.${bp}`)}
                       </span>
                       {icon}
                     </div>
-                    <Label className="mb-1 block text-xs">Colonne</Label>
+                    <Label className="mb-1 block text-xs">
+                      {t("editor.settings.columns")}
+                    </Label>
                     <Input
                       type="number"
                       min={1}
@@ -192,7 +196,9 @@ export function SettingsPanel({
                       }
                       inputMode="numeric"
                     />
-                    <Label className="mt-2 mb-1 block text-xs">Gap (px)</Label>
+                    <Label className="mt-2 mb-1 block text-xs">
+                      {t("editor.settings.gap")}
+                    </Label>
                     <Input
                       type="number"
                       min={0}
@@ -214,7 +220,9 @@ export function SettingsPanel({
           <div
             className={`${currentMode !== "manual" ? "opacity-60 pointer-events-none" : ""}`}
           >
-            <Label className="mb-2 block">Colonne (manuale)</Label>
+            <Label className="mb-2 block">
+              {t("editor.settings.columnsManual")}
+            </Label>
             <Input
               type="number"
               min={1}
@@ -224,7 +232,9 @@ export function SettingsPanel({
               }
               inputMode="numeric"
             />
-            <Label className="mt-3 mb-2 block">Spazio (px) (manuale)</Label>
+            <Label className="mt-3 mb-2 block">
+              {t("editor.settings.gapManual")}
+            </Label>
             <Input
               type="number"
               min={0}
@@ -235,8 +245,7 @@ export function SettingsPanel({
               inputMode="numeric"
             />
             <p className="mt-2 text-xs text-gray-500">
-              I valori manuali vengono usati per tutti i breakpoint quando la
-              modalità è “Manuale”.
+              {t("editor.settings.manualNote")}
             </p>
           </div>
         </div>

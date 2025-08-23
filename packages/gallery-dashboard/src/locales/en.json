@@ -87,5 +87,58 @@
     "message": "Are you sure you want to delete this item? This action cannot be undone.",
     "messageWithNamePrefix": "Are you sure you want to delete ",
     "messageWithNameSuffix": "? This action cannot be undone."
+  },
+  "editor": {
+    "close": "Close (Esc)",
+    "toolbar": {
+      "dragHere": "Drag here to upload",
+      "or": "or",
+      "browse": "Choose file",
+      "support": "supports JPG/PNG/WEBP",
+      "openSettings": "Open settings",
+      "previewDesktop": "Desktop preview",
+      "previewTablet": "Tablet preview",
+      "previewMobile": "Mobile preview"
+    },
+    "overlay": {
+      "dropToUpload": "Drop to upload",
+      "formats": "JPG, PNG, WEBP — max 25MB"
+    },
+    "empty": {
+      "title": "Empty gallery",
+      "description": "Drag an image here or use the button above"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Gallery layout",
+      "close": "Close settings",
+      "mode": "Columns/gap mode",
+      "responsive": "Responsive for Desktop/Tablet/Mobile",
+      "manual": "Manual (single values)",
+      "breakpoint": {
+        "desktop": "Desktop",
+        "tablet": "Tablet",
+        "mobile": "Mobile"
+      },
+      "columns": "Columns",
+      "gap": "Gap (px)",
+      "columnsManual": "Columns (manual)",
+      "gapManual": "Gap (px) (manual)",
+      "manualNote": "Manual values are used for all breakpoints when in \u201cManual\u201d mode."
+    },
+    "grid": {
+      "itemAria": "Gallery item. Drag to reorder.",
+      "itemTitle": "Drag to reorder. Drag a file to upload.",
+      "deleteAria": "Delete image"
+    },
+    "previewLabel": {
+      "desktop": "Desktop \u00b7 ~1200px",
+      "tablet": "Tablet \u00b7 ~834px",
+      "mobile": "Mobile \u00b7 ~390px"
+    },
+    "slider": {
+      "title": "Slider Preview",
+      "description": "Test placeholder (implementation WIP)"
+    }
   }
 }
