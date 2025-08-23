@@ -1,3 +1,4 @@
+import { ScrollArea } from "@kitejs-cms/dashboard-core/components/ui/scroll-area";
 import {
   useEffect,
   useMemo,
@@ -15,6 +16,11 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
 } from "@kitejs-cms/dashboard-core";
 import {
   Dialog,
@@ -23,7 +29,6 @@ import {
   DialogTitle,
   DialogClose,
 } from "@kitejs-cms/dashboard-core/components/ui/dialog";
-import { ScrollArea } from "@kitejs-cms/dashboard-core/components/ui/scroll-area";
 import {
   XIcon,
   Settings2,
@@ -34,41 +39,32 @@ import {
   Smartphone,
   GripVertical,
 } from "lucide-react";
-import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
+import type {
+  GallerySettingsModel,
+  GalleryItemModel,
+  Breakpoint,
+  BreakpointSettingsModel,
+  GalleryLayout,
+  GalleryMode,
+} from "@kitejs-cms/gallery-plugin";
 
-type Item = GalleryItemModel;
-
-interface GridSettings {
-  columns: string;
-  gap: string;
+enum PreviewMode {
+  Desktop = "desktop",
+  Tablet = "tablet",
+  Mobile = "mobile",
 }
-
-type PreviewMode = "desktop" | "tablet" | "mobile";
-
-interface BreakpointRule {
-  columns: number;
-  gap: number; // px
-}
-
-type ResponsiveRules = Record<PreviewMode, BreakpointRule>;
 
 interface GalleryEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  items: Item[];
-  gridSettings: GridSettings;
+  items: GalleryItemModel[];
+  settings: GallerySettingsModel;
   onUpload: (file: File) => void;
   onSort: (ids: string[]) => void;
   onDelete: (id: string) => void;
-  onGridChange: (field: keyof GridSettings, value: string) => void;
+  onSettingsChange: (next: GallerySettingsModel) => void;
   onSave?: () => void;
 }
-
-const DEFAULT_RULES: ResponsiveRules = {
-  desktop: { columns: 4, gap: 16 },
-  tablet: { columns: 2, gap: 12 },
-  mobile: { columns: 1, gap: 8 },
-};
 
 function hasFilePayload(dt: DataTransfer | null): boolean {
   if (!dt) return false;
@@ -82,17 +78,24 @@ export function GalleryEditorModal({
   isOpen,
   onClose,
   items,
-  gridSettings,
+  settings,
   onUpload,
   onSort,
   onDelete,
-  onGridChange,
+  onSettingsChange,
   onSave,
 }: GalleryEditorModalProps) {
-  const [localItems, setLocalItems] = useState<Item[]>(items);
+  const [localItems, setLocalItems] = useState<GalleryItemModel[]>(items);
+  const [localSettings, setLocalSettings] =
+    useState<GallerySettingsModel>(settings);
+
   useEffect(() => {
     setLocalItems(items);
   }, [isOpen, items]);
+
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [isOpen, settings]);
 
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -102,7 +105,7 @@ export function GalleryEditorModal({
   const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
   const [dirty, setDirty] = useState<boolean>(false);
 
-  const [preview, setPreview] = useState<PreviewMode>("desktop");
+  const [preview, setPreview] = useState<PreviewMode>(PreviewMode.Desktop);
   const previewMaxWidth = useMemo<number>(() => {
     switch (preview) {
       case "mobile":
@@ -113,9 +116,6 @@ export function GalleryEditorModal({
         return 1200;
     }
   }, [preview]);
-
-  const [useResponsive, setUseResponsive] = useState<boolean>(true);
-  const [rules, setRules] = useState<ResponsiveRules>(DEFAULT_RULES);
 
   const [isDraggingFile, setIsDraggingFile] = useState<boolean>(false);
   const dragFilesDepth = useRef<number>(0);
@@ -149,7 +149,9 @@ export function GalleryEditorModal({
     if (e?.dataTransfer) {
       try {
         e.dataTransfer.setData("text/plain", String(idx));
-      } catch {}
+      } catch {
+        /* empty */
+      }
       e.dataTransfer.effectAllowed = "move";
     }
   };
@@ -228,36 +230,116 @@ export function GalleryEditorModal({
     };
   }, []);
 
-  const effectiveColumns = useMemo<number>(() => {
-    if (useResponsive) {
-      const col = rules[preview].columns;
-      return Math.max(1, col);
-    }
-    return Math.max(1, Number(gridSettings.columns) || 1);
-  }, [useResponsive, rules, preview, gridSettings.columns]);
+  // ---- helpers settings (allineati ai nuovi modelli)
+  const currentMode: GalleryMode = localSettings.mode;
+  const currentLayout: GalleryLayout = localSettings.layout;
+  const ratio = localSettings.ratio;
 
-  const effectiveGapPx = useMemo<string>(() => {
-    if (useResponsive) {
-      const g = Math.max(0, rules[preview].gap);
-      return `${g}px`;
+  const getBp = (bp: Breakpoint): BreakpointSettingsModel => {
+    // fallback sicuro per evitare undefined negli input
+    if (currentMode === "responsive") {
+      return (
+        localSettings.responsive?.[bp] ?? {
+          columns: 1,
+          gap: 0,
+        }
+      );
     }
-    return `${Math.max(0, Number(gridSettings.gap) || 0)}px`;
-  }, [useResponsive, rules, preview, gridSettings.gap]);
-
-  const handleRuleChange = (
-    bp: PreviewMode,
-    field: keyof BreakpointRule,
-    value: string
-  ): void => {
-    const parsed = Math.max(0, Number(value) || 0);
-    setRules((prev) => ({
-      ...prev,
-      [bp]: { ...prev[bp], [field]: parsed },
-    }));
+    // in manual mode, usiamo i valori manuali per tutti i breakpoint
+    return localSettings.manual ?? { columns: 1, gap: 0 };
   };
 
-  const hideTopControls = isSmallScreen && settingsOpen;
+  const setResponsiveBp = (
+    bp: Breakpoint,
+    patch: Partial<BreakpointSettingsModel>
+  ) => {
+    setLocalSettings((prev) => {
+      const next: GallerySettingsModel = {
+        ...prev,
+        mode: "responsive",
+        responsive: {
+          desktop: prev.responsive?.desktop ?? { columns: 3, gap: 16 },
+          tablet: prev.responsive?.tablet ?? { columns: 2, gap: 12 },
+          mobile: prev.responsive?.mobile ?? { columns: 1, gap: 8 },
+        },
+      };
+      next.responsive![bp] = {
+        ...next.responsive![bp],
+        ...patch,
+      };
+      markDirty();
+      onSettingsChange(next);
+      return next;
+    });
+  };
 
+  const setManual = (patch: Partial<BreakpointSettingsModel>) => {
+    setLocalSettings((prev) => {
+      const next: GallerySettingsModel = {
+        ...prev,
+        mode: "manual",
+        manual: {
+          columns: prev.manual?.columns ?? 3,
+          gap: prev.manual?.gap ?? 16,
+          ...patch,
+        },
+      };
+      markDirty();
+      onSettingsChange(next);
+      return next;
+    });
+  };
+
+  const setMode = (mode: GalleryMode) => {
+    setLocalSettings((prev) => {
+      const next: GallerySettingsModel = { ...prev, mode };
+      // garantisci strutture minime
+      if (mode === "responsive") {
+        next.responsive = {
+          desktop: prev.responsive?.desktop ?? { columns: 3, gap: 16 },
+          tablet: prev.responsive?.tablet ?? { columns: 2, gap: 12 },
+          mobile: prev.responsive?.mobile ?? { columns: 1, gap: 8 },
+        };
+      } else {
+        next.manual = prev.manual ?? { columns: 3, gap: 16 };
+      }
+      markDirty();
+      onSettingsChange(next);
+      return next;
+    });
+  };
+
+  const setLayout = (layout: GalleryLayout) => {
+    setLocalSettings((prev) => {
+      const next = { ...prev, layout };
+      markDirty();
+      onSettingsChange(next);
+      return next;
+    });
+  };
+
+  const setRatio = (value: string) => {
+    setLocalSettings((prev) => {
+      const next = { ...prev, ratio: value };
+      markDirty();
+      onSettingsChange(next);
+      return next;
+    });
+  };
+
+  const effectiveColumns = useMemo<number>(() => {
+    const bp = preview as Breakpoint;
+    return Math.max(1, getBp(bp).columns);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preview, localSettings]);
+
+  const effectiveGapPx = useMemo<string>(() => {
+    const bp = preview as Breakpoint;
+    return `${Math.max(0, getBp(bp).gap)}px`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preview, localSettings]);
+
+  const hideTopControls = isSmallScreen && settingsOpen;
   const toolbarWrapperClass = isSmallScreen
     ? "mb-3 w-full flex items-center justify-between gap-2"
     : "absolute top-4 right-4 flex items-center gap-2";
@@ -316,24 +398,16 @@ export function GalleryEditorModal({
               <div className={toolbarWrapperClass}>
                 <Tabs
                   value={preview}
-                  onValueChange={(value) => setPreview(value as PreviewMode)}
+                  onValueChange={(v) => setPreview(v as PreviewMode)}
                 >
                   <TabsList className="flex-wrap h-auto">
                     <TabsTrigger value="desktop" className="text-sm">
                       <Monitor className="w-4 h-4" />
                     </TabsTrigger>
-                    <TabsTrigger
-                      aria-label="Anteprima tablet"
-                      value="tablet"
-                      className="text-sm"
-                    >
+                    <TabsTrigger value="tablet" className="text-sm">
                       <Tablet className="w-4 h-4" />
                     </TabsTrigger>
-                    <TabsTrigger
-                      aria-label="Anteprima mobile"
-                      value="mobile"
-                      className="text-sm"
-                    >
+                    <TabsTrigger value="mobile" className="text-sm">
                       <Smartphone className="w-4 h-4" />
                     </TabsTrigger>
                   </TabsList>
@@ -425,7 +499,7 @@ export function GalleryEditorModal({
                     >
                       {localItems.map((item, index) => (
                         <div key={item.id} className="break-inside-avoid">
-                          {/* Placeholder slot visivo prima dell'elemento */}
+                          {/* slot placeholder prima dell'elemento durante il drag */}
                           {dragIndex !== null && hoverIndex === index && (
                             <div
                               className="mb-4 h-8 rounded-md border-2 border-dashed"
@@ -513,6 +587,7 @@ export function GalleryEditorModal({
             </div>
           </div>
 
+          {/* SETTINGS */}
           {settingsOpen && (
             <div className="relative w-full md:max-w-md md:border-l border-t md:border-t-0 h-full min-h-0">
               <ScrollArea className="p-4 h-full min-h-0">
@@ -537,86 +612,145 @@ export function GalleryEditorModal({
 
                   <div className="h-px bg-gray-200" />
 
+                  {/* layout */}
+                  <div className="space-y-2">
+                    <Label className="block text-sm font-medium">Layout</Label>
+                    <Select
+                      value={currentLayout}
+                      onValueChange={(v) => setLayout(v as GalleryLayout)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleziona layout" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grid">Grid</SelectItem>
+                        <SelectItem value="masonry">Masonry</SelectItem>
+                        <SelectItem value="slider">Slider</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* ratio */}
                   <div className="space-y-2">
                     <Label className="block text-sm font-medium">
-                      Regole responsive di default
+                      Ratio (es. 16:9, 4:3) — lascia vuoto per auto
+                    </Label>
+                    <Input
+                      value={ratio ?? ""}
+                      onChange={(e) => setRatio(e.target.value)}
+                      placeholder="es. 16:9"
+                    />
+                  </div>
+
+                  <div className="h-px bg-gray-200" />
+
+                  {/* mode */}
+                  <div className="space-y-2">
+                    <Label className="block text-sm font-medium">
+                      Modalità colonne/gap
                     </Label>
                     <div className="flex items-center gap-2">
                       <Switch
-                        id="use-responsive"
-                        checked={useResponsive}
-                        onCheckedChange={setUseResponsive}
+                        id="mode-switch"
+                        checked={currentMode === "responsive"}
+                        onCheckedChange={(checked) =>
+                          setMode(checked ? "responsive" : "manual")
+                        }
                       />
                       <Label
-                        htmlFor="use-responsive"
+                        htmlFor="mode-switch"
                         className="text-sm text-gray-600"
                       >
-                        Applica colonne/gap automatici per Desktop/Tablet/Mobile
+                        {currentMode === "responsive"
+                          ? "Responsive per Desktop/Tablet/Mobile"
+                          : "Manuale (valori unici)"}
                       </Label>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    {(["desktop", "tablet", "mobile"] as PreviewMode[]).map(
-                      (bp) => (
-                        <div key={bp} className="rounded-lg border p-3">
-                          <div className="mb-2 flex items-center justify-between">
-                            <span className="text-xs font-semibold uppercase text-gray-600">
-                              {bp === "desktop"
-                                ? "Desktop"
-                                : bp === "tablet"
-                                  ? "Tablet"
-                                  : "Mobile"}
-                            </span>
-                            {bp === "desktop" ? (
+                  {/* responsive controls */}
+                  <div
+                    className={`${currentMode !== "responsive" ? "opacity-60 pointer-events-none" : ""}`}
+                  >
+                    <div className="grid grid-cols-3 gap-4">
+                      {(["desktop", "tablet", "mobile"] as Breakpoint[]).map(
+                        (bp) => {
+                          const icon =
+                            bp === "desktop" ? (
                               <Monitor className="w-4 h-4" />
                             ) : bp === "tablet" ? (
                               <Tablet className="w-4 h-4" />
                             ) : (
                               <Smartphone className="w-4 h-4" />
-                            )}
-                          </div>
-                          <Label className="mb-1 block text-xs">Colonne</Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            value={rules[bp].columns}
-                            onChange={(e) => {
-                              handleRuleChange(bp, "columns", e.target.value);
-                            }}
-                            inputMode="numeric"
-                          />
-                          <Label className="mt-2 mb-1 block text-xs">
-                            Gap (px)
-                          </Label>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={rules[bp].gap}
-                            onChange={(e) => {
-                              handleRuleChange(bp, "gap", e.target.value);
-                            }}
-                            inputMode="numeric"
-                          />
-                        </div>
-                      )
-                    )}
+                            );
+                          const v = getBp(bp);
+                          return (
+                            <div key={bp} className="rounded-lg border p-3">
+                              <div className="mb-2 flex items-center justify-between">
+                                <span className="text-xs font-semibold uppercase text-gray-600">
+                                  {bp === "desktop"
+                                    ? "Desktop"
+                                    : bp === "tablet"
+                                      ? "Tablet"
+                                      : "Mobile"}
+                                </span>
+                                {icon}
+                              </div>
+                              <Label className="mb-1 block text-xs">
+                                Colonne
+                              </Label>
+                              <Input
+                                type="number"
+                                min={1}
+                                value={v.columns}
+                                onChange={(e) =>
+                                  setResponsiveBp(bp, {
+                                    columns: Math.max(
+                                      1,
+                                      Number(e.target.value) || 1
+                                    ),
+                                  })
+                                }
+                                inputMode="numeric"
+                              />
+                              <Label className="mt-2 mb-1 block text-xs">
+                                Gap (px)
+                              </Label>
+                              <Input
+                                type="number"
+                                min={0}
+                                value={v.gap}
+                                onChange={(e) =>
+                                  setResponsiveBp(bp, {
+                                    gap: Math.max(
+                                      0,
+                                      Number(e.target.value) || 0
+                                    ),
+                                  })
+                                }
+                                inputMode="numeric"
+                              />
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
                   </div>
 
-                  <div className="h-px bg-gray-200" />
-
+                  {/* manual controls */}
                   <div
-                    className={`${useResponsive ? "opacity-60 pointer-events-none" : ""}`}
+                    className={`${currentMode !== "manual" ? "opacity-60 pointer-events-none" : ""}`}
                   >
                     <Label className="mb-2 block">Colonne (manuale)</Label>
                     <Input
                       type="number"
                       min={1}
-                      value={gridSettings.columns}
-                      onChange={(e) => {
-                        onGridChange("columns", e.target.value);
-                        markDirty();
-                      }}
+                      value={localSettings.manual?.columns ?? 3}
+                      onChange={(e) =>
+                        setManual({
+                          columns: Math.max(1, Number(e.target.value) || 1),
+                        })
+                      }
                       inputMode="numeric"
                     />
                     <Label className="mt-3 mb-2 block">
@@ -625,16 +759,17 @@ export function GalleryEditorModal({
                     <Input
                       type="number"
                       min={0}
-                      value={gridSettings.gap}
-                      onChange={(e) => {
-                        onGridChange("gap", e.target.value);
-                        markDirty();
-                      }}
+                      value={localSettings.manual?.gap ?? 16}
+                      onChange={(e) =>
+                        setManual({
+                          gap: Math.max(0, Number(e.target.value) || 0),
+                        })
+                      }
                       inputMode="numeric"
                     />
                     <p className="mt-2 text-xs text-gray-500">
-                      I valori manuali vengono usati solo se disattivi le regole
-                      responsive di default.
+                      I valori manuali vengono usati per tutti i breakpoint
+                      quando la modalità è “Manuale”.
                     </p>
                   </div>
                 </div>

@@ -6,4 +6,8 @@ export class GallerySortDto {
   @IsArray()
   @IsString({ each: true })
   itemIds: string[];
+
+  constructor(partial: Partial<GallerySortDto>) {
+    Object.assign(this, partial);
+  }
 }

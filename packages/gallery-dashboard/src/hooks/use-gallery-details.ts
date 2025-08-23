@@ -10,9 +10,9 @@ import {
   type GalleryResponseModel,
   type GalleryTranslationModel,
   type GalleryUpsertModel,
-  type GalleryStatus,
   type GallerySettingsModel,
 } from "@kitejs-cms/gallery-plugin";
+import { EMPTY_GALLERY, DEFAULT_SETTINGS } from "../constant/empty-gallery";
 
 type GalleryDetails = GalleryResponseModel;
 
@@ -22,15 +22,45 @@ export interface FormErrors {
   [key: string]: string | undefined;
 }
 
+function mergeSettings(
+  partial?: Partial<GallerySettingsModel>
+): GallerySettingsModel {
+  return {
+    ...DEFAULT_SETTINGS,
+    ...partial,
+    responsive: {
+      ...DEFAULT_SETTINGS.responsive,
+      ...partial?.responsive,
+      desktop: {
+        ...DEFAULT_SETTINGS.responsive.desktop,
+        ...partial?.responsive?.desktop,
+      },
+      tablet: {
+        ...DEFAULT_SETTINGS.responsive.tablet,
+        ...partial?.responsive?.tablet,
+      },
+      mobile: {
+        ...DEFAULT_SETTINGS.responsive.mobile,
+        ...partial?.responsive?.mobile,
+      },
+    },
+    manual: {
+      ...DEFAULT_SETTINGS.manual,
+      ...partial?.manual,
+    },
+  };
+}
+
 export function useGalleryDetails() {
   const { t } = useTranslation("gallery");
   const navigate = useNavigate();
   const { id } = useParams() as { id?: string };
   const { setBreadcrumb } = useBreadcrumb();
   const { cmsSettings } = useSettingsContext();
+
   const defaultLang = useMemo(
     () => cmsSettings?.defaultLanguage || "en",
-    [cmsSettings],
+    [cmsSettings]
   );
 
   const { loading, fetchData, uploadFile } = useApi<GalleryDetails>();
@@ -58,40 +88,8 @@ export function useGalleryDetails() {
     if (!defaultLang) return;
 
     if (id === "create") {
-      const empty: GalleryDetails = {
-        id: "",
-        status: "Draft" as GalleryStatus,
-        tags: [],
-        publishAt: new Date(),
-        expireAt: null,
-        items: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: "",
-        updatedBy: "",
-        settings: {
-          layout: "grid",
-          columns: 3,
-          gap: 0,
-          ratio: "16:9",
-          autoplay: false,
-          loop: false,
-          lightbox: true,
-        },
-        translations: {
-          [defaultLang]: {
-            title: "",
-            description: "",
-            slug: "",
-            seo: {
-              metaTitle: "",
-              metaDescription: "",
-              metaKeywords: [],
-              canonical: "",
-            },
-          },
-        },
-      };
+      const empty: GalleryDetails = EMPTY_GALLERY(defaultLang);
+      empty.settings = mergeSettings(empty.settings);
       setData(empty);
       setActiveLang(defaultLang);
       return;
@@ -101,7 +99,9 @@ export function useGalleryDetails() {
       (async () => {
         const result = await fetchData(`galleries/${id}`);
         if (result?.data) {
-          setData(result.data as unknown as GalleryDetails);
+          const loaded = result.data as unknown as GalleryDetails;
+          loaded.settings = mergeSettings(loaded.settings);
+          setData(loaded);
           setHasChanges(false);
         }
       })();
@@ -111,87 +111,74 @@ export function useGalleryDetails() {
   useEffect(() => {
     if (!data) return;
     const langs = Object.keys(data.translations);
-    const sorted = [...langs].sort((a, b) =>
-      a === defaultLang ? -1 : b === defaultLang ? 1 : a.localeCompare(b),
-    );
+    if (!langs.length) return;
     if (!langs.includes(activeLang)) {
-      setActiveLang(sorted[0]);
+      const next = langs.includes(defaultLang) ? defaultLang : langs.sort()[0];
+      setActiveLang(next);
     }
   }, [data, defaultLang, activeLang]);
 
   const onContentChange = useCallback(
     (lang: string, field: keyof GalleryTranslationModel, value: string) => {
-      setData((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          translations: {
-            ...prev.translations,
-            [lang]: {
-              ...prev.translations[lang],
-              [field]: value,
-            },
-          },
-        };
-      });
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              translations: {
+                ...prev.translations,
+                [lang]: { ...prev.translations[lang], [field]: value },
+              },
+            }
+          : prev
+      );
       setHasChanges(true);
     },
-    [],
+    []
   );
 
   const onSeoChange = useCallback(
     (
       lang: string,
       field: keyof GalleryTranslationModel["seo"],
-      value: string | string[],
+      value: string | string[]
     ) => {
       setData((prev) => {
         if (!prev) return prev;
-        const translation = prev.translations[lang];
+        const tr = prev.translations[lang];
         return {
           ...prev,
           translations: {
             ...prev.translations,
-            [lang]: {
-              ...translation,
-              seo: {
-                ...translation.seo,
-                [field]: value,
-              },
-            },
+            [lang]: { ...tr, seo: { ...tr.seo, [field]: value } },
           },
         };
       });
       setHasChanges(true);
     },
-    [],
+    []
   );
 
   const onSettingsChange = useCallback(
     (
       field: "status" | "publishAt" | "expireAt" | "tags",
-      value: string | string[],
+      value: string | string[]
     ) => {
       setData((prev) => (prev ? { ...prev, [field]: value } : prev));
       setHasChanges(true);
     },
-    [],
+    []
   );
 
-  const onGallerySettingsChange = useCallback(
-    (field: keyof GallerySettingsModel, value: string | number | boolean | null) => {
-      setData((prev) =>
-        prev ? { ...prev, settings: { ...prev.settings, [field]: value } } : prev,
-      );
-      setHasChanges(true);
-    },
-    [],
-  );
+  const onGallerySettingsChange = useCallback((next: GallerySettingsModel) => {
+    setData((prev) =>
+      prev ? { ...prev, settings: mergeSettings(next) } : prev
+    );
+    setHasChanges(true);
+  }, []);
 
   const onAddLanguage = useCallback((lang: string) => {
     setData((prev) => {
-      if (!prev) return prev;
-      if (prev.translations[lang]) return prev;
+      if (!prev || prev.translations[lang]) return prev;
       return {
         ...prev,
         translations: {
@@ -218,12 +205,8 @@ export function useGalleryDetails() {
     const translation = data.translations[activeLang];
 
     const errors: FormErrors = {};
-    if (!translation.title?.trim()) {
-      errors.title = t("errors.titleRequired");
-    }
-    if (!translation.slug?.trim()) {
-      errors.slug = t("errors.slugRequired");
-    }
+    if (!translation.title?.trim()) errors.title = t("errors.titleRequired");
+    if (!translation.slug?.trim()) errors.slug = t("errors.slugRequired");
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -257,15 +240,15 @@ export function useGalleryDetails() {
     const result = await fetchData(
       "galleries",
       "POST",
-      body as unknown as Record<string, unknown>,
+      body as unknown as Record<string, unknown>
     );
     if (result?.data) {
-      setData(result.data as unknown as GalleryDetails);
+      const updated = result.data as unknown as GalleryDetails;
+      updated.settings = mergeSettings(updated.settings);
+      setData(updated);
       setHasChanges(false);
       setFormErrors({});
-      if (id === "create") {
-        navigate(`/galleries/${result.data.id}`);
-      }
+      if (id === "create") navigate(`/galleries/${updated.id}`);
     }
   }, [data, activeLang, fetchData, id, navigate, t]);
 
@@ -278,7 +261,7 @@ export function useGalleryDetails() {
         navigate(path);
       }
     },
-    [hasChanges, navigate],
+    [hasChanges, navigate]
   );
 
   const closeUnsavedAlert = () => setShowUnsavedAlert(false);
@@ -288,7 +271,6 @@ export function useGalleryDetails() {
     navigate(navigateTo);
   };
 
-  // Items management
   const uploadItem = useCallback(
     async (file: File) => {
       if (!data?.id) return;
@@ -296,23 +278,23 @@ export function useGalleryDetails() {
       form.append("file", file);
       const { data: asset } = await uploadFile(
         `galleries/${data.id}/items/upload`,
-        form,
+        form
       );
       const assetId = (asset as { assetId?: string })?.assetId;
       if (assetId) {
         const { data: updated } = await fetchData(
           `galleries/${data.id}/items`,
           "POST",
-          { assetId },
+          { assetId }
         );
         if (updated) {
           setData((prev) =>
-            prev ? { ...prev, items: (updated as GalleryDetails).items } : prev,
+            prev ? { ...prev, items: (updated as GalleryDetails).items } : prev
           );
         }
       }
     },
-    [data, uploadFile, fetchData],
+    [data, uploadFile, fetchData]
   );
 
   const sortItems = useCallback(
@@ -321,15 +303,15 @@ export function useGalleryDetails() {
       const { data: updated } = await fetchData(
         `galleries/${data.id}/items/sort`,
         "POST",
-        { itemIds: ids },
+        { itemIds: ids }
       );
       if (updated) {
         setData((prev) =>
-          prev ? { ...prev, items: (updated as GalleryDetails).items } : prev,
+          prev ? { ...prev, items: (updated as GalleryDetails).items } : prev
         );
       }
     },
-    [data, fetchData],
+    [data, fetchData]
   );
 
   const removeItem = useCallback(
@@ -337,15 +319,15 @@ export function useGalleryDetails() {
       if (!data) return;
       const { data: updated } = await fetchData(
         `galleries/${data.id}/items/${id}`,
-        "DELETE",
+        "DELETE"
       );
       if (updated) {
         setData((prev) =>
-          prev ? { ...prev, items: (updated as GalleryDetails).items } : prev,
+          prev ? { ...prev, items: (updated as GalleryDetails).items } : prev
         );
       }
     },
-    [data, fetchData],
+    [data, fetchData]
   );
 
   return {

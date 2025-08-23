@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { Model, PipelineStage, Types } from "mongoose";
 import { Gallery } from "../schemas/gallery.schema";
 import { GalleryUpsertDto } from "../dto/gallery-upsert.dto";
 import { GalleryItemDto } from "../dto/gallery-item.dto";
@@ -22,12 +22,12 @@ export class GalleryService {
   constructor(
     @InjectModel(Gallery.name) private readonly galleryModel: Model<Gallery>,
     private readonly slugService: SlugRegistryService,
-    private readonly storageService: StorageService,
+    private readonly storageService: StorageService
   ) {}
 
   async upsertGallery(
     dto: GalleryUpsertDto,
-    user: JwtPayloadModel,
+    user: JwtPayloadModel
   ): Promise<GalleryResponseModel> {
     const { id, slug, language, ...rest } = dto;
 
@@ -47,16 +47,15 @@ export class GalleryService {
       tags: rest.tags,
       publishAt: rest.publishAt,
       expireAt: rest.expireAt,
-      items:
-        rest.items?.map((item, idx) => ({
-          ...(item.id ? { _id: new Types.ObjectId(item.id) } : {}),
-          assetId: new Types.ObjectId(item.assetId),
-          order: item.order ?? idx,
-          caption: item.caption,
-          altOverride: item.altOverride,
-          linkUrl: item.linkUrl,
-          visibility: item.visibility,
-        })) as unknown as GalleryItemDto[],
+      items: rest.items?.map((item, idx) => ({
+        ...(item.id ? { _id: new Types.ObjectId(item.id) } : {}),
+        assetId: new Types.ObjectId(item.assetId),
+        order: item.order ?? idx,
+        caption: item.caption,
+        altOverride: item.altOverride,
+        linkUrl: item.linkUrl,
+        visibility: item.visibility,
+      })) as unknown as GalleryItemDto[],
       settings: rest.settings,
     };
 
@@ -88,7 +87,7 @@ export class GalleryService {
       slug,
       GALLERY_SLUG_NAMESPACE,
       gallery._id as Types.ObjectId,
-      language,
+      language
     );
 
     return this.findGalleryById(gallery._id.toString());
@@ -106,7 +105,7 @@ export class GalleryService {
       }
 
       const slugs = await this.slugService.findSlugsByEntity(
-        gallery._id as Types.ObjectId,
+        gallery._id as Types.ObjectId
       );
 
       const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
@@ -116,7 +115,7 @@ export class GalleryService {
 
       const json = gallery.toJSON();
       const sortedItems = [...json.items].sort(
-        (a, b) => (a.order ?? 0) - (b.order ?? 0),
+        (a, b) => (a.order ?? 0) - (b.order ?? 0)
       );
       const translationsWithSlug: Record<string, GalleryTranslationModel> = {};
       for (const [lang, trans] of Object.entries(json.translations)) {
@@ -142,7 +141,7 @@ export class GalleryService {
 
   private async buildGalleryQuery(
     filters?: { status?: GalleryStatus; search?: string },
-    language = "en",
+    language = "en"
   ): Promise<Record<string, unknown>> {
     const query: Record<string, unknown> = { ...filters };
 
@@ -173,7 +172,7 @@ export class GalleryService {
 
   async countGalleries(
     filters?: { status?: GalleryStatus; search?: string },
-    language = "en",
+    language = "en"
   ): Promise<number> {
     try {
       const query = await this.buildGalleryQuery(filters, language);
@@ -189,7 +188,7 @@ export class GalleryService {
     take = 10,
     sort?: Record<string, 1 | -1>,
     filters?: { status?: GalleryStatus; search?: string },
-    language = "en",
+    language = "en"
   ): Promise<GalleryResponseModel[]> {
     try {
       const query = await this.buildGalleryQuery(filters, language);
@@ -216,7 +215,7 @@ export class GalleryService {
     take = 10,
     sort?: Record<string, 1 | -1>,
     filters?: { status?: GalleryStatus; search?: string },
-    language = "en",
+    language = "en"
   ): Promise<GalleryResponseModel[]> {
     const baseFilters = {
       ...filters,
@@ -244,12 +243,12 @@ export class GalleryService {
   }
   async findGalleryForWeb(
     slug: string,
-    language: string,
+    language: string
   ): Promise<GalleryResponseModel> {
     const entityId = await this.slugService.findEntityBySlug(
       slug,
       GALLERY_SLUG_NAMESPACE,
-      language,
+      language
     );
 
     if (!entityId) {
@@ -271,7 +270,7 @@ export class GalleryService {
 
   async uploadItemFile(
     galleryId: string,
-    file: Express.Multer.File,
+    file: Express.Multer.File
   ): Promise<{ assetId: string; filename: string; path: string; url: string }> {
     const dir = `galleries/${galleryId}`;
     await this.storageService.createEmptyDirectory(`/${dir}`);
@@ -282,12 +281,12 @@ export class GalleryService {
   async addItem(
     galleryId: string,
     item: GalleryItemDto,
-    user: JwtPayloadModel,
+    user: JwtPayloadModel
   ): Promise<GalleryResponseModel> {
     const gallery = await this.galleryModel.findByIdAndUpdate(
       galleryId,
       { $push: { items: item }, updatedBy: user.sub },
-      { new: true },
+      { new: true }
     );
 
     if (!gallery) {
@@ -300,17 +299,17 @@ export class GalleryService {
   async removeItem(
     galleryId: string,
     itemId: string,
-    user: JwtPayloadModel,
+    user: JwtPayloadModel
   ): Promise<GalleryResponseModel> {
     const gallery = await this.galleryModel.findByIdAndUpdate(
       galleryId,
       { $pull: { items: { _id: itemId } }, updatedBy: user.sub },
-      { new: true },
+      { new: true }
     );
 
     if (!gallery) {
       throw new NotFoundException(
-        `Gallery with ID ${galleryId} or item ${itemId} not found`,
+        `Gallery with ID ${galleryId} or item ${itemId} not found`
       );
     }
 
@@ -320,7 +319,7 @@ export class GalleryService {
   async sortItems(
     galleryId: string,
     itemIds: string[],
-    user: JwtPayloadModel,
+    user: JwtPayloadModel
   ): Promise<GalleryResponseModel> {
     const gallery = await this.galleryModel.findById(galleryId).exec();
     if (!gallery) {
@@ -333,7 +332,7 @@ export class GalleryService {
       gallery.items.map((item) => {
         const itemWithId = item as unknown as GalleryItemWithId;
         return [(itemWithId._id as Types.ObjectId).toString(), itemWithId];
-      }),
+      })
     );
 
     const reordered: GalleryItemWithId[] = [];
@@ -342,7 +341,7 @@ export class GalleryService {
       const item = itemsMap.get(id);
       if (!item) {
         throw new BadRequestException(
-          `Item with ID ${id} not found in gallery`,
+          `Item with ID ${id} not found in gallery`
         );
       }
       item.order = index;
@@ -359,5 +358,77 @@ export class GalleryService {
     await gallery.save();
 
     return this.findGalleryById(galleryId);
+  }
+
+  private buildItemsPipeline(
+    galleryId: string,
+    filter?: { search?: string }
+  ): PipelineStage[] {
+    const pid = new Types.ObjectId(galleryId);
+    const stages: PipelineStage[] = [
+      { $match: { _id: pid } },
+      { $unwind: "$items" },
+    ];
+
+    if (filter?.search?.trim()) {
+      const term = filter.search.trim();
+      stages.push({
+        $match: {
+          $or: [
+            { "items.caption": { $regex: term, $options: "i" } },
+            { "items.altOverride": { $regex: term, $options: "i" } },
+          ],
+        },
+      });
+    }
+
+    return stages;
+  }
+
+  async countGalleryItemsForWeb(
+    galleryId: string,
+    filter?: { search?: string }
+  ): Promise<number> {
+    const pipeline: PipelineStage[] = [
+      ...this.buildItemsPipeline(galleryId, filter),
+      { $count: "total" },
+    ];
+
+    const res = await this.galleryModel
+      .aggregate<{ total: number }>(pipeline)
+      .exec();
+    return res[0]?.total ?? 0;
+  }
+
+  async findGalleryItemsForWeb(
+    galleryId: string,
+    skip = 0,
+    take = 12,
+    sort?: Record<string, 1 | -1>,
+    filter?: { search?: string }
+  ): Promise<any[]> {
+    const sortStage: PipelineStage.Sort = {
+      $sort:
+        sort && Object.keys(sort).length
+          ? Object.fromEntries(
+              Object.entries(sort).map(([k, v]) => [`items.${k}`, v])
+            )
+          : { "items.order": 1, "items._id": 1 },
+    };
+
+    const pipeline: PipelineStage[] = [
+      ...this.buildItemsPipeline(galleryId, filter),
+      sortStage,
+      { $skip: Math.max(0, skip) },
+      { $limit: Math.max(1, take) },
+      { $replaceRoot: { newRoot: "$items" } },
+    ];
+
+    const docs = await this.galleryModel.aggregate<any>(pipeline).exec();
+
+    return docs.map((it: any) => ({
+      ...it,
+      id: it._id?.toString?.() ?? it.id,
+    }));
   }
 }

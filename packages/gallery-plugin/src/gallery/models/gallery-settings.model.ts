@@ -1,9 +1,27 @@
-export interface GallerySettingsModel {
-  layout?: 'grid' | 'masonry' | 'slider';
-  columns?: number | null;
-  gap?: number | null;
+export type GalleryLayout = "grid" | "masonry" | "slider";
+export type Breakpoint = "desktop" | "tablet" | "mobile";
+export type GalleryMode = "responsive" | "manual";
+
+export type BreakpointSettingsModel = {
+  columns: number;
+  gap: number;
+};
+
+export interface CommonGallerySettings {
+  layout: GalleryLayout;
   ratio?: string | null;
-  autoplay?: boolean | null;
-  loop?: boolean | null;
-  lightbox?: boolean | null;
 }
+
+export type ResponsiveGallerySettingsModel = {
+  desktop: BreakpointSettingsModel;
+  tablet: BreakpointSettingsModel;
+  mobile: BreakpointSettingsModel;
+};
+
+export type GallerySettingsModel = {
+  layout: GalleryLayout;
+  mode: GalleryMode;
+  responsive?: ResponsiveGallerySettingsModel;
+  manual?: BreakpointSettingsModel;
+  ratio: string;
+};

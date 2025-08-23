@@ -14,6 +14,7 @@ import type {
   GalleryTranslationModel,
   GallerySettingsModel,
 } from "@kitejs-cms/gallery-plugin";
+import { DEFAULT_SETTINGS } from "../constant/empty-gallery";
 
 type SettingsChangeHandler = (
   field: "status" | "publishAt" | "expireAt" | "tags",
@@ -25,12 +26,10 @@ export function GalleryDetailsPage() {
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [gridSettings, setGridSettings] = useState({
-    layout: "grid",
-    columns: "3",
-    gap: "0",
-    ratio: "16:9",
-  });
+
+  // stato locale per le gallery settings (oggetto completo)
+  const [settings, setSettings] = useState<GallerySettingsModel | undefined>();
+
   const {
     data,
     loading,
@@ -50,6 +49,7 @@ export function GalleryDetailsPage() {
     handleNavigation,
     closeUnsavedAlert,
     confirmDiscard,
+    // ⬇️ aggiornato nel hook: ora accetta l’oggetto completo
     onGallerySettingsChange,
   } = useGalleryDetails();
 
@@ -58,14 +58,7 @@ export function GalleryDetailsPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (data?.settings) {
-      setGridSettings({
-        layout: data.settings.layout || "grid",
-        columns: String(data.settings.columns ?? "0"),
-        gap: String(data.settings.gap ?? "0"),
-        ratio: data.settings.ratio || "16:9",
-      });
-    }
+    if (data?.settings) setSettings(data.settings);
   }, [data]);
 
   if (loading || !data) return <SkeletonPage />;
@@ -148,6 +141,7 @@ export function GalleryDetailsPage() {
         onClose={closeUnsavedAlert}
         onDiscard={confirmDiscard}
       />
+
       <GalleryEditorModal
         isOpen={editorOpen}
         onClose={() => setEditorOpen(false)}
@@ -155,13 +149,13 @@ export function GalleryDetailsPage() {
         onUpload={uploadItem}
         onSort={sortItems}
         onDelete={removeItem}
-        gridSettings={gridSettings}
-        onGridChange={(field, value) => {
-          setGridSettings((prev) => ({ ...prev, [field]: value }));
-          const parsed =
-            field === "columns" || field === "gap" ? Number(value) : value;
-          onGallerySettingsChange(field as keyof GallerySettingsModel, parsed);
+        // fallback a DEFAULT_SETTINGS se non ancora caricati
+        settings={settings ?? DEFAULT_SETTINGS}
+        onSettingsChange={(next) => {
+          setSettings(next); // aggiorna lo stato locale per il modal
+          onGallerySettingsChange(next); // delega al hook per persistere/flag changed
         }}
+        onSave={handleSave}
       />
     </div>
   );

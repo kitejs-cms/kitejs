@@ -1,3 +1,11 @@
+import type { JwtPayloadModel } from "@kitejs-cms/core";
+import { GalleryService } from "./services/gallery.service";
+import { GalleryResponseDto } from "./dto/gallery-response.dto";
+import { GalleryUpsertDto } from "./dto/gallery-upsert.dto";
+import { GalleryItemDto } from "./dto/gallery-item.dto";
+import { GallerySortDto } from "./dto/gallery-sort.dto";
+import { GalleryStatus } from "./models/gallery-status.enum";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
   Body,
   Controller,
@@ -31,14 +39,6 @@ import {
   createMetaModel,
   parseQuery,
 } from "@kitejs-cms/core";
-import type { JwtPayloadModel } from "@kitejs-cms/core";
-import { GalleryService } from "./services/gallery.service";
-import { GalleryResponseDto } from "./dto/gallery-response.dto";
-import { GalleryUpsertDto } from "./dto/gallery-upsert.dto";
-import { GalleryItemDto } from "./dto/gallery-item.dto";
-import { GallerySortDto } from "./dto/gallery-sort.dto";
-import { GalleryStatus } from "./models/gallery-status.enum";
-import { FileInterceptor } from "@nestjs/platform-express";
 
 @ApiTags("Gallery")
 @Controller("galleries")
@@ -52,7 +52,7 @@ export class GalleryController {
   @ApiResponse({ status: 201, description: "Gallery created" })
   async upsertGallery(
     @Body() dto: GalleryUpsertDto,
-    @GetAuthUser() user: JwtPayloadModel,
+    @GetAuthUser() user: JwtPayloadModel
   ) {
     const gallery = await this.galleryService.upsertGallery(dto, user);
     return new GalleryResponseDto(gallery);
@@ -83,24 +83,82 @@ export class GalleryController {
   })
   async getAllGalleriesForWeb(
     @Language() language: string,
-    @Query() query: Record<string, string>,
+    @Query() query: Record<string, string>
   ) {
     const { filter, sort, skip, take } = parseQuery(query);
     const typedFilter = filter as { status?: GalleryStatus; search?: string };
     const totalItems = await this.galleryService.countGalleries(
       typedFilter,
-      language,
+      language
     );
     const data = await this.galleryService.findGalleriesForWeb(
       skip,
       take,
       sort,
       typedFilter,
-      language,
+      language
     );
     return {
       meta: createMetaModel({ filter, sort, skip, take }, totalItems),
       data: data.map((item) => new GalleryResponseDto(item)),
+    };
+  }
+
+  @Get("web/:slug/items")
+  @ApiOperation({
+    summary: "Retrieve paginated items of a gallery (public web)",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "List of items",
+    type: [GalleryItemDto],
+  })
+  @ApiPagination()
+  @ApiSort(["position", "createdAt"])
+  @ApiQuery({
+    name: "search",
+    required: false,
+    type: String,
+    description: "Search in item titles/captions/alt/tags",
+  })
+  @ApiQuery({
+    name: "tags",
+    required: false,
+    type: String,
+    description: "Comma-separated tags filter",
+  })
+  async getGalleryItemsForWeb(
+    @Language() language: string,
+    @Param("slug") slug: string,
+    @Query() query: Record<string, string>
+  ) {
+    const gallery = await this.galleryService.findGalleryForWeb(slug, language);
+    if (!gallery) throw new NotFoundException("Gallery not found");
+
+    const { filter, sort, skip, take } = parseQuery(query);
+    const typedFilter = {
+      ...filter,
+      // es: normalizza tags=tag1,tag2 -> ["tag1","tag2"]
+      tags:
+        typeof filter.tags === "string" ? filter.tags.split(",") : undefined,
+    } as { search?: string; tags?: string[] };
+
+    const totalItems = await this.galleryService.countGalleryItemsForWeb(
+      gallery.id,
+      typedFilter
+    );
+
+    const items = await this.galleryService.findGalleryItemsForWeb(
+      gallery.id,
+      skip,
+      take,
+      sort, // es: { position: "asc" } o { createdAt: "desc" }
+      typedFilter // es: { search, tags }
+    );
+
+    return {
+      meta: createMetaModel({ filter, sort, skip, take }, totalItems),
+      data: items.map((i) => new GalleryItemDto(i)),
     };
   }
 
@@ -129,20 +187,20 @@ export class GalleryController {
   })
   async getAllGalleries(
     @Language() language: string,
-    @Query() query: Record<string, string>,
+    @Query() query: Record<string, string>
   ) {
     const { filter, sort, skip, take } = parseQuery(query);
     const typedFilter = filter as { status?: GalleryStatus; search?: string };
     const totalItems = await this.galleryService.countGalleries(
       typedFilter,
-      language,
+      language
     );
     const data = await this.galleryService.findGalleries(
       skip,
       take,
       sort,
       typedFilter,
-      language,
+      language
     );
     return {
       meta: createMetaModel({ filter, sort, skip, take }, totalItems),
@@ -155,7 +213,7 @@ export class GalleryController {
   @ApiResponse({ status: 200, description: "Gallery response" })
   async getGalleryForWeb(
     @Language() language: string,
-    @Param("slug") slug: string,
+    @Param("slug") slug: string
   ) {
     const gallery = await this.galleryService.findGalleryForWeb(slug, language);
     return new GalleryResponseDto(gallery);
@@ -187,7 +245,7 @@ export class GalleryController {
   @ApiOperation({ summary: "Upload item image" })
   async uploadItem(
     @Param("id", ValidateObjectIdPipe) id: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File
   ) {
     return this.galleryService.uploadItemFile(id, file);
   }
@@ -199,7 +257,7 @@ export class GalleryController {
   async addItem(
     @Param("id", ValidateObjectIdPipe) id: string,
     @Body() dto: GalleryItemDto,
-    @GetAuthUser() user: JwtPayloadModel,
+    @GetAuthUser() user: JwtPayloadModel
   ) {
     const gallery = await this.galleryService.addItem(id, dto, user);
     return new GalleryResponseDto(gallery);
@@ -212,7 +270,7 @@ export class GalleryController {
   async removeItem(
     @Param("id", ValidateObjectIdPipe) id: string,
     @Param("itemId", ValidateObjectIdPipe) itemId: string,
-    @GetAuthUser() user: JwtPayloadModel,
+    @GetAuthUser() user: JwtPayloadModel
   ) {
     const gallery = await this.galleryService.removeItem(id, itemId, user);
     return new GalleryResponseDto(gallery);
@@ -225,7 +283,7 @@ export class GalleryController {
   async sortItems(
     @Param("id", ValidateObjectIdPipe) id: string,
     @Body() dto: GallerySortDto,
-    @GetAuthUser() user: JwtPayloadModel,
+    @GetAuthUser() user: JwtPayloadModel
   ) {
     const gallery = await this.galleryService.sortItems(id, dto.itemIds, user);
     return new GalleryResponseDto(gallery);
