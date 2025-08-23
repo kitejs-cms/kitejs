@@ -3,6 +3,7 @@ export * from "./models/gallery-status.enum";
 export * from "./models/gallery-seo.model";
 export * from "./models/gallery-translation.model";
 export * from "./models/gallery-item.model";
+export * from "./models/gallery-settings.model";
 export * from "./models/gallery-upsert.model";
 export * from "./models/gallery-response.model";
 
@@ -12,6 +13,7 @@ export * from "./dto/gallery-seo.dto";
 export * from "./dto/gallery-upsert.dto";
 export * from "./dto/gallery-sort.dto";
 export * from "./dto/gallery-response.dto";
+export * from "./dto/gallery-settings.dto";
 
 /* Services */
 export * from "./services/gallery.service";

@@ -1,27 +1,39 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import type {
+  BreakpointSettingsModel,
+  ResponsiveGallerySettingsModel,
+} from "../models/gallery-settings.model";
 
 @Schema({ _id: false })
 export class GallerySettings {
   @Prop({ type: String, enum: ["grid", "masonry", "slider"], default: "grid" })
   layout: "grid" | "masonry" | "slider";
 
-  @Prop({ type: Number, default: null })
-  columns?: number;
+  @Prop({ type: String, enum: ["responsive", "manual"], default: "responsive" })
+  mode: "responsive" | "manual";
 
-  @Prop({ type: Number, default: null })
-  gap?: number;
+  @Prop({
+    type: {
+      desktop: { columns: { type: Number }, gap: { type: Number } },
+      tablet: { columns: { type: Number }, gap: { type: Number } },
+      mobile: { columns: { type: Number }, gap: { type: Number } },
+    },
+    _id: false,
+    required: false,
+    default: undefined,
+  })
+  responsive?: ResponsiveGallerySettingsModel;
 
-  @Prop({ type: String, default: null })
-  ratio?: string; // es. "16:9", "1:1"
+  @Prop({
+    type: { columns: { type: Number }, gap: { type: Number } },
+    _id: false,
+    required: false,
+    default: undefined,
+  })
+  manual?: BreakpointSettingsModel;
 
-  @Prop({ type: Boolean, default: false })
-  autoplay?: boolean;
-
-  @Prop({ type: Boolean, default: false })
-  loop?: boolean;
-
-  @Prop({ type: Boolean, default: true })
-  lightbox?: boolean;
+  @Prop({ type: String, default: "auto" })
+  ratio: string;
 }
 
 export const GallerySettingsSchema =

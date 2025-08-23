@@ -12,6 +12,7 @@ import {
 import { GalleryStatus } from "../models/gallery-status.enum";
 import { GalleryItemDto } from "./gallery-item.dto";
 import { GallerySeoDto } from "./gallery-seo.dto";
+import { GallerySettingsDto } from "./gallery-settings.dto";
 
 export class GalleryUpsertDto {
   @ApiPropertyOptional()
@@ -66,6 +67,12 @@ export class GalleryUpsertDto {
   @ValidateNested({ each: true })
   @Type(() => GalleryItemDto)
   items?: GalleryItemDto[];
+
+  @ApiPropertyOptional({ type: GallerySettingsDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => GallerySettingsDto)
+  settings?: GallerySettingsDto;
 
   @ApiPropertyOptional({ type: GallerySeoDto })
   @IsOptional()
