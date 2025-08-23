@@ -13,7 +13,7 @@ import type {
   GalleryItemModel,
   Breakpoint,
   BreakpointSettingsModel,
-} from "@kitejs-cms/gallery-plugin";
+} from "../../../../plugin-gallery-api/dist";
 import { SettingsPanel } from "./settings-panel";
 import { EditorToolbar, type PreviewMode } from "./editor-toolbar";
 import { GridPreview } from "./grid-preview";

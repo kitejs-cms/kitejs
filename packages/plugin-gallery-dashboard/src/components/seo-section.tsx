@@ -12,7 +12,7 @@ import {
 import type {
   GallerySeoModel,
   GalleryTranslationModel,
-} from "@kitejs-cms/gallery-plugin";
+} from "../../../plugin-gallery-api/dist";
 import { useTranslation } from "react-i18next";
 
 interface SeoSectionProps {
@@ -98,4 +98,3 @@ export function SeoSection({
     </Card>
   );
 }
-

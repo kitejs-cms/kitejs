@@ -1,7 +1,7 @@
 import { useState, type DragEvent as ReactDragEvent } from "react";
 import { Button } from "@kitejs-cms/dashboard-core";
 import { GripVertical, XIcon } from "lucide-react";
-import type { GalleryItemModel } from "@kitejs-cms/gallery-plugin";
+import type { GalleryItemModel } from "../../../../plugin-gallery-api/dist";
 import { useTranslation } from "react-i18next";
 
 type GridPreviewProps = {

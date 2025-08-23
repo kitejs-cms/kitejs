@@ -13,7 +13,7 @@ import {
   CardContent,
 } from "@kitejs-cms/dashboard-core";
 import { useTranslation } from "react-i18next";
-import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
+import type { GalleryTranslationModel } from "../../../plugin-gallery-api/dist";
 import type { FormErrors } from "../hooks/use-gallery-details";
 
 export interface ContentSectionProps {
@@ -175,4 +175,3 @@ export function ContentSection({
     </Card>
   );
 }
-

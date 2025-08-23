@@ -1,5 +1,5 @@
 {
-  "name": "@kitejs-cms/gallery-dashboard",
+  "name": "@kitejs-cms/plugin-gallery-dashboard",
   "version": "0.1.0-alpha.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,7 +42,7 @@
   "dependencies": {
     "@kitejs-cms/core": "workspace:*",
     "@kitejs-cms/dashboard-core": "workspace:*",
-    "@kitejs-cms/gallery-plugin": "workspace:*",
+    "@kitejs-cms/plugin-gallery-api": "workspace:*",
     "lucide-react": "^0.475.0"
   },
   "devDependencies": {

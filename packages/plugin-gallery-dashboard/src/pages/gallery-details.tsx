@@ -10,7 +10,7 @@ import { SettingsSection } from "../components/settings-section";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { GalleryEditorModal } from "../components/gallery-editor-modal/gallery-editor-modal";
 import { useGalleryDetails } from "../hooks/use-gallery-details";
-import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
+import type { GalleryTranslationModel } from "../../../plugin-gallery-api/dist";
 import { DEFAULT_SETTINGS } from "../constant/empty-gallery";
 
 type SettingsChangeHandler = (

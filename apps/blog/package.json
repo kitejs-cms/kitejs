@@ -10,7 +10,7 @@
   "main": "./dist/main.js",
   "dependencies": {
     "@kitejs-cms/core": "workspace:*",
-    "@kitejs-cms/gallery-plugin": "workspace:*",
+    "@kitejs-cms/plugin-gallery-api": "workspace:*",
     "@nestjs/common": "^11.0.10",
     "@nestjs/cache-manager": "^3.0.0",
     "@nestjs/config": "^4.0.0",

@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
 } from "@kitejs-cms/dashboard-core";
 import { useSettingsContext } from "@kitejs-cms/dashboard-core";
-import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
+import type { GalleryTranslationModel } from "../../../plugin-gallery-api/dist";
 import { Plus } from "lucide-react";
 
 interface LanguageTabsProps {
@@ -82,4 +82,3 @@ export function LanguageTabs({
     </Tabs>
   );
 }
-

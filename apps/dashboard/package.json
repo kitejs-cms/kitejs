@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@kitejs-cms/dashboard-core": "workspace:*",
-    "@kitejs-cms/gallery-dashboard": "workspace:*",
+    "@kitejs-cms/plugin-gallery-dashboard": "workspace:*",
     "@tailwindcss/vite": "^4.0.8",
     "install": "^0.13.0",
     "react": "^19.0.0",

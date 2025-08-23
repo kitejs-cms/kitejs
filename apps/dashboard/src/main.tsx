@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { DashboardProvider } from "@kitejs-cms/dashboard-core/dashboard-provider";
-import { GalleryModule } from "@kitejs-cms/gallery-dashboard";
+import { GalleryModule } from "@kitejs-cms/plugin-gallery-dashboard";
 
 /* CSS */
 import "./index.css";

@@ -11,7 +11,7 @@ import {
   type GalleryTranslationModel,
   type GalleryUpsertModel,
   type GallerySettingsModel,
-} from "@kitejs-cms/gallery-plugin";
+} from "../../../plugin-gallery-api/dist";
 import { EMPTY_GALLERY, DEFAULT_SETTINGS } from "../constant/empty-gallery";
 
 type GalleryDetails = GalleryResponseModel;

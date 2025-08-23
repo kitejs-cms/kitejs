@@ -9,7 +9,7 @@ import type {
   GalleryMode,
   Breakpoint,
   BreakpointSettingsModel,
-} from "@kitejs-cms/gallery-plugin";
+} from "../../../../plugin-gallery-api/dist";
 
 type SettingsPanelProps = {
   settings: GallerySettingsModel;

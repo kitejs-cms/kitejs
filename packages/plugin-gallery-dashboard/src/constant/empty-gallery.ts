@@ -1,7 +1,7 @@
 import type {
   GalleryStatus,
   GallerySettingsModel,
-} from "@kitejs-cms/gallery-plugin";
+} from "../../../plugin-gallery-api/dist";
 
 export const BREAKPOINTS = ["desktop", "tablet", "mobile"] as const;
 
