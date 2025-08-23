@@ -87,5 +87,58 @@
     "message": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata.",
     "messageWithNamePrefix": "Sei sicuro di voler eliminare ",
     "messageWithNameSuffix": "? Questa azione non può essere annullata."
+  },
+  "editor": {
+    "close": "Chiudi (Esc)",
+    "toolbar": {
+      "dragHere": "Trascina qui per caricare",
+      "or": "oppure",
+      "browse": "Scegli file",
+      "support": "supporta JPG/PNG/WEBP",
+      "openSettings": "Apri impostazioni",
+      "previewDesktop": "Anteprima Desktop",
+      "previewTablet": "Anteprima Tablet",
+      "previewMobile": "Anteprima Mobile"
+    },
+    "overlay": {
+      "dropToUpload": "Rilascia per caricare",
+      "formats": "JPG, PNG, WEBP — max 25MB"
+    },
+    "empty": {
+      "title": "Galleria vuota",
+      "description": "Trascina qui un’immagine oppure usa il pulsante in alto"
+    },
+    "settings": {
+      "title": "Impostazioni",
+      "subtitle": "Layout galleria",
+      "close": "Chiudi impostazioni",
+      "mode": "Modalità colonne/gap",
+      "responsive": "Responsive per Desktop/Tablet/Mobile",
+      "manual": "Manuale (valori unici)",
+      "breakpoint": {
+        "desktop": "Desktop",
+        "tablet": "Tablet",
+        "mobile": "Mobile"
+      },
+      "columns": "Colonne",
+      "gap": "Gap (px)",
+      "columnsManual": "Colonne (manuale)",
+      "gapManual": "Spazio (px) (manuale)",
+      "manualNote": "I valori manuali vengono usati per tutti i breakpoint quando la modalità è \u201cManuale\u201d."
+    },
+    "grid": {
+      "itemAria": "Elemento galleria. Trascina per riordinare.",
+      "itemTitle": "Trascina per riordinare. Trascina un file per caricare.",
+      "deleteAria": "Elimina immagine"
+    },
+    "previewLabel": {
+      "desktop": "Desktop \u00b7 ~1200px",
+      "tablet": "Tablet \u00b7 ~834px",
+      "mobile": "Mobile \u00b7 ~390px"
+    },
+    "slider": {
+      "title": "Anteprima Slider",
+      "description": "Placeholder di test (implementazione WIP)"
+    }
   }
 }
