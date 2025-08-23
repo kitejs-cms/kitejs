@@ -8,12 +8,9 @@ import { ContentSection } from "../components/content-section";
 import { SeoSection } from "../components/seo-section";
 import { SettingsSection } from "../components/settings-section";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
-import { GalleryEditorModal } from "../components/gallery-editor-modal";
+import { GalleryEditorModal } from "../components/gallery-editor-modal/gallery-editor-modal";
 import { useGalleryDetails } from "../hooks/use-gallery-details";
-import type {
-  GalleryTranslationModel,
-  GallerySettingsModel,
-} from "@kitejs-cms/gallery-plugin";
+import type { GalleryTranslationModel } from "@kitejs-cms/gallery-plugin";
 import { DEFAULT_SETTINGS } from "../constant/empty-gallery";
 
 type SettingsChangeHandler = (
@@ -26,9 +23,6 @@ export function GalleryDetailsPage() {
   const [searchParams] = useSearchParams();
   const [jsonView, setJsonView] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
-
-  // stato locale per le gallery settings (oggetto completo)
-  const [settings, setSettings] = useState<GallerySettingsModel | undefined>();
 
   const {
     data,
@@ -49,17 +43,12 @@ export function GalleryDetailsPage() {
     handleNavigation,
     closeUnsavedAlert,
     confirmDiscard,
-    // ⬇️ aggiornato nel hook: ora accetta l’oggetto completo
     onGallerySettingsChange,
   } = useGalleryDetails();
 
   useEffect(() => {
     if (searchParams.get("view") === "json") setJsonView(true);
   }, [searchParams]);
-
-  useEffect(() => {
-    if (data?.settings) setSettings(data.settings);
-  }, [data]);
 
   if (loading || !data) return <SkeletonPage />;
 
@@ -149,11 +138,9 @@ export function GalleryDetailsPage() {
         onUpload={uploadItem}
         onSort={sortItems}
         onDelete={removeItem}
-        // fallback a DEFAULT_SETTINGS se non ancora caricati
-        settings={settings ?? DEFAULT_SETTINGS}
+        settings={data.settings ?? DEFAULT_SETTINGS}
         onSettingsChange={(next) => {
-          setSettings(next); // aggiorna lo stato locale per il modal
-          onGallerySettingsChange(next); // delega al hook per persistere/flag changed
+          onGallerySettingsChange(next);
         }}
         onSave={handleSave}
       />
