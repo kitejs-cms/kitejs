@@ -313,17 +313,17 @@ importers:
         specifier: ^3.787.0
         version: 3.873.0
       '@blocknote/core':
-        specifier: ^0.33.0
-        version: 0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)
+        specifier: ^0.36.0
+        version: 0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)
       '@blocknote/mantine':
-        specifier: ^0.33.0
-        version: 0.33.0(@types/hast@3.0.4)(@types/react@19.0.8)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^0.36.0
+        version: 0.36.0(@types/hast@3.0.4)(@types/react@19.0.8)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@blocknote/react':
-        specifier: ^0.33.0
-        version: 0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^0.36.0
+        version: 0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@blocknote/xl-multi-column':
-        specifier: ^0.33.0
-        version: 0.33.0(@tiptap/pm@2.26.1)(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^0.36.0
+        version: 0.36.0(@tiptap/pm@2.26.1)(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@calumk/editorjs-columns':
         specifier: ^0.3.2
         version: 0.3.2
@@ -562,33 +562,6 @@ importers:
       '@kitejs-cms/core':
         specifier: workspace:*
         version: link:../core
-      '@nestjs/common':
-        specifier: ^11.0.10
-        version: 11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/config':
-        specifier: ^4.0.0
-        version: 4.0.2(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
-      '@nestjs/core':
-        specifier: ^11.0.10
-        version: 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/jwt':
-        specifier: ^11.0.0
-        version: 11.0.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))
-      '@nestjs/mapped-types':
-        specifier: '*'
-        version: 2.1.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
-      '@nestjs/mongoose':
-        specifier: ^11.0.1
-        version: 11.0.3(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(mongoose@8.18.0)(rxjs@7.8.2)
-      '@nestjs/passport':
-        specifier: ^11.0.5
-        version: 11.0.5(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(passport@0.7.0)
-      '@nestjs/platform-express':
-        specifier: ^11.0.10
-        version: 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)
-      '@nestjs/swagger':
-        specifier: ^11.0.4
-        version: 11.2.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -614,29 +587,50 @@ importers:
       '@kitejs-cms/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@nestjs/common':
+        specifier: ^11.0.0
+        version: 11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/config':
+        specifier: ^4.0.0
+        version: 4.0.2(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: ^11.0.0
+        version: 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/jwt':
+        specifier: ^11.0.0
+        version: 11.0.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))
+      '@nestjs/mapped-types':
+        specifier: '*'
+        version: 2.1.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
+      '@nestjs/mongoose':
+        specifier: ^11.0.0
+        version: 11.0.3(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(mongoose@8.18.0)(rxjs@7.8.2)
+      '@nestjs/passport':
+        specifier: ^11.0.0
+        version: 11.0.5(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(passport@0.7.0)
+      '@nestjs/platform-express':
+        specifier: ^11.0.0
+        version: 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)
+      '@nestjs/swagger':
+        specifier: ^11.0.0
+        version: 11.2.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
       typescript:
         specifier: ^5.7.3
         version: 5.7.3
 
   packages/plugin-gallery-dashboard:
     dependencies:
-      '@kitejs-cms/core':
-        specifier: workspace:*
-        version: link:../core
       '@kitejs-cms/dashboard-core':
         specifier: workspace:*
         version: link:../dashboard-core
-      '@kitejs-cms/plugin-gallery-api':
-        specifier: workspace:*
-        version: link:../plugin-gallery-api
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.1.1)
       react:
-        specifier: ^19.0.0
+        specifier: ^18.2.0 || ^19.0.0
         version: 19.1.1
       react-dom:
-        specifier: ^19.0.0
+        specifier: ^18.2.0 || ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-i18next:
         specifier: ^15.4.1
@@ -645,9 +639,15 @@ importers:
         specifier: ^7.2.0
         version: 7.8.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     devDependencies:
+      '@kitejs-cms/core':
+        specifier: workspace:*
+        version: link:../core
       '@kitejs-cms/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@kitejs-cms/plugin-gallery-api':
+        specifier: workspace:*
+        version: link:../plugin-gallery-api
       '@kitejs-cms/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -930,28 +930,28 @@ packages:
     resolution: {integrity: sha512-ruv7Ae4J5dUYULmeXw1gmb7rYRz57OWCPM57pHojnLq/3Z1CK2lNSLTCVjxVk1F/TZHwOZZrOWi0ur95BbLxNQ==}
     engines: {node: '>=6.9.0'}
 
-  '@blocknote/core@0.33.0':
-    resolution: {integrity: sha512-BngrC1zx6aQjjOtRII2XpgtWwDfAP9D/dsKEsWGzCYXcfbE3smssy8MzkQQqFBHf4klTxOgOYZosmb0GW10SZg==}
+  '@blocknote/core@0.36.0':
+    resolution: {integrity: sha512-Zb4gEjE0zvQyvHRI/i8qOSDOyH9M+hVS7GrhfJmA4TgooGOr8B4J3hILxsEVGQM6mQh6uGzkBWyBStd3WHRwdA==}
     peerDependencies:
       '@hocuspocus/provider': ^2.15.2
     peerDependenciesMeta:
       '@hocuspocus/provider':
         optional: true
 
-  '@blocknote/mantine@0.33.0':
-    resolution: {integrity: sha512-RN3B6kfG//53OIaOVT7DGgM1BduX3oU3co1qKgmIPy7NI8HoTMszHq73qRFwK/UqubLMnktCXxQaeeeZb12cxg==}
+  '@blocknote/mantine@0.36.0':
+    resolution: {integrity: sha512-uUwn1KMJR8rGfvoC6mAooTyWy+u/XsNKoxOlHb43g810jdaI/a3QX10etSMFOn9IRoZlh+Cu2KshHCfmBicdSw==}
     peerDependencies:
       react: ^18.0 || ^19.0 || >= 19.0.0-rc
       react-dom: ^18.0 || ^19.0 || >= 19.0.0-rc
 
-  '@blocknote/react@0.33.0':
-    resolution: {integrity: sha512-1MHtJ1D0Rorrb25anWYReraSqTZ1ZVc9jK4xlR1G5A0AimR+P9lCSw1tH9TncrNfsihOQAy4/nY4QWRn6tHzRg==}
+  '@blocknote/react@0.36.0':
+    resolution: {integrity: sha512-kB8XZh8AW65T8xhNN01OljJ7IfhYgFVgDfOr5g2x5jTf3K9jX1/8n2/9qlqUa6rKG7DoY3wiOw7r92t/ilzk+A==}
     peerDependencies:
       react: ^18.0 || ^19.0 || >= 19.0.0-rc
       react-dom: ^18.0 || ^19.0 || >= 19.0.0-rc
 
-  '@blocknote/xl-multi-column@0.33.0':
-    resolution: {integrity: sha512-i5mp04bGUT218Gbz13Y/6Qe6A+pnN/IevsleMLgpkBxfITbctXtsMBNiOsNZkvSo1MSW0kLtDadfc3BuQsIn3g==}
+  '@blocknote/xl-multi-column@0.36.0':
+    resolution: {integrity: sha512-XlwpuOXXFMIezZTPFjV6yuAJ93TKhM7eg5jLel4E/x3gCmK1ZVGa4vzNazAu6VQieRFtlX4lGr1/XRuKtFLOng==}
     peerDependencies:
       react: ^18.0 || ^19.0 || >= 19.0.0-rc
       react-dom: ^18.0 || ^19.0 || >= 19.0.0-rc
@@ -6519,7 +6519,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
 
-  '@blocknote/core@0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)':
+  '@blocknote/core@0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)':
     dependencies:
       '@emoji-mart/data': 1.2.1
       '@shikijs/types': 3.2.1
@@ -6568,10 +6568,10 @@ snapshots:
       - sugar-high
       - supports-color
 
-  '@blocknote/mantine@0.33.0(@types/hast@3.0.4)(@types/react@19.0.8)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@blocknote/mantine@0.36.0(@types/hast@3.0.4)(@types/react@19.0.8)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
-      '@blocknote/core': 0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)
-      '@blocknote/react': 0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@blocknote/core': 0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)
+      '@blocknote/react': 0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@mantine/core': 7.17.8(@mantine/hooks@7.17.8(react@19.1.1))(@types/react@19.0.8)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@mantine/hooks': 7.17.8(react@19.1.1)
       '@mantine/utils': 6.0.22(react@19.1.1)
@@ -6588,9 +6588,9 @@ snapshots:
       - sugar-high
       - supports-color
 
-  '@blocknote/react@0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@blocknote/react@0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
-      '@blocknote/core': 0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)
+      '@blocknote/core': 0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)
       '@emoji-mart/data': 1.2.1
       '@floating-ui/react': 0.26.28(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tiptap/core': 2.26.1(@tiptap/pm@2.26.1)
@@ -6610,10 +6610,10 @@ snapshots:
       - sugar-high
       - supports-color
 
-  '@blocknote/xl-multi-column@0.33.0(@tiptap/pm@2.26.1)(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@blocknote/xl-multi-column@0.36.0(@tiptap/pm@2.26.1)(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
-      '@blocknote/core': 0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)
-      '@blocknote/react': 0.33.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@blocknote/core': 0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)
+      '@blocknote/react': 0.36.0(@types/hast@3.0.4)(highlight.js@11.11.1)(lowlight@3.3.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tiptap/core': 2.26.1(@tiptap/pm@2.26.1)
       prosemirror-model: 1.25.3
       prosemirror-state: 1.4.3
