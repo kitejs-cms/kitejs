@@ -51,7 +51,7 @@ export class StorageService {
     });
     await newStorage.save();
 
-    return uploadResult;
+    return { ...uploadResult, assetId: newStorage._id.toString() };
   }
 
   /**

@@ -30,8 +30,10 @@ export class PermissionsService {
     try {
       // Define a regex pattern that expects a permission name of the form "namespace:resource.action"
       const permissionRegex =
-        /^(?<namespace>[a-zA-Z0-9]+):[a-zA-Z0-9]+\.[a-zA-Z0-9]+$/;
+        /^(?<namespace>[a-z0-9][a-z0-9-_]*):(?<resource>[a-z0-9][a-z0-9-_]*)\.(?<action>[a-z0-9][a-z0-9-_]*)$/i;
       const match = permissionData.name.match(permissionRegex);
+
+      console.log("Permission Data:", permissionData);
 
       if (!match) {
         throw new BadRequestException(

@@ -11,7 +11,7 @@ export interface IStorageProvider {
   uploadFile(
     file: Express.Multer.File,
     dir?: string
-  ): Promise<UploadResultModel>;
+  ): Promise<Omit<UploadResultModel, "assetId">>;
 
   /**
    * Removes a file given its full path.
