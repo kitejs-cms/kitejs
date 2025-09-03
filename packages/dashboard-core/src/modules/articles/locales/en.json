@@ -1,1 +1,49 @@
-{}
+{
+  "menu": {
+    "articles": "Articles",
+    "categories": "Categories"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "categories": "Categories"
+  },
+  "title": {
+    "managePages": "Manage Categories"
+  },
+  "search": {
+    "placeholder": "Search categories..."
+  },
+  "sections": {
+    "details": "Details",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Category Settings",
+    "description": "Configure settings for article categories.",
+    "article-filds": {
+      "title": "Custom Fields"
+    }
+  },
+  "fields": {
+    "slug": "Slug",
+    "languages": "Languages",
+    "title": "Title",
+    "description": "Description",
+    "tags": "Tags",
+    "createdAt": "Created at",
+    "createdBy": "Created by",
+    "updatedBy": "Updated by",
+    "isActive": "Published",
+    "actions": "Actions"
+  },
+  "buttons": {
+    "viewJson": "View JSON",
+    "cancel": "Cancel",
+    "save": "Save",
+    "add": "Add Category",
+    "copy": "Copy",
+    "download": "Download",
+    "edit": "Edit"
+  }
+}
+

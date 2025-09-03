@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   XIcon,
   PlusIcon,
@@ -68,21 +69,6 @@ const DEFAULT_OPERATORS_BY_TYPE: Record<FilterFieldType, FilterOperator[]> = {
   array: ["in", "nin", "exists"],
 };
 
-const OPERATOR_LABELS: Record<FilterOperator, string> = {
-  equals: "Uguale a",
-  ne: "Diverso da",
-  gt: "Maggiore di",
-  gte: "Maggiore o uguale",
-  lt: "Minore di",
-  lte: "Minore o uguale",
-  in: "Include",
-  nin: "Non include",
-  contains: "Contiene",
-  startswith: "Inizia con",
-  endswith: "Finisce con",
-  exists: "Esiste",
-  regex: "Espressione regolare",
-};
 
 export function FilterModal({
   isOpen,
@@ -101,6 +87,25 @@ export function FilterModal({
   const [viewDescription, setViewDescription] = useState("");
   const [selectedView, setSelectedView] = useState<string>("");
   const [viewToDelete, setViewToDelete] = useState<FilterView | null>(null);
+  const { t } = useTranslation("components");
+  const operatorLabels = useMemo<Record<FilterOperator, string>>(
+    () => ({
+      equals: t("filter-modal.operators.equals"),
+      ne: t("filter-modal.operators.notEquals"),
+      gt: t("filter-modal.operators.greaterThan"),
+      gte: t("filter-modal.operators.greaterOrEqual"),
+      lt: t("filter-modal.operators.lessThan"),
+      lte: t("filter-modal.operators.lessOrEqual"),
+      in: t("filter-modal.operators.in"),
+      nin: t("filter-modal.operators.notIn"),
+      contains: t("filter-modal.operators.contains"),
+      startswith: t("filter-modal.operators.startsWith"),
+      endswith: t("filter-modal.operators.endsWith"),
+      exists: t("filter-modal.operators.exists"),
+      regex: t("filter-modal.operators.regex"),
+    }),
+    [t]
+  );
 
   const addCondition = useCallback(() => {
     const newCondition: FilterCondition = {
@@ -443,7 +448,7 @@ export function FilterModal({
             <SaveIcon className="w-5 h-5" />
             <div>
               <DialogTitle className="text-gray-900">
-                Salva Nuova Vista
+                {t("filter-modal.saveNewView")}
               </DialogTitle>
             </div>
           </div>
@@ -462,7 +467,9 @@ export function FilterModal({
             </Button>
             <AlertTriangleIcon className="w-5 h-5 text-red-500" />
             <div>
-              <DialogTitle className="text-gray-900">Elimina Vista</DialogTitle>
+              <DialogTitle className="text-gray-900">
+                {t("filter-modal.deleteView")}
+              </DialogTitle>
             </div>
           </div>
         );
@@ -473,13 +480,11 @@ export function FilterModal({
             <FilterIcon />
             <div>
               <DialogTitle className="text-gray-900">
-                Filtri Avanzati
+                {t("filter-modal.advancedFilters")}
               </DialogTitle>
               {activeFiltersCount > 0 && (
                 <div className="text-sm text-gray-500">
-                  {activeFiltersCount} filtro
-                  {activeFiltersCount !== 1 ? "i" : ""} attivo
-                  {activeFiltersCount !== 1 ? "i" : ""}
+                  {t("filter-modal.activeFilters", { count: activeFiltersCount })}
                 </div>
               )}
             </div>
@@ -495,7 +500,9 @@ export function FilterModal({
           <ScrollArea className="flex-1 overflow-auto p-6">
             <div className="p-4 rounded-lg bg-blue-50 space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-gray-900">Salva Nuova Vista</h4>
+                <h4 className="font-medium text-gray-900">
+                  {t("filter-modal.saveNewView")}
+                </h4>
               </div>
               <div className="grid grid-cols-1 gap-3">
                 <div>
@@ -503,13 +510,13 @@ export function FilterModal({
                     htmlFor="view-name"
                     className="text-sm font-medium text-gray-700"
                   >
-                    Nome Vista *
+                    {t("filter-modal.viewName")}
                   </Label>
                   <Input
                     id="view-name"
                     value={viewName}
                     onChange={(e) => setViewName(e.target.value)}
-                    placeholder="Es. Clienti Attivi Q1..."
+                    placeholder={t("filter-modal.viewNamePlaceholder") || undefined}
                     className="bg-white"
                     autoFocus
                   />
@@ -519,13 +526,13 @@ export function FilterModal({
                     htmlFor="view-description"
                     className="text-sm font-medium text-gray-700"
                   >
-                    Descrizione
+                    {t("filter-modal.description")}
                   </Label>
                   <Input
                     id="view-description"
                     value={viewDescription}
                     onChange={(e) => setViewDescription(e.target.value)}
-                    placeholder="Descrizione opzionale della vista..."
+                    placeholder={t("filter-modal.viewDescriptionPlaceholder") || undefined}
                     className="bg-white"
                   />
                 </div>
@@ -541,17 +548,18 @@ export function FilterModal({
               <div className="flex items-center gap-3">
                 <AlertTriangleIcon className="w-5 h-5 text-red-600" />
                 <div>
-                  <h4 className="font-medium text-gray-900">Elimina Vista</h4>
+                  <h4 className="font-medium text-gray-900">
+                    {t("filter-modal.deleteView")}
+                  </h4>
                   <p className="text-sm text-gray-600">
-                    Questa azione non può essere annullata
+                    {t("filter-modal.cannotBeUndone")}
                   </p>
                 </div>
               </div>
 
               {viewToDelete && (
                 <p className="text-sm text-gray-700">
-                  Sei sicuro di voler eliminare la vista &quot;
-                  <strong>{viewToDelete.name}</strong>&quot;?
+                  {t("filter-modal.confirmDeleteView", { name: viewToDelete.name })}
                 </p>
               )}
             </div>
@@ -565,14 +573,16 @@ export function FilterModal({
               <>
                 <div className="p-4 border-b">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-medium text-gray-900">Viste Salvate</h3>
+                    <h3 className="font-medium text-gray-900">
+                      {t("filter-modal.savedViews")}
+                    </h3>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleReset}
                       disabled={conditions.length === 0}
                     >
-                      Reset
+                      {t("filter-modal.reset")}
                     </Button>
                   </div>
                   <div className="flex gap-2 flex-wrap">
@@ -614,9 +624,9 @@ export function FilterModal({
 
             <ScrollArea className="flex-1 overflow-auto p-6">
               <div className="space-y-4">
-                {conditions.map((condition, index) => (
+                {conditions.map((condition) => (
                   <div
-                    key={index}
+                    key={condition.id}
                     className="flex items-start gap-2 p-3 border rounded-lg bg-gray-50"
                   >
                     <div className="w-1/4">
@@ -632,7 +642,9 @@ export function FilterModal({
                         }
                       >
                         <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Campo..." />
+                          <SelectValue
+                            placeholder={t("filter-modal.fieldPlaceholder")}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {config.fields.map((field) => (
@@ -655,12 +667,14 @@ export function FilterModal({
                         }
                       >
                         <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Operatore..." />
+                          <SelectValue
+                            placeholder={t("filter-modal.operatorPlaceholder")}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {getAvailableOperators(condition.field).map((op) => (
                             <SelectItem key={op} value={op}>
-                              {OPERATOR_LABELS[op]}
+                              {operatorLabels[op]}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -686,7 +700,7 @@ export function FilterModal({
                   className="w-full flex items-center gap-2"
                 >
                   <PlusIcon className="w-4 h-4" />
-                  Aggiungi Filtro
+                  {t("filter-modal.addFilter")}
                 </Button>
               </div>
             </ScrollArea>
@@ -701,9 +715,9 @@ export function FilterModal({
         return (
           <div className="p-4 flex justify-end items-center gap-3">
             <Button variant="outline" onClick={handleClose}>
-              Annulla
+              {t("filter-modal.cancel")}
             </Button>
-            <Button onClick={handleSaveView}>Salva</Button>
+            <Button onClick={handleSaveView}>{t("filter-modal.save")}</Button>
           </div>
         );
 
@@ -711,9 +725,9 @@ export function FilterModal({
         return (
           <div className="p-4 flex justify-end items-center gap-3">
             <Button variant="outline" onClick={handleClose}>
-              Annulla
+              {t("filter-modal.cancel")}
             </Button>
-            <Button onClick={handleDeleteView}>Elimina</Button>
+            <Button onClick={handleDeleteView}>{t("filter-modal.delete")}</Button>
           </div>
         );
 
@@ -728,17 +742,17 @@ export function FilterModal({
                   className="flex items-center gap-2"
                 >
                   <SaveIcon className="w-4 h-4" />
-                  Salva Vista
+                  {t("filter-modal.saveView")}
                 </Button>
               )}
             </div>
 
             <div className="flex gap-3">
               <Button variant="outline" onClick={handleClose}>
-                Annulla
+                {t("filter-modal.cancel")}
               </Button>
               <Button onClick={handleApplyFilters}>
-                Applica Filtri
+                {t("filter-modal.applyFilters")}
                 {activeFiltersCount > 0 && (
                   <Badge variant="secondary" className="ml-2">
                     {activeFiltersCount}

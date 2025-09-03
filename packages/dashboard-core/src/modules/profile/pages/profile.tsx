@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Edit, Clipboard, Code } from "lucide-react";
+import { MoreVertical, Edit, Clipboard, Code, Key } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuthContext } from "../../../context/auth-context";
 import { Button } from "../../../components/ui/button";
@@ -21,11 +21,13 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 import { ProfileForm } from "../components/profile-form";
+import { ChangePasswordForm } from "../components/change-password-form";
 
 export function ProfilePage() {
   const { copyTable } = useClipboardTable();
   const [jsonView, setJsonView] = useState(false);
   const [profileForm, setProfileForm] = useState(false);
+  const [passwordForm, setPasswordForm] = useState(false);
   const { user } = useAuthContext();
   const { t } = useTranslation("profile");
 
@@ -57,6 +59,10 @@ export function ProfilePage() {
         isOpen={profileForm}
         onClose={() => setProfileForm(false)}
       />
+      <ChangePasswordForm
+        isOpen={passwordForm}
+        onClose={() => setPasswordForm(false)}
+      />
       <Card className="w-full shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
           <div className="flex items-center justify-between">
@@ -82,6 +88,10 @@ export function ProfilePage() {
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   {t("buttons.editProfile")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPasswordForm(true)}>
+                  <Key className="mr-2 h-4 w-4" />
+                  {t("buttons.changePassword")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setJsonView(true)}>
                   <Code className="mr-2 h-4 w-4" />

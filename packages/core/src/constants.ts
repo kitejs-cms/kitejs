@@ -70,7 +70,7 @@ const PageViews: FilterView[] = [
     ],
   },
   {
-    id: "drafts",
+    id: "archived",
     name: "Archived Pages",
     description: "Pages in archived status",
     conditions: [

@@ -37,3 +37,4 @@ yarn-error.log*
 *.pem
 .npmrc
 assets
+*.tsbuildinfo

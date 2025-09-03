@@ -2,7 +2,10 @@
   "buttons": {
     "copy": "Copia",
     "editProfile": "Modifica profilo",
-    "viewJson": "Visualizza JSON"
+    "viewJson": "Visualizza JSON",
+    "changePassword": "Cambia password",
+    "cancel": "Annulla",
+    "save": "Salva"
   },
   "fields": {
     "firstName": "Nome",
@@ -12,6 +15,34 @@
     "roles": "Ruoli",
     "createdAt": "Data di creazione",
     "updatedAt": "Ultimo aggiornamento"
+  },
+  "password": {
+    "title": "Cambio password",
+    "fields": {
+      "oldPassword": "Password attuale",
+      "newPassword": "Nuova password",
+      "confirmPassword": "Conferma password"
+    },
+    "placeholders": {
+      "oldPassword": "Password attuale",
+      "newPassword": "Nuova password",
+      "confirmPassword": "Ripeti nuova password"
+    }
+  },
+  "validation": {
+    "required": "Campo obbligatorio.",
+    "passwordMismatch": "Le password non coincidono.",
+    "passwordMin": "La password deve contenere almeno 8 caratteri.",
+    "passwordWeak": "La password è troppo debole."
+  },
+  "errors": {
+    "oldPasswordIncorrect": "La password attuale non è corretta.",
+    "passwordSame": "La nuova password non può essere uguale alla precedente.",
+    "userNotFound": "Utente non trovato.",
+    "generic": "Si è verificato un errore. Riprova."
+  },
+  "success": {
+    "passwordChanged": "Password aggiornata con successo"
   },
   "empty": "-"
 }
