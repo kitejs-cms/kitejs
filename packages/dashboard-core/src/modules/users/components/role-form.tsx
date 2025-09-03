@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { RoleResponseModel } from "@kitejs-cms/core/index";
+import type { RoleResponseModel, PermissionResponseModel } from "@kitejs-cms/core/index";
 import {
   Dialog,
   DialogClose,
@@ -24,6 +25,7 @@ import {
   FormMessage,
 } from "../../../components/ui/form";
 import { Input } from "../../../components/ui/input";
+import { Checkbox } from "../../../components/ui/checkbox";
 import { useApi } from "../../../hooks/use-api";
 
 interface RoleFormProps {
@@ -36,10 +38,15 @@ interface RoleFormProps {
 export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
   const { t } = useTranslation("users");
   const { fetchData } = useApi<RoleResponseModel>();
+  const {
+    data: permissions,
+    fetchData: fetchPermissions,
+  } = useApi<PermissionResponseModel[]>();
 
   const schema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
     description: z.string().optional(),
+    permissions: z.array(z.string()).optional(),
   });
 
   const form = useForm({
@@ -47,8 +54,28 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
     defaultValues: {
       name: role?.name || "",
       description: role?.description || "",
+      permissions: [] as string[],
     },
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchPermissions("permissions");
+    }
+  }, [isOpen, fetchPermissions]);
+
+  useEffect(() => {
+    const defaultPermissions = role?.permissions
+      ? role.permissions
+          .map((name) => permissions?.find((p) => p.name === name)?.id)
+          .filter(Boolean)
+      : [];
+    form.reset({
+      name: role?.name || "",
+      description: role?.description || "",
+      permissions: defaultPermissions as string[],
+    });
+  }, [role, permissions, form]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     if (role) {
@@ -108,6 +135,39 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
                     </FormLabel>
                     <FormControl>
                       <Input {...field} placeholder={t("fields.description")} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="permissions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">
+                      {t("fields.permissions")}
+                    </FormLabel>
+                    <FormControl>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {permissions?.map((perm) => (
+                          <div key={perm.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={field.value?.includes(perm.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  field.onChange([...(field.value || []), perm.id]);
+                                } else {
+                                  field.onChange(
+                                    (field.value || []).filter((p: string) => p !== perm.id)
+                                  );
+                                }
+                              }}
+                            />
+                            <FormLabel className="text-xs">{perm.name}</FormLabel>
+                          </div>
+                        ))}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

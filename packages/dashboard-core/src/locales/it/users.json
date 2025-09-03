@@ -7,7 +7,8 @@
     "createdAt": "Data creazione",
     "actions": "Azioni",
     "name": "Nome",
-    "description": "Descrizione"
+    "description": "Descrizione",
+    "permissions": "Permessi"
   },
   "buttons": {
     "edit": "Modifica",
