@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserResponseModel } from "@kitejs-cms/core/index";
+import { UserResponseModel, RoleResponseModel } from "@kitejs-cms/core/index";
 import {
   Dialog,
   DialogClose,
@@ -24,8 +25,8 @@ import {
   FormMessage,
 } from "../../../components/ui/form";
 import { Input } from "../../../components/ui/input";
+import { Checkbox } from "../../../components/ui/checkbox";
 import { useApi } from "../../../hooks/use-api";
-import { useAuthContext } from "../../../context/auth-context";
 
 interface ProfileFormProps {
   user: UserResponseModel;
@@ -35,13 +36,14 @@ interface ProfileFormProps {
 
 export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
   const { t } = useTranslation("profile");
-  const { setUser } = useAuthContext();
   const { fetchData } = useApi();
+  const { data: rolesData, fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
 
   const schema = z.object({
     firstName: z.string().min(2, { message: t("validation.required") }),
     lastName: z.string().min(2, { message: t("validation.required") }),
     email: z.string().email({ message: t("validation.invalidEmail") }),
+    roles: z.array(z.string()).optional(),
   });
 
   const form = useForm({
@@ -50,11 +52,20 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       email: user?.email || "",
+      roles: user?.roles || [],
     },
   });
 
+  useEffect(() => {
+    fetchRoles("roles");
+  }, [fetchRoles]);
+
   const onSubmit = async (values: z.infer<typeof schema>) => {
-    //fetchData("")
+    if (user?.id) {
+      await fetchData(`users/${user.id}/roles`, "PATCH", {
+        roles: values.roles || [],
+      });
+    }
     onClose();
   };
 
@@ -132,6 +143,46 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
                         {...field}
                         placeholder={t("placeholders.email")}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="roles"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">
+                      {t("fields.roles")}
+                    </FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        {rolesData?.map((role) => (
+                          <div
+                            key={role.id}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              checked={field.value?.includes(role.name)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  field.onChange([...(field.value || []), role.name]);
+                                } else {
+                                  field.onChange(
+                                    (field.value || []).filter(
+                                      (r: string) => r !== role.name
+                                    )
+                                  );
+                                }
+                              }}
+                            />
+                            <FormLabel className="text-xs">
+                              {role.name}
+                            </FormLabel>
+                          </div>
+                        ))}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

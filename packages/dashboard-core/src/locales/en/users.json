@@ -5,14 +5,20 @@
     "lastName": "Last Name",
     "status": "Status",
     "createdAt": "Created At",
-    "actions": "Actions"
+    "actions": "Actions",
+    "name": "Name",
+    "description": "Description"
   },
   "buttons": {
     "edit": "Edit",
     "viewJson": "View JSON",
     "add": "Add User",
     "copy": "Copy to Clipboard",
-    "download": "Download"
+    "download": "Download",
+    "addRole": "Add Role",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "title": {
     "manageUsers": "Manage Users",
@@ -20,7 +26,8 @@
   },
   "breadcrumb": {
     "home": "Home",
-    "users": "Users"
+    "users": "Users",
+    "roles": "Roles"
   },
   "menu": {
     "users": "Users",
@@ -28,5 +35,8 @@
   },
   "search": {
     "placeholder": "Search users..."
+  },
+  "validation": {
+    "required": "This field is required."
   }
 }

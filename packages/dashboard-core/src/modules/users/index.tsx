@@ -1,7 +1,8 @@
 import { DashboardModule } from "../../models/module.model";
 
-import { UserPlus, Users, UsersIcon } from "lucide-react";
+import { UserPlus, Users, UsersIcon, Shield } from "lucide-react";
 import { UsersManagePage } from "./pages/users-manage";
+import { RolesManagePage } from "./pages/roles-manage";
 
 export const UsersModule: DashboardModule = {
   name: "users",
@@ -13,6 +14,12 @@ export const UsersModule: DashboardModule = {
       label: "users:menu.usersList",
       icon: <UsersIcon />,
     },
+    {
+      path: "users/roles",
+      element: <RolesManagePage />,
+      label: "users:title.manageRoles",
+      icon: <Shield />,
+    },
   ],
   menuItem: {
     title: "users:menu.users",
@@ -23,11 +30,11 @@ export const UsersModule: DashboardModule = {
         url: "/users",
         icon: UserPlus,
       },
-      //{
-      //  title: "users:title.manageRoles",
-      //  url: "/users/roles",
-      //  icon: Shield,
-      //},
+      {
+        title: "users:title.manageRoles",
+        url: "/users/roles",
+        icon: Shield,
+      },
     ],
   },
   //settings: {
