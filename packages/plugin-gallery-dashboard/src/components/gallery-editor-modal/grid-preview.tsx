@@ -123,7 +123,6 @@ export function GridPreview({
               className="w-full h-auto block transition-transform duration-300 group-hover:scale-[1.02]"
               draggable={false}
             />
-
             {onDelete && (
               <Button
                 size="icon"

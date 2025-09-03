@@ -55,7 +55,7 @@ export class LocalStorageProvider implements IStorageProvider {
   async uploadFile(
     file: Express.Multer.File,
     dir?: string
-  ): Promise<UploadResultModel> {
+  ): Promise<Omit<UploadResultModel, "assetId">> {
     if (!file) {
       throw new BadRequestException("Missing file");
     }
@@ -70,9 +70,11 @@ export class LocalStorageProvider implements IStorageProvider {
       CMS_SETTINGS_KEY
     );
 
-    const baseUrl = cms.apiUrl
+    let baseUrl = cms.apiUrl
       ? cms.apiUrl
       : `http://localhost:${process.env.PORT}`;
+
+    if (value.local.baseUrl) baseUrl = value.local.baseUrl;
 
     const baseUploadPath = value.local.uploadPath;
     const uploadDirectory = this.createDirectory(baseUploadPath);
@@ -94,8 +96,8 @@ export class LocalStorageProvider implements IStorageProvider {
 
     return {
       filename: fileName,
-      path: finalPath,
-      url: `${baseUrl}/public/${fileName}`,
+      path: dir ? `${dir}/${fileName}` : `${fileName}`,
+      url: dir ? `${baseUrl}/${dir}/${fileName}` : `${baseUrl}/${fileName}`,
     };
   }
 

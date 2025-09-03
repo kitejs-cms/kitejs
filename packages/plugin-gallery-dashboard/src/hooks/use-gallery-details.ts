@@ -1,6 +1,8 @@
+import { EMPTY_GALLERY, DEFAULT_SETTINGS } from "../constant/empty-gallery";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { UploadResultModel } from "@kitejs-cms/core";
 import {
   useApi,
   useBreadcrumb,
@@ -12,7 +14,6 @@ import {
   type GalleryUpsertModel,
   type GallerySettingsModel,
 } from "../../../plugin-gallery-api/dist";
-import { EMPTY_GALLERY, DEFAULT_SETTINGS } from "../constant/empty-gallery";
 
 type GalleryDetails = GalleryResponseModel;
 
@@ -63,7 +64,7 @@ export function useGalleryDetails() {
     [cmsSettings]
   );
 
-  const { loading, fetchData, uploadFile } = useApi<GalleryDetails>();
+  const { loading, fetchData, uploadFile } = useApi<UploadResultModel>();
 
   const [data, setData] = useState<GalleryDetails | null>(null);
   const [activeLang, setActiveLang] = useState(defaultLang);
@@ -271,31 +272,30 @@ export function useGalleryDetails() {
     navigate(navigateTo);
   };
 
-  const uploadItem = useCallback(
-    async (file: File) => {
-      if (!data?.id) return;
-      const form = new FormData();
-      form.append("file", file);
-      const { data: asset } = await uploadFile(
-        `galleries/${data.id}/items/upload`,
-        form
+  const uploadItem = async (file: File) => {
+    if (!data?.id) return;
+    const form = new FormData();
+    form.append("file", file);
+    form.append("dir", `galleries/${data.id}`);
+    const { data: asset } = await uploadFile(
+      `galleries/${data.id}/items/upload`,
+      form
+    );
+    if (asset) {
+      const { data: updated } = await fetchData(
+        `galleries/${data.id}/items`,
+        "POST",
+        { assetId: asset.assetId, linkUrl: asset.url }
       );
-      const assetId = (asset as { assetId?: string })?.assetId;
-      if (assetId) {
-        const { data: updated } = await fetchData(
-          `galleries/${data.id}/items`,
-          "POST",
-          { assetId }
+      if (updated) {
+        setData((prev) =>
+          prev
+            ? { ...prev, items: (updated as unknown as GalleryDetails).items }
+            : prev
         );
-        if (updated) {
-          setData((prev) =>
-            prev ? { ...prev, items: (updated as GalleryDetails).items } : prev
-          );
-        }
       }
-    },
-    [data, uploadFile, fetchData]
-  );
+    }
+  };
 
   const sortItems = useCallback(
     async (ids: string[]) => {
@@ -307,7 +307,9 @@ export function useGalleryDetails() {
       );
       if (updated) {
         setData((prev) =>
-          prev ? { ...prev, items: (updated as GalleryDetails).items } : prev
+          prev
+            ? { ...prev, items: (updated as unknown as GalleryDetails).items }
+            : prev
         );
       }
     },
@@ -323,7 +325,9 @@ export function useGalleryDetails() {
       );
       if (updated) {
         setData((prev) =>
-          prev ? { ...prev, items: (updated as GalleryDetails).items } : prev
+          prev
+            ? { ...prev, items: (updated as unknown as GalleryDetails).items }
+            : prev
         );
       }
     },

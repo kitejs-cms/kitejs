@@ -273,7 +273,6 @@ export class GalleryService {
     file: Express.Multer.File
   ): Promise<{ assetId: string; filename: string; path: string; url: string }> {
     const dir = `galleries/${galleryId}`;
-    await this.storageService.createEmptyDirectory(`/${dir}`);
     const result = await this.storageService.uploadFile(file, dir);
     return { assetId: result.path, ...result };
   }
