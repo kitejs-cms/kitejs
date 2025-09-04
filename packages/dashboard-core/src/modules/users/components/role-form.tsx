@@ -125,10 +125,10 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
         </DialogHeader>
 
         <Separator className="w-full" />
-
-        <ScrollArea className="flex-1 overflow-auto p-6 h-full">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1">
+            <ScrollArea className="flex-1 overflow-auto p-6">
+              <div className="flex flex-col h-full gap-5">
               <FormField
                 control={form.control}
                 name="name"
@@ -163,67 +163,69 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="permissions"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">
-                      {t("fields.permissions")}
-                    </FormLabel>
-                    <FormControl>
-                      <div className="space-y-4 max-h-64 overflow-y-auto">
-                        {Object.entries(groupedPermissions)
-                          .sort(([a], [b]) => a.localeCompare(b))
-                          .map(([resource, perms]) => (
-                            <div key={resource} className="space-y-1">
-                              <div className="text-xs font-semibold capitalize text-muted-foreground">
-                                {resource.replace(/[-_]/g, " ")}
+                <FormField
+                  control={form.control}
+                  name="permissions"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col flex-1">
+                      <FormLabel className="text-xs">
+                        {t("fields.permissions")}
+                      </FormLabel>
+                      <FormControl className="flex-1 overflow-y-auto">
+                        <div className="space-y-4 pr-4">
+                          {Object.entries(groupedPermissions)
+                            .sort(([a], [b]) => a.localeCompare(b))
+                            .map(([resource, perms]) => (
+                              <div key={resource} className="space-y-1">
+                                <div className="text-xs font-semibold capitalize text-muted-foreground">
+                                  {resource.replace(/[-_]/g, " ")}
+                                </div>
+                                <div className="space-y-1 pl-4">
+                                  {perms.map((perm) => (
+                                    <div key={perm.id} className="flex items-center space-x-2">
+                                      <Checkbox
+                                        checked={field.value?.includes(perm.id)}
+                                        disabled={isSystemRole}
+                                        onCheckedChange={(checked) => {
+                                          if (isSystemRole) return;
+                                          if (checked) {
+                                            field.onChange([...(field.value || []), perm.id]);
+                                          } else {
+                                            field.onChange(
+                                              (field.value || []).filter((p: string) => p !== perm.id)
+                                            );
+                                          }
+                                        }}
+                                      />
+                                      <FormLabel
+                                        className="text-xs"
+                                        title={perm.description}
+                                      >
+                                        {perm.action.charAt(0).toUpperCase() +
+                                          perm.action.slice(1)}
+                                      </FormLabel>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                              <div className="space-y-1 pl-4">
-                                {perms.map((perm) => (
-                                  <div key={perm.id} className="flex items-center space-x-2">
-                                    <Checkbox
-                                      checked={field.value?.includes(perm.id)}
-                                      disabled={isSystemRole}
-                                      onCheckedChange={(checked) => {
-                                        if (isSystemRole) return;
-                                        if (checked) {
-                                          field.onChange([...(field.value || []), perm.id]);
-                                        } else {
-                                          field.onChange(
-                                            (field.value || []).filter((p: string) => p !== perm.id)
-                                          );
-                                        }
-                                      }}
-                                    />
-                                    <FormLabel
-                                      className="text-xs"
-                                      title={perm.description}
-                                    >
-                                      {perm.action.charAt(0).toUpperCase() +
-                                        perm.action.slice(1)}
-                                    </FormLabel>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end gap-3 pt-2">
-                <Button variant="outline" onClick={onClose} type="button">
-                  {t("buttons.cancel")}
-                </Button>
-                <Button type="submit">{t("buttons.save")}</Button>
+                            ))}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </form>
-          </Form>
-        </ScrollArea>
+            </ScrollArea>
+            <Separator className="w-full" />
+            <div className="flex justify-end gap-3 p-4">
+              <Button variant="outline" onClick={onClose} type="button">
+                {t("buttons.cancel")}
+              </Button>
+              <Button type="submit">{t("buttons.save")}</Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
