@@ -150,9 +150,11 @@ export class PluginsLoaderService {
             roles.push(newRole);
           }
         } else if (!role.permissions.includes(dbPermission.name)) {
-          const updatedRole = await this.roleService.assignPermissions(role.id, [
-            dbPermission.id,
-          ]);
+          const updatedRole = await this.roleService.assignPermissions(
+            role.id,
+            [dbPermission.id],
+            true
+          );
           Object.assign(role, updatedRole);
         }
       }

@@ -26,7 +26,9 @@ export function RolesManagePage() {
   const { setBreadcrumb } = useBreadcrumb();
   const { data, loading, fetchData } = useApi<RoleResponseModel[]>();
   const [openForm, setOpenForm] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<RoleResponseModel | undefined>();
+  const [selectedRole, setSelectedRole] =
+    useState<RoleResponseModel | undefined>();
+  const BASE_ROLES = ["admin", "editor", "viewer"];
 
   useEffect(() => {
     setBreadcrumb([
@@ -64,15 +66,24 @@ export function RolesManagePage() {
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl">
           <div className="flex items-center justify-between">
             <CardTitle>{t("title.manageRoles")}</CardTitle>
-            <Button
-              onClick={() => {
-                setSelectedRole(undefined);
-                setOpenForm(true);
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {t("buttons.addRole")}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedRole(undefined);
+                    setOpenForm(true);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("buttons.addRole")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         <Separator />
@@ -86,34 +97,41 @@ export function RolesManagePage() {
               {
                 key: "id",
                 label: t("fields.actions"),
-                render: (_, row) => (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="shadow-none"
-                        size="icon"
-                      >
-                        <MoreVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setSelectedRole(row);
-                          setOpenForm(true);
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        {t("buttons.edit")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(row.id)}>
-                        <Trash className="mr-2 h-4 w-4" />
-                        {t("buttons.delete")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ),
+                render: (_, row) => {
+                  const isBase = BASE_ROLES.includes(row.name);
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="shadow-none"
+                          size="icon"
+                        >
+                          <MoreVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedRole(row);
+                            setOpenForm(true);
+                          }}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          {t("buttons.edit")}
+                        </DropdownMenuItem>
+                        {!isBase && (
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(row.id)}
+                          >
+                            <Trash className="mr-2 h-4 w-4" />
+                            {t("buttons.delete")}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                },
               },
             ]}
           />

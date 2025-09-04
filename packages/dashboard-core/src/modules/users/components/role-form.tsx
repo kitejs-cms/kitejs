@@ -58,6 +58,9 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
     },
   });
 
+  const BASE_ROLES = ["admin", "editor", "viewer"];
+  const isBaseRole = role ? BASE_ROLES.includes(role.name) : false;
+
   useEffect(() => {
     if (isOpen) {
       fetchPermissions("permissions");
@@ -79,7 +82,10 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     if (role) {
-      await fetchData(`roles/${role.id}`, "PATCH", values);
+      const payload = isBaseRole
+        ? { description: values.description }
+        : values;
+      await fetchData(`roles/${role.id}`, "PATCH", payload);
     } else {
       await fetchData("roles", "POST", values);
     }
@@ -119,7 +125,11 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
                       {t("fields.name")}
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder={t("fields.name")} />
+                      <Input
+                        {...field}
+                        placeholder={t("fields.name")}
+                        disabled={isBaseRole}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,7 +164,9 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
                           <div key={perm.id} className="flex items-center space-x-2">
                             <Checkbox
                               checked={field.value?.includes(perm.id)}
+                              disabled={isBaseRole}
                               onCheckedChange={(checked) => {
+                                if (isBaseRole) return;
                                 if (checked) {
                                   field.onChange([...(field.value || []), perm.id]);
                                 } else {
