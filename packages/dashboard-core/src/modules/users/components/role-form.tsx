@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,6 +42,22 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
     data: permissions,
     fetchData: fetchPermissions,
   } = useApi<PermissionResponseModel[]>();
+
+  const groupedPermissions = useMemo(() => {
+    if (!permissions) return {} as Record<string, (PermissionResponseModel & { action: string })[]>;
+
+    const groups: Record<string, (PermissionResponseModel & { action: string })[]> = {};
+    permissions.forEach((perm) => {
+      const [nsResource, action] = perm.name.split(".");
+      const resource = nsResource.split(":")[1] || nsResource;
+      if (!groups[resource]) groups[resource] = [];
+      groups[resource].push({ ...perm, action });
+    });
+    Object.values(groups).forEach((perms) =>
+      perms.sort((a, b) => a.action.localeCompare(b.action))
+    );
+    return groups;
+  }, [permissions]);
 
   const schema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
@@ -156,26 +172,43 @@ export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
                       {t("fields.permissions")}
                     </FormLabel>
                     <FormControl>
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {permissions?.map((perm) => (
-                          <div key={perm.id} className="flex items-center space-x-2">
-                            <Checkbox
-                              checked={field.value?.includes(perm.id)}
-                              disabled={isSystemRole}
-                              onCheckedChange={(checked) => {
-                                if (isSystemRole) return;
-                                if (checked) {
-                                  field.onChange([...(field.value || []), perm.id]);
-                                } else {
-                                  field.onChange(
-                                    (field.value || []).filter((p: string) => p !== perm.id)
-                                  );
-                                }
-                              }}
-                            />
-                            <FormLabel className="text-xs">{perm.name}</FormLabel>
-                          </div>
-                        ))}
+                      <div className="space-y-4 max-h-64 overflow-y-auto">
+                        {Object.entries(groupedPermissions)
+                          .sort(([a], [b]) => a.localeCompare(b))
+                          .map(([resource, perms]) => (
+                            <div key={resource} className="space-y-1">
+                              <div className="text-xs font-semibold capitalize text-muted-foreground">
+                                {resource.replace(/[-_]/g, " ")}
+                              </div>
+                              <div className="space-y-1 pl-4">
+                                {perms.map((perm) => (
+                                  <div key={perm.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      checked={field.value?.includes(perm.id)}
+                                      disabled={isSystemRole}
+                                      onCheckedChange={(checked) => {
+                                        if (isSystemRole) return;
+                                        if (checked) {
+                                          field.onChange([...(field.value || []), perm.id]);
+                                        } else {
+                                          field.onChange(
+                                            (field.value || []).filter((p: string) => p !== perm.id)
+                                          );
+                                        }
+                                      }}
+                                    />
+                                    <FormLabel
+                                      className="text-xs"
+                                      title={perm.description}
+                                    >
+                                      {perm.action.charAt(0).toUpperCase() +
+                                        perm.action.slice(1)}
+                                    </FormLabel>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     </FormControl>
                     <FormMessage />
