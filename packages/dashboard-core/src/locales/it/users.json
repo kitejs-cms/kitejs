@@ -5,14 +5,21 @@
     "lastName": "Cognome",
     "status": "Stato",
     "createdAt": "Data creazione",
-    "actions": "Azioni"
+    "actions": "Azioni",
+    "name": "Nome",
+    "description": "Descrizione",
+    "permissions": "Permessi"
   },
   "buttons": {
     "edit": "Modifica",
     "viewJson": "Visualizza JSON",
     "add": "Aggiungi Utente",
     "copy": "Copia negli Appunti",
-    "download": "Download"
+    "download": "Download",
+    "addRole": "Aggiungi Ruolo",
+    "delete": "Elimina",
+    "cancel": "Annulla",
+    "save": "Salva"
   },
   "title": {
     "manageUsers": "Gestione Utenti",
@@ -20,7 +27,8 @@
   },
   "breadcrumb": {
     "home": "Home",
-    "users": "Utenti"
+    "users": "Utenti",
+    "roles": "Ruoli"
   },
   "menu": {
     "users": "Utenti",
@@ -28,5 +36,8 @@
   },
   "search": {
     "placeholder": "Cerca utenti..."
+  },
+  "validation": {
+    "required": "Questo campo è obbligatorio."
   }
 }

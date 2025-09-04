@@ -3,4 +3,5 @@ export type RoleResponseModel = {
   name: string;
   description: string;
   permissions: string[];
+  source: "system" | "user";
 };

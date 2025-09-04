@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserResponseModel, RoleResponseModel } from "@kitejs-cms/core/index";
+import type { RoleResponseModel, PermissionResponseModel } from "@kitejs-cms/core/index";
 import {
   Dialog,
   DialogClose,
@@ -28,45 +28,66 @@ import { Input } from "../../../components/ui/input";
 import { Checkbox } from "../../../components/ui/checkbox";
 import { useApi } from "../../../hooks/use-api";
 
-interface ProfileFormProps {
-  user: UserResponseModel;
+interface RoleFormProps {
+  role?: RoleResponseModel;
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
-export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
-  const { t } = useTranslation("profile");
-  const { fetchData } = useApi();
-  const { data: rolesData, fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
+export function RoleForm({ role, isOpen, onClose, onSuccess }: RoleFormProps) {
+  const { t } = useTranslation("users");
+  const { fetchData } = useApi<RoleResponseModel>();
+  const {
+    data: permissions,
+    fetchData: fetchPermissions,
+  } = useApi<PermissionResponseModel[]>();
 
   const schema = z.object({
-    firstName: z.string().min(2, { message: t("validation.required") }),
-    lastName: z.string().min(2, { message: t("validation.required") }),
-    email: z.string().email({ message: t("validation.invalidEmail") }),
-    roles: z.array(z.string()).optional(),
+    name: z.string().min(1, { message: t("validation.required") }),
+    description: z.string().optional(),
+    permissions: z.array(z.string()).optional(),
   });
 
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      email: user?.email || "",
-      roles: user?.roles || [],
+      name: role?.name || "",
+      description: role?.description || "",
+      permissions: [] as string[],
     },
   });
 
+  const isSystemRole = role?.source === "system";
+
   useEffect(() => {
-    fetchRoles("roles");
-  }, [fetchRoles]);
+    if (isOpen) {
+      fetchPermissions("permissions");
+    }
+  }, [isOpen, fetchPermissions]);
+
+  useEffect(() => {
+    const defaultPermissions = role?.permissions
+      ? role.permissions
+          .map((name) => permissions?.find((p) => p.name === name)?.id)
+          .filter(Boolean)
+      : [];
+    form.reset({
+      name: role?.name || "",
+      description: role?.description || "",
+      permissions: defaultPermissions as string[],
+    });
+  }, [role, permissions, form]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
-    if (user?.id) {
-      await fetchData(`users/${user.id}/roles`, "PATCH", {
-        roles: values.roles || [],
-      });
+    if (role) {
+      const payload = isSystemRole ? { description: values.description } : values;
+      await fetchData(`roles/${role.id}`, "PATCH", payload);
+    } else {
+      await fetchData("roles", "POST", values);
     }
     onClose();
+    onSuccess();
   };
 
   return (
@@ -74,7 +95,7 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
       <DialogContent className="p-0 bg-white rounded-lg shadow-lg flex flex-col">
         <DialogHeader className="flex flex-row justify-between items-center p-4">
           <DialogTitle className="text-xl font-semibold text-gray-900">
-            {t("json-modal.title")}
+            {role ? t("buttons.edit") : t("buttons.addRole")}
           </DialogTitle>
           <DialogClose className="flex items-center gap-2 text-gray-500 hover:text-black transition cursor-pointer">
             <Badge
@@ -94,16 +115,17 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
-                name="firstName"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs">
-                      {t("fields.firstName")}
+                      {t("fields.name")}
                     </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder={t("placeholders.firstName")}
+                        placeholder={t("fields.name")}
+                        disabled={isSystemRole}
                       />
                     </FormControl>
                     <FormMessage />
@@ -112,17 +134,14 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
               />
               <FormField
                 control={form.control}
-                name="lastName"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs">
-                      {t("fields.lastName")}
+                      {t("fields.description")}
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder={t("placeholders.lastName")}
-                      />
+                      <Input {...field} placeholder={t("fields.description")} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -130,56 +149,31 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
               />
               <FormField
                 control={form.control}
-                name="email"
+                name="permissions"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs">
-                      {t("fields.email")}
+                      {t("fields.permissions")}
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        disabled
-                        type="email"
-                        {...field}
-                        placeholder={t("placeholders.email")}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="roles"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">
-                      {t("fields.roles")}
-                    </FormLabel>
-                    <FormControl>
-                      <div className="space-y-2">
-                        {rolesData?.map((role) => (
-                          <div
-                            key={role.id}
-                            className="flex items-center space-x-2"
-                          >
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {permissions?.map((perm) => (
+                          <div key={perm.id} className="flex items-center space-x-2">
                             <Checkbox
-                              checked={field.value?.includes(role.name)}
+                              checked={field.value?.includes(perm.id)}
+                              disabled={isSystemRole}
                               onCheckedChange={(checked) => {
+                                if (isSystemRole) return;
                                 if (checked) {
-                                  field.onChange([...(field.value || []), role.name]);
+                                  field.onChange([...(field.value || []), perm.id]);
                                 } else {
                                   field.onChange(
-                                    (field.value || []).filter(
-                                      (r: string) => r !== role.name
-                                    )
+                                    (field.value || []).filter((p: string) => p !== perm.id)
                                   );
                                 }
                               }}
                             />
-                            <FormLabel className="text-xs">
-                              {role.name}
-                            </FormLabel>
+                            <FormLabel className="text-xs">{perm.name}</FormLabel>
                           </div>
                         ))}
                       </div>
@@ -188,21 +182,17 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
                   </FormItem>
                 )}
               />
+              <div className="flex justify-end gap-3 pt-2">
+                <Button variant="outline" onClick={onClose} type="button">
+                  {t("buttons.cancel")}
+                </Button>
+                <Button type="submit">{t("buttons.save")}</Button>
+              </div>
             </form>
           </Form>
         </ScrollArea>
-
-        <Separator className="w-full" />
-
-        <div className="flex justify-end gap-3 p-4">
-          <Button variant="outline" onClick={onClose}>
-            {t("buttons.cancel")}
-          </Button>
-          <Button onClick={form.handleSubmit(onSubmit)}>
-            {t("buttons.save")}
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );
 }
+

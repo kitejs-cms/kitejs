@@ -93,12 +93,32 @@ export class RolesService {
     id: string,
     updateData: Partial<Role>
   ): Promise<RoleResponseModel | null> {
-    const role = await this.roleModel
-      .findByIdAndUpdate(id, updateData, { new: true })
-      .exec();
+    const existingRole = await this.roleModel.findById(id).exec();
 
-    if (!role) {
+    if (!existingRole) {
       throw new NotFoundException(`Role with ID "${id}" not found.`);
+    }
+
+    if (existingRole.source === 'system') {
+      if (
+        updateData &&
+        Object.keys(updateData).some((key) => key !== 'description')
+      ) {
+        throw new BadRequestException(
+          'System roles are readonly and only the description can be updated.'
+        );
+      }
+
+      existingRole.description = updateData.description ?? existingRole.description;
+      await existingRole.save();
+    } else {
+      const role = await this.roleModel
+        .findByIdAndUpdate(id, updateData, { new: true })
+        .exec();
+
+      if (!role) {
+        throw new NotFoundException(`Role with ID "${id}" not found.`);
+      }
     }
 
     await this.cache.del(CORE_NAMESPACE, this.CACHE_KEY);
@@ -110,10 +130,16 @@ export class RolesService {
    * Deletes a role and invalidates the list cache.
    */
   async deleteRole(id: string): Promise<void> {
-    const result = await this.roleModel.findByIdAndDelete(id).exec();
-    if (!result) {
+    const role = await this.roleModel.findById(id).exec();
+    if (!role) {
       throw new NotFoundException(`Role with ID "${id}" not found.`);
     }
+
+    if (role.source === 'system') {
+      throw new BadRequestException('System roles cannot be deleted.');
+    }
+
+    await this.roleModel.findByIdAndDelete(id).exec();
 
     // Invalidate the list cache
     await this.cache.del(CORE_NAMESPACE, this.CACHE_KEY);
@@ -124,9 +150,20 @@ export class RolesService {
    */
   async assignPermissions(
     roleId: string,
-    permissions: string[]
+    permissions: string[],
+    force = false
   ): Promise<RoleResponseModel | null> {
-    const role = await this.roleModel
+    const role = await this.roleModel.findById(roleId).exec();
+
+    if (!role) {
+      throw new NotFoundException(`Role with ID "${roleId}" not found.`);
+    }
+
+    if (role.source === 'system' && !force) {
+      throw new BadRequestException('System roles are readonly.');
+    }
+
+    await this.roleModel
       .findByIdAndUpdate(
         roleId,
         { $addToSet: { permissions: { $each: permissions } } },
@@ -134,10 +171,6 @@ export class RolesService {
       )
       .populate('permissions')
       .exec();
-
-    if (!role) {
-      throw new NotFoundException(`Role with ID "${roleId}" not found.`);
-    }
 
     // Invalidate the list cache
     await this.cache.del(CORE_NAMESPACE, this.CACHE_KEY);
@@ -150,9 +183,20 @@ export class RolesService {
    */
   async removePermissions(
     roleId: string,
-    permissions: string[]
+    permissions: string[],
+    force = false
   ): Promise<RoleResponseModel | null> {
-    const role = await this.roleModel
+    const role = await this.roleModel.findById(roleId).exec();
+
+    if (!role) {
+      throw new NotFoundException(`Role with ID "${roleId}" not found.`);
+    }
+
+    if (role.source === 'system' && !force) {
+      throw new BadRequestException('System roles are readonly.');
+    }
+
+    await this.roleModel
       .findByIdAndUpdate(
         roleId,
         { $pull: { permissions: { $in: permissions } } },
@@ -160,10 +204,6 @@ export class RolesService {
       )
       .populate('permissions')
       .exec();
-
-    if (!role) {
-      throw new NotFoundException(`Role with ID "${roleId}" not found.`);
-    }
 
     // Invalidate the list cache
     await this.cache.del(CORE_NAMESPACE, this.CACHE_KEY);

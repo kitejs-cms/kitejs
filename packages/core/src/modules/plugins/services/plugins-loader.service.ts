@@ -4,7 +4,11 @@ import { Model, Types } from "mongoose";
 import { PluginDocument, Plugin } from "../plugin.schema";
 import { IPlugin } from "../plugin.interface";
 import { PluginStatus } from "../models/plugin-response.model";
-import { PermissionsService, RolesService } from "../../users";
+import {
+  PermissionsService,
+  RolesService,
+  PermissionResponseModel,
+} from "../../users";
 import { SettingsService, SettingType } from "../../settings";
 
 @Injectable()
@@ -29,7 +33,6 @@ export class PluginsLoaderService {
    */
   async loadPlugins(plugins: IPlugin[]): Promise<Type<unknown>[]> {
     const pluginsModules: Type<unknown>[] = [];
-    const roles = await this.roleService.findRoles();
     for (const pluginInstance of plugins) {
       try {
         let plugin = await this.pluginModel.findOne({
@@ -57,7 +60,9 @@ export class PluginsLoaderService {
           continue;
         }
 
-        if (plugin.status === PluginStatus.PENDING) {
+        const isPending = plugin.status === PluginStatus.PENDING;
+
+        if (isPending) {
           // Initialize the plugin
           await pluginInstance.initialize();
 
@@ -75,34 +80,13 @@ export class PluginsLoaderService {
               });
             }
           }
+        }
 
-          // Create default permissions and assign them to roles
-          if (pluginInstance.permissions) {
-            for (const permission of pluginInstance.permissions) {
-              const dbPermission =
-                await this.permissionService.createPermission({
-                  namespace: pluginInstance.namespace,
-                  name: permission.name,
-                  description: permission.description,
-                });
+        if (pluginInstance.permissions) {
+          await this.syncPermissionsAndRoles(pluginInstance);
+        }
 
-              // Assign permission to each role listed in the permission
-              for (const roleName of permission.role) {
-                const role = roles.find((item) => item.name === roleName);
-                if (role) {
-                  await this.roleService.assignPermissions(role.id, [
-                    dbPermission.id,
-                  ]);
-                } else {
-                  await this.roleService.createRole({
-                    name: roleName,
-                    permissions: [new Types.ObjectId(dbPermission.id)],
-                  });
-                }
-              }
-            }
-          }
-
+        if (isPending) {
           // Update plugin status to INSTALLED
           await this.pluginModel.updateOne(
             { namespace: pluginInstance.namespace },
@@ -130,5 +114,61 @@ export class PluginsLoaderService {
     }
 
     return pluginsModules;
+  }
+
+  private async syncPermissionsAndRoles(pluginInstance: IPlugin) {
+    const existingPermissions = await this.permissionService.findPermissions(
+      pluginInstance.namespace
+    );
+    let roles = await this.roleService.findRoles();
+
+    for (const permission of pluginInstance.permissions ?? []) {
+      let dbPermission = existingPermissions.find(
+        (p) => p.name === permission.name
+      ) as PermissionResponseModel | undefined;
+
+      if (!dbPermission) {
+        dbPermission = await this.permissionService.createPermission({
+          namespace: pluginInstance.namespace,
+          name: permission.name,
+          description: permission.description,
+        });
+
+        existingPermissions.push(dbPermission);
+      }
+
+      for (const roleName of permission.role) {
+        let role = roles.find((r) => r.name === roleName);
+
+        if (!role) {
+          const newRole = await this.roleService.createRole({
+            name: roleName,
+            permissions: [new Types.ObjectId(dbPermission.id)],
+            source: 'system',
+          });
+
+          if (newRole) {
+            roles.push(newRole);
+            role = newRole;
+          }
+        } else {
+          if (role.source !== 'system') {
+            const updated = await this.roleService.updateRole(role.id, {
+              source: 'system',
+            });
+            if (updated) Object.assign(role, updated);
+          }
+
+          if (!role.permissions.includes(dbPermission.name)) {
+            const updatedRole = await this.roleService.assignPermissions(
+              role.id,
+              [dbPermission.id],
+              true
+            );
+            Object.assign(role, updatedRole);
+          }
+        }
+      }
+    }
   }
 }

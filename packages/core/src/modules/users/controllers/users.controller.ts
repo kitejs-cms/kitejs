@@ -152,6 +152,30 @@ export class UsersController {
     }
   }
 
+  @Patch(":id/roles")
+  @ApiOperation({ summary: "Assign roles to a user" })
+  @ApiResponse({
+    status: 200,
+    description: "The user roles have been updated",
+    type: UserResponseDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async assignRoles(
+    @Param("id") id: string,
+    @Body("roles") roles: string[]
+  ) {
+    try {
+      const updatedUser = await this.userService.assignRoles(id, roles);
+      if (!updatedUser) {
+        throw new NotFoundException(`User with ID "${id}" not found.`);
+      }
+      return new UserResponseDto(updatedUser);
+    } catch (error) {
+      throw new BadRequestException("Failed to update user roles.");
+    }
+  }
+
   @Delete(":id")
   @ApiOperation({ summary: "Delete a user" })
   @ApiResponse({ status: 200, description: "The user has been deleted" })

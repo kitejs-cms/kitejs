@@ -19,6 +19,9 @@ export class Role extends Document {
     default: [],
   })
   permissions: Types.ObjectId[];
+
+  @Prop({ type: String, enum: ["system", "user"], default: "user" })
+  source: "system" | "user";
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);
