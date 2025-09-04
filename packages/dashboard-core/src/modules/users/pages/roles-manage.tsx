@@ -16,18 +16,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
-import { MoreVertical, Edit, Trash, Plus } from "lucide-react";
+import { MoreVertical, Edit, Trash, Plus, Code } from "lucide-react";
 import { RoleForm } from "../components/role-form";
 import { useApi } from "../../../hooks/use-api";
 import type { RoleResponseModel } from "@kitejs-cms/core/index";
+import { JsonModal } from "../../../components/json-modal";
 
 export function RolesManagePage() {
   const { t } = useTranslation("users");
   const { setBreadcrumb } = useBreadcrumb();
   const { data, loading, fetchData } = useApi<RoleResponseModel[]>();
   const [openForm, setOpenForm] = useState(false);
-  const [selectedRole, setSelectedRole] =
-    useState<RoleResponseModel | undefined>();
+  const [selectedRole, setSelectedRole] = useState<
+    RoleResponseModel | undefined
+  >();
+  const [jsonRole, setJsonRole] = useState<RoleResponseModel | null>(null);
 
   useEffect(() => {
     setBreadcrumb([
@@ -52,6 +55,11 @@ export function RolesManagePage() {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
+      <JsonModal
+        data={jsonRole || {}}
+        isOpen={!!jsonRole}
+        onClose={() => setJsonRole(null)}
+      />
       <RoleForm
         role={selectedRole}
         isOpen={openForm}
@@ -91,8 +99,15 @@ export function RolesManagePage() {
             data={data}
             isLoading={loading}
             columns={[
-              { key: "name", label: t("fields.name") },
+              {
+                key: "name",
+                render: (_, row) => (
+                  <text className="capitalize">{row.name}</text>
+                ),
+                label: t("fields.name"),
+              },
               { key: "description", label: t("fields.description") },
+              { key: "usersCount", label: t("fields.usersCount") },
               {
                 key: "id",
                 label: t("fields.actions"),
@@ -119,6 +134,10 @@ export function RolesManagePage() {
                           <Edit className="mr-2 h-4 w-4" />
                           {t("buttons.edit")}
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setJsonRole(row)}>
+                          <Code className="mr-2 h-4 w-4" />
+                          {t("buttons.viewJson")}
+                        </DropdownMenuItem>
                         {!isBase && (
                           <DropdownMenuItem
                             onClick={() => handleDelete(row.id)}
@@ -139,4 +158,3 @@ export function RolesManagePage() {
     </div>
   );
 }
-

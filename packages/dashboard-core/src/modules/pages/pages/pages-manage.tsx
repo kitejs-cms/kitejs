@@ -9,6 +9,7 @@ import { useClipboardTable } from "../../../hooks/use-clipboard-table";
 import { Separator } from "../../../components/ui/separator";
 import { DataTable } from "../../../components/data-table";
 import { useApi } from "../../../hooks/use-api";
+import { useHasPermission } from "../../../hooks/use-has-permission";
 import {
   ArticleSettingsModel,
   type FilterCondition,
@@ -76,6 +77,12 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
 
   const { data, loading, fetchData, pagination } =
     useApi<PageResponseDetailsModel[]>();
+  const hasPermission = useHasPermission();
+  const permissionPrefix =
+    pageType === "Page" ? "core:pages" : "core:articles";
+  const canCreate = hasPermission(`${permissionPrefix}.create`);
+  const canUpdate = hasPermission(`${permissionPrefix}.update`);
+  const canDelete = hasPermission(`${permissionPrefix}.delete`);
 
   useEffect(() => {
     setSearchInput(searchQuery);
@@ -409,20 +416,22 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() =>
-                      navigate(
-                        `/${pageType === "Page" ? "pages" : "articles"}/create`
-                      )
-                    }
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t(
-                      pageType === "Page"
-                        ? "buttons.addPage"
-                        : "buttons.addPost"
-                    )}
-                  </DropdownMenuItem>
+                  {canCreate && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        navigate(
+                          `/${pageType === "Page" ? "pages" : "articles"}/create`
+                        )
+                      }
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t(
+                        pageType === "Page"
+                          ? "buttons.addPage"
+                          : "buttons.addPost"
+                      )}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleCopy}>
                     <Clipboard className="mr-2 h-4 w-4" />
                     {t("buttons.copy")}
@@ -489,63 +498,78 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
               {
                 key: "id",
                 label: t("fields.actions"),
-                render: (_, row) => (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="shadow-none"
-                      >
-                        <MoreVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(
-                            `/${pageType === "Page" ? "pages" : "articles"}/${row.id}?view=editor`
-                          );
-                        }}
-                      >
-                        <LayoutTemplate className="mr-2 h-4 w-4" />
-                        {t("buttons.editVisual")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(
-                            `/${pageType === "Page" ? "pages" : "articles"}/${row.id}`
-                          );
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        {t("buttons.edit")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedForDelete(row);
-                        }}
-                      >
-                        <Trash className="mr-2 h-4 w-4" />
-                        {t("buttons.delete")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(
-                            `/${pageType === "Page" ? "pages" : "articles"}/${row.id}?view=json`
-                          );
-                        }}
-                      >
-                        <Code className="mr-2 h-4 w-4" />
-                        {t("buttons.viewJson")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ),
+                render: (_, row) => {
+                  if (!canUpdate && !canDelete) return null;
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shadow-none"
+                        >
+                          <MoreVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {canUpdate && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(
+                                `/${
+                                  pageType === "Page" ? "pages" : "articles"
+                                }/${row.id}?view=editor`
+                              );
+                            }}
+                          >
+                            <LayoutTemplate className="mr-2 h-4 w-4" />
+                            {t("buttons.editVisual")}
+                          </DropdownMenuItem>
+                        )}
+                        {canUpdate && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(
+                                `/${
+                                  pageType === "Page" ? "pages" : "articles"
+                                }/${row.id}`
+                              );
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            {t("buttons.edit")}
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedForDelete(row);
+                            }}
+                          >
+                            <Trash className="mr-2 h-4 w-4" />
+                            {t("buttons.delete")}
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(
+                              `/${
+                                pageType === "Page" ? "pages" : "articles"
+                              }/${row.id}?view=json`
+                            );
+                          }}
+                        >
+                          <Code className="mr-2 h-4 w-4" />
+                          {t("buttons.viewJson")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                },
               },
             ]}
             pagination={{

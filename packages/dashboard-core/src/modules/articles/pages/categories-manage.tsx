@@ -9,6 +9,7 @@ import { useClipboardTable } from "../../../hooks/use-clipboard-table";
 import { Separator } from "../../../components/ui/separator";
 import { DataTable } from "../../../components/data-table";
 import { useApi } from "../../../hooks/use-api";
+import { useHasPermission } from "../../../hooks/use-has-permission";
 import type { CategoryResponseDetailsModel } from "@kitejs-cms/core/index";
 import {
   Card,
@@ -47,6 +48,9 @@ export function CategoriesManagePage() {
 
   const { data, loading, fetchData, pagination } =
     useApi<CategoryResponseDetailsModel[]>();
+  const hasPermission = useHasPermission();
+  const canCreate = hasPermission("core:articles.create");
+  const canUpdate = hasPermission("core:articles.update");
 
   useEffect(() => {
     setBreadcrumb([
@@ -155,12 +159,14 @@ export function CategoriesManagePage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => navigate("/categories/create")}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t("buttons.add")}
-                  </DropdownMenuItem>
+                  {canCreate && (
+                    <DropdownMenuItem
+                      onClick={() => navigate("/categories/create")}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t("buttons.add")}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleCopy}>
                     <Clipboard className="mr-2 h-4 w-4" />
                     {t("buttons.copy")}
@@ -209,39 +215,44 @@ export function CategoriesManagePage() {
               {
                 key: "id",
                 label: t("fields.actions"),
-                render: (_, row) => (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="shadow-none"
-                      >
-                        <MoreVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/categories/${row.id}`);
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        {t("buttons.edit")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/categories/${row.id}?view=json`);
-                        }}
-                      >
-                        <Code className="mr-2 h-4 w-4" />
-                        {t("buttons.viewJson")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ),
+                render: (_, row) => {
+                  if (!canUpdate) return null;
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shadow-none"
+                        >
+                          <MoreVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {canUpdate && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/categories/${row.id}`);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            {t("buttons.edit")}
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/categories/${row.id}?view=json`);
+                          }}
+                        >
+                          <Code className="mr-2 h-4 w-4" />
+                          {t("buttons.viewJson")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                },
               },
             ]}
             pagination={{

@@ -47,11 +47,14 @@ export * from "./hooks/use-mobile";
 export * from "./hooks/use-clipboard-table";
 export * from "./context/breadcrumb-context";
 export * from "./hooks/use-debounce";
+export * from "./hooks/use-has-permission";
+export * from "./components/protected-route";
 
 /* Context */
 export * from "./context/auth-context";
 export * from "./context/settings-context";
 export * from "./context/theme-context";
+export * from "./context/loading-context";
 
 /* Utils */
 export * from "./lib/generate-id";
