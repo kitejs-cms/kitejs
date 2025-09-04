@@ -2,7 +2,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Role } from '../schemas/role.schema';
 import { CacheService } from '../../cache';
-import { CORE_NAMESPACE, CoreRoles } from '../../../constants';
+import { CORE_NAMESPACE } from '../../../constants';
 import { Permission } from '../schemas/permission.schema';
 import { RoleResponseModel } from '../models/role-response.model';
 import {
@@ -99,13 +99,13 @@ export class RolesService {
       throw new NotFoundException(`Role with ID "${id}" not found.`);
     }
 
-    if (CoreRoles.includes(existingRole.name)) {
+    if (existingRole.source === 'system') {
       if (
         updateData &&
         Object.keys(updateData).some((key) => key !== 'description')
       ) {
         throw new BadRequestException(
-          'Base roles are readonly and only the description can be updated.'
+          'System roles are readonly and only the description can be updated.'
         );
       }
 
@@ -135,8 +135,8 @@ export class RolesService {
       throw new NotFoundException(`Role with ID "${id}" not found.`);
     }
 
-    if (CoreRoles.includes(role.name)) {
-      throw new BadRequestException('Base roles cannot be deleted.');
+    if (role.source === 'system') {
+      throw new BadRequestException('System roles cannot be deleted.');
     }
 
     await this.roleModel.findByIdAndDelete(id).exec();
@@ -159,8 +159,8 @@ export class RolesService {
       throw new NotFoundException(`Role with ID "${roleId}" not found.`);
     }
 
-    if (CoreRoles.includes(role.name) && !force) {
-      throw new BadRequestException('Base roles are readonly.');
+    if (role.source === 'system' && !force) {
+      throw new BadRequestException('System roles are readonly.');
     }
 
     await this.roleModel
@@ -192,8 +192,8 @@ export class RolesService {
       throw new NotFoundException(`Role with ID "${roleId}" not found.`);
     }
 
-    if (CoreRoles.includes(role.name) && !force) {
-      throw new BadRequestException('Base roles are readonly.');
+    if (role.source === 'system' && !force) {
+      throw new BadRequestException('System roles are readonly.');
     }
 
     await this.roleModel

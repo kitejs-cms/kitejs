@@ -28,7 +28,6 @@ export function RolesManagePage() {
   const [openForm, setOpenForm] = useState(false);
   const [selectedRole, setSelectedRole] =
     useState<RoleResponseModel | undefined>();
-  const BASE_ROLES = ["admin", "editor", "viewer"];
 
   useEffect(() => {
     setBreadcrumb([
@@ -98,7 +97,7 @@ export function RolesManagePage() {
                 key: "id",
                 label: t("fields.actions"),
                 render: (_, row) => {
-                  const isBase = BASE_ROLES.includes(row.name);
+                  const isBase = row.source === "system";
                   return (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

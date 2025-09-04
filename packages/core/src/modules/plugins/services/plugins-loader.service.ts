@@ -144,18 +144,29 @@ export class PluginsLoaderService {
           const newRole = await this.roleService.createRole({
             name: roleName,
             permissions: [new Types.ObjectId(dbPermission.id)],
+            source: 'system',
           });
 
           if (newRole) {
             roles.push(newRole);
+            role = newRole;
           }
-        } else if (!role.permissions.includes(dbPermission.name)) {
-          const updatedRole = await this.roleService.assignPermissions(
-            role.id,
-            [dbPermission.id],
-            true
-          );
-          Object.assign(role, updatedRole);
+        } else {
+          if (role.source !== 'system') {
+            const updated = await this.roleService.updateRole(role.id, {
+              source: 'system',
+            });
+            if (updated) Object.assign(role, updated);
+          }
+
+          if (!role.permissions.includes(dbPermission.name)) {
+            const updatedRole = await this.roleService.assignPermissions(
+              role.id,
+              [dbPermission.id],
+              true
+            );
+            Object.assign(role, updatedRole);
+          }
         }
       }
     }
