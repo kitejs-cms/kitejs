@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useAuthContext } from "../context/auth-context";
 
 /**
@@ -9,31 +8,23 @@ import { useAuthContext } from "../context/auth-context";
  * be present. Pass { every: false } to check if at least one permission is present.
  */
 export function useHasPermission() {
-  const { user, roles } = useAuthContext();
-
-  const effectivePermissions = useMemo(() => {
-    const userPermissions = user?.permissions ?? [];
-    const rolePermissions = roles
-      .filter((role) => user?.roles.includes(role.name))
-      .flatMap((role) => role.permissions);
-    return new Set([...userPermissions, ...rolePermissions]);
-  }, [user, roles]);
+  const { permissions } = useAuthContext();
 
   return (
-    permissions?: string | string[],
+    target?: string | string[],
     options: { every?: boolean } = {},
   ): boolean => {
-    if (!permissions || (Array.isArray(permissions) && permissions.length === 0)) {
+    if (!target || (Array.isArray(target) && target.length === 0)) {
       return true;
     }
 
-    if (permissions === "*") {
-      return effectivePermissions.size > 0;
+    if (target === "*") {
+      return permissions.size > 0;
     }
 
-    const required = Array.isArray(permissions) ? permissions : [permissions];
+    const required = Array.isArray(target) ? target : [target];
     const method = options.every === false ? "some" : "every";
 
-    return required[method]((perm) => effectivePermissions.has(perm));
+    return required[method]((perm) => permissions.has(perm));
   };
 }

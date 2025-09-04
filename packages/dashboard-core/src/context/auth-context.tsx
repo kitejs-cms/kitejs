@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import type {
   UserResponseModel,
@@ -9,6 +15,7 @@ import { useApi } from "../hooks/use-api";
 interface AuthContextType {
   user: UserResponseModel | null;
   roles: RoleResponseModel[];
+  permissions: Set<string>;
   initializing: boolean;
   setUser: React.Dispatch<React.SetStateAction<UserResponseModel | null>>;
   login: (
@@ -28,6 +35,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [roles, setRoles] = useState<RoleResponseModel[]>([]);
   const [initializing, setInitializing] = useState(true);
   const navigate = useNavigate();
+
+  const permissions = useMemo(() => {
+    const userPermissions = user?.permissions ?? [];
+    const rolePermissions = roles
+      .filter((role) => user?.roles.includes(role.name))
+      .flatMap((role) => role.permissions);
+    return new Set([...userPermissions, ...rolePermissions]);
+  }, [user, roles]);
 
   useEffect(() => {
     (async () => {
@@ -75,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, roles, initializing, login, logout, setUser }}
+      value={{ user, roles, permissions, initializing, login, logout, setUser }}
     >
       {!initializing && children}
     </AuthContext.Provider>
@@ -88,6 +103,7 @@ export function useAuthContext() {
     return {
       user: null,
       roles: [],
+      permissions: new Set<string>(),
       initializing: false,
       login: async () => ({ data: null, error: null }),
       logout: () => {},

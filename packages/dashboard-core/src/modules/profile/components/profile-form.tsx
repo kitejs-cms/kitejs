@@ -1,8 +1,7 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserResponseModel, RoleResponseModel } from "@kitejs-cms/core/index";
+import { UserResponseModel } from "@kitejs-cms/core/index";
 import {
   Dialog,
   DialogClose,
@@ -27,6 +26,7 @@ import {
 import { Input } from "../../../components/ui/input";
 import { Checkbox } from "../../../components/ui/checkbox";
 import { useApi } from "../../../hooks/use-api";
+import { useAuthContext } from "../../../context/auth-context";
 
 interface ProfileFormProps {
   user: UserResponseModel;
@@ -37,7 +37,7 @@ interface ProfileFormProps {
 export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
   const { t } = useTranslation("profile");
   const { fetchData } = useApi();
-  const { data: rolesData, fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
+  const { roles } = useAuthContext();
 
   const schema = z.object({
     firstName: z.string().min(2, { message: t("validation.required") }),
@@ -55,10 +55,6 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
       roles: user?.roles || [],
     },
   });
-
-  useEffect(() => {
-    fetchRoles("roles");
-  }, [fetchRoles]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     if (user?.id) {
@@ -158,7 +154,7 @@ export function ProfileForm({ user, isOpen, onClose }: ProfileFormProps) {
                     </FormLabel>
                     <FormControl>
                       <div className="space-y-2">
-                        {rolesData?.map((role) => (
+                        {roles.map((role) => (
                           <div
                             key={role.id}
                             className="flex items-center space-x-2"
