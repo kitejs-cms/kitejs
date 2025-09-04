@@ -8,7 +8,8 @@
     "actions": "Actions",
     "name": "Name",
     "description": "Description",
-    "permissions": "Permissions"
+    "permissions": "Permissions",
+    "usersCount": "Users"
   },
   "buttons": {
     "edit": "Edit",
