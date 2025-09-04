@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { useLoading } from "../context/loading-context";
 import type {
   ApiResponse,
   MetaModel,
@@ -42,7 +41,6 @@ export function useApi<T>(): UseApiResult<T> {
   const [pagination, setpagination] = useState<PaginationModel | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { startLoading, stopLoading } = useLoading();
 
   const fetchData = useCallback(
     async (
@@ -57,7 +55,6 @@ export function useApi<T>(): UseApiResult<T> {
     }> => {
       setLoading(true);
       setError(null);
-      startLoading();
 
       try {
         const response = await fetch(`${baseUrl}/${url}`, {
@@ -98,7 +95,6 @@ export function useApi<T>(): UseApiResult<T> {
         return { data: null, meta: null, error: errorMessage };
       } finally {
         setLoading(false);
-        stopLoading();
       }
     },
     []
@@ -116,7 +112,6 @@ export function useApi<T>(): UseApiResult<T> {
     }> => {
       setLoading(true);
       setError(null);
-      startLoading();
 
       try {
         const response = await fetch(`${baseUrl}/${url}`, {
@@ -152,7 +147,6 @@ export function useApi<T>(): UseApiResult<T> {
         return { data: null, meta: null, error: errorMessage };
       } finally {
         setLoading(false);
-        stopLoading();
       }
     },
     []

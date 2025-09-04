@@ -11,6 +11,7 @@ import type {
   RoleResponseModel,
 } from "@kitejs-cms/core/index";
 import { useApi } from "../hooks/use-api";
+import { useLoading } from "./loading-context";
 
 interface AuthContextType {
   user: UserResponseModel | null;
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { fetchData } = useApi<UserResponseModel>();
   const { fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
+  const { startLoading, stopLoading } = useLoading();
 
   const [user, setUser] = useState<UserResponseModel | null>(null);
   const [roles, setRoles] = useState<RoleResponseModel[]>([]);
@@ -45,6 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, roles]);
 
   useEffect(() => {
+    startLoading();
     (async () => {
       const { data } = await fetchData("auth/profile", "GET");
 
@@ -56,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         navigate("/login");
       }
       setInitializing(false);
+      stopLoading();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData, fetchRoles]);
