@@ -54,6 +54,7 @@ export * from "./components/protected-route";
 export * from "./context/auth-context";
 export * from "./context/settings-context";
 export * from "./context/theme-context";
+export * from "./context/loading-context";
 
 /* Utils */
 export * from "./lib/generate-id";

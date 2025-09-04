@@ -6,6 +6,7 @@ import i18n from "./i18n";
 import { I18nextProvider } from "react-i18next";
 import { BreadcrumbProvider } from "./context/breadcrumb-context";
 import { ThemeProvider } from "./context/theme-context";
+import { LoadingProvider } from "./context/loading-context";
 import { DashboardModule } from "./models/module.model";
 import { UsersModule } from "./modules/users";
 import { ProfileModule } from "./modules/profile";
@@ -64,11 +65,12 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
   return (
     <BrowserRouter>
       <ThemeProvider defaultTheme="light" storageKey="ui-theme">
-        <AuthProvider>
-          <SettingsProvider settingsSection={settingsSections}>
-            <BreadcrumbProvider>
-              <I18nextProvider i18n={i18n}>
-                <Routes>
+        <LoadingProvider>
+          <AuthProvider>
+            <SettingsProvider settingsSection={settingsSections}>
+              <BreadcrumbProvider>
+                <I18nextProvider i18n={i18n}>
+                  <Routes>
                   {/* Router core - Routes che stanno fuori dal Layout */}
                   {CoreModule.routes.map((route) => (
                     <Route
@@ -104,6 +106,7 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
             </BreadcrumbProvider>
           </SettingsProvider>
         </AuthProvider>
+      </LoadingProvider>
       </ThemeProvider>
     </BrowserRouter>
   );
