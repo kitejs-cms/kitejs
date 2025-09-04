@@ -142,6 +142,48 @@ export const CorePermissions: PermissionModel[] = [
     description: "Permission to delete roles",
     role: ["admin"],
   },
+  /* Pages */
+  {
+    name: "core:pages.read",
+    description: "Permission to view pages",
+    role: ["admin", "editor", "viewer"],
+  },
+  {
+    name: "core:pages.create",
+    description: "Permission to create new pages",
+    role: ["admin", "editor"],
+  },
+  {
+    name: "core:pages.update",
+    description: "Permission to update existing pages",
+    role: ["admin", "editor"],
+  },
+  {
+    name: "core:pages.delete",
+    description: "Permission to delete pages",
+    role: ["admin"],
+  },
+  /* Articles */
+  {
+    name: "core:articles.read",
+    description: "Permission to view articles",
+    role: ["admin", "editor", "viewer"],
+  },
+  {
+    name: "core:articles.create",
+    description: "Permission to create new articles",
+    role: ["admin", "editor"],
+  },
+  {
+    name: "core:articles.update",
+    description: "Permission to update existing articles",
+    role: ["admin", "editor"],
+  },
+  {
+    name: "core:articles.delete",
+    description: "Permission to delete articles",
+    role: ["admin"],
+  },
 ];
 
 export const CoreSetting: SettingModel[] = [
