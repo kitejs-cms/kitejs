@@ -27,8 +27,9 @@ export function RolesManagePage() {
   const { setBreadcrumb } = useBreadcrumb();
   const { data, loading, fetchData } = useApi<RoleResponseModel[]>();
   const [openForm, setOpenForm] = useState(false);
-  const [selectedRole, setSelectedRole] =
-    useState<RoleResponseModel | undefined>();
+  const [selectedRole, setSelectedRole] = useState<
+    RoleResponseModel | undefined
+  >();
   const [jsonRole, setJsonRole] = useState<RoleResponseModel | null>(null);
 
   useEffect(() => {
@@ -98,7 +99,13 @@ export function RolesManagePage() {
             data={data}
             isLoading={loading}
             columns={[
-              { key: "name", label: t("fields.name") },
+              {
+                key: "name",
+                render: (_, row) => (
+                  <text className="capitalize">{row.name}</text>
+                ),
+                label: t("fields.name"),
+              },
               { key: "description", label: t("fields.description") },
               { key: "usersCount", label: t("fields.usersCount") },
               {
@@ -127,9 +134,7 @@ export function RolesManagePage() {
                           <Edit className="mr-2 h-4 w-4" />
                           {t("buttons.edit")}
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setJsonRole(row)}
-                        >
+                        <DropdownMenuItem onClick={() => setJsonRole(row)}>
                           <Code className="mr-2 h-4 w-4" />
                           {t("buttons.viewJson")}
                         </DropdownMenuItem>
@@ -153,4 +158,3 @@ export function RolesManagePage() {
     </div>
   );
 }
-
