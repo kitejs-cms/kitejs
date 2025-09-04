@@ -47,6 +47,8 @@ export * from "./hooks/use-mobile";
 export * from "./hooks/use-clipboard-table";
 export * from "./context/breadcrumb-context";
 export * from "./hooks/use-debounce";
+export * from "./hooks/use-has-permission";
+export * from "./components/protected-route";
 
 /* Context */
 export * from "./context/auth-context";

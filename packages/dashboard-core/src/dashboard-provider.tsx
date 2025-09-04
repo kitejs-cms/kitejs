@@ -13,6 +13,7 @@ import { CoreModule } from "./modules/core";
 import { PageModule } from "./modules/pages";
 import { PostModule } from "./modules/articles";
 import { DashboardPage } from "./modules/core/pages/dashboard";
+import { ProtectedRoute } from "./components/protected-route";
 
 interface DashboardRouterProps {
   modules?: DashboardModule[];
@@ -51,7 +52,11 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
       <Route
         key={`${mod.name}-${route.path}`}
         path={route.path}
-        element={route.element}
+        element={
+          <ProtectedRoute requiredPermissions={route.requiredPermissions}>
+            {route.element}
+          </ProtectedRoute>
+        }
       />
     ))
   );
