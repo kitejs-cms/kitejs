@@ -86,7 +86,7 @@ const PageViews: FilterView[] = [
 
 export const CORE_NAMESPACE = "core";
 
-export const CoreRoles = ["admin", "editor", "viewer"] as const;
+export const CoreRoles = ["user", "admin", "editor", "viewer"] as const;
 
 export const CorePermissions: PermissionModel[] = [
   /* Users */

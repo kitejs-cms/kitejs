@@ -79,7 +79,17 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
                   ))}
 
                   {/* Routes che stanno dentro al Layout */}
-                  <Route path="/" element={<Layout menuItems={menuItems} />}>
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute
+                        requiredPermissions="*"
+                        fallback={<Navigate to="/login" replace />}
+                      >
+                        <Layout menuItems={menuItems} />
+                      </ProtectedRoute>
+                    }
+                  >
                     {/* Dashboard route - homepage */}
                     <Route index element={<DashboardPage />} />
 

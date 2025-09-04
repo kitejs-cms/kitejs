@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { UserResponseModel } from "@kitejs-cms/core/index";
+import type {
+  UserResponseModel,
+  RoleResponseModel,
+} from "@kitejs-cms/core/index";
 import { useApi } from "../hooks/use-api";
 
 interface AuthContextType {
   user: UserResponseModel | null;
+  roles: RoleResponseModel[];
+  initializing: boolean;
   setUser: React.Dispatch<React.SetStateAction<UserResponseModel | null>>;
   login: (
     email: string,
@@ -17,8 +22,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { fetchData } = useApi<UserResponseModel>();
+  const { fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
 
   const [user, setUser] = useState<UserResponseModel | null>(null);
+  const [roles, setRoles] = useState<RoleResponseModel[]>([]);
+  const [initializing, setInitializing] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,12 +35,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data) {
         setUser(data);
+        const { data: rolesData } = await fetchRoles("roles", "GET");
+        setRoles(rolesData ?? []);
       } else {
         navigate("/login");
       }
+      setInitializing(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchData]);
+  }, [fetchData, fetchRoles]);
 
   const login = async (email: string, password: string) => {
     const { data, error } = await fetchData("auth/login", "POST", {
@@ -42,7 +53,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (data) {
       const { data: userData } = await fetchData("auth/profile", "GET");
-      if (userData) setUser(userData);
+      if (userData) {
+        setUser(userData);
+        const { data: rolesData } = await fetchRoles("roles", "GET");
+        setRoles(rolesData ?? []);
+      }
 
       navigate("/");
       return { data: null, error };
@@ -54,12 +69,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     await fetchData("auth/logout", "DELETE");
     setUser(null);
+    setRoles([]);
     navigate("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, setUser }}>
-      {children}
+    <AuthContext.Provider
+      value={{ user, roles, initializing, login, logout, setUser }}
+    >
+      {!initializing && children}
     </AuthContext.Provider>
   );
 }
@@ -69,6 +87,8 @@ export function useAuthContext() {
   if (!context) {
     return {
       user: null,
+      roles: [],
+      initializing: false,
       login: async () => ({ data: null, error: null }),
       logout: () => {},
       setUser: () => {},
