@@ -11,6 +11,7 @@ export const ProfileModule: DashboardModule = {
       element: <ProfilePage />,
       label: "Profile",
       icon: <UserIcon />,
+      requiredPermissions: ["core:users.read"],
     },
   ],
 };

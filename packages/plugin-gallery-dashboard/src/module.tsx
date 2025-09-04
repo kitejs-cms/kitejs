@@ -16,21 +16,25 @@ export const GalleryModule: DashboardModule = {
       path: "galleries",
       element: <GalleriesManagePage />,
       label: "gallery:menu.galleries",
+      requiredPermissions: ["gallery-plugin:galleries.read"],
     },
     {
       path: "galleries/:id",
       element: <GalleryDetailsPage />,
       label: "",
+      requiredPermissions: ["gallery-plugin:galleries.read"],
     },
   ],
   menuItem: {
     title: "gallery:menu.galleries",
     icon: Image,
+    requiredPermissions: ["gallery-plugin:galleries.read"],
     items: [
       {
         url: "/galleries",
         title: "gallery:menu.galleries",
         icon: Image,
+        requiredPermissions: ["gallery-plugin:galleries.read"],
       },
     ],
   },
