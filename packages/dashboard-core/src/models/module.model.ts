@@ -7,6 +7,7 @@ export interface ModuleRouteModel {
   element: ReactNode;
   label: string;
   icon?: ReactNode;
+  requiredPermissions?: string[];
   children?: ModuleRouteModel[];
 }
 
@@ -14,6 +15,7 @@ export interface SidebarMenuItemModel {
   title: string;
   url?: string;
   icon: LucideIcon;
+  requiredPermissions?: string[];
   items?: Omit<SidebarMenuItemModel, "items">[];
 }
 

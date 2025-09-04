@@ -2,6 +2,7 @@ export const STORAGE_SETTINGS_KEY = "core:storage";
 
 export type LocalStorageSettings = {
   uploadPath: string;
+  baseUrl?: string;
 };
 
 export type S3StorageSettings = {

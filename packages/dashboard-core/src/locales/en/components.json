@@ -104,6 +104,43 @@
       "max": "Max",
       "pattern": "Pattern"
     }
+  },
+  "filter-modal": {
+    "saveNewView": "Save New View",
+    "deleteView": "Delete View",
+    "advancedFilters": "Advanced Filters",
+    "activeFilters": "{{count}} filter active",
+    "activeFilters_plural": "{{count}} filters active",
+    "savedViews": "Saved Views",
+    "reset": "Reset",
+    "viewName": "View Name *",
+    "viewNamePlaceholder": "e.g. Active Customers Q1...",
+    "description": "Description",
+    "viewDescriptionPlaceholder": "Optional description of the view...",
+    "cannotBeUndone": "This action cannot be undone",
+    "confirmDeleteView": "Are you sure you want to delete the view \"{name}\"?",
+    "fieldPlaceholder": "Field...",
+    "operatorPlaceholder": "Operator...",
+    "addFilter": "Add Filter",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "saveView": "Save View",
+    "applyFilters": "Apply Filters",
+    "operators": {
+      "equals": "Equals",
+      "notEquals": "Not equals",
+      "greaterThan": "Greater than",
+      "greaterOrEqual": "Greater or equal",
+      "lessThan": "Less than",
+      "lessOrEqual": "Less or equal",
+      "in": "In",
+      "notIn": "Not in",
+      "contains": "Contains",
+      "startsWith": "Starts with",
+      "endsWith": "Ends with",
+      "exists": "Exists",
+      "regex": "Regular expression"
+    }
   }
 }
-

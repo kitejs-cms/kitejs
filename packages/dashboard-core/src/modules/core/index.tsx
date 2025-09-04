@@ -29,6 +29,7 @@ export const CoreModule: DashboardModule = {
       element: <InitCmsPage />,
       label: "core:settings.menu.title",
       icon: <Settings />,
+      requiredPermissions: ["core:settings.read"],
     },
   ],
   settings: {

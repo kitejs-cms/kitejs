@@ -51,7 +51,7 @@ function parseAcceptLanguage(acceptLanguage: string): string | null {
       .map((lang) => {
         const [code, qValue] = lang.trim().split(";q=");
         return {
-          code: code.trim(),
+          code: code.trim(),https://api.servidicristovivo.com/public/galleries/68ae16c1d91a387b7fe3b0d7/4.jpeg
           quality: qValue ? parseFloat(qValue) : 1.0,
         };
       })

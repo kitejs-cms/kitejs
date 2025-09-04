@@ -60,7 +60,7 @@ export class S3StorageProvider implements IStorageProvider {
   async uploadFile(
     file: Express.Multer.File,
     dir?: string
-  ): Promise<UploadResultModel> {
+  ): Promise<Omit<UploadResultModel, "assetId">> {
     const s3 = await this.getS3Client();
     const keyPrefix = dir ? `${dir.replace(/\/$/, "")}/` : "";
     const key = `${keyPrefix}${file.fieldname}-${uuidv4()}${extname(

@@ -16,16 +16,19 @@ export const PageModule: DashboardModule = {
       path: "pages",
       element: <PagesManagePage />,
       label: "pages:menu.pages",
+      requiredPermissions: ["core:pages.read"],
     },
     {
       path: "pages/:id",
       element: <PageDetailsPage />,
       label: "pages:menu.pages",
+      requiredPermissions: ["core:pages.read"],
     },
   ],
   menuItem: {
     title: "pages:menu.pages",
     icon: FilePenLine,
     url: "/pages",
+    requiredPermissions: ["core:pages.read"],
   },
 };

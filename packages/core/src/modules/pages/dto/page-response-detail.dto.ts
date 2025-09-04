@@ -29,7 +29,7 @@ export class PageResponseDetailDto implements PageResponseDetailsModel {
   })
   @IsOptional()
   @IsString()
-  image?: string
+  image?: string;
 
   @ApiProperty({
     description: "Base slug for the page (used for routing)",
@@ -146,7 +146,6 @@ export class PageResponseDetailDto implements PageResponseDetailsModel {
   @IsString()
   @IsNotEmpty()
   updatedAt: string;
-
 
   @ApiProperty({
     description: "Array of category IDs associated with the page",

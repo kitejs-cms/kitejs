@@ -33,36 +33,43 @@ export const PostModule: DashboardModule = {
       path: "categories",
       element: <CategoriesManagePage />,
       label: "articles:menu.categories",
+      requiredPermissions: ["core:articles.read"],
     },
     {
       path: "categories/:id",
       element: <CategoryDetailsPage />,
       label: "articles:menu.categories",
+      requiredPermissions: ["core:articles.read"],
     },
     {
       path: "articles",
       element: <ArticlesManagePage />,
       label: "articles:menu.articles",
+      requiredPermissions: ["core:articles.read"],
     },
     {
       path: "articles/:id",
       element: <ArticleDetailsPage />,
       label: "articles:menu.articles",
+      requiredPermissions: ["core:articles.read"],
     },
   ],
   menuItem: {
     title: "articles:menu.articles",
     icon: Newspaper,
+    requiredPermissions: ["core:articles.read"],
     items: [
       {
         url: "/categories",
         title: "articles:menu.categories",
         icon: Newspaper,
+        requiredPermissions: ["core:articles.read"],
       },
       {
         url: "/articles",
         title: "articles:menu.articles",
         icon: Newspaper,
+        requiredPermissions: ["core:articles.read"],
       },
     ],
   },

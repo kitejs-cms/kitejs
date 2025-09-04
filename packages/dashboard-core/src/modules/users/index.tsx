@@ -13,6 +13,7 @@ export const UsersModule: DashboardModule = {
       element: <UsersManagePage />,
       label: "users:menu.usersList",
       icon: <UsersIcon />,
+      requiredPermissions: ["core:users.read"],
     },
     {
       path: "users/roles",
@@ -24,11 +25,13 @@ export const UsersModule: DashboardModule = {
   menuItem: {
     title: "users:menu.users",
     icon: Users,
+    requiredPermissions: ["core:users.read"],
     items: [
       {
         title: "users:title.manageUsers",
         url: "/users",
         icon: UserPlus,
+        requiredPermissions: ["core:users.read"],
       },
       {
         title: "users:title.manageRoles",
