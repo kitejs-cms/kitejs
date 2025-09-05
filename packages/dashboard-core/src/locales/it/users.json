@@ -49,6 +49,10 @@
     "admin": "Note admin",
     "system": "Note sistema"
   },
+  "deleteConfirm": {
+    "title": "Elimina nota",
+    "description": "Sei sicuro di voler eliminare questa nota?"
+  },
   "noNotes": "Nessuna nota",
   "validation": {
     "required": "Questo campo è obbligatorio.",

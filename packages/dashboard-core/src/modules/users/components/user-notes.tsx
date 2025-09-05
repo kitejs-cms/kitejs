@@ -36,8 +36,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../../components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/ui/alert-dialog";
 import { Badge } from "../../../components/ui/badge";
-import { XIcon, PlusIcon, Trash2Icon, PencilIcon } from "lucide-react";
+import {
+  XIcon,
+  PlusIcon,
+  Trash2Icon,
+  PencilIcon,
+  StickyNote,
+} from "lucide-react";
 
 interface UserNoteModel {
   id: string;
@@ -61,6 +77,8 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "admin" | "system">("all");
   const [editing, setEditing] = useState<UserNoteModel | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 
   const schema = z.object({
     content: z.string().min(1, { message: t("validation.required") }),
@@ -95,8 +113,16 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   const filteredNotes =
     notes?.filter((n) => filter === "all" || n.source === filter) || [];
 
-  const handleDelete = async (id: string) => {
-    await removeNote(`notes/${id}`, "DELETE");
+  const handleDelete = (id: string) => {
+    setNoteToDelete(id);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!noteToDelete) return;
+    await removeNote(`notes/${noteToDelete}`, "DELETE");
+    setConfirmOpen(false);
+    setNoteToDelete(null);
     await fetchData(`notes?targetType=user&targetId=${userId}`);
   };
 
@@ -206,13 +232,13 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
         <Separator />
         <CardContent className="p-4">
           {filteredNotes.length ? (
-            <ul className="relative border-l pl-4">
+            <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-0 before:bottom-0 before:w-px before:bg-border">
               {filteredNotes.map((note) => (
-                <li key={note.id} className="mb-4 ml-2">
-                  <span className="absolute -left-4 top-4 w-2 h-2 rounded-full bg-gray-400"></span>
-                  <div className="border rounded-md p-3 bg-white shadow-sm">
+                <li key={note.id} className="relative pl-6">
+                  <span className="absolute left-0 top-2 h-3 w-3 rounded-full bg-primary ring-2 ring-background" />
+                  <div className="border rounded-lg p-4 bg-white shadow-sm">
                     <div className="flex items-start justify-between">
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         <p>{new Date(note.createdAt).toLocaleString()}</p>
                         {note.createdBy && <p>{note.createdBy}</p>}
                       </div>
@@ -249,14 +275,33 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
               ))}
             </ul>
           ) : (
-            <div className="flex justify-center py-8">
-              <p className="text-sm text-gray-500 italic">
-                {t("noNotes")}
-              </p>
+            <div className="flex flex-col items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+              <StickyNote className="h-6 w-6" />
+              {t("noNotes")}
             </div>
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteConfirm.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteConfirm.description")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("buttons.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {t("buttons.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

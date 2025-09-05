@@ -49,6 +49,10 @@
     "admin": "Admin Notes",
     "system": "System Notes"
   },
+  "deleteConfirm": {
+    "title": "Delete note",
+    "description": "Are you sure you want to delete this note?"
+  },
   "noNotes": "No notes",
   "validation": {
     "required": "This field is required.",
