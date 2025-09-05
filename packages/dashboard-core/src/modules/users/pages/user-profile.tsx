@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { MoreVertical, Edit, Clipboard, Code } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -41,6 +41,19 @@ export function UserProfilePage() {
   const { data: roleData, fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
   const { user: currentUser } = useAuthContext();
   const isAdmin = currentUser?.roles?.includes("admin");
+
+  const roleOptions =
+    roleData?.map((r) => ({
+      value: r.id,
+      label: r.name.charAt(0).toUpperCase() + r.name.slice(1),
+    })) || [];
+
+  const initialRoleTags = useMemo(() => {
+    if (!user?.roles) return [];
+    return user.roles
+      .map((role) => roleData?.find((r) => r.name === role)?.id || role)
+      .filter(Boolean);
+  }, [user?.roles, roleData]);
 
   useEffect(() => {
     setBreadcrumb([
@@ -187,16 +200,11 @@ export function UserProfilePage() {
 
           <div className="flex justify-between py-3">
             <div className="pl-4 w-1/3 text-left">{t("fields.roles")}</div>
-            <div className="w-2/3 text-left">
+            <div className="w-2/3 text-left pr-4">
               {isAdmin ? (
                 <MultiSelect
-                  options={
-                    roleData?.map((r) => ({
-                      value: r.id,
-                      label: r.name.charAt(0).toUpperCase() + r.name.slice(1),
-                    })) || []
-                  }
-                  initialTags={user?.roles || []}
+                  options={roleOptions}
+                  initialTags={initialRoleTags}
                   onChange={async (values) => {
                     if (!id) return;
                     await updateUser(`users/${id}`, "PATCH", { roles: values });
