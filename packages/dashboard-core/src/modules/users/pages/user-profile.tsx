@@ -6,7 +6,7 @@ import { useBreadcrumb } from "../../../context/breadcrumb-context";
 import { ProfileForm } from "../../profile/components/profile-form";
 import { Button } from "../../../components/ui/button";
 import { useApi } from "../../../hooks/use-api";
-import type { UserResponseModel } from "@kitejs-cms/core/index";
+import type { UserResponseModel, RoleResponseModel } from "@kitejs-cms/core/index";
 import { Separator } from "../../../components/ui/separator";
 import { Badge } from "../../../components/ui/badge";
 import { JsonModal } from "../../../components/json-modal";
@@ -25,7 +25,7 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 import { UserNotes } from "../components/user-notes";
-import { UserRolesSection } from "../components/user-roles-section";
+import { MultiSelect } from "../../../components/multi-select";
 import { useAuthContext } from "../../../context/auth-context";
 
 export function UserProfilePage() {
@@ -36,7 +36,9 @@ export function UserProfilePage() {
   const [searchParams] = useSearchParams();
   const { t } = useTranslation("users");
   const { setBreadcrumb } = useBreadcrumb();
-  const { data: user, fetchData } = useApi<UserResponseModel>();
+  const { data: user, fetchData: fetchUser } = useApi<UserResponseModel>();
+  const { fetchData: updateUser } = useApi<UserResponseModel>();
+  const { data: roleData, fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
   const { user: currentUser } = useAuthContext();
   const isAdmin = currentUser?.roles?.includes("admin");
 
@@ -66,9 +68,15 @@ export function UserProfilePage() {
 
   useEffect(() => {
     if (id) {
-      fetchData(`users/${id}`);
+      fetchUser(`users/${id}`);
     }
-  }, [id, fetchData]);
+  }, [id, fetchUser]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchRoles("roles");
+    }
+  }, [isAdmin, fetchRoles]);
 
   const handleCopy = () => {
     if (!user) return;
@@ -162,7 +170,19 @@ export function UserProfilePage() {
           <div className="flex justify-between border-b py-3">
             <div className="pl-4 w-1/3 text-left">{t("fields.roles")}</div>
             <div className="w-2/3 text-left">
-              {user?.roles?.length ? (
+              {isAdmin ? (
+                <MultiSelect
+                  options={
+                    roleData?.map((r) => ({ value: r.id, label: r.name })) || []
+                  }
+                  initialTags={user?.roles || []}
+                  onChange={async (values) => {
+                    if (!id) return;
+                    await updateUser(`users/${id}`, "PATCH", { roles: values });
+                    fetchUser(`users/${id}`);
+                  }}
+                />
+              ) : user?.roles?.length ? (
                 <div className="flex flex-wrap gap-2">
                   {user.roles.map((role, index) => (
                     <Badge key={index} variant="outline">
@@ -196,27 +216,7 @@ export function UserProfilePage() {
         </CardContent>
       </Card>
 
-      <Card className="w-full shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
-          <CardTitle>{t("fields.notes")}</CardTitle>
-        </CardHeader>
-        <Separator />
-        <CardContent className="p-4">
-          {id && <UserNotes userId={id} canAddNote={!!isAdmin} />}
-        </CardContent>
-      </Card>
-
-      {isAdmin && (
-        <Card className="w-full shadow-neutral-50 gap-0 py-0">
-          <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
-            <CardTitle>{t("fields.roles")}</CardTitle>
-          </CardHeader>
-          <Separator />
-          <CardContent className="p-4">
-            {id && <UserRolesSection userId={id} roles={user?.roles || []} />}
-          </CardContent>
-        </Card>
-      )}
+      {id && <UserNotes userId={id} canAddNote={!!isAdmin} />}
     </div>
   );
 }

@@ -44,6 +44,11 @@
   "search": {
     "placeholder": "Cerca utenti..."
   },
+  "notesFilter": {
+    "all": "Tutte le note",
+    "admin": "Note admin",
+    "system": "Note sistema"
+  },
   "validation": {
     "required": "Questo campo è obbligatorio.",
     "invalidEmail": "E-mail non valida.",

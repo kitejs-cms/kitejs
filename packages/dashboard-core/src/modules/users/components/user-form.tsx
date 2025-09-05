@@ -24,7 +24,7 @@ import {
   FormMessage,
 } from "../../../components/ui/form";
 import { Input } from "../../../components/ui/input";
-import { Checkbox } from "../../../components/ui/checkbox";
+import { MultiSelect } from "../../../components/multi-select";
 import { useApi } from "../../../hooks/use-api";
 import type { UserResponseModel, RoleResponseModel } from "@kitejs-cms/core/index";
 import { useAuthContext } from "../../../context/auth-context";
@@ -178,25 +178,16 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
                         {t("fields.roles")}
                       </FormLabel>
                       <FormControl>
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
-                          {roles?.map((role) => (
-                            <div key={role.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                checked={field.value?.includes(role.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    field.onChange([...(field.value || []), role.id]);
-                                  } else {
-                                    field.onChange(
-                                      (field.value || []).filter((r: string) => r !== role.id)
-                                    );
-                                  }
-                                }}
-                              />
-                              <FormLabel className="text-xs">{role.name}</FormLabel>
-                            </div>
-                          ))}
-                        </div>
+                        <MultiSelect
+                          options={
+                            roles?.map((role) => ({
+                              value: role.id,
+                              label: role.name,
+                            })) || []
+                          }
+                          initialTags={field.value || []}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                     </FormItem>
                   )}

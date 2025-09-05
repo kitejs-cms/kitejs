@@ -44,6 +44,11 @@
   "search": {
     "placeholder": "Search users..."
   },
+  "notesFilter": {
+    "all": "All Notes",
+    "admin": "Admin Notes",
+    "system": "System Notes"
+  },
   "validation": {
     "required": "This field is required.",
     "invalidEmail": "Invalid email address.",
