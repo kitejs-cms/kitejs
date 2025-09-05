@@ -1,13 +1,13 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Note } from './schemas/note.schema';
-import { NoteCreateDto } from './dto/note-create.dto';
-import { NoteResponseModel } from './models/note-response.model';
-import { NoteSource } from './models/note-source.enum';
-import { Injectable } from '@nestjs/common';
-import { JwtPayloadModel } from '../auth';
-import { ObjectIdUtils } from '../../common';
-import { User } from '../users';
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Note } from "./schemas/note.schema";
+import { NoteCreateDto } from "./dto/note-create.dto";
+import { NoteResponseModel } from "./models/note-response.model";
+import { NoteSource } from "./models/note-source.enum";
+import { Injectable } from "@nestjs/common";
+import { JwtPayloadModel } from "../auth";
+import { ObjectIdUtils } from "../../common";
+import { User } from "../users";
 
 @Injectable()
 export class NotesService {
@@ -24,8 +24,19 @@ export class NotesService {
       source: dto.source,
       createdBy: dto.source === NoteSource.ADMIN ? user.sub : null,
     });
-    await note.populate<{ createdBy: User }>('createdBy');
-    return this.toModel(note);
+    await note.populate<{ createdBy: User }>("createdBy", "firstName lastName");
+
+    return {
+      id: note._id.toString(),
+      source: note.source,
+      content: note.content,
+      targetId: note.target.toString(),
+      targetType: note.targetType,
+      createdAt: note.createdAt,
+      createdBy: note.createdBy
+        ? `${(note.createdBy as unknown as User).firstName} ${(note.createdBy as unknown as User).lastName}`
+        : undefined,
+    };
   }
 
   async findNotes(
@@ -44,9 +55,19 @@ export class NotesService {
     const notes = await this.noteModel
       .find(query)
       .sort({ createdAt: -1 })
-      .populate<{ createdBy: User }>('createdBy')
+      .populate("createdBy", "firstName lastName")
       .exec();
-    return notes.map((n) => this.toModel(n));
+    return notes.map((note) => ({
+      id: note._id.toString(),
+      source: note.source,
+      content: note.content,
+      targetId: note.target.toString(),
+      targetType: note.targetType,
+      createdAt: note.createdAt,
+      createdBy: note.createdBy
+        ? `${(note.createdBy as unknown as User).firstName} ${(note.createdBy as unknown as User).lastName}`
+        : undefined,
+    }));
   }
 
   async deleteNote(id: string): Promise<void> {
@@ -71,22 +92,20 @@ export class NotesService {
         { content },
         { new: true }
       )
-      .populate<{ createdBy: User }>('createdBy');
+      .populate<{ createdBy: User }>("createdBy");
 
-    return note ? this.toModel(note) : null;
-  }
-
-  private toModel(note: Note & { createdBy?: User }): NoteResponseModel {
-    return {
-      id: note._id.toString(),
-      source: note.source,
-      content: note.content,
-      targetId: note.target.toString(),
-      targetType: note.targetType,
-      createdAt: note.createdAt,
-      createdBy: note.createdBy
-        ? `${note.createdBy.firstName} ${note.createdBy.lastName}`
-        : undefined,
-    };
+    return note
+      ? {
+          id: note._id.toString(),
+          source: note.source,
+          content: note.content,
+          targetId: note.target.toString(),
+          targetType: note.targetType,
+          createdAt: note.createdAt,
+          createdBy: note.createdBy
+            ? `${(note.createdBy as unknown as User).firstName} ${(note.createdBy as unknown as User).lastName}`
+            : undefined,
+        }
+      : null;
   }
 }
