@@ -44,11 +44,6 @@
   "search": {
     "placeholder": "Search users..."
   },
-  "tabs": {
-    "details": "Details",
-    "notes": "Notes",
-    "roles": "Roles"
-  },
   "validation": {
     "required": "This field is required.",
     "invalidEmail": "Invalid email address.",

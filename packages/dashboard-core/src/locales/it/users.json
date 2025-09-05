@@ -44,11 +44,6 @@
   "search": {
     "placeholder": "Cerca utenti..."
   },
-  "tabs": {
-    "details": "Dettagli",
-    "notes": "Note",
-    "roles": "Ruoli"
-  },
   "validation": {
     "required": "Questo campo è obbligatorio.",
     "invalidEmail": "E-mail non valida.",
