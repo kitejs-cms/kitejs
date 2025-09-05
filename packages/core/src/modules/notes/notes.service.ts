@@ -42,7 +42,9 @@ export class NotesService {
   async findNotes(
     targetId: string,
     targetType: string,
-    source?: NoteSource
+    source?: NoteSource,
+    skip = 0,
+    limit = 50
   ): Promise<NoteResponseModel[]> {
     const query: any = {
       target: ObjectIdUtils.toObjectId(targetId),
@@ -55,6 +57,8 @@ export class NotesService {
     const notes = await this.noteModel
       .find(query)
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate("createdBy", "firstName lastName")
       .exec();
     return notes.map((note) => ({

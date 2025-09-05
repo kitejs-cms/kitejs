@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -70,7 +70,7 @@ interface UserNotesProps {
 
 export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   const { t } = useTranslation("users");
-  const { data: notes, fetchData } = useApi<UserNoteModel[]>();
+  const { fetchData } = useApi<UserNoteModel[]>();
   const { fetchData: sendNote } = useApi<UserNoteModel>();
   const { fetchData: removeNote } = useApi<void>();
   const { fetchData: editNote } = useApi<UserNoteModel>();
@@ -79,6 +79,10 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   const [editing, setEditing] = useState<UserNoteModel | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+  const [notes, setNotes] = useState<UserNoteModel[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const limit = 5;
 
   const schema = z.object({
     content: z.string().min(1, { message: t("validation.required") }),
@@ -89,9 +93,24 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
     defaultValues: { content: "" },
   });
 
+  const loadNotes = useCallback(
+    async (skip: number) => {
+      const sourceParam = filter !== "all" ? `&source=${filter}` : "";
+      const { data } = await fetchData(
+        `notes?targetType=user&targetId=${userId}${sourceParam}&skip=${skip}&limit=${limit + 1}`
+      );
+      const fetched = data || [];
+      setHasMore(fetched.length > limit);
+      const slice = fetched.slice(0, limit);
+      setNotes((prev) => (skip === 0 ? slice : [...prev, ...slice]));
+      setOffset(skip + slice.length);
+    },
+    [fetchData, filter, userId]
+  );
+
   useEffect(() => {
-    fetchData(`notes?targetType=user&targetId=${userId}`);
-  }, [fetchData, userId]);
+    loadNotes(0);
+  }, [loadNotes]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     if (editing) {
@@ -104,14 +123,11 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
         source: "admin",
       });
     }
-    await fetchData(`notes?targetType=user&targetId=${userId}`);
+    await loadNotes(0);
     form.reset();
     setEditing(null);
     setOpen(false);
   };
-
-  const filteredNotes =
-    notes?.filter((n) => filter === "all" || n.source === filter) || [];
 
   const handleDelete = (id: string) => {
     setNoteToDelete(id);
@@ -123,7 +139,7 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
     await removeNote(`notes/${noteToDelete}`, "DELETE");
     setConfirmOpen(false);
     setNoteToDelete(null);
-    await fetchData(`notes?targetType=user&targetId=${userId}`);
+    await loadNotes(0);
   };
 
   return (
@@ -231,49 +247,62 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
         </CardHeader>
         <Separator />
         <CardContent className="p-4">
-          {filteredNotes.length ? (
-            <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-0 before:bottom-0 before:w-px before:bg-border">
-              {filteredNotes.map((note) => (
-                <li key={note.id} className="relative pl-6">
-                  <span className="absolute -left-2 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-primary ring-2 ring-background" />
-                  <div className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-start justify-between">
-                      <div className="text-xs text-muted-foreground">
-                        <p>{new Date(note.createdAt).toLocaleString()}</p>
-                        {note.createdBy && <p>{note.createdBy}</p>}
-                      </div>
-                      {note.source === "admin" && canAddNote && (
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-transparent"
-                            onClick={() => {
-                              setEditing(note);
-                              form.reset({ content: note.content });
-                              setOpen(true);
-                            }}
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                            <span className="sr-only">{t("buttons.edit")}</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-transparent"
-                            onClick={() => handleDelete(note.id)}
-                          >
-                            <Trash2Icon className="h-4 w-4" />
-                            <span className="sr-only">{t("buttons.delete")}</span>
-                          </Button>
+          {notes.length ? (
+            <>
+              <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-0 before:bottom-0 before:w-px before:bg-border">
+                {notes.map((note) => (
+                  <li key={note.id} className="relative pl-6">
+                    <span className="absolute -left-1 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-primary ring-2 ring-background" />
+                    <div className="border rounded-lg p-4 bg-white">
+                      <div className="flex items-start justify-between">
+                        <div className="text-xs text-muted-foreground">
+                          <p>{new Date(note.createdAt).toLocaleString()}</p>
+                          {note.createdBy && <p>{note.createdBy}</p>}
                         </div>
-                      )}
+                        {note.source === "admin" && canAddNote && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-transparent"
+                              onClick={() => {
+                                setEditing(note);
+                                form.reset({ content: note.content });
+                                setOpen(true);
+                              }}
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                              <span className="sr-only">{t("buttons.edit")}</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-transparent"
+                              onClick={() => handleDelete(note.id)}
+                            >
+                              <Trash2Icon className="h-4 w-4" />
+                              <span className="sr-only">{t("buttons.delete")}</span>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      <p className="mt-2 text-sm whitespace-pre-line">{note.content}</p>
                     </div>
-                    <p className="mt-2 text-sm whitespace-pre-line">{note.content}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+              {hasMore && (
+                <div className="mt-4 flex justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => loadNotes(offset)}
+                  >
+                    {t("buttons.loadMore")}
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
               <StickyNote className="h-6 w-6" />

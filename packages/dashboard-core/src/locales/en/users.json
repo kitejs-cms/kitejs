@@ -25,7 +25,8 @@
     "cancel": "Cancel",
     "save": "Save",
     "addNote": "Add Note",
-    "editProfile": "Edit Profile"
+    "editProfile": "Edit Profile",
+    "loadMore": "Load more"
   },
   "empty": "No data",
   "title": {

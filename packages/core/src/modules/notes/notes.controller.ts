@@ -21,6 +21,8 @@ import {
   UseGuards,
   Delete,
   Param,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   GetAuthUser,
@@ -65,13 +67,23 @@ export class NotesController {
   @ApiQuery({ name: 'targetId', required: true, type: String })
   @ApiQuery({ name: 'targetType', required: true, type: String })
   @ApiQuery({ name: 'source', required: false, enum: NoteSource })
+  @ApiQuery({ name: 'skip', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({ status: 200, type: [NoteResponseDto] })
   async getNotes(
     @Query('targetId', ValidateObjectIdPipe) targetId: string,
     @Query('targetType') targetType: string,
-    @Query('source') source?: NoteSource
+    @Query('source') source?: NoteSource,
+    @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip = 0,
+    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit = 50
   ) {
-    const notes = await this.notesService.findNotes(targetId, targetType, source);
+    const notes = await this.notesService.findNotes(
+      targetId,
+      targetType,
+      source,
+      skip,
+      limit
+    );
     return notes.map((n) => new NoteResponseDto(n));
   }
 
