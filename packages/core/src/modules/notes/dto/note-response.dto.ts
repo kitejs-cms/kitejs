@@ -1,36 +1,40 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
+import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { NoteResponseModel } from '../models/note-response.model';
 import { NoteSource } from '../models/note-source.enum';
 
 export class NoteResponseDto {
   @ApiProperty()
+  @IsString()
   id: string;
 
   @ApiProperty({ enum: NoteSource })
+  @IsEnum(NoteSource)
   source: NoteSource;
 
   @ApiProperty()
+  @IsString()
   content: string;
 
-  @ApiProperty()
+  @Exclude()
+  @IsString()
   targetId: string;
 
-  @ApiProperty()
+  @Exclude()
+  @IsString()
   targetType: string;
 
   @ApiProperty()
+  @IsDate()
   createdAt: Date;
 
   @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   createdBy?: string;
 
-  constructor(model: NoteResponseModel) {
-    this.id = model.id;
-    this.source = model.source;
-    this.content = model.content;
-    this.targetId = model.targetId;
-    this.targetType = model.targetType;
-    this.createdAt = model.createdAt;
-    this.createdBy = model.createdBy;
+  constructor(partial: Partial<NoteResponseDto | NoteResponseModel>) {
+    Object.assign(this, partial);
   }
 }
