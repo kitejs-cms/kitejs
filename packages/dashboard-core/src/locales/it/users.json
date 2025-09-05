@@ -9,7 +9,10 @@
     "name": "Nome",
     "description": "Descrizione",
     "permissions": "Permessi",
-    "password": "Password"
+    "password": "Password",
+    "roles": "Ruoli",
+    "notes": "Note",
+    "source": "Fonte"
   },
   "buttons": {
     "edit": "Modifica",
@@ -20,8 +23,11 @@
     "addRole": "Aggiungi Ruolo",
     "delete": "Elimina",
     "cancel": "Annulla",
-    "save": "Salva"
+    "save": "Salva",
+    "addNote": "Aggiungi Nota",
+    "editProfile": "Modifica Profilo"
   },
+  "empty": "Nessun dato",
   "title": {
     "manageUsers": "Gestione Utenti",
     "manageRoles": "Gestione Ruoli"
@@ -37,6 +43,11 @@
   },
   "search": {
     "placeholder": "Cerca utenti..."
+  },
+  "tabs": {
+    "details": "Dettagli",
+    "notes": "Note",
+    "roles": "Ruoli"
   },
   "validation": {
     "required": "Questo campo è obbligatorio.",

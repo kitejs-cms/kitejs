@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,8 +24,10 @@ import {
   FormMessage,
 } from "../../../components/ui/form";
 import { Input } from "../../../components/ui/input";
+import { Checkbox } from "../../../components/ui/checkbox";
 import { useApi } from "../../../hooks/use-api";
-import type { UserResponseModel } from "@kitejs-cms/core/index";
+import type { UserResponseModel, RoleResponseModel } from "@kitejs-cms/core/index";
+import { useAuthContext } from "../../../context/auth-context";
 
 interface UserFormProps {
   isOpen: boolean;
@@ -35,12 +38,16 @@ interface UserFormProps {
 export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
   const { t } = useTranslation("users");
   const { fetchData } = useApi<UserResponseModel>();
+  const { data: roles, fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
+  const { user } = useAuthContext();
+  const isAdmin = user?.roles?.includes("admin");
 
   const schema = z.object({
     firstName: z.string().min(1, { message: t("validation.required") }),
     lastName: z.string().min(1, { message: t("validation.required") }),
     email: z.string().email({ message: t("validation.invalidEmail") }),
     password: z.string().min(8, { message: t("validation.passwordMin") }),
+    roles: z.array(z.string()).optional(),
   });
 
   const form = useForm({
@@ -50,8 +57,15 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
       lastName: "",
       email: "",
       password: "",
+      roles: [],
     },
   });
+
+  useEffect(() => {
+    if (isOpen && isAdmin) {
+      fetchRoles("roles");
+    }
+  }, [isOpen, isAdmin, fetchRoles]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     await fetchData("users", "POST", values);
@@ -153,6 +167,41 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
                   </FormItem>
                 )}
               />
+
+              {isAdmin && (
+                <FormField
+                  control={form.control}
+                  name="roles"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">
+                        {t("fields.roles")}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                          {roles?.map((role) => (
+                            <div key={role.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={field.value?.includes(role.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    field.onChange([...(field.value || []), role.id]);
+                                  } else {
+                                    field.onChange(
+                                      (field.value || []).filter((r: string) => r !== role.id)
+                                    );
+                                  }
+                                }}
+                              />
+                              <FormLabel className="text-xs">{role.name}</FormLabel>
+                            </div>
+                          ))}
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <div className="flex justify-end gap-3 pt-2">
                 <Button variant="outline" onClick={onClose} type="button">

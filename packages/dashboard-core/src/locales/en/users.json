@@ -9,7 +9,10 @@
     "name": "Name",
     "description": "Description",
     "permissions": "Permissions",
-    "password": "Password"
+    "password": "Password",
+    "roles": "Roles",
+    "notes": "Notes",
+    "source": "Source"
   },
   "buttons": {
     "edit": "Edit",
@@ -20,8 +23,11 @@
     "addRole": "Add Role",
     "delete": "Delete",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "addNote": "Add Note",
+    "editProfile": "Edit Profile"
   },
+  "empty": "No data",
   "title": {
     "manageUsers": "Manage Users",
     "manageRoles": "Manage Roles"
@@ -37,6 +43,11 @@
   },
   "search": {
     "placeholder": "Search users..."
+  },
+  "tabs": {
+    "details": "Details",
+    "notes": "Notes",
+    "roles": "Roles"
   },
   "validation": {
     "required": "This field is required.",

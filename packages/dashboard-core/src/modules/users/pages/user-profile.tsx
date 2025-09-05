@@ -24,6 +24,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import { UserNotes } from "../components/user-notes";
+import { UserRolesSection } from "../components/user-roles-section";
+import { useAuthContext } from "../../../context/auth-context";
 
 export function UserProfilePage() {
   const { copyTable } = useClipboardTable();
@@ -34,6 +38,8 @@ export function UserProfilePage() {
   const { t } = useTranslation("users");
   const { setBreadcrumb } = useBreadcrumb();
   const { data: user, fetchData } = useApi<UserResponseModel>();
+  const { user: currentUser } = useAuthContext();
+  const isAdmin = currentUser?.roles?.includes("admin");
 
   useEffect(() => {
     setBreadcrumb([
@@ -82,7 +88,7 @@ export function UserProfilePage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
+    <div className="flex flex-col p-4">
       <JsonModal
         isOpen={jsonView}
         onClose={() => setJsonView(false)}
@@ -94,102 +100,124 @@ export function UserProfilePage() {
         onClose={() => setProfileForm(false)}
       />
 
-      <Card className="w-full shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
-          <div className="flex items-center justify-between">
-            <CardTitle>
-              {user?.firstName} {user?.lastName}
-              <CardDescription className="text-xsm font-light pt-0.5 text-gray-700">
-                {user?.email}
-              </CardDescription>
-            </CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="cursor-pointer">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCopy}>
-                  <Clipboard className="mr-2 h-4 w-4" />
-                  {t("buttons.copy")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setProfileForm(true)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  {t("buttons.editProfile")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setJsonView(true)}>
-                  <Code className="mr-2 h-4 w-4" />
-                  {t("buttons.viewJson")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </CardHeader>
-        <Separator />
-        <CardContent className="p-0 text-sm">
-          <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.firstName")}</div>
-            <div className="w-2/3 text-left">
-              {user?.firstName && user?.firstName ? user.firstName : t("empty")}
-            </div>
-          </div>
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="details">{t("tabs.details")}</TabsTrigger>
+          <TabsTrigger value="notes">{t("tabs.notes")}</TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="roles">{t("tabs.roles")}</TabsTrigger>
+          )}
+        </TabsList>
 
-          <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.lastName")}</div>
-            <div className="w-2/3 text-left">
-              {user?.lastName && user?.lastName ? user.lastName : t("empty")}
-            </div>
-          </div>
-
-          <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.email")}</div>
-            <div className="w-2/3 text-left">{user?.email || t("empty")}</div>
-          </div>
-
-          <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.status")}</div>
-            <div className="w-2/3 text-left capitalize">
-              {user?.status || t("empty")}
-            </div>
-          </div>
-
-          <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.roles")}</div>
-            <div className="w-2/3 text-left">
-              {user?.roles?.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {user.roles.map((role, index) => (
-                    <Badge key={index} variant="outline">
-                      {role}
-                    </Badge>
-                  ))}
+        <TabsContent value="details">
+          <Card className="w-full shadow-neutral-50 gap-0 py-0">
+            <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <CardTitle>
+                  {user?.firstName} {user?.lastName}
+                  <CardDescription className="text-xsm font-light pt-0.5 text-gray-700">
+                    {user?.email}
+                  </CardDescription>
+                </CardTitle>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="cursor-pointer">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleCopy}>
+                      <Clipboard className="mr-2 h-4 w-4" />
+                      {t("buttons.copy")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setProfileForm(true)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      {t("buttons.editProfile")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setJsonView(true)}>
+                      <Code className="mr-2 h-4 w-4" />
+                      {t("buttons.viewJson")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </CardHeader>
+            <Separator />
+            <CardContent className="p-0 text-sm">
+              <div className="flex justify-between border-b py-3">
+                <div className="pl-4 w-1/3 text-left">{t("fields.firstName")}</div>
+                <div className="w-2/3 text-left">
+                  {user?.firstName ? user.firstName : t("empty")}
                 </div>
-              ) : (
-                t("empty")
-              )}
-            </div>
-          </div>
+              </div>
 
-          <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.createdAt")}</div>
-            <div className="w-2/3 text-left">
-              {user?.createdAt
-                ? new Date(user.createdAt).toLocaleString()
-                : t("empty")}
-            </div>
-          </div>
+              <div className="flex justify-between border-b py-3">
+                <div className="pl-4 w-1/3 text-left">{t("fields.lastName")}</div>
+                <div className="w-2/3 text-left">
+                  {user?.lastName ? user.lastName : t("empty")}
+                </div>
+              </div>
 
-          <div className="flex justify-between py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.updatedAt")}</div>
-            <div className="w-2/3 text-left">
-              {user?.updatedAt
-                ? new Date(user.updatedAt).toLocaleString()
-                : t("empty")}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              <div className="flex justify-between border-b py-3">
+                <div className="pl-4 w-1/3 text-left">{t("fields.email")}</div>
+                <div className="w-2/3 text-left">{user?.email || t("empty")}</div>
+              </div>
+
+              <div className="flex justify-between border-b py-3">
+                <div className="pl-4 w-1/3 text-left">{t("fields.status")}</div>
+                <div className="w-2/3 text-left capitalize">
+                  {user?.status || t("empty")}
+                </div>
+              </div>
+
+              <div className="flex justify-between border-b py-3">
+                <div className="pl-4 w-1/3 text-left">{t("fields.roles")}</div>
+                <div className="w-2/3 text-left">
+                  {user?.roles?.length ? (
+                    <div className="flex flex-wrap gap-2">
+                      {user.roles.map((role, index) => (
+                        <Badge key={index} variant="outline">
+                          {role}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    t("empty")
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-between border-b py-3">
+                <div className="pl-4 w-1/3 text-left">{t("fields.createdAt")}</div>
+                <div className="w-2/3 text-left">
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleString()
+                    : t("empty")}
+                </div>
+              </div>
+
+              <div className="flex justify-between py-3">
+                <div className="pl-4 w-1/3 text-left">{t("fields.updatedAt")}</div>
+                <div className="w-2/3 text-left">
+                  {user?.updatedAt
+                    ? new Date(user.updatedAt).toLocaleString()
+                    : t("empty")}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notes">
+          {id && <UserNotes userId={id} canAddNote={!!isAdmin} />}
+        </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="roles">
+            {id && <UserRolesSection userId={id} roles={user?.roles || []} />}
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   );
 }
