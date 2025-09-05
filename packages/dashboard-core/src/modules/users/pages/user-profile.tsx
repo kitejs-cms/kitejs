@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { MoreVertical, Edit, Clipboard, Code } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -6,7 +6,7 @@ import { useBreadcrumb } from "../../../context/breadcrumb-context";
 import { ProfileForm } from "../../profile/components/profile-form";
 import { Button } from "../../../components/ui/button";
 import { useApi } from "../../../hooks/use-api";
-import type { UserResponseModel } from "@kitejs-cms/core/index";
+import type { UserResponseModel, RoleResponseModel } from "@kitejs-cms/core/index";
 import { Separator } from "../../../components/ui/separator";
 import { Badge } from "../../../components/ui/badge";
 import { JsonModal } from "../../../components/json-modal";
@@ -24,6 +24,9 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
+import { UserNotes } from "../components/user-notes";
+import { MultiSelect } from "../../../components/multi-select";
+import { useAuthContext } from "../../../context/auth-context";
 
 export function UserProfilePage() {
   const { copyTable } = useClipboardTable();
@@ -33,7 +36,24 @@ export function UserProfilePage() {
   const [searchParams] = useSearchParams();
   const { t } = useTranslation("users");
   const { setBreadcrumb } = useBreadcrumb();
-  const { data: user, fetchData } = useApi<UserResponseModel>();
+  const { data: user, fetchData: fetchUser } = useApi<UserResponseModel>();
+  const { fetchData: updateUser } = useApi<UserResponseModel>();
+  const { data: roleData, fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
+  const { user: currentUser } = useAuthContext();
+  const isAdmin = currentUser?.roles?.includes("admin");
+
+  const roleOptions =
+    roleData?.map((r) => ({
+      value: r.id,
+      label: r.name.charAt(0).toUpperCase() + r.name.slice(1),
+    })) || [];
+
+  const initialRoleTags = useMemo(() => {
+    if (!user?.roles) return [];
+    return user.roles
+      .map((role) => roleData?.find((r) => r.name === role)?.id || role)
+      .filter(Boolean);
+  }, [user?.roles, roleData]);
 
   useEffect(() => {
     setBreadcrumb([
@@ -61,9 +81,15 @@ export function UserProfilePage() {
 
   useEffect(() => {
     if (id) {
-      fetchData(`users/${id}`);
+      fetchUser(`users/${id}`);
     }
-  }, [id, fetchData]);
+  }, [id, fetchUser]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchRoles("roles");
+    }
+  }, [isAdmin, fetchRoles]);
 
   const handleCopy = () => {
     if (!user) return;
@@ -82,7 +108,7 @@ export function UserProfilePage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
+    <div className="flex flex-col p-4 space-y-4">
       <JsonModal
         isOpen={jsonView}
         onClose={() => setJsonView(false)}
@@ -127,18 +153,18 @@ export function UserProfilePage() {
           </div>
         </CardHeader>
         <Separator />
-        <CardContent className="p-0 text-sm">
+        <CardContent className="p-0 text-sm pb-4">
           <div className="flex justify-between border-b py-3">
             <div className="pl-4 w-1/3 text-left">{t("fields.firstName")}</div>
             <div className="w-2/3 text-left">
-              {user?.firstName && user?.firstName ? user.firstName : t("empty")}
+              {user?.firstName ? user.firstName : t("empty")}
             </div>
           </div>
 
           <div className="flex justify-between border-b py-3">
             <div className="pl-4 w-1/3 text-left">{t("fields.lastName")}</div>
             <div className="w-2/3 text-left">
-              {user?.lastName && user?.lastName ? user.lastName : t("empty")}
+              {user?.lastName ? user.lastName : t("empty")}
             </div>
           </div>
 
@@ -155,12 +181,40 @@ export function UserProfilePage() {
           </div>
 
           <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.roles")}</div>
+            <div className="pl-4 w-1/3 text-left">{t("fields.createdAt")}</div>
             <div className="w-2/3 text-left">
-              {user?.roles?.length > 0 ? (
+              {user?.createdAt
+                ? new Date(user.createdAt).toLocaleString()
+                : t("empty")}
+            </div>
+          </div>
+
+          <div className="flex justify-between border-b py-3">
+            <div className="pl-4 w-1/3 text-left">{t("fields.updatedAt")}</div>
+            <div className="w-2/3 text-left">
+              {user?.updatedAt
+                ? new Date(user.updatedAt).toLocaleString()
+                : t("empty")}
+            </div>
+          </div>
+
+          <div className="flex justify-between py-3">
+            <div className="pl-4 w-1/3 text-left">{t("fields.roles")}</div>
+            <div className="w-2/3 text-left pr-4">
+              {isAdmin ? (
+                <MultiSelect
+                  options={roleOptions}
+                  initialTags={initialRoleTags}
+                  onChange={async (values) => {
+                    if (!id) return;
+                    await updateUser(`users/${id}`, "PATCH", { roles: values });
+                    fetchUser(`users/${id}`);
+                  }}
+                />
+              ) : user?.roles?.length ? (
                 <div className="flex flex-wrap gap-2">
                   {user.roles.map((role, index) => (
-                    <Badge key={index} variant="outline">
+                    <Badge key={index} variant="outline" className="capitalize">
                       {role}
                     </Badge>
                   ))}
@@ -170,26 +224,10 @@ export function UserProfilePage() {
               )}
             </div>
           </div>
-
-          <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.createdAt")}</div>
-            <div className="w-2/3 text-left">
-              {user?.createdAt
-                ? new Date(user.createdAt).toLocaleString()
-                : t("empty")}
-            </div>
-          </div>
-
-          <div className="flex justify-between py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.updatedAt")}</div>
-            <div className="w-2/3 text-left">
-              {user?.updatedAt
-                ? new Date(user.updatedAt).toLocaleString()
-                : t("empty")}
-            </div>
-          </div>
         </CardContent>
       </Card>
+
+      {id && <UserNotes userId={id} canAddNote={!!isAdmin} />}
     </div>
   );
 }

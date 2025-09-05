@@ -11,6 +11,7 @@ import { StorageModule } from "./modules/storage";
 import { PagesModule } from "./modules/pages";
 import { CategoriesModule } from "./modules/categories";
 import { SlugRegistryModule } from "./modules/slug-registry";
+import { NotesModule } from "./modules/notes";
 
 import "multer";
 
@@ -30,6 +31,7 @@ import "multer";
     PagesModule,
     SlugRegistryModule,
     CategoriesModule,
+    NotesModule,
   ],
   providers: [
     {

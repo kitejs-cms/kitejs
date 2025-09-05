@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useBreadcrumb } from "../../../context/breadcrumb-context";
@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
 import { Input } from "../../../components/ui/input";
+import { UserForm } from "../components/user-form";
 
 export function UsersManagePage() {
   const { setBreadcrumb } = useBreadcrumb();
@@ -38,6 +39,7 @@ export function UsersManagePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation("users");
   const navigate = useNavigate();
+  const [openForm, setOpenForm] = useState(false);
 
   const itemsPerPage = 10;
   const currentPage = parseInt(searchParams.get("page") || "1");
@@ -53,16 +55,20 @@ export function UsersManagePage() {
     ]);
   }, [setBreadcrumb, t]);
 
+  const loadUsers = useCallback(() => {
+    fetchData(
+      `users?pgae[number]=${currentPage}&pgae[size]=${itemsPerPage}${searchQuery ? `&search=${searchQuery}` : ""}`,
+    );
+  }, [fetchData, currentPage, itemsPerPage, searchQuery]);
+
   useEffect(() => {
     const queryParams = new URLSearchParams();
     if (currentPage > 1) queryParams.set("page", currentPage.toString());
     if (searchQuery) queryParams.set("search", searchQuery);
     setSearchParams(queryParams, { replace: true });
 
-    fetchData(
-      `users?pgae[number]=${currentPage}&pgae[size]=${itemsPerPage}${searchQuery ? `&search=${searchQuery}` : ""}`
-    );
-  }, [fetchData, currentPage, searchQuery, setSearchParams, searchParams]);
+    loadUsers();
+  }, [currentPage, searchQuery, setSearchParams, searchParams, loadUsers]);
 
   const handleCopy = () => {
     if (!data) return;
@@ -77,6 +83,11 @@ export function UsersManagePage() {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
+      <UserForm
+        isOpen={openForm}
+        onClose={() => setOpenForm(false)}
+        onSuccess={loadUsers}
+      />
       <Card className="w-full shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl">
           <div className="flex items-center justify-between">
@@ -122,7 +133,7 @@ export function UsersManagePage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => console.log("Add new user")}>
+                  <DropdownMenuItem onClick={() => setOpenForm(true)}>
                     <Plus className="mr-2 h-4 w-4" />
                     {t("buttons.add")}
                   </DropdownMenuItem>
@@ -203,7 +214,7 @@ export function UsersManagePage() {
               totalPages: pagination?.totalPages,
               onPageChange: (page) => {
                 fetchData(
-                  `users?pgae[number]=${page}&pgae[size]=${itemsPerPage}`
+                  `users?pgae[number]=${page}&pgae[size]=${itemsPerPage}`,
                 );
                 searchParams.set("page", page.toString());
               },

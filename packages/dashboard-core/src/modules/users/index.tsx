@@ -3,6 +3,7 @@ import { DashboardModule } from "../../models/module.model";
 import { UserPlus, Users, UsersIcon, Shield } from "lucide-react";
 import { UsersManagePage } from "./pages/users-manage";
 import { RolesManagePage } from "./pages/roles-manage";
+import { UserProfilePage } from "./pages/user-profile";
 
 export const UsersModule: DashboardModule = {
   name: "users",
@@ -13,6 +14,12 @@ export const UsersModule: DashboardModule = {
       element: <UsersManagePage />,
       label: "users:menu.usersList",
       icon: <UsersIcon />,
+      requiredPermissions: ["core:users.read"],
+    },
+    {
+      path: "users/:id",
+      element: <UserProfilePage />,
+      label: "users:menu.usersList",
       requiredPermissions: ["core:users.read"],
     },
     {

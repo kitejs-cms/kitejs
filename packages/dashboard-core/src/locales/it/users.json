@@ -9,7 +9,10 @@
     "name": "Nome",
     "description": "Descrizione",
     "permissions": "Permessi",
-    "usersCount": "Utenti"
+    "password": "Password",
+    "roles": "Ruoli",
+    "notes": "Note",
+    "source": "Fonte"
   },
   "buttons": {
     "edit": "Modifica",
@@ -20,8 +23,12 @@
     "addRole": "Aggiungi Ruolo",
     "delete": "Elimina",
     "cancel": "Annulla",
-    "save": "Salva"
+    "save": "Salva",
+    "addNote": "Aggiungi Nota",
+    "editProfile": "Modifica Profilo",
+    "loadMore": "Carica altro"
   },
+  "empty": "Nessun dato",
   "title": {
     "manageUsers": "Gestione Utenti",
     "manageRoles": "Gestione Ruoli"
@@ -38,7 +45,19 @@
   "search": {
     "placeholder": "Cerca utenti..."
   },
+  "notesFilter": {
+    "all": "Tutte le note",
+    "admin": "Note admin",
+    "system": "Note sistema"
+  },
+  "deleteConfirm": {
+    "title": "Elimina nota",
+    "description": "Sei sicuro di voler eliminare questa nota?"
+  },
+  "noNotes": "Nessuna nota",
   "validation": {
-    "required": "Questo campo è obbligatorio."
+    "required": "Questo campo è obbligatorio.",
+    "invalidEmail": "E-mail non valida.",
+    "passwordMin": "La password deve essere lunga almeno 8 caratteri."
   }
 }
