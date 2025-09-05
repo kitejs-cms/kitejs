@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
-import { NoteResponseModel } from '../models/note-response.model';
+import type { NoteResponseModel } from '../models/note-response.model';
 import { NoteSource } from '../models/note-source.enum';
 
 export class NoteResponseDto {

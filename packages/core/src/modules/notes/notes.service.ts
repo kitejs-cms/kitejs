@@ -25,7 +25,7 @@ export class NotesService {
       createdBy: dto.source === NoteSource.ADMIN ? user.sub : null,
     });
     await note.populate<{ createdBy: User }>('createdBy');
-    return new NoteResponseModel(note);
+    return this.toModel(note);
   }
 
   async findNotes(
@@ -46,7 +46,7 @@ export class NotesService {
       .sort({ createdAt: -1 })
       .populate<{ createdBy: User }>('createdBy')
       .exec();
-    return notes.map((n) => new NoteResponseModel(n));
+    return notes.map((n) => this.toModel(n));
   }
 
   async deleteNote(id: string): Promise<void> {
@@ -73,6 +73,20 @@ export class NotesService {
       )
       .populate<{ createdBy: User }>('createdBy');
 
-    return note ? new NoteResponseModel(note) : null;
+    return note ? this.toModel(note) : null;
+  }
+
+  private toModel(note: Note & { createdBy?: User }): NoteResponseModel {
+    return {
+      id: note._id.toString(),
+      source: note.source,
+      content: note.content,
+      targetId: note.target.toString(),
+      targetType: note.targetType,
+      createdAt: note.createdAt,
+      createdBy: note.createdBy
+        ? `${note.createdBy.firstName} ${note.createdBy.lastName}`
+        : undefined,
+    };
   }
 }
