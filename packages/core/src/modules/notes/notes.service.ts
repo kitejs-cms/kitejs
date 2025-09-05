@@ -59,4 +59,20 @@ export class NotesService {
       { deletedAt: new Date() }
     );
   }
+
+  async updateNote(id: string, content: string): Promise<NoteResponseModel> {
+    const note = await this.noteModel
+      .findOneAndUpdate(
+        {
+          _id: ObjectIdUtils.toObjectId(id),
+          source: NoteSource.ADMIN,
+          deletedAt: null,
+        },
+        { content },
+        { new: true }
+      )
+      .populate<{ createdBy: User }>('createdBy');
+
+    return note ? new NoteResponseModel(note) : null;
+  }
 }

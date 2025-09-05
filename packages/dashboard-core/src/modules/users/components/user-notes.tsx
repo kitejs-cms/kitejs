@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "../../../components/ui/dialog";
 import { Badge } from "../../../components/ui/badge";
-import { XIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { XIcon, PlusIcon, Trash2Icon, PencilIcon } from "lucide-react";
 
 interface UserNoteModel {
   id: string;
@@ -57,8 +57,10 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   const { data: notes, fetchData } = useApi<UserNoteModel[]>();
   const { fetchData: sendNote } = useApi<UserNoteModel>();
   const { fetchData: removeNote } = useApi<void>();
+  const { fetchData: editNote } = useApi<UserNoteModel>();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "admin" | "system">("all");
+  const [editing, setEditing] = useState<UserNoteModel | null>(null);
 
   const schema = z.object({
     content: z.string().min(1, { message: t("validation.required") }),
@@ -74,14 +76,19 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   }, [fetchData, userId]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
-    await sendNote(`notes`, "POST", {
-      ...values,
-      targetId: userId,
-      targetType: "user",
-      source: "admin",
-    });
+    if (editing) {
+      await editNote(`notes/${editing.id}`, "PATCH", values);
+    } else {
+      await sendNote(`notes`, "POST", {
+        ...values,
+        targetId: userId,
+        targetType: "user",
+        source: "admin",
+      });
+    }
     await fetchData(`notes?targetType=user&targetId=${userId}`);
     form.reset();
+    setEditing(null);
     setOpen(false);
   };
 
@@ -96,10 +103,21 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   return (
     <>
       {canAddNote && (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o);
+            if (!o) {
+              setEditing(null);
+              form.reset({ content: "" });
+            }
+          }}
+        >
           <DialogContent className="p-0 bg-white rounded-lg shadow-lg flex flex-col">
             <DialogHeader className="flex flex-row justify-between items-center p-4">
-              <DialogTitle>{t("buttons.addNote")}</DialogTitle>
+              <DialogTitle>
+                {editing ? t("buttons.edit") : t("buttons.addNote")}
+              </DialogTitle>
               <DialogClose className="flex items-center gap-2 text-gray-500 hover:text-black transition cursor-pointer">
                 <Badge
                   variant="outline"
@@ -112,23 +130,28 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
             </DialogHeader>
             <Separator className="w-full" />
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4">
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">
-                        {t("fields.notes")}
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea {...field} className="min-h-[80px]" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col flex-1"
+              >
+                <div className="p-4 flex-1 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          {t("fields.notes")}
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea {...field} className="min-h-[80px]" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <DialogFooter className="p-4 mt-auto">
                   <DialogClose asChild>
                     <Button variant="outline" size="sm" type="button">
                       {t("buttons.cancel")}
@@ -167,7 +190,11 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                   size="icon"
                   variant="outline"
                   className="shadow-none"
-                  onClick={() => setOpen(true)}
+                  onClick={() => {
+                    setEditing(null);
+                    form.reset({ content: "" });
+                    setOpen(true);
+                  }}
                 >
                   <PlusIcon className="h-4 w-4" />
                   <span className="sr-only">{t("buttons.addNote")}</span>
@@ -190,15 +217,30 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                         {note.createdBy && <p>{note.createdBy}</p>}
                       </div>
                       {note.source === "admin" && canAddNote && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-gray-500 hover:text-red-600"
-                          onClick={() => handleDelete(note.id)}
-                        >
-                          <Trash2Icon className="h-4 w-4" />
-                          <span className="sr-only">{t("buttons.delete")}</span>
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-gray-500 hover:text-blue-600"
+                            onClick={() => {
+                              setEditing(note);
+                              form.reset({ content: note.content });
+                              setOpen(true);
+                            }}
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                            <span className="sr-only">{t("buttons.edit")}</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-gray-500 hover:text-red-600"
+                            onClick={() => handleDelete(note.id)}
+                          >
+                            <Trash2Icon className="h-4 w-4" />
+                            <span className="sr-only">{t("buttons.delete")}</span>
+                          </Button>
+                        </div>
                       )}
                     </div>
                     <p className="mt-2 text-sm whitespace-pre-line">{note.content}</p>

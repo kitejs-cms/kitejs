@@ -1,6 +1,7 @@
 import { NotesService } from './notes.service';
 import { NoteResponseDto } from './dto/note-response.dto';
 import { NoteCreateDto } from './dto/note-create.dto';
+import { NoteUpdateDto } from './dto/note-update.dto';
 import { NoteSource } from './models/note-source.enum';
 import { JwtAuthGuard, JwtPayloadModel } from '../auth';
 import {
@@ -14,6 +15,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Query,
   UseGuards,
@@ -40,6 +42,19 @@ export class NotesController {
     @GetAuthUser() user: JwtPayloadModel
   ): Promise<NoteResponseDto> {
     const note = await this.notesService.createNote(dto, user);
+    return new NoteResponseDto(note);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update note' })
+  @ApiResponse({ status: 200, type: NoteResponseDto })
+  async updateNote(
+    @Param('id', ValidateObjectIdPipe) id: string,
+    @Body() dto: NoteUpdateDto
+  ): Promise<NoteResponseDto> {
+    const note = await this.notesService.updateNote(id, dto.content);
     return new NoteResponseDto(note);
   }
 
