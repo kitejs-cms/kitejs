@@ -14,6 +14,7 @@ import {
   useClipboardTable,
   useDebounce,
   useBreadcrumb,
+  useHasPermission,
   FilterModal,
   DropdownMenu,
   DropdownMenuContent,
@@ -79,6 +80,10 @@ export function GalleriesManagePage() {
     publishAt: string;
   }>();
   const { data, loading, fetchData, pagination } = useApi<Gallery[]>();
+  const hasPermission = useHasPermission();
+  const canCreate = hasPermission("gallery-plugin:galleries.create");
+  const canUpdate = hasPermission("gallery-plugin:galleries.update");
+  const canDelete = hasPermission("gallery-plugin:galleries.delete");
 
   const [showFilter, setShowFilter] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -330,12 +335,14 @@ export function GalleriesManagePage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => navigate(`/galleries/create`)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t("buttons.addGallery")}
-                  </DropdownMenuItem>
+                  {canCreate && (
+                    <DropdownMenuItem
+                      onClick={() => navigate(`/galleries/create`)}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t("buttons.addGallery")}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleCopy}>
                     <Clipboard className="mr-2 h-4 w-4" />
                     {t("buttons.copy")}
@@ -399,39 +406,46 @@ export function GalleriesManagePage() {
               {
                 key: "id",
                 label: t("fields.actions"),
-                render: (_, row) => (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="shadow-none"
-                      >
-                        <MoreVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/galleries/${row.id}`);
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        {t("buttons.edit")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedForDelete(row);
-                        }}
-                      >
-                        <Trash className="mr-2 h-4 w-4" />
-                        {t("buttons.delete")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ),
+                render: (_, row) => {
+                  if (!canUpdate && !canDelete) return null;
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shadow-none"
+                        >
+                          <MoreVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {canUpdate && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/galleries/${row.id}`);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            {t("buttons.edit")}
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedForDelete(row);
+                            }}
+                          >
+                            <Trash className="mr-2 h-4 w-4" />
+                            {t("buttons.delete")}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                },
               },
             ]}
             pagination={{

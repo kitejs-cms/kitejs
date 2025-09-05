@@ -4,6 +4,7 @@ import { useAuthContext } from "../context/auth-context";
 import { Command, LayoutDashboard } from "lucide-react";
 import { NavMain } from "../components/nav-main";
 import { NavUser } from "../components/nav-user";
+import { useHasPermission } from "../hooks/use-has-permission";
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +26,21 @@ export function AppSidebar({
 }) {
   const { cmsSettings } = useSettingsContext();
   const { user } = useAuthContext();
+  const hasPermission = useHasPermission();
+
+  const filterItems = (list: ItemModule[]): ItemModule[] =>
+    list
+      .filter(
+        (item) =>
+          !item.requiredPermissions ||
+          hasPermission(item.requiredPermissions)
+      )
+      .map((item) => ({
+        ...item,
+        items: item.items ? filterItems(item.items as ItemModule[]) : undefined,
+      }));
+
+  const filteredItems = filterItems(items);
 
   const allItems = [
     {
@@ -35,7 +51,7 @@ export function AppSidebar({
           url: "/",
           icon: LayoutDashboard,
         },
-        ...items,
+        ...filteredItems,
       ],
     },
   ];

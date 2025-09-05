@@ -6,6 +6,7 @@ import i18n from "./i18n";
 import { I18nextProvider } from "react-i18next";
 import { BreadcrumbProvider } from "./context/breadcrumb-context";
 import { ThemeProvider } from "./context/theme-context";
+import { LoadingProvider } from "./context/loading-context";
 import { DashboardModule } from "./models/module.model";
 import { UsersModule } from "./modules/users";
 import { ProfileModule } from "./modules/profile";
@@ -13,6 +14,7 @@ import { CoreModule } from "./modules/core";
 import { PageModule } from "./modules/pages";
 import { PostModule } from "./modules/articles";
 import { DashboardPage } from "./modules/core/pages/dashboard";
+import { ProtectedRoute } from "./components/protected-route";
 
 interface DashboardRouterProps {
   modules?: DashboardModule[];
@@ -51,7 +53,11 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
       <Route
         key={`${mod.name}-${route.path}`}
         path={route.path}
-        element={route.element}
+        element={
+          <ProtectedRoute requiredPermissions={route.requiredPermissions}>
+            {route.element}
+          </ProtectedRoute>
+        }
       />
     ))
   );
@@ -59,11 +65,12 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
   return (
     <BrowserRouter>
       <ThemeProvider defaultTheme="light" storageKey="ui-theme">
-        <AuthProvider>
-          <SettingsProvider settingsSection={settingsSections}>
-            <BreadcrumbProvider>
-              <I18nextProvider i18n={i18n}>
-                <Routes>
+        <LoadingProvider>
+          <AuthProvider>
+            <SettingsProvider settingsSection={settingsSections}>
+              <BreadcrumbProvider>
+                <I18nextProvider i18n={i18n}>
+                  <Routes>
                   {/* Router core - Routes che stanno fuori dal Layout */}
                   {CoreModule.routes.map((route) => (
                     <Route
@@ -74,7 +81,17 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
                   ))}
 
                   {/* Routes che stanno dentro al Layout */}
-                  <Route path="/" element={<Layout menuItems={menuItems} />}>
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute
+                        requiredPermissions="*"
+                        fallback={<Navigate to="/login" replace />}
+                      >
+                        <Layout menuItems={menuItems} />
+                      </ProtectedRoute>
+                    }
+                  >
                     {/* Dashboard route - homepage */}
                     <Route index element={<DashboardPage />} />
 
@@ -89,6 +106,7 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
             </BreadcrumbProvider>
           </SettingsProvider>
         </AuthProvider>
+      </LoadingProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

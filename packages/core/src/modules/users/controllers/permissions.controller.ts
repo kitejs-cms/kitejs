@@ -1,6 +1,7 @@
 import { Controller, Get, UseGuards, BadRequestException } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { PermissionsService } from "../services/permissions.service";
+import { PermissionResponseDto } from "../dto/permission-response.dto";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "../../auth/guards/permissions-guard";
 import { Permissions } from "../../../common";
@@ -12,13 +13,18 @@ export class PermissionsController {
 
   @Get()
   @ApiOperation({ summary: "Retrieve all permissions" })
-  @ApiResponse({ status: 200, description: "List of permissions" })
+  @ApiResponse({
+    status: 200,
+    description: "List of permissions",
+    type: [PermissionResponseDto],
+  })
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions("core:roles.read")
   @ApiBearerAuth()
-  async getPermissions() {
+  async getPermissions(): Promise<PermissionResponseDto[]> {
     try {
-      return await this.permissionsService.findPermissions();
+      const permissions = await this.permissionsService.findPermissions();
+      return permissions.map((p) => new PermissionResponseDto(p));
     } catch {
       throw new BadRequestException("Failed to retrieve permissions.");
     }

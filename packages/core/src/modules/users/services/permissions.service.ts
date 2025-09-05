@@ -54,7 +54,12 @@ export class PermissionsService {
       // Invalidate the list cache
       await this.cache.del(CORE_NAMESPACE, this.CACHE_KEY);
 
-      return savedPermission.toJSON() as PermissionResponseModel;
+      return {
+        id: savedPermission.id,
+        name: savedPermission.name,
+        description: savedPermission.description,
+        namespace: savedPermission.namespace,
+      };
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException("Failed to create the permission.");
@@ -83,14 +88,19 @@ export class PermissionsService {
       .find(namespace ? { namespace } : {})
       .exec();
 
+    const sanitized = permissions.map((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      namespace: item.namespace,
+    }));
+
     if (!namespace) {
       // Store in cache only if namespace is NOT set
-      await this.cache.set(CORE_NAMESPACE, this.CACHE_KEY, permissions);
+      await this.cache.set(CORE_NAMESPACE, this.CACHE_KEY, sanitized);
     }
 
-    return permissions.map((item) =>
-      item.toJSON()
-    ) as PermissionResponseModel[];
+    return sanitized;
   }
 
   /**
@@ -122,7 +132,12 @@ export class PermissionsService {
     // Invalidate the list cache
     await this.cache.del(CORE_NAMESPACE, this.CACHE_KEY);
 
-    return permission.toJSON() as PermissionResponseModel;
+    return {
+      id: permission.id,
+      name: permission.name,
+      description: permission.description,
+      namespace: permission.namespace,
+    };
   }
 
   /**

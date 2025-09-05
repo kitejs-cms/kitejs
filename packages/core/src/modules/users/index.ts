@@ -14,6 +14,8 @@ export * from "./models/permission.model";
 export * from "./dto/create-user.dto";
 export * from "./dto/update-user.dto";
 export * from "./dto/user-response.dto";
+export * from "./dto/role-response.dto";
+export * from "./dto/permission-response.dto";
 
 /* Services */
 export * from "./services/permissions.service";

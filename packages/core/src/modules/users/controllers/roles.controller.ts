@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { RolesService } from "../services/roles.service";
+import { RoleResponseDto } from "../dto/role-response.dto";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "../../auth/guards/permissions-guard";
 import { Permissions, ValidateObjectIdPipe } from "../../../common";
@@ -24,13 +25,18 @@ export class RolesController {
 
   @Get()
   @ApiOperation({ summary: "Retrieve all roles" })
-  @ApiResponse({ status: 200, description: "List of roles" })
+  @ApiResponse({
+    status: 200,
+    description: "List of roles",
+    type: [RoleResponseDto],
+  })
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions("core:roles.read")
     @ApiBearerAuth()
-    async getRoles() {
+    async getRoles(): Promise<RoleResponseDto[]> {
       try {
-        return await this.rolesService.findRoles();
+        const roles = await this.rolesService.findRoles();
+        return roles.map((r) => new RoleResponseDto(r));
       } catch {
         throw new BadRequestException("Failed to retrieve roles.");
       }
@@ -38,18 +44,24 @@ export class RolesController {
 
   @Get(":id")
   @ApiOperation({ summary: "Retrieve a role by ID" })
-  @ApiResponse({ status: 200, description: "The role data" })
+  @ApiResponse({
+    status: 200,
+    description: "The role data",
+    type: RoleResponseDto,
+  })
   @ApiResponse({ status: 404, description: "Role not found" })
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions("core:roles.read")
   @ApiBearerAuth()
-  async getRole(@Param("id", ValidateObjectIdPipe) id: string) {
+  async getRole(
+    @Param("id", ValidateObjectIdPipe) id: string
+  ): Promise<RoleResponseDto> {
     try {
       const role = await this.rolesService.findRoleById(id);
       if (!role) {
         throw new NotFoundException(`Role with ID "${id}" not found.`);
       }
-      return role;
+      return new RoleResponseDto(role);
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new BadRequestException("Failed to retrieve the role.");
@@ -63,9 +75,10 @@ export class RolesController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions("core:roles.create")
     @ApiBearerAuth()
-    async createRole(@Body() body: any) {
+    async createRole(@Body() body: any): Promise<RoleResponseDto | null> {
       try {
-        return await this.rolesService.createRole(body);
+        const role = await this.rolesService.createRole(body);
+        return role ? new RoleResponseDto(role) : null;
       } catch {
         throw new BadRequestException("Failed to create the role.");
       }
@@ -81,9 +94,10 @@ export class RolesController {
   async updateRole(
     @Param("id", ValidateObjectIdPipe) id: string,
     @Body() body: any
-  ) {
+  ): Promise<RoleResponseDto | null> {
     try {
-      return await this.rolesService.updateRole(id, body);
+      const role = await this.rolesService.updateRole(id, body);
+      return role ? new RoleResponseDto(role) : null;
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new BadRequestException("Failed to update the role.");
@@ -118,9 +132,10 @@ export class RolesController {
   async assignPermissions(
     @Param("id", ValidateObjectIdPipe) id: string,
     @Body("permissions") permissions: string[]
-  ) {
+  ): Promise<RoleResponseDto | null> {
     try {
-      return await this.rolesService.assignPermissions(id, permissions);
+      const role = await this.rolesService.assignPermissions(id, permissions);
+      return role ? new RoleResponseDto(role) : null;
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new BadRequestException("Failed to assign permissions.");
@@ -137,9 +152,10 @@ export class RolesController {
   async removePermissions(
     @Param("id", ValidateObjectIdPipe) id: string,
     @Body("permissions") permissions: string[]
-  ) {
+  ): Promise<RoleResponseDto | null> {
     try {
-      return await this.rolesService.removePermissions(id, permissions);
+      const role = await this.rolesService.removePermissions(id, permissions);
+      return role ? new RoleResponseDto(role) : null;
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new BadRequestException("Failed to remove permissions.");

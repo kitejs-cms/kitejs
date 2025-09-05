@@ -1,6 +1,7 @@
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Role } from '../schemas/role.schema';
+import { User } from '../schemas/user.schema';
 import { CacheService } from '../../cache';
 import { CORE_NAMESPACE } from '../../../constants';
 import { Permission } from '../schemas/permission.schema';
@@ -19,6 +20,7 @@ export class RolesService {
 
   constructor(
     @InjectModel(Role.name) private roleModel: Model<Role>,
+    @InjectModel(User.name) private userModel: Model<User>,
     private readonly cache: CacheService
   ) {}
 
@@ -60,16 +62,22 @@ export class RolesService {
       .populate<{ permissions: Permission[] }>('permissions')
       .exec();
 
-    const processedRoles = rolesFromDb.map((role) => ({
-      ...role.toJSON(),
-      permissions: role.permissions.map((permission) => permission.name),
-    }));
+    const processedRoles: RoleResponseModel[] = await Promise.all(
+      rolesFromDb.map(async (role) => ({
+        id: role.id,
+        name: role.name,
+        description: role.description,
+        permissions: role.permissions.map((permission) => permission.name),
+        source: role.source,
+        usersCount: await this.userModel.countDocuments({ roles: role._id }),
+      }))
+    );
 
     if (!namespace) {
       await this.cache.set(CORE_NAMESPACE, this.CACHE_KEY, processedRoles);
     }
 
-    return processedRoles as RoleResponseModel[];
+    return processedRoles;
   }
 
   async findRoleById(id: string): Promise<RoleResponseModel | null> {
@@ -81,9 +89,13 @@ export class RolesService {
     if (!role) return null;
 
     return {
-      ...role.toJSON(),
+      id: role.id,
+      name: role.name,
+      description: role.description,
       permissions: role.permissions.map((item) => item.name),
-    } as RoleResponseModel;
+      source: role.source,
+      usersCount: await this.userModel.countDocuments({ roles: role._id }),
+    };
   }
 
   /**
