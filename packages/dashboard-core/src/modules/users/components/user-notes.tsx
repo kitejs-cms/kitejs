@@ -68,12 +68,17 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   });
 
   useEffect(() => {
-    fetchData(`users/${userId}/notes`);
+    fetchData(`notes?targetType=user&targetId=${userId}`);
   }, [fetchData, userId]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
-    await sendNote(`users/${userId}/notes`, "POST", values);
-    await fetchData(`users/${userId}/notes`);
+    await sendNote(`notes`, "POST", {
+      ...values,
+      targetId: userId,
+      targetType: "user",
+      source: "admin",
+    });
+    await fetchData(`notes?targetType=user&targetId=${userId}`);
     form.reset();
     setOpen(false);
   };
