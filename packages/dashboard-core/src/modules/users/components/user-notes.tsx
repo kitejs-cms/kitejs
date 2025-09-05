@@ -74,6 +74,9 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   const { fetchData: sendNote } = useApi<UserNoteModel>();
   const { fetchData: removeNote } = useApi<void>();
   const { fetchData: editNote } = useApi<UserNoteModel>();
+
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "admin" | "system">("all");
   const [editing, setEditing] = useState<UserNoteModel | null>(null);
@@ -95,15 +98,29 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
 
   const loadNotes = useCallback(
     async (skip: number) => {
-      const sourceParam = filter !== "all" ? `&source=${filter}` : "";
-      const { data } = await fetchData(
-        `notes?targetType=user&targetId=${userId}${sourceParam}&skip=${skip}&limit=${limit + 1}`
-      );
-      const fetched = data || [];
-      setHasMore(fetched.length > limit);
-      const slice = fetched.slice(0, limit);
-      setNotes((prev) => (skip === 0 ? slice : [...prev, ...slice]));
-      setOffset(skip + slice.length);
+      const isInitial = skip === 0;
+      if (isInitial) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      try {
+        const sourceParam = filter !== "all" ? `&source=${filter}` : "";
+        const { data } = await fetchData(
+          `notes?targetType=user&targetId=${userId}${sourceParam}&skip=${skip}&limit=${limit + 1}`
+        );
+        const fetched = data || [];
+        setHasMore(fetched.length > limit);
+        const slice = fetched.slice(0, limit);
+        setNotes((prev) => (skip === 0 ? slice : [...prev, ...slice]));
+        setOffset(skip + slice.length);
+      } finally {
+        if (isInitial) {
+          setLoading(false);
+        } else {
+          setLoadingMore(false);
+        }
+      }
     },
     [fetchData, filter, userId]
   );
@@ -199,7 +216,14 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                       {t("buttons.cancel")}
                     </Button>
                   </DialogClose>
-                  <Button type="submit" size="sm">
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting && (
+                      <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.125em]" />
+                    )}
                     {t("buttons.save")}
                   </Button>
                 </DialogFooter>
@@ -216,15 +240,21 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
             <div className="flex items-center gap-2">
               <Select
                 value={filter}
-                onValueChange={(v) => setFilter(v as "all" | "admin" | "system")}
+                onValueChange={(v) =>
+                  setFilter(v as "all" | "admin" | "system")
+                }
               >
                 <SelectTrigger className="w-[140px] h-8">
                   <SelectValue placeholder={t("notesFilter.all")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("notesFilter.all")}</SelectItem>
-                  <SelectItem value="admin">{t("notesFilter.admin")}</SelectItem>
-                  <SelectItem value="system">{t("notesFilter.system")}</SelectItem>
+                  <SelectItem value="admin">
+                    {t("notesFilter.admin")}
+                  </SelectItem>
+                  <SelectItem value="system">
+                    {t("notesFilter.system")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
               {canAddNote && (
@@ -249,10 +279,10 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
         <CardContent className="p-4">
           {notes.length ? (
             <>
-              <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-0 before:bottom-0 before:w-px before:bg-border">
+              <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-3 before:bottom-3 before:w-px before:bg-border">
                 {notes.map((note) => (
                   <li key={note.id} className="relative pl-6">
-                    <span className="absolute -left-1 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-primary ring-2 ring-background" />
+                    <span className="absolute -left-3.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-gray-400 ring-2 ring-background" />
                     <div className="border rounded-lg p-4 bg-white">
                       <div className="flex items-start justify-between">
                         <div className="text-xs text-muted-foreground">
@@ -272,7 +302,9 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                               }}
                             >
                               <PencilIcon className="h-4 w-4" />
-                              <span className="sr-only">{t("buttons.edit")}</span>
+                              <span className="sr-only">
+                                {t("buttons.edit")}
+                              </span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -281,28 +313,54 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                               onClick={() => handleDelete(note.id)}
                             >
                               <Trash2Icon className="h-4 w-4" />
-                              <span className="sr-only">{t("buttons.delete")}</span>
+                              <span className="sr-only">
+                                {t("buttons.delete")}
+                              </span>
                             </Button>
                           </div>
                         )}
                       </div>
-                      <p className="mt-2 text-sm whitespace-pre-line">{note.content}</p>
+                      <p className="mt-2 text-sm whitespace-pre-line">
+                        {note.content}
+                      </p>
                     </div>
                   </li>
                 ))}
               </ul>
+
               {hasMore && (
                 <div className="mt-4 flex justify-center">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => loadNotes(offset)}
+                    disabled={loadingMore}
                   >
+                    {loadingMore && (
+                      <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.125em]" />
+                    )}
                     {t("buttons.loadMore")}
                   </Button>
                 </div>
               )}
             </>
+          ) : loading ? (
+            // SKELETON LIST (timeline + 3 item fittizi)
+            <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-3 before:bottom-3 before:w-px before:bg-neutral-200">
+              {[0, 1, 2].map((i) => (
+                <li key={i} className="relative pl-6">
+                  <span className="absolute -left-3.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-neutral-300 ring-2 ring-background" />
+                  <div className="border rounded-lg p-4 bg-white">
+                    <div className="animate-pulse space-y-2">
+                      <div className="h-3 w-40 rounded bg-neutral-200" />
+                      <div className="h-3 w-24 rounded bg-neutral-200" />
+                      <div className="h-4 w-full rounded bg-neutral-200" />
+                      <div className="h-4 w-5/6 rounded bg-neutral-200" />
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
               <StickyNote className="h-6 w-6" />
@@ -334,4 +392,3 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
     </>
   );
 }
-
