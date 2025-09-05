@@ -17,6 +17,8 @@ import {
   Body,
   Query,
   UseGuards,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import {
   GetAuthUser,
@@ -56,5 +58,14 @@ export class NotesController {
   ) {
     const notes = await this.notesService.findNotes(targetId, targetType, source);
     return notes.map((n) => new NoteResponseDto(n));
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete note' })
+  @ApiResponse({ status: 200 })
+  async deleteNote(@Param('id', ValidateObjectIdPipe) id: string) {
+    await this.notesService.deleteNote(id);
   }
 }

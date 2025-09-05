@@ -37,13 +37,14 @@ import {
   DialogTitle,
 } from "../../../components/ui/dialog";
 import { Badge } from "../../../components/ui/badge";
-import { XIcon, PlusIcon } from "lucide-react";
+import { XIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 interface UserNoteModel {
   id: string;
   content: string;
   source: string;
   createdAt: string;
+  createdBy?: string;
 }
 
 interface UserNotesProps {
@@ -55,6 +56,7 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
   const { t } = useTranslation("users");
   const { data: notes, fetchData } = useApi<UserNoteModel[]>();
   const { fetchData: sendNote } = useApi<UserNoteModel>();
+  const { fetchData: removeNote } = useApi<void>();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "admin" | "system">("all");
 
@@ -85,6 +87,11 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
 
   const filteredNotes =
     notes?.filter((n) => filter === "all" || n.source === filter) || [];
+
+  const handleDelete = async (id: string) => {
+    await removeNote(`notes/${id}`, "DELETE");
+    await fetchData(`notes?targetType=user&targetId=${userId}`);
+  };
 
   return (
     <>
@@ -175,18 +182,32 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
             <ul className="relative border-l pl-4">
               {filteredNotes.map((note) => (
                 <li key={note.id} className="mb-4 ml-2">
-                  <span className="absolute -left-4 top-2 w-2 h-2 rounded-full bg-gray-400"></span>
-                  <details>
-                    <summary className="cursor-pointer text-sm select-none">
-                      {new Date(note.createdAt).toLocaleString()} - {note.source}
-                    </summary>
-                    <p className="mt-2 text-sm">{note.content}</p>
-                  </details>
+                  <span className="absolute -left-4 top-4 w-2 h-2 rounded-full bg-gray-400"></span>
+                  <div className="border rounded-md p-3 bg-white shadow-sm">
+                    <div className="flex items-start justify-between">
+                      <div className="text-xs text-gray-500">
+                        <p>{new Date(note.createdAt).toLocaleString()}</p>
+                        {note.createdBy && <p>{note.createdBy}</p>}
+                      </div>
+                      {note.source === "admin" && canAddNote && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-gray-500 hover:text-red-600"
+                          onClick={() => handleDelete(note.id)}
+                        >
+                          <Trash2Icon className="h-4 w-4" />
+                          <span className="sr-only">{t("buttons.delete")}</span>
+                        </Button>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm whitespace-pre-line">{note.content}</p>
+                  </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="flex justify-center">
+            <div className="flex justify-center py-8">
               <p className="text-sm text-gray-500 italic">
                 {t("noNotes")}
               </p>

@@ -7,6 +7,7 @@ import { NoteSource } from './models/note-source.enum';
 import { Injectable } from '@nestjs/common';
 import { JwtPayloadModel } from '../auth';
 import { ObjectIdUtils } from '../../common';
+import { User } from '../users';
 
 @Injectable()
 export class NotesService {
@@ -23,6 +24,7 @@ export class NotesService {
       source: dto.source,
       createdBy: dto.source === NoteSource.ADMIN ? user.sub : null,
     });
+    await note.populate<{ createdBy: User }>('createdBy');
     return new NoteResponseModel(note);
   }
 
@@ -42,7 +44,19 @@ export class NotesService {
     const notes = await this.noteModel
       .find(query)
       .sort({ createdAt: -1 })
+      .populate<{ createdBy: User }>('createdBy')
       .exec();
     return notes.map((n) => new NoteResponseModel(n));
+  }
+
+  async deleteNote(id: string): Promise<void> {
+    await this.noteModel.findOneAndUpdate(
+      {
+        _id: ObjectIdUtils.toObjectId(id),
+        source: NoteSource.ADMIN,
+        deletedAt: null,
+      },
+      { deletedAt: new Date() }
+    );
   }
 }

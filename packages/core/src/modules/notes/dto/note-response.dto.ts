@@ -21,6 +21,9 @@ export class NoteResponseDto {
   @ApiProperty()
   createdAt: Date;
 
+  @ApiProperty({ required: false })
+  createdBy?: string;
+
   constructor(model: NoteResponseModel) {
     this.id = model.id;
     this.source = model.source;
@@ -28,5 +31,6 @@ export class NoteResponseDto {
     this.targetId = model.targetId;
     this.targetType = model.targetType;
     this.createdAt = model.createdAt;
+    this.createdBy = model.createdBy;
   }
 }
