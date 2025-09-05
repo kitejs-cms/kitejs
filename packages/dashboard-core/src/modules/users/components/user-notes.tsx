@@ -235,8 +235,8 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
             <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-0 before:bottom-0 before:w-px before:bg-border">
               {filteredNotes.map((note) => (
                 <li key={note.id} className="relative pl-6">
-                  <span className="absolute left-0 top-2 h-3 w-3 rounded-full bg-primary ring-2 ring-background" />
-                  <div className="border rounded-lg p-4 bg-white shadow-sm">
+                  <span className="absolute -left-2 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-primary ring-2 ring-background" />
+                  <div className="border rounded-lg p-4 bg-white">
                     <div className="flex items-start justify-between">
                       <div className="text-xs text-muted-foreground">
                         <p>{new Date(note.createdAt).toLocaleString()}</p>
@@ -247,7 +247,7 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 text-gray-500 hover:text-blue-600"
+                            className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-transparent"
                             onClick={() => {
                               setEditing(note);
                               form.reset({ content: note.content });
@@ -260,7 +260,7 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 text-gray-500 hover:text-red-600"
+                            className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-transparent"
                             onClick={() => handleDelete(note.id)}
                           >
                             <Trash2Icon className="h-4 w-4" />
