@@ -30,10 +30,14 @@ import {
 } from "../../../components/ui/select";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "../../../components/ui/dialog";
+import { Badge } from "../../../components/ui/badge";
+import { XIcon, PlusIcon } from "lucide-react";
 
 interface UserNoteModel {
   id: string;
@@ -81,12 +85,22 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
     <>
       {canAddNote && (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
-            <DialogHeader>
+          <DialogContent className="p-0 bg-white rounded-lg shadow-lg flex flex-col">
+            <DialogHeader className="flex flex-row justify-between items-center p-4">
               <DialogTitle>{t("buttons.addNote")}</DialogTitle>
+              <DialogClose className="flex items-center gap-2 text-gray-500 hover:text-black transition cursor-pointer">
+                <Badge
+                  variant="outline"
+                  className="bg-gray-100 text-gray-400 border-gray-400 font-medium px-2 py-0.5"
+                >
+                  Esc
+                </Badge>
+                <XIcon className="w-5 h-5" />
+              </DialogClose>
             </DialogHeader>
+            <Separator className="w-full" />
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4">
                 <FormField
                   control={form.control}
                   name="content"
@@ -102,11 +116,16 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                     </FormItem>
                   )}
                 />
-                <div className="flex justify-end">
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline" size="sm" type="button">
+                      {t("buttons.cancel")}
+                    </Button>
+                  </DialogClose>
                   <Button type="submit" size="sm">
                     {t("buttons.save")}
                   </Button>
-                </div>
+                </DialogFooter>
               </form>
             </Form>
           </DialogContent>
@@ -132,8 +151,14 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
                 </SelectContent>
               </Select>
               {canAddNote && (
-                <Button size="sm" onClick={() => setOpen(true)}>
-                  {t("buttons.addNote")}
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="shadow-none"
+                  onClick={() => setOpen(true)}
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  <span className="sr-only">{t("buttons.addNote")}</span>
                 </Button>
               )}
             </div>
@@ -156,7 +181,11 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-gray-500">{t("empty")}</p>
+            <div className="flex justify-center">
+              <p className="text-sm text-gray-500 italic">
+                {t("noNotes")}
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -140,7 +140,7 @@ export function UserProfilePage() {
           </div>
         </CardHeader>
         <Separator />
-        <CardContent className="p-0 text-sm">
+        <CardContent className="p-0 text-sm pb-4">
           <div className="flex justify-between border-b py-3">
             <div className="pl-4 w-1/3 text-left">{t("fields.firstName")}</div>
             <div className="w-2/3 text-left">
@@ -168,12 +168,33 @@ export function UserProfilePage() {
           </div>
 
           <div className="flex justify-between border-b py-3">
+            <div className="pl-4 w-1/3 text-left">{t("fields.createdAt")}</div>
+            <div className="w-2/3 text-left">
+              {user?.createdAt
+                ? new Date(user.createdAt).toLocaleString()
+                : t("empty")}
+            </div>
+          </div>
+
+          <div className="flex justify-between border-b py-3">
+            <div className="pl-4 w-1/3 text-left">{t("fields.updatedAt")}</div>
+            <div className="w-2/3 text-left">
+              {user?.updatedAt
+                ? new Date(user.updatedAt).toLocaleString()
+                : t("empty")}
+            </div>
+          </div>
+
+          <div className="flex justify-between py-3">
             <div className="pl-4 w-1/3 text-left">{t("fields.roles")}</div>
             <div className="w-2/3 text-left">
               {isAdmin ? (
                 <MultiSelect
                   options={
-                    roleData?.map((r) => ({ value: r.id, label: r.name })) || []
+                    roleData?.map((r) => ({
+                      value: r.id,
+                      label: r.name.charAt(0).toUpperCase() + r.name.slice(1),
+                    })) || []
                   }
                   initialTags={user?.roles || []}
                   onChange={async (values) => {
@@ -185,7 +206,7 @@ export function UserProfilePage() {
               ) : user?.roles?.length ? (
                 <div className="flex flex-wrap gap-2">
                   {user.roles.map((role, index) => (
-                    <Badge key={index} variant="outline">
+                    <Badge key={index} variant="outline" className="capitalize">
                       {role}
                     </Badge>
                   ))}
@@ -193,24 +214,6 @@ export function UserProfilePage() {
               ) : (
                 t("empty")
               )}
-            </div>
-          </div>
-
-          <div className="flex justify-between border-b py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.createdAt")}</div>
-            <div className="w-2/3 text-left">
-              {user?.createdAt
-                ? new Date(user.createdAt).toLocaleString()
-                : t("empty")}
-            </div>
-          </div>
-
-          <div className="flex justify-between py-3">
-            <div className="pl-4 w-1/3 text-left">{t("fields.updatedAt")}</div>
-            <div className="w-2/3 text-left">
-              {user?.updatedAt
-                ? new Date(user.updatedAt).toLocaleString()
-                : t("empty")}
             </div>
           </div>
         </CardContent>

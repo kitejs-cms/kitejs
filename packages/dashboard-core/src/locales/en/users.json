@@ -49,6 +49,7 @@
     "admin": "Admin Notes",
     "system": "System Notes"
   },
+  "noNotes": "No notes",
   "validation": {
     "required": "This field is required.",
     "invalidEmail": "Invalid email address.",

@@ -182,7 +182,9 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
                           options={
                             roles?.map((role) => ({
                               value: role.id,
-                              label: role.name,
+                              label:
+                                role.name.charAt(0).toUpperCase() +
+                                role.name.slice(1),
                             })) || []
                           }
                           initialTags={field.value || []}

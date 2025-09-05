@@ -49,6 +49,7 @@
     "admin": "Note admin",
     "system": "Note sistema"
   },
+  "noNotes": "Nessuna nota",
   "validation": {
     "required": "Questo campo è obbligatorio.",
     "invalidEmail": "E-mail non valida.",
