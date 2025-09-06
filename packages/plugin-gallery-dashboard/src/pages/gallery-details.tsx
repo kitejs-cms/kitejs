@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, SkeletonPage } from "@kitejs-cms/dashboard-core";
+import { CustomFieldForm } from "@kitejs-cms/dashboard-core/components/custom-field-form";
 import { JsonModal } from "@kitejs-cms/dashboard-core/components/json-modal";
 import { LanguageTabs } from "../components/language-tabs";
 import { ContentSection } from "../components/content-section";
@@ -44,6 +45,9 @@ export function GalleryDetailsPage() {
     closeUnsavedAlert,
     confirmDiscard,
     onGallerySettingsChange,
+    customFields,
+    customFieldsValues,
+    onChangeCustomField,
   } = useGalleryDetails();
 
   useEffect(() => {
@@ -110,6 +114,15 @@ export function GalleryDetailsPage() {
             onChange={onSettingsChange as SettingsChangeHandler}
             onViewJson={() => setJsonView(true)}
           />
+          {customFields.length > 0 && (
+            <CustomFieldForm
+              title={t("settings.gallery-fields.title")}
+              fields={customFields}
+              values={customFieldsValues}
+              onChange={onChangeCustomField}
+              errors={{}}
+            />
+          )}
         </div>
       </div>
 

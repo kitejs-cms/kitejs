@@ -8,9 +8,19 @@ import { Model, PipelineStage, Types } from "mongoose";
 import { Gallery } from "../schemas/gallery.schema";
 import { GalleryUpsertDto } from "../dto/gallery-upsert.dto";
 import { GalleryItemDto } from "../dto/gallery-item.dto";
-import { SlugRegistryService, StorageService } from "@kitejs-cms/core";
+import {
+  SlugRegistryService,
+  StorageService,
+  SettingsService,
+  processCustomFields,
+} from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
-import { GALLERY_SLUG_NAMESPACE } from "../../constants";
+import {
+  GALLERY_SLUG_NAMESPACE,
+  GALLERY_PLUGIN_NAMESPACE,
+  GALLERY_SETTINGS_KEY,
+  type GalleryPluginSettingsModel,
+} from "../../constants";
 import { GalleryResponseModel } from "../models/gallery-response.model";
 import { GalleryTranslationModel } from "../models/gallery-translation.model";
 import { GalleryStatus } from "../models/gallery-status.enum";
@@ -22,13 +32,21 @@ export class GalleryService {
   constructor(
     @InjectModel(Gallery.name) private readonly galleryModel: Model<Gallery>,
     private readonly slugService: SlugRegistryService,
-    private readonly storageService: StorageService
+    private readonly storageService: StorageService,
+    private readonly settingsService: SettingsService
   ) {}
 
   async upsertGallery(
     dto: GalleryUpsertDto,
     user: JwtPayloadModel
   ): Promise<GalleryResponseModel> {
+    const { value } =
+      await this.settingsService.findOne<GalleryPluginSettingsModel>(
+        GALLERY_PLUGIN_NAMESPACE,
+        GALLERY_SETTINGS_KEY
+      );
+    const { customFields = [] } = value || {};
+
     const { id, slug, language, ...rest } = dto;
 
     const translationData = {
@@ -59,16 +77,24 @@ export class GalleryService {
       settings: rest.settings,
     };
 
+    let customFieldsData = {};
+    if (customFields.length > 0) {
+      customFieldsData = processCustomFields(customFields, rest);
+    }
+
     let gallery: Gallery;
 
     if (id) {
       const updateData = {
         ...baseData,
+        ...(customFields.length > 0 ? customFieldsData : {}),
         updatedBy: user.sub,
         $set: { [`translations.${language}`]: translationData },
       };
       gallery = await this.galleryModel.findByIdAndUpdate(id, updateData, {
         new: true,
+        upsert: false,
+        strict: customFields.length === 0,
       });
       if (!gallery) {
         throw new NotFoundException(`Gallery with ID ${id} not found`);
@@ -76,11 +102,17 @@ export class GalleryService {
     } else {
       const createData = {
         ...baseData,
+        ...(customFields.length > 0 ? customFieldsData : {}),
         createdBy: user.sub,
         updatedBy: user.sub,
         translations: { [language]: translationData },
       };
-      gallery = await this.galleryModel.create(createData);
+      if (customFields.length > 0) {
+        gallery = new this.galleryModel(createData, null, { strict: false });
+        await gallery.save();
+      } else {
+        gallery = await this.galleryModel.create(createData);
+      }
     }
 
     await this.slugService.registerSlug(

@@ -38,6 +38,12 @@
     "grid": "Grid settings",
     "preview": "Preview"
   },
+  "settings": {
+    "description": "Configure gallery settings.",
+    "gallery-fields": {
+      "title": "Custom Fields"
+    }
+  },
   "errors": {
     "titleRequired": "Title is required",
     "slugRequired": "Slug is required"
