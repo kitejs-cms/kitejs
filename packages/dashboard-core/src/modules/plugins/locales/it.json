@@ -1,0 +1,25 @@
+{
+  "settings": {
+    "title": "Plugin",
+    "description": "Gestisci i plugin installati.",
+    "loading": "Caricamento...",
+    "columns": {
+      "namespace": "Namespace",
+      "version": "Versione",
+      "status": "Stato",
+      "actions": "Azioni"
+    },
+    "status": {
+      "enabled": "Abilitato",
+      "disabled": "Disabilitato",
+      "pending": "In attesa di riavvio"
+    },
+    "buttons": {
+      "disable": "Disabilita"
+    },
+    "toast": {
+      "disabled": "Plugin disabilitato. Riavvia il CMS per applicare le modifiche.",
+      "error": "Errore durante la disabilitazione del plugin."
+    }
+  }
+}

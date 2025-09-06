@@ -1,0 +1,25 @@
+{
+  "settings": {
+    "title": "Plugins",
+    "description": "Manage installed plugins.",
+    "loading": "Loading...",
+    "columns": {
+      "namespace": "Namespace",
+      "version": "Version",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "pending": "Pending restart"
+    },
+    "buttons": {
+      "disable": "Disable"
+    },
+    "toast": {
+      "disabled": "Plugin disabled. Restart CMS to apply changes.",
+      "error": "Failed to disable plugin."
+    }
+  }
+}
