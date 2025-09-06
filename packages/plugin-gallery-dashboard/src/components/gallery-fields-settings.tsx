@@ -1,7 +1,7 @@
 import type { FieldDefinition } from "@kitejs-cms/core";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, useSettingsContext } from "@kitejs-cms/dashboard-core";
+import { Button, Skeleton, useSettingsContext } from "@kitejs-cms/dashboard-core";
 import { CustomFieldBuilder } from "@kitejs-cms/dashboard-core/components/custom-field-builder";
 import { type GalleryPluginSettingsModel } from "../../../plugin-gallery-api";
 
@@ -53,7 +53,12 @@ export function GalleryFieldsSettings() {
   };
 
   if (isLoading) {
-    return <div>{t("common.loading")}</div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-10 w-24 ml-auto" />
+      </div>
+    );
   }
 
   return (
