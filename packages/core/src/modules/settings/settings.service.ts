@@ -3,6 +3,8 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  Inject,
+  forwardRef,
 } from "@nestjs/common";
 import { Setting, SettingDocument } from "./settings.schema";
 import { InjectModel } from "@nestjs/mongoose";
@@ -25,6 +27,7 @@ export class SettingsService {
     @InjectModel(Setting.name)
     private readonly settingModel: Model<SettingDocument>,
     private readonly cache: CacheService,
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService
   ) {}
 

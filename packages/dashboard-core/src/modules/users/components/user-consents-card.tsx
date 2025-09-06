@@ -141,6 +141,7 @@ export function UserConsentsCard({
       slug: def.slug,
       given: match?.given ?? false,
       timestamp: match?.timestamp,
+      required: def.required,
     };
   });
 
@@ -187,9 +188,13 @@ export function UserConsentsCard({
               <div className="pr-4">
                 <Switch
                   checked={consent.given}
-                  disabled={!canEdit || pending}
+                  disabled={
+                    !canEdit ||
+                    pending ||
+                    (consent.required && consent.given)
+                  }
                   onCheckedChange={(checked) => {
-                    if (!canEdit) return;
+                    if (!canEdit || (consent.required && !checked)) return;
                     setSelected({ ...consent, given: checked });
                     setConfirmOpen(true);
                   }}

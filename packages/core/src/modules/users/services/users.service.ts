@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  forwardRef,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { User } from "../schemas/user.schema";
@@ -11,14 +16,21 @@ import { PermissionsService } from "./permissions.service";
 import { RolesService } from "./roles.service";
 import argon2 from "argon2";
 import { buildUserSearchQuery } from "../helpers/build-user-search-query";
+import {
+  SettingsService,
+  USER_SETTINGS_KEY,
+  UserSettingsModel,
+} from "../../settings";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private readonly permissionService: PermissionsService,
-    private readonly roleService: RolesService
-  ) { }
+    private readonly roleService: RolesService,
+    @Inject(forwardRef(() => SettingsService))
+    private readonly settingsService: SettingsService
+  ) {}
 
   /**
    * Creates a new user.
@@ -215,6 +227,20 @@ export class UserService {
     userId: string,
     consents: Array<{ consentType: string; given: boolean }>
   ): Promise<UserResponseModel | null> {
+    const settings = await this.settingsService.findOne<UserSettingsModel>(
+      "core",
+      USER_SETTINGS_KEY
+    );
+    const required = new Set(
+      settings?.value.consents
+        ?.filter((c) => c.required)
+        .map((c) => c.slug) ?? []
+    );
+
+    if (consents.some((c) => required.has(c.consentType) && !c.given)) {
+      throw new BadRequestException("Cannot disable required consent.");
+    }
+
     try {
       const user = await this.userModel
         .findByIdAndUpdate(
