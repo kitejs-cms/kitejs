@@ -62,9 +62,15 @@
   },
   "settings": {
     "title": "Impostazioni Utenti",
-    "description": "Configura la registrazione e il ruolo predefinito.",
+    "description": "Configura registrazione, ruolo predefinito e consensi.",
     "registrationOpen": "Permetti registrazione",
     "defaultRole": "Ruolo predefinito",
-    "requiredConsents": "Consensi richiesti"
+    "consentsEnabled": "Abilita consensi",
+    "consents": "Consensi",
+    "consentName": "Nome",
+    "consentSlug": "Slug",
+    "consentDescription": "Descrizione",
+    "consentRequired": "Richiesto",
+    "addConsent": "Aggiungi consenso"
   }
 }

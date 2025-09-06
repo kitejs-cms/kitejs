@@ -62,9 +62,15 @@
   },
   "settings": {
     "title": "User Settings",
-    "description": "Configure user registration and default role.",
+    "description": "Configure user registration, default role and consents.",
     "registrationOpen": "Allow registration",
     "defaultRole": "Default role",
-    "requiredConsents": "Required consents"
+    "consentsEnabled": "Enable consents",
+    "consents": "Consents",
+    "consentName": "Name",
+    "consentSlug": "Slug",
+    "consentDescription": "Description",
+    "consentRequired": "Required",
+    "addConsent": "Add consent"
   }
 }

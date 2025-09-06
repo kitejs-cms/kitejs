@@ -247,7 +247,13 @@ export const CoreSetting: SettingModel[] = [
     value: {
       registrationOpen: true,
       defaultRole: "user",
-      requiredConsents: [] as string[],
+      consentsEnabled: false,
+      consents: [] as Array<{
+        name: string;
+        slug: string;
+        description?: string;
+        required: boolean;
+      }>,
     },
   },
 ];
