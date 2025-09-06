@@ -6,6 +6,7 @@ import {
 } from "../../../components/ui/card";
 import { Separator } from "../../../components/ui/separator";
 import { Skeleton } from "../../../components/ui/skeleton";
+import { Switch } from "../../../components/ui/switch";
 import { useTranslation } from "react-i18next";
 
 interface UserConsent {
@@ -43,9 +44,9 @@ export function UserConsentsCard({
         <Separator />
         <CardContent className="p-0 text-sm pb-4">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="flex justify-between border-b py-3">
+            <div key={i} className="flex items-center justify-between border-b py-3">
               <Skeleton className="h-4 w-1/3 ml-4" />
-              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-6 w-10" />
               <Skeleton className="h-4 w-1/3 mr-4" />
             </div>
           ))}
@@ -68,7 +69,7 @@ export function UserConsentsCard({
   });
 
   return (
-    <Card className="w-full md:w-1/3 shadow-neutral-50 gap-0 py-0">
+    <Card className="w-full md:w-1/3 shadow-neutral-50 gap-0 py-0 md:self-start">
       <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
         <CardTitle>{t("consentsCard.title")}</CardTitle>
       </CardHeader>
@@ -76,21 +77,24 @@ export function UserConsentsCard({
       <CardContent className="p-0 text-sm pb-4">
         {merged.length > 0 ? (
           merged.map((consent, index) => (
-            <div key={index} className="flex justify-between border-b py-3">
+            <div
+              key={index}
+              className="flex items-center justify-between border-b py-3"
+            >
               <div className="pl-4 w-1/3 text-left">{consent.name}</div>
-              <div className="w-1/3 text-left">
+              <div className="w-1/3 flex justify-center">
+                <Switch checked={consent.given} disabled />
+              </div>
+              <div className="w-1/3 text-left pr-4">
                 {consent.given
-                  ? t("consentsCard.given")
+                  ? consent.timestamp
+                    ? new Date(consent.timestamp).toLocaleString()
+                    : t("empty")
                   : `${t("consentsCard.notGiven")}${
                       !consent.timestamp
                         ? ` (${t("consentsCard.neverGiven")})`
                         : ""
                     }`}
-              </div>
-              <div className="w-1/3 text-left pr-4">
-                {consent.timestamp
-                  ? new Date(consent.timestamp).toLocaleString()
-                  : t("empty")}
               </div>
             </div>
           ))
