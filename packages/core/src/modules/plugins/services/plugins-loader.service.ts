@@ -28,6 +28,7 @@ export class PluginsLoaderService {
    * - Skips disabled plugins.
    * - Skips plugins that previously failed.
    * - Initializes new plugins and updates their status.
+   * - Ensures default settings are inserted idempotently, even for existing installations.
    * If a plugin is not found in the database, it is created immediately.
    * @param plugins - Array of IPlugin instances.
    */
@@ -65,18 +66,21 @@ export class PluginsLoaderService {
         if (isPending) {
           // Initialize the plugin
           await pluginInstance.initialize();
+        }
 
-          // Create default settings if provided
-          if (pluginInstance.settings) {
-            for (const setting of pluginInstance.settings) {
-              await this.settingService.create({
-                namespace: pluginInstance.namespace,
-                key: setting.key,
-                value: setting.value,
-                type: this.settingService.getSettingType(
-                  pluginInstance.namespace
-                ),
-              });
+        // Insert default settings idempotently for new or existing plugins
+        if (pluginInstance.settings) {
+          for (const setting of pluginInstance.settings) {
+            const exists = await this.settingService.findOne(
+              pluginInstance.namespace,
+              setting.key
+            );
+            if (!exists) {
+              await this.settingService.upsert(
+                pluginInstance.namespace,
+                setting.key,
+                setting.value
+              );
             }
           }
         }
