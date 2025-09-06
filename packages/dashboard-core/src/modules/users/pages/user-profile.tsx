@@ -46,6 +46,9 @@ export function UserProfilePage() {
   const isAdmin = currentUser?.roles?.includes("admin");
   const { getSetting } = useSettingsContext();
   const [consentsEnabled, setConsentsEnabled] = useState(false);
+  const [consentDefinitions, setConsentDefinitions] = useState<
+    UserSettingsModel["consents"] | undefined
+  >(undefined);
 
   const roleOptions =
     roleData?.map((r) => ({
@@ -103,6 +106,7 @@ export function UserProfilePage() {
         "core:users"
       );
       setConsentsEnabled(setting?.value?.consentsEnabled ?? false);
+      setConsentDefinitions(setting?.value?.consents || []);
     })();
   }, [getSetting]);
 
@@ -243,7 +247,13 @@ export function UserProfilePage() {
           </CardContent>
         </Card>
 
-        {consentsEnabled && <UserConsentsCard consents={user?.consents} />}
+        {consentsEnabled && (
+          <UserConsentsCard
+            consents={user?.consents}
+            definitions={consentDefinitions}
+            loading={!user}
+          />
+        )}
       </div>
 
       {id && <UserNotes userId={id} canAddNote={!!isAdmin} />}
