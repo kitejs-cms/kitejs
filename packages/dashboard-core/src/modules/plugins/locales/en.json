@@ -6,10 +6,17 @@
     "columns": {
       "namespace": "Namespace",
       "version": "Version",
+      "installedAt": "Installed",
       "status": "Status",
+      "enabled": "State",
       "actions": "Actions"
     },
     "status": {
+      "installed": "Installed",
+      "pending": "Pending",
+      "failed": "Error"
+    },
+    "enabled": {
       "enabled": "Enabled",
       "disabled": "Disabled",
       "pending": "Pending restart"

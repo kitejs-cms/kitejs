@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../../components/ui/tooltip";
 import { useApi } from "../../../hooks/use-api";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
 
@@ -53,7 +54,9 @@ export function PluginsSettings() {
           <TableRow>
             <TableHead>{t("settings.columns.namespace")}</TableHead>
             <TableHead>{t("settings.columns.version")}</TableHead>
+            <TableHead>{t("settings.columns.installedAt")}</TableHead>
             <TableHead>{t("settings.columns.status")}</TableHead>
+            <TableHead>{t("settings.columns.enabled")}</TableHead>
             <TableHead>{t("settings.columns.actions")}</TableHead>
           </TableRow>
         </TableHeader>
@@ -63,11 +66,35 @@ export function PluginsSettings() {
               <TableCell>{plugin.namespace}</TableCell>
               <TableCell>{plugin.version}</TableCell>
               <TableCell>
+                {new Date(plugin.installedAt).toLocaleDateString()}
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span
+                        className={`mr-2 inline-block h-2 w-2 rounded-full ${
+                          plugin.status === "installed"
+                            ? "bg-green-500"
+                            : plugin.status === "pending"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                        }`}
+                      />
+                    </TooltipTrigger>
+                    {plugin.status === "failed" && plugin.lastError && (
+                      <TooltipContent>{plugin.lastError}</TooltipContent>
+                    )}
+                  </Tooltip>
+                  {t(`settings.status.${plugin.status}`)}
+                </div>
+              </TableCell>
+              <TableCell>
                 {plugin.enabled
-                  ? t("settings.status.enabled")
+                  ? t("settings.enabled.enabled")
                   : plugin.pendingDisable
-                  ? t("settings.status.pending")
-                  : t("settings.status.disabled")}
+                  ? t("settings.enabled.pending")
+                  : t("settings.enabled.disabled")}
               </TableCell>
               <TableCell>
                 {plugin.enabled && (
