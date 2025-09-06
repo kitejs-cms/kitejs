@@ -247,11 +247,14 @@ export function UserProfilePage() {
           </CardContent>
         </Card>
 
-        {consentsEnabled && (
+        {consentsEnabled && id && (
           <UserConsentsCard
+            userId={id}
             consents={user?.consents}
             definitions={consentDefinitions}
             loading={!user}
+            canEdit={!!isAdmin}
+            onUpdated={() => fetchUser(`users/${id}`)}
           />
         )}
       </div>

@@ -8,6 +8,18 @@ import { Separator } from "../../../components/ui/separator";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { Switch } from "../../../components/ui/switch";
 import { useTranslation } from "react-i18next";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/ui/alert-dialog";
+import { useState } from "react";
+import { useApi } from "../../../hooks/use-api";
 
 interface UserConsent {
   consentType: string;
@@ -23,17 +35,35 @@ interface ConsentDefinition {
 }
 
 interface UserConsentsCardProps {
+  userId: string;
   consents?: UserConsent[];
   definitions?: ConsentDefinition[];
   loading?: boolean;
+  canEdit?: boolean;
+  onUpdated?: () => void;
 }
 
 export function UserConsentsCard({
+  userId,
   consents,
   definitions,
   loading,
+  canEdit,
+  onUpdated,
 }: UserConsentsCardProps) {
   const { t } = useTranslation("users");
+  const { fetchData: updateConsents } = useApi<UserConsent[]>();
+  const { fetchData: addNote } = useApi<void>();
+  const [pending, setPending] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selected, setSelected] = useState<
+    | {
+        slug: string;
+        name: string;
+        given: boolean;
+      }
+    | null
+  >(null);
 
   if (loading || !definitions) {
     return (
@@ -63,6 +93,7 @@ export function UserConsentsCard({
     const match = consentMap.get(def.slug);
     return {
       name: def.name,
+      slug: def.slug,
       given: match?.given ?? false,
       timestamp: match?.timestamp,
     };
@@ -83,7 +114,15 @@ export function UserConsentsCard({
             >
               <div className="pl-4 w-1/3 text-left">{consent.name}</div>
               <div className="w-1/3 flex justify-center">
-                <Switch checked={consent.given} disabled />
+                <Switch
+                  checked={consent.given}
+                  disabled={!canEdit || pending}
+                  onCheckedChange={(checked) => {
+                    if (!canEdit) return;
+                    setSelected({ ...consent, given: checked });
+                    setConfirmOpen(true);
+                  }}
+                />
               </div>
               <div className="w-1/3 text-left pr-4">
                 {consent.given
@@ -102,6 +141,61 @@ export function UserConsentsCard({
           <div className="p-4 text-center">{t("consentsCard.noConsents")}</div>
         )}
       </CardContent>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("consentsCard.confirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("consentsCard.confirmDescription", {
+                action: selected?.given
+                  ? t("consentsCard.actions.give")
+                  : t("consentsCard.actions.revoke"),
+                name: selected?.name,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("buttons.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!selected) return;
+                setPending(true);
+                try {
+                  const updated = merged.map((c) => ({
+                    consentType: c.slug,
+                    given: c.slug === selected.slug ? selected.given : c.given,
+                  }));
+                  await updateConsents(
+                    `users/${userId}/consents`,
+                    "PATCH",
+                    { consents: updated }
+                  );
+                  await addNote(`notes`, "POST", {
+                    targetId: userId,
+                    targetType: "user",
+                    source: "system",
+                    content: t("consentsCard.forcedNote", {
+                      name: selected.name,
+                      status: selected.given
+                        ? t("consentsCard.actions.give")
+                        : t("consentsCard.actions.revoke"),
+                    }),
+                  });
+                  onUpdated?.();
+                } finally {
+                  setPending(false);
+                  setConfirmOpen(false);
+                  setSelected(null);
+                }
+              }}
+            >
+              {t("buttons.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

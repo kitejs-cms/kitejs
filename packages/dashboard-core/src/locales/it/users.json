@@ -26,7 +26,8 @@
     "save": "Salva",
     "addNote": "Aggiungi Nota",
     "editProfile": "Modifica Profilo",
-    "loadMore": "Carica altro"
+    "loadMore": "Carica altro",
+    "confirm": "Conferma"
   },
   "empty": "Nessun dato",
   "title": {
@@ -86,6 +87,13 @@
     "notGiven": "Non dato",
     "neverGiven": "mai fornito",
     "timestamp": "Data",
-    "noConsents": "Nessun consenso"
+    "noConsents": "Nessun consenso",
+    "confirmTitle": "Forzare il consenso",
+    "confirmDescription": "Sei sicuro di voler {{action}} il consenso \"{{name}}\"?",
+    "actions": {
+      "give": "concedere",
+      "revoke": "revocare"
+    },
+    "forcedNote": "L'amministratore ha forzato il consenso \"{{name}}\" come {{status}}"
   }
 }

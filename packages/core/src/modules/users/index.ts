@@ -15,6 +15,7 @@ export * from "./dto/create-user.dto";
 export * from "./dto/update-user.dto";
 export * from "./dto/user-response.dto";
 export * from "./dto/user-consent.dto";
+export * from "./dto/update-user-consents.dto";
 export * from "./dto/role-response.dto";
 export * from "./dto/permission-response.dto";
 

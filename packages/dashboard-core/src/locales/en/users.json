@@ -26,7 +26,8 @@
     "save": "Save",
     "addNote": "Add Note",
     "editProfile": "Edit Profile",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "confirm": "Confirm"
   },
   "empty": "No data",
   "title": {
@@ -86,6 +87,13 @@
     "notGiven": "Not given",
     "neverGiven": "never given",
     "timestamp": "Date",
-    "noConsents": "No consents"
+    "noConsents": "No consents",
+    "confirmTitle": "Force consent change",
+    "confirmDescription": "Are you sure you want to {{action}} the consent \"{{name}}\"?",
+    "actions": {
+      "give": "give",
+      "revoke": "revoke"
+    },
+    "forcedNote": "Admin forced consent \"{{name}}\" as {{status}}"
   }
 }
