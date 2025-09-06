@@ -67,14 +67,19 @@ export function UserConsentsCard({
 
   if (loading || !definitions) {
     return (
-      <Card className="w-full md:w-1/3 shadow-neutral-50 gap-0 py-0">
+      <Card className="w-full lg:w-1/4 shadow-neutral-50 gap-0 py-0 lg:self-start">
         <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
           <CardTitle>{t("consentsCard.title")}</CardTitle>
         </CardHeader>
         <Separator />
         <CardContent className="p-0 text-sm pb-4">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="flex items-center justify-between border-b py-3">
+          {[0, 1, 2].map((i, index) => (
+            <div
+              key={i}
+              className={`flex items-center justify-between py-3 ${
+                index < 2 ? "border-b" : ""
+              }`}
+            >
               <Skeleton className="h-4 w-1/3 ml-4" />
               <Skeleton className="h-6 w-10" />
               <Skeleton className="h-4 w-1/3 mr-4" />
@@ -100,7 +105,7 @@ export function UserConsentsCard({
   });
 
   return (
-    <Card className="w-full md:w-1/3 shadow-neutral-50 gap-0 py-0 md:self-start">
+    <Card className="w-full lg:w-1/4 shadow-neutral-50 gap-0 py-0 lg:self-start">
       <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
         <CardTitle>{t("consentsCard.title")}</CardTitle>
       </CardHeader>
@@ -110,7 +115,9 @@ export function UserConsentsCard({
           merged.map((consent, index) => (
             <div
               key={index}
-              className="flex items-center justify-between border-b py-3"
+              className={`flex items-center justify-between py-3 ${
+                index < merged.length - 1 ? "border-b" : ""
+              }`}
             >
               <div className="pl-4 w-1/3 text-left">{consent.name}</div>
               <div className="w-1/3 flex justify-center">

@@ -139,8 +139,8 @@ export function UserProfilePage() {
         onClose={() => setProfileForm(false)}
       />
 
-      <div className="flex flex-col md:flex-row md:items-start gap-4">
-        <Card className="w-full md:w-2/3 shadow-neutral-50 gap-0 py-0">
+      <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+        <Card className="w-full lg:w-3/4 shadow-neutral-50 gap-0 py-0">
           <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
             <div className="flex items-center justify-between">
               <CardTitle>
