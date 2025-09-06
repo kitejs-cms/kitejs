@@ -80,9 +80,11 @@ export function UserConsentsCard({
                 index < 2 ? "border-b" : ""
               }`}
             >
-              <Skeleton className="h-4 w-1/3 ml-4" />
-              <Skeleton className="h-6 w-10" />
-              <Skeleton className="h-4 w-1/3 mr-4" />
+              <div className="flex-1 pl-4">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-1/3 mt-1" />
+              </div>
+              <Skeleton className="h-6 w-10 mr-4" />
             </div>
           ))}
         </CardContent>
@@ -119,8 +121,21 @@ export function UserConsentsCard({
                 index < merged.length - 1 ? "border-b" : ""
               }`}
             >
-              <div className="pl-4 w-1/3 text-left">{consent.name}</div>
-              <div className="w-1/3 flex justify-center">
+              <div className="flex-1 pl-4 text-left">
+                <div>{consent.name}</div>
+                <div className="text-xs text-neutral-500">
+                  {consent.given
+                    ? consent.timestamp
+                      ? new Date(consent.timestamp).toLocaleString()
+                      : t("empty")
+                    : `${t("consentsCard.notGiven")}${
+                        !consent.timestamp
+                          ? ` (${t("consentsCard.neverGiven")})`
+                          : ""
+                      }`}
+                </div>
+              </div>
+              <div className="pr-4">
                 <Switch
                   checked={consent.given}
                   disabled={!canEdit || pending}
@@ -130,17 +145,6 @@ export function UserConsentsCard({
                     setConfirmOpen(true);
                   }}
                 />
-              </div>
-              <div className="w-1/3 text-left pr-4">
-                {consent.given
-                  ? consent.timestamp
-                    ? new Date(consent.timestamp).toLocaleString()
-                    : t("empty")
-                  : `${t("consentsCard.notGiven")}${
-                      !consent.timestamp
-                        ? ` (${t("consentsCard.neverGiven")})`
-                        : ""
-                    }`}
               </div>
             </div>
           ))
