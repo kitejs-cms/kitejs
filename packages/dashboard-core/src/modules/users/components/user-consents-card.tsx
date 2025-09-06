@@ -7,6 +7,7 @@ import {
 import { Separator } from "../../../components/ui/separator";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { Switch } from "../../../components/ui/switch";
+import { Button } from "../../../components/ui/button";
 import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
@@ -18,8 +19,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../../components/ui/alert-dialog";
-import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/dialog";
+import { History as HistoryIcon } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useApi } from "../../../hooks/use-api";
+import { useAuthContext } from "../../../context/auth-context";
 
 interface UserConsent {
   consentType: string;
@@ -32,6 +41,13 @@ interface ConsentDefinition {
   slug: string;
   description?: string;
   required: boolean;
+}
+
+interface ConsentHistory {
+  id: string;
+  content: string;
+  createdAt: string;
+  createdBy?: string;
 }
 
 interface UserConsentsCardProps {
@@ -51,11 +67,17 @@ export function UserConsentsCard({
   canEdit,
   onUpdated,
 }: UserConsentsCardProps) {
-  const { t } = useTranslation("users");
+  const { t, i18n } = useTranslation("users");
+  const en = i18n.getFixedT("en", "users");
+  const { user: currentUser } = useAuthContext();
   const { fetchData: updateConsents } = useApi<UserConsent[]>();
   const { fetchData: addNote } = useApi<void>();
+  const { fetchData: loadHistory } = useApi<ConsentHistory[]>();
   const [pending, setPending] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [history, setHistory] = useState<ConsentHistory[]>([]);
   const [selected, setSelected] = useState<
     | {
         slug: string;
@@ -64,6 +86,21 @@ export function UserConsentsCard({
       }
     | null
   >(null);
+
+  useEffect(() => {
+    if (!historyOpen) return;
+    (async () => {
+      setHistoryLoading(true);
+      try {
+        const { data } = await loadHistory(
+          `notes?targetType=user&targetId=${userId}&source=consent`
+        );
+        setHistory(data || []);
+      } finally {
+        setHistoryLoading(false);
+      }
+    })();
+  }, [historyOpen, loadHistory, userId]);
 
   if (loading || !definitions) {
     return (
@@ -109,7 +146,18 @@ export function UserConsentsCard({
   return (
     <Card className="w-full lg:w-1/4 shadow-neutral-50 gap-0 py-0 lg:self-start">
       <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
-        <CardTitle>{t("consentsCard.title")}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>{t("consentsCard.title")}</CardTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setHistoryOpen(true)}
+            title={t("consentsCard.historyButton")}
+          >
+            <HistoryIcon className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
       <Separator />
       <CardContent className="p-0 text-sm pb-4">
@@ -183,15 +231,21 @@ export function UserConsentsCard({
                     "PATCH",
                     { consents: updated }
                   );
+                  const actor = currentUser
+                    ? `${currentUser.firstName ?? ""} ${
+                        currentUser.lastName ?? ""
+                      }`.trim() || currentUser.email
+                    : "";
                   await addNote(`notes`, "POST", {
                     targetId: userId,
                     targetType: "user",
-                    source: "system",
-                    content: t("consentsCard.forcedNote", {
+                    source: "consent",
+                    content: en("consentsCard.forcedNote", {
+                      actor,
                       name: selected.name,
                       status: selected.given
-                        ? t("consentsCard.actions.give")
-                        : t("consentsCard.actions.revoke"),
+                        ? en("consentsCard.actions.give")
+                        : en("consentsCard.actions.revoke"),
                     }),
                   });
                   onUpdated?.();
@@ -207,6 +261,34 @@ export function UserConsentsCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("consentsCard.historyTitle")}</DialogTitle>
+          </DialogHeader>
+          {historyLoading ? (
+            <div className="p-4 space-y-2">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          ) : history.length ? (
+            <div className="p-4 space-y-4">
+              {history.map((item) => (
+                <div key={item.id}>
+                  <div>{item.content}</div>
+                  <div className="text-xs text-neutral-500">
+                    {new Date(item.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 text-center">
+              {t("consentsCard.historyEmpty")}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

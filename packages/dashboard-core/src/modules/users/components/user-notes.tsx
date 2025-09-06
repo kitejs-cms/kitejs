@@ -109,7 +109,7 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
         const { data } = await fetchData(
           `notes?targetType=user&targetId=${userId}${sourceParam}&skip=${skip}&limit=${limit + 1}`
         );
-        const fetched = data || [];
+        const fetched = (data || []).filter((n) => n.source !== "consent");
         setHasMore(fetched.length > limit);
         const slice = fetched.slice(0, limit);
         setNotes((prev) => (skip === 0 ? slice : [...prev, ...slice]));

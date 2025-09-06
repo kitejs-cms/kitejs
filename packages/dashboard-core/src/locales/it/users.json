@@ -94,6 +94,9 @@
       "give": "concedere",
       "revoke": "revocare"
     },
-    "forcedNote": "L'amministratore ha forzato il consenso \"{{name}}\" come {{status}}"
+    "forcedNote": "{{actor}} ha forzato il consenso \"{{name}}\" come {{status}}",
+    "historyButton": "Storico",
+    "historyTitle": "Storico consensi",
+    "historyEmpty": "Nessuna azione sui consensi registrata"
   }
 }

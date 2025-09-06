@@ -94,6 +94,9 @@
       "give": "give",
       "revoke": "revoke"
     },
-    "forcedNote": "Admin forced consent \"{{name}}\" as {{status}}"
+    "forcedNote": "{{actor}} forced consent \"{{name}}\" as {{status}}",
+    "historyButton": "History",
+    "historyTitle": "Consent history",
+    "historyEmpty": "No consent actions recorded"
   }
 }
