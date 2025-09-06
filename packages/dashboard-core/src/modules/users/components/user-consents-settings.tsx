@@ -22,7 +22,14 @@ export function UserConsentSettings() {
 
   const [consentsEnabled, setConsentsEnabled] = useState(false);
   const [consents, setConsents] = useState<Consent[]>([]);
+  const [slugEdited, setSlugEdited] = useState<boolean[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const slugify = (str: string) =>
+    str
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-");
 
   useEffect(() => {
     (async () => {
@@ -32,7 +39,13 @@ export function UserConsentSettings() {
       );
       if (setting?.value) {
         setConsentsEnabled(setting.value.consentsEnabled ?? false);
-        setConsents(setting.value.consents || []);
+        const loadedConsents = setting.value.consents || [];
+        setConsents(loadedConsents);
+        setSlugEdited(
+          loadedConsents.map((c) =>
+            c.slug ? c.slug !== slugify(c.name) : false
+          )
+        );
       }
       setIsLoading(false);
     })();
@@ -56,11 +69,13 @@ export function UserConsentSettings() {
       ...prev,
       { name: "", slug: "", description: "", required: false },
     ]);
+    setSlugEdited((prev) => [...prev, false]);
     setHasUnsavedChanges(true);
   };
 
   const removeConsent = (index: number) => {
     setConsents((prev) => prev.filter((_, i) => i !== index));
+    setSlugEdited((prev) => prev.filter((_, i) => i !== index));
     setHasUnsavedChanges(true);
   };
 
@@ -124,12 +139,8 @@ export function UserConsentSettings() {
                     onChange={(e) => {
                       const value = e.target.value;
                       handleConsentChange(index, "name", value);
-                      if (!consent.slug) {
-                        handleConsentChange(
-                          index,
-                          "slug",
-                          value.toLowerCase().trim().replace(/\s+/g, "-")
-                        );
+                      if (!slugEdited[index]) {
+                        handleConsentChange(index, "slug", slugify(value));
                       }
                     }}
                   />
@@ -138,9 +149,15 @@ export function UserConsentSettings() {
                   <Label>{t("settings.consents.consentSlug")}</Label>
                   <Input
                     value={consent.slug}
-                    onChange={(e) =>
-                      handleConsentChange(index, "slug", e.target.value)
-                    }
+                    onChange={(e) => {
+                      const value = slugify(e.target.value);
+                      handleConsentChange(index, "slug", value);
+                      setSlugEdited((prev) => {
+                        const next = [...prev];
+                        next[index] = true;
+                        return next;
+                      });
+                    }}
                   />
                 </div>
                 <div>
