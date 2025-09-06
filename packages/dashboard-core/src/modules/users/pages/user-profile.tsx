@@ -136,7 +136,7 @@ export function UserProfilePage() {
       />
 
       <div className="flex flex-col md:flex-row gap-4">
-        <Card className="w-full md:w-1/2 shadow-neutral-50 gap-0 py-0">
+        <Card className="w-full md:w-2/3 shadow-neutral-50 gap-0 py-0">
           <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
             <div className="flex items-center justify-between">
               <CardTitle>

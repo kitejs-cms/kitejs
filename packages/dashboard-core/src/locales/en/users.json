@@ -84,6 +84,7 @@
     "title": "Consents",
     "given": "Given",
     "notGiven": "Not given",
+    "neverGiven": "never given",
     "timestamp": "Date",
     "noConsents": "No consents"
   }

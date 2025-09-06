@@ -84,6 +84,7 @@
     "title": "Consensi",
     "given": "Dato",
     "notGiven": "Non dato",
+    "neverGiven": "mai fornito",
     "timestamp": "Data",
     "noConsents": "Nessun consenso"
   }

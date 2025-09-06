@@ -15,7 +15,7 @@ export function UserConsentsCard({ consents }: UserConsentsCardProps) {
   const { t } = useTranslation("users");
 
   return (
-    <Card className="w-full md:w-1/2 shadow-neutral-50 gap-0 py-0">
+    <Card className="w-full md:w-1/3 shadow-neutral-50 gap-0 py-0">
       <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
         <CardTitle>{t("consentsCard.title")}</CardTitle>
       </CardHeader>
@@ -25,7 +25,9 @@ export function UserConsentsCard({ consents }: UserConsentsCardProps) {
             <div key={index} className="flex justify-between border-b py-3">
               <div className="pl-4 w-1/3 text-left">{consent.consentType}</div>
               <div className="w-1/3 text-left">
-                {consent.given ? t("consentsCard.given") : t("consentsCard.notGiven")}
+                {consent.given
+                  ? "true"
+                  : `false${!consent.timestamp ? ` (${t("consentsCard.neverGiven")})` : ""}`}
               </div>
               <div className="w-1/3 text-left pr-4">
                 {consent.timestamp
