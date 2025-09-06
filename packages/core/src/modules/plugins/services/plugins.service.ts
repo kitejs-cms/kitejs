@@ -1,12 +1,14 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Plugin, PluginDocument } from '../plugin.schema';
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Plugin, PluginDocument } from "../plugin.schema";
 import {
   Injectable,
   InternalServerErrorException,
   Logger,
-} from '@nestjs/common';
-import { PluginResponseModel } from '../models/plugin-response.model';
+} from "@nestjs/common";
+import { PluginResponseModel } from "../models/plugin-response.model";
+import { SettingsService, PLUGINS_RESTART_REQUIRED_KEY } from "../../settings";
+import { CORE_NAMESPACE } from "../../../constants";
 
 @Injectable()
 export class PluginsService {
@@ -14,7 +16,8 @@ export class PluginsService {
 
   constructor(
     @InjectModel(Plugin.name)
-    private readonly pluginModel: Model<PluginDocument>
+    private readonly pluginModel: Model<PluginDocument>,
+    private readonly settingsService: SettingsService
   ) {}
 
   /**
@@ -113,7 +116,8 @@ export class PluginsService {
   }
 
   /**
-   * Disables a plugin by setting `enabled` to false.
+   * Disables a plugin by setting `enabled` to false and flags the CMS
+   * for a manual restart through settings.
    * @param namespace - The namespace of the plugin to be disabled.
    * @returns True if the plugin was successfully disabled, false otherwise.
    */
@@ -124,13 +128,21 @@ export class PluginsService {
         { $set: { enabled: false } }
       );
 
-      return result.modifiedCount > 0;
+      if (result.modifiedCount > 0) {
+        await this.settingsService.upsert(
+          CORE_NAMESPACE,
+          PLUGINS_RESTART_REQUIRED_KEY,
+          true
+        );
+        return true;
+      }
+      return false;
     } catch (error: unknown) {
       this.logger.error(
         `Error in disable (namespace: ${namespace}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to disable the plugin.');
+      throw new InternalServerErrorException("Failed to disable the plugin.");
     }
   }
 

@@ -54,7 +54,8 @@ export class PluginsController {
   }
 
   /**
-   * Disable a plugin by setting `enabled` to false.
+   * Disable a plugin by setting `enabled` to false and mark the CMS
+   * as requiring a restart.
    * @param namespace - The namespace of the plugin to disable.
    */
   @Post(":namespace/disable")
@@ -62,8 +63,8 @@ export class PluginsController {
   @ApiBearerAuth()
   async disablePlugin(
     @Param("namespace") namespace: string
-  ): Promise<{ success: boolean }> {
+  ): Promise<{ success: boolean; restartRequired: boolean }> {
     const disabled = await this.pluginService.disable(namespace);
-    return { success: disabled };
+    return { success: disabled, restartRequired: disabled };
   }
 }

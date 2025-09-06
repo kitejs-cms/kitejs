@@ -9,7 +9,8 @@ import {
   RolesService,
   PermissionResponseModel,
 } from "../../users";
-import { SettingsService } from "../../settings";
+import { SettingsService, PLUGINS_RESTART_REQUIRED_KEY } from "../../settings";
+import { CORE_NAMESPACE } from "../../../constants";
 
 @Injectable()
 export class PluginsLoaderService {
@@ -25,15 +26,22 @@ export class PluginsLoaderService {
 
   /**
    * Loads and initializes all provided plugins.
+   * - Clears the restart-required flag on startup.
    * - Skips disabled plugins.
    * - Skips plugins that previously failed.
    * - Initializes new plugins and updates their status.
    * - Ensures default settings are inserted idempotently, even for existing installations.
    * If a plugin is not found in the database, it is created immediately.
    * @param plugins - Array of IPlugin instances.
-   */
+  */
   async loadPlugins(plugins: IPlugin[]): Promise<Type<unknown>[]> {
     const pluginsModules: Type<unknown>[] = [];
+    // A restart just occurred, clear the restart-required flag.
+    await this.settingService.upsert(
+      CORE_NAMESPACE,
+      PLUGINS_RESTART_REQUIRED_KEY,
+      false
+    );
     for (const pluginInstance of plugins) {
       try {
         let plugin = await this.pluginModel.findOne({

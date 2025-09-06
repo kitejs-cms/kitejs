@@ -5,6 +5,7 @@ import {
   SWAGGER_SETTINGS_KEY,
   STORAGE_SETTINGS_KEY,
   USER_SETTINGS_KEY,
+  PLUGINS_RESTART_REQUIRED_KEY,
   SettingModel,
 } from "./modules/settings";
 import {
@@ -255,5 +256,9 @@ export const CoreSetting: SettingModel[] = [
         required: boolean;
       }>,
     },
+  },
+  {
+    key: PLUGINS_RESTART_REQUIRED_KEY,
+    value: false,
   },
 ];
