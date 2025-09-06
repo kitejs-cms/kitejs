@@ -12,7 +12,23 @@
       "description": "Configure your general preferences and settings."
     },
     "cms": {
-      "title": "CMS Settings"
+      "title": "CMS Settings",
+      "settings": {
+        "siteName": "Site Name",
+        "siteUrl": "Site URL",
+        "siteDescription": "Site Description",
+        "supportedLanguages": "Supported Languages",
+        "defaultLanguage": "Default Language",
+        "selectLanguage": "Select a language",
+        "languages": {
+          "en": "English",
+          "it": "Italian",
+          "es": "Spanish",
+          "fr": "French",
+          "de": "German"
+        },
+        "allowIndexing": "Allow Search Engine Indexing"
+      }
     },
     "developer": {
       "title": "Developer Settings",

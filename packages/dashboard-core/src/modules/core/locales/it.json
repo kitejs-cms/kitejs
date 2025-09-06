@@ -12,7 +12,23 @@
       "description": "Configura le tue preferenze generali e impostazioni."
     },
     "cms": {
-      "title": "Impostazioni CMS"
+      "title": "Impostazioni CMS",
+      "settings": {
+        "siteName": "Nome del Sito",
+        "siteUrl": "URL del Sito",
+        "siteDescription": "Descrizione del Sito",
+        "supportedLanguages": "Lingue supportate",
+        "defaultLanguage": "Lingua Predefinita",
+        "selectLanguage": "Seleziona una lingua",
+        "languages": {
+          "en": "Inglese",
+          "it": "Italiano",
+          "es": "Spagnolo",
+          "fr": "Francese",
+          "de": "Tedesco"
+        },
+        "allowIndexing": "Consenti Indicizzazione ai Motori di Ricerca"
+      }
     },
     "developer": {
       "title": "Impostazioni Sviluppatore",
