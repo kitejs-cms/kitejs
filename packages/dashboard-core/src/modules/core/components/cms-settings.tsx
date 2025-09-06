@@ -38,10 +38,41 @@ const formSchema = z.object({
 
 const languageCodes = ["en", "it", "es", "fr", "de"] as const;
 
+function SettingsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <div className="h-4 w-40 bg-muted rounded animate-pulse" />
+        <div className="h-10 w-full bg-muted rounded animate-pulse" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+        <div className="h-10 w-full bg-muted rounded animate-pulse" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-64 bg-muted rounded animate-pulse" />
+        <div className="h-10 w-full bg-muted rounded animate-pulse" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-56 bg-muted rounded animate-pulse" />
+        <div className="h-10 w-full bg-muted rounded animate-pulse" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-56 bg-muted rounded animate-pulse" />
+        <div className="h-10 w-full bg-muted rounded animate-pulse" />
+      </div>
+      <div className="flex justify-end">
+        <div className="h-10 w-24 bg-muted rounded animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 export function CmsSettings() {
   const { t } = useTranslation("core");
   const { cmsSettings, updateSetting, setHasUnsavedChanges } =
     useSettingsContext();
+
   const languageOptions = useMemo(
     () =>
       languageCodes.map((code) => ({
@@ -50,6 +81,7 @@ export function CmsSettings() {
       })),
     [t]
   );
+
   const form = useForm<CmsSettingsModel>({
     resolver: zodResolver(formSchema) as unknown as Resolver<CmsSettingsModel>,
     defaultValues: {
@@ -57,8 +89,8 @@ export function CmsSettings() {
       siteUrl: "",
       apiUrl: "",
       siteDescription: "",
-      defaultLanguage: "en",
-      supportedLanguages: ["en"],
+      defaultLanguage: "",
+      supportedLanguages: [],
       allowIndexing: true,
     },
   });
@@ -71,15 +103,23 @@ export function CmsSettings() {
 
   useEffect(() => {
     if (cmsSettings) {
+      const incomingSupported = cmsSettings.supportedLanguages ?? [];
+      const initialSupported = Array.from(
+        new Set(
+          [...incomingSupported, cmsSettings.defaultLanguage].filter(Boolean)
+        )
+      );
+      const safeDefault =
+        cmsSettings.defaultLanguage &&
+        initialSupported.includes(cmsSettings.defaultLanguage)
+          ? cmsSettings.defaultLanguage
+          : (initialSupported[0] ?? "");
+
       reset({
         ...cmsSettings,
         apiUrl: cmsSettings.apiUrl ?? "",
-        supportedLanguages: Array.from(
-          new Set([
-            ...(cmsSettings.supportedLanguages ?? []),
-            cmsSettings.defaultLanguage,
-          ])
-        ),
+        supportedLanguages: initialSupported,
+        defaultLanguage: safeDefault,
       });
     }
   }, [cmsSettings, reset]);
@@ -93,7 +133,10 @@ export function CmsSettings() {
       const newValues: CmsSettingsModel = {
         ...values,
         supportedLanguages: Array.from(
-          new Set([...(values.supportedLanguages ?? []), values.defaultLanguage])
+          new Set([
+            ...(values.supportedLanguages ?? []),
+            values.defaultLanguage,
+          ])
         ),
       };
       await updateSetting("core", "core:cms", newValues);
@@ -103,6 +146,20 @@ export function CmsSettings() {
       console.error("Failed to update CMS settings:", error);
     }
   };
+
+  const defaultLang = form.watch("defaultLanguage");
+  const supported = form.watch("supportedLanguages") ?? [];
+  const hasDefault = Boolean(defaultLang);
+  const hasSupported = Array.isArray(supported) && supported.length > 0;
+  const ready = hasDefault && hasSupported;
+
+  if (!ready) {
+    return <SettingsSkeleton />;
+  }
+
+  const selectItems = Array.from(
+    new Set([...(supported ?? []), defaultLang])
+  ).filter((v): v is string => Boolean(v));
 
   return (
     <Form {...form}>
@@ -180,21 +237,26 @@ export function CmsSettings() {
                 {t("settings.cms.settings.defaultLanguage")}
               </FormLabel>
               <FormControl>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  value={field.value || undefined}
+                  onValueChange={field.onChange}
+                >
                   <SelectTrigger>
                     <SelectValue
                       placeholder={t("settings.cms.settings.selectLanguage")}
                     />
                   </SelectTrigger>
                   <SelectContent>
-                  {form.watch("supportedLanguages")?.map((lang) => {
-                    const option = languageOptions.find((opt) => opt.value === lang);
-                    return (
-                      <SelectItem key={lang} value={lang}>
-                        {option?.label || lang}
-                      </SelectItem>
-                    );
-                  })}
+                    {selectItems.map((lang) => {
+                      const option = languageOptions.find(
+                        (opt) => opt.value === lang
+                      );
+                      return (
+                        <SelectItem key={lang} value={lang}>
+                          {option?.label || lang}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </FormControl>
