@@ -39,14 +39,14 @@ const formSchema = z.object({
 const languageCodes = ["en", "it", "es", "fr", "de"] as const;
 
 export function CmsSettings() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("core");
   const { cmsSettings, updateSetting, setHasUnsavedChanges } =
     useSettingsContext();
   const languageOptions = useMemo(
     () =>
       languageCodes.map((code) => ({
         value: code,
-        label: t(`settings:cms.settings.languages.${code}`),
+        label: t(`settings.cms.settings.languages.${code}`),
       })),
     [t]
   );
@@ -112,7 +112,7 @@ export function CmsSettings() {
           name="siteName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("settings:cms.settings.siteName")}</FormLabel>
+              <FormLabel>{t("settings.cms.settings.siteName")}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -126,7 +126,7 @@ export function CmsSettings() {
           name="siteUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("settings:cms.settings.siteUrl")}</FormLabel>
+              <FormLabel>{t("settings.cms.settings.siteUrl")}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -141,7 +141,7 @@ export function CmsSettings() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {t("settings:cms.settings.siteDescription")}
+                {t("settings.cms.settings.siteDescription")}
               </FormLabel>
               <FormControl>
                 <Input {...field} />
@@ -157,7 +157,7 @@ export function CmsSettings() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {t("settings:cms.settings.supportedLanguages")}
+                {t("settings.cms.settings.supportedLanguages")}
               </FormLabel>
               <FormControl>
                 <MultiSelect
@@ -177,17 +177,16 @@ export function CmsSettings() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {t("settings:cms.settings.defaultLanguage")}
+                {t("settings.cms.settings.defaultLanguage")}
               </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
+              <FormControl>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={t("settings:cms.settings.selectLanguage")}
+                      placeholder={t("settings.cms.settings.selectLanguage")}
                     />
                   </SelectTrigger>
-                </FormControl>
-                <SelectContent>
+                  <SelectContent>
                   {form.watch("supportedLanguages")?.map((lang) => {
                     const option = languageOptions.find((opt) => opt.value === lang);
                     return (
@@ -196,8 +195,9 @@ export function CmsSettings() {
                       </SelectItem>
                     );
                   })}
-                </SelectContent>
-              </Select>
+                  </SelectContent>
+                </Select>
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -210,7 +210,7 @@ export function CmsSettings() {
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">
-                  {t("settings:cms.settings.allowIndexing")}
+                  {t("settings.cms.settings.allowIndexing")}
                 </FormLabel>
               </div>
               <FormControl>
@@ -225,7 +225,7 @@ export function CmsSettings() {
 
         <div className="fixed bottom-4 right-4 p-4">
           <Button type="submit" disabled={!isDirty}>
-            {t("common.save", "Save")}
+            {t("common.save")}
           </Button>
         </div>
       </form>
