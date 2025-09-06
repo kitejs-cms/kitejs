@@ -8,6 +8,7 @@ import { Switch } from "../../../components/ui/switch";
 import { Label } from "../../../components/ui/label";
 import { Trash2 } from "lucide-react";
 import { UserSettingsModel } from "@kitejs-cms/core/modules/settings/models/user-settings.model";
+import { Skeleton } from "../../../components/ui/skeleton";
 
 export function UserConsentSettings() {
   const { t } = useTranslation("users");
@@ -99,7 +100,28 @@ export function UserConsentSettings() {
   };
 
   if (isLoading) {
-    return <div>{t("common.loading", "Loading...")}</div>;
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-6 w-10" />
+        </div>
+        <div className="space-y-4">
+          {[0, 1].map((i) => (
+            <div key={i} className="space-y-2 rounded-lg border p-4">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-4 w-full" />
+              <div className="flex items-center justify-between rounded-lg border p-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-6 w-10" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (

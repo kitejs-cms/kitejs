@@ -2,6 +2,7 @@ import type { FieldDefinition } from "@kitejs-cms/core/index";
 import { CustomFieldBuilder } from "../../../components/custom-field-builder";
 import { useEffect, useState } from "react";
 import { Button } from "../../../components/ui/button";
+import { Skeleton } from "../../../components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import { useSettingsContext } from "../../../context/settings-context";
 
@@ -52,7 +53,12 @@ export function ArticleFieldsSettings() {
   };
 
   if (isLoading) {
-    return <div>{t("common.loading", "Loading...")}</div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-10 w-24 ml-auto" />
+      </div>
+    );
   }
 
   return (

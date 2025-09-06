@@ -50,6 +50,7 @@ export function UserProfilePage() {
   const isAdmin = currentUser?.roles?.includes("admin");
   const { getSetting } = useSettingsContext();
   const [consentsEnabled, setConsentsEnabled] = useState(false);
+  const [consentsLoading, setConsentsLoading] = useState(true);
   const [consentDefinitions, setConsentDefinitions] = useState<
     UserSettingsModel["consents"] | undefined
   >(undefined);
@@ -105,12 +106,14 @@ export function UserProfilePage() {
 
   useEffect(() => {
     (async () => {
+      setConsentsLoading(true);
       const setting = await getSetting<{ value: UserSettingsModel }>(
         "core",
         "core:users"
       );
       setConsentsEnabled(setting?.value?.consentsEnabled ?? false);
       setConsentDefinitions(setting?.value?.consents || []);
+      setConsentsLoading(false);
     })();
   }, [getSetting]);
 
@@ -144,7 +147,11 @@ export function UserProfilePage() {
       />
 
       <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-        <Card className="w-full lg:w-3/4 shadow-neutral-50 gap-0 py-0">
+        <Card
+          className={`w-full ${
+            consentsEnabled || consentsLoading ? "lg:w-3/4" : "lg:w-full"
+          } shadow-neutral-50 gap-0 py-0`}
+        >
           <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
             <div className="flex items-center justify-between">
               <CardTitle>
@@ -267,15 +274,19 @@ export function UserProfilePage() {
           </CardContent>
         </Card>
 
-        {consentsEnabled && id && (
-          <UserConsentsCard
-            userId={id}
-            consents={user?.consents}
-            definitions={consentDefinitions}
-            loading={!user}
-            canEdit={!!isAdmin}
-            onUpdated={() => fetchUser(`users/${id}`)}
-          />
+        {consentsLoading ? (
+          <UserConsentsCard userId={id || ""} loading />
+        ) : (
+          consentsEnabled && id && (
+            <UserConsentsCard
+              userId={id}
+              consents={user?.consents}
+              definitions={consentDefinitions}
+              loading={!user}
+              canEdit={!!isAdmin}
+              onUpdated={() => fetchUser(`users/${id}`)}
+            />
+          )
         )}
       </div>
 
