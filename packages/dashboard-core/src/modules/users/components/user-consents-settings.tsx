@@ -13,18 +13,10 @@ import {
   FormMessage,
 } from "../../../components/ui/form";
 import { Switch } from "../../../components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../components/ui/select";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
-import { useApi } from "../../../hooks/use-api";
-import { RoleResponseModel } from "@kitejs-cms/core/modules/users/models/role-response.model";
+import { UserSettingsModel } from "@kitejs-cms/core/modules/settings/models/user-settings.model";
 
 const consentSchema = z.object({
   name: z.string().min(1),
@@ -34,24 +26,20 @@ const consentSchema = z.object({
 });
 
 const formSchema = z.object({
-  registrationOpen: z.boolean(),
-  defaultRole: z.string().min(1),
   consentsEnabled: z.boolean(),
   consents: z.array(consentSchema),
 });
 
-type UserSettingsForm = z.infer<typeof formSchema>;
+type ConsentSettingsForm = z.infer<typeof formSchema>;
 
-export function UserSettings() {
+export function UserConsentSettings() {
   const { t } = useTranslation("users");
-  const { getSetting, updateSetting, setHasUnsavedChanges } = useSettingsContext();
-  const { data: roles, fetchData } = useApi<RoleResponseModel[]>();
+  const { getSetting, updateSetting, setHasUnsavedChanges } =
+    useSettingsContext();
 
-  const form = useForm<UserSettingsForm>({
+  const form = useForm<ConsentSettingsForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      registrationOpen: true,
-      defaultRole: "",
       consentsEnabled: false,
       consents: [],
     },
@@ -65,7 +53,10 @@ export function UserSettings() {
     formState: { isDirty },
   } = form;
 
-  const { fields, append, remove } = useFieldArray({ control, name: "consents" });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "consents",
+  });
 
   useEffect(() => {
     setHasUnsavedChanges(isDirty);
@@ -73,24 +64,34 @@ export function UserSettings() {
 
   useEffect(() => {
     (async () => {
-      const setting = await getSetting<{ value: UserSettingsForm }>(
+      const setting = await getSetting<{ value: UserSettingsModel }>(
         "core",
         "core:users"
       );
       if (setting?.value) {
         reset({
-          registrationOpen: setting.value.registrationOpen,
-          defaultRole: setting.value.defaultRole,
           consentsEnabled: setting.value.consentsEnabled ?? false,
           consents: setting.value.consents || [],
         });
       }
-      fetchData("roles");
     })();
-  }, [getSetting, reset, fetchData]);
+  }, [getSetting, reset]);
 
-  const onSubmit = async (values: UserSettingsForm) => {
-    await updateSetting("core", "core:users", values);
+  const onSubmit = async (values: ConsentSettingsForm) => {
+    const existing = await getSetting<{ value: UserSettingsModel }>(
+      "core",
+      "core:users"
+    );
+    const newValues: UserSettingsModel = {
+      ...(existing?.value ?? {
+        registrationOpen: true,
+        defaultRole: "",
+        consentsEnabled: false,
+        consents: [],
+      }),
+      ...values,
+    };
+    await updateSetting("core", "core:users", newValues);
     reset(values);
     setHasUnsavedChanges(false);
   };
@@ -100,46 +101,10 @@ export function UserSettings() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={control}
-          name="registrationOpen"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <FormLabel>{t("settings.registrationOpen")}</FormLabel>
-              <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="defaultRole"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("settings.defaultRole")}</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {roles?.map((role) => (
-                    <SelectItem key={role.id} value={role.name}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
           name="consentsEnabled"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <FormLabel>{t("settings.consentsEnabled")}</FormLabel>
+              <FormLabel>{t("settings.consents.consentsEnabled")}</FormLabel>
               <FormControl>
                 <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
@@ -149,16 +114,15 @@ export function UserSettings() {
         {watch("consentsEnabled") && (
           <div className="space-y-4">
             {fields.map((item, index) => (
-              <div
-                key={item.id}
-                className="space-y-2 rounded-lg border p-4"
-              >
+              <div key={item.id} className="space-y-2 rounded-lg border p-4">
                 <FormField
                   control={control}
                   name={`consents.${index}.name`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("settings.consentName")}</FormLabel>
+                      <FormLabel>
+                        {t("settings.consents.consentName")}
+                      </FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -171,7 +135,9 @@ export function UserSettings() {
                   name={`consents.${index}.slug`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("settings.consentSlug")}</FormLabel>
+                      <FormLabel>
+                        {t("settings.consents.consentSlug")}
+                      </FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -184,7 +150,9 @@ export function UserSettings() {
                   name={`consents.${index}.description`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("settings.consentDescription")}</FormLabel>
+                      <FormLabel>
+                        {t("settings.consents.consentDescription")}
+                      </FormLabel>
                       <FormControl>
                         <Textarea {...field} />
                       </FormControl>
@@ -197,7 +165,9 @@ export function UserSettings() {
                   name={`consents.${index}.required`}
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <FormLabel>{t("settings.consentRequired")}</FormLabel>
+                      <FormLabel>
+                        {t("settings.consents.consentRequired")}
+                      </FormLabel>
                       <FormControl>
                         <Switch
                           checked={field.value}
@@ -219,10 +189,15 @@ export function UserSettings() {
             <Button
               type="button"
               onClick={() =>
-                append({ name: "", slug: "", description: "", required: false })
+                append({
+                  name: "",
+                  slug: "",
+                  description: "",
+                  required: false,
+                })
               }
             >
-              {t("settings.addConsent")}
+              {t("settings.consents.addConsent")}
             </Button>
           </div>
         )}

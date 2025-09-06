@@ -61,16 +61,23 @@
     "passwordMin": "Password must be at least 8 characters."
   },
   "settings": {
-    "title": "User Settings",
-    "description": "Configure user registration, default role and consents.",
-    "registrationOpen": "Allow registration",
-    "defaultRole": "Default role",
-    "consentsEnabled": "Enable consents",
-    "consents": "Consents",
-    "consentName": "Name",
-    "consentSlug": "Slug",
-    "consentDescription": "Description",
-    "consentRequired": "Required",
-    "addConsent": "Add consent"
+    "menu": {
+      "title": "User Settings",
+      "description": "Configure user registration, default role and consents."
+    },
+    "general": {
+      "title": "General",
+      "registrationOpen": "Allow registration",
+      "defaultRole": "Default role"
+    },
+    "consents": {
+      "title": "Consents",
+      "consentsEnabled": "Enable consents",
+      "consentName": "Name",
+      "consentSlug": "Slug",
+      "consentDescription": "Description",
+      "consentRequired": "Required",
+      "addConsent": "Add consent"
+    }
   }
 }

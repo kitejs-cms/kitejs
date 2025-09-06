@@ -61,16 +61,23 @@
     "passwordMin": "La password deve essere lunga almeno 8 caratteri."
   },
   "settings": {
-    "title": "Impostazioni Utenti",
-    "description": "Configura registrazione, ruolo predefinito e consensi.",
-    "registrationOpen": "Permetti registrazione",
-    "defaultRole": "Ruolo predefinito",
-    "consentsEnabled": "Abilita consensi",
-    "consents": "Consensi",
-    "consentName": "Nome",
-    "consentSlug": "Slug",
-    "consentDescription": "Descrizione",
-    "consentRequired": "Richiesto",
-    "addConsent": "Aggiungi consenso"
+    "menu": {
+      "title": "Impostazioni Utenti",
+      "description": "Configura registrazione, ruolo predefinito e consensi."
+    },
+    "general": {
+      "title": "Generali",
+      "registrationOpen": "Permetti registrazione",
+      "defaultRole": "Ruolo predefinito"
+    },
+    "consents": {
+      "title": "Consensi",
+      "consentsEnabled": "Abilita consensi",
+      "consentName": "Nome",
+      "consentSlug": "Slug",
+      "consentDescription": "Descrizione",
+      "consentRequired": "Richiesto",
+      "addConsent": "Aggiungi consenso"
+    }
   }
 }
