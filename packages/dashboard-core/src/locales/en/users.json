@@ -64,6 +64,7 @@
     "title": "User Settings",
     "description": "Configure user registration and default role.",
     "registrationOpen": "Allow registration",
-    "defaultRole": "Default role"
+    "defaultRole": "Default role",
+    "requiredConsents": "Required consents"
   }
 }

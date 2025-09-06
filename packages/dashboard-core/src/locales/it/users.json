@@ -64,6 +64,7 @@
     "title": "Impostazioni Utenti",
     "description": "Configura la registrazione e il ruolo predefinito.",
     "registrationOpen": "Permetti registrazione",
-    "defaultRole": "Ruolo predefinito"
+    "defaultRole": "Ruolo predefinito",
+    "requiredConsents": "Consensi richiesti"
   }
 }

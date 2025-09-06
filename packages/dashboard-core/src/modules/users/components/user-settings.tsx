@@ -10,10 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Button } from "../../../components/ui/button";
 import { useApi } from "../../../hooks/use-api";
 import { RoleResponseModel } from "@kitejs-cms/core/modules/users/models/role-response.model";
+import { TagsInput } from "../../../components/tag-input";
 
 const formSchema = z.object({
   registrationOpen: z.boolean(),
   defaultRole: z.string().min(1),
+  requiredConsents: z.array(z.string()),
 });
 
 type UserSettingsForm = z.infer<typeof formSchema>;
@@ -25,7 +27,7 @@ export function UserSettings() {
 
   const form = useForm<UserSettingsForm>({
     resolver: zodResolver(formSchema),
-    defaultValues: { registrationOpen: true, defaultRole: "" },
+    defaultValues: { registrationOpen: true, defaultRole: "", requiredConsents: [] },
   });
 
   const { handleSubmit, reset, formState: { isDirty } } = form;
@@ -38,7 +40,11 @@ export function UserSettings() {
     (async () => {
       const setting = await getSetting<{ value: UserSettingsForm }>("core", "core:users");
       if (setting?.value) {
-        reset(setting.value);
+        reset({
+          registrationOpen: setting.value.registrationOpen,
+          defaultRole: setting.value.defaultRole,
+          requiredConsents: setting.value.requiredConsents || [],
+        });
       }
       fetchData("roles");
     })();
@@ -89,8 +95,21 @@ export function UserSettings() {
             </FormItem>
           )}
         />
-        <div className="flex justify-end">
-          <Button type="submit">{t("buttons.save")}</Button>
+        <FormField
+          control={form.control}
+          name="requiredConsents"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("settings.requiredConsents")}</FormLabel>
+              <FormControl>
+                <TagsInput initialTags={field.value} onChange={field.onChange} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="fixed bottom-4 right-4 p-4">
+          <Button type="submit" disabled={!isDirty}>{t("buttons.save")}</Button>
         </div>
       </form>
     </Form>

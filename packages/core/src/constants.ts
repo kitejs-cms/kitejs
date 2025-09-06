@@ -111,6 +111,11 @@ export const CorePermissions: PermissionModel[] = [
     description: "Permission to delete users",
     role: ["admin"],
   },
+  {
+    name: "core:users.profile",
+    description: "Permission for users to manage their profile",
+    role: ["user"],
+  },
   /* Settings */
   {
     name: "core:settings.read",
@@ -242,6 +247,7 @@ export const CoreSetting: SettingModel[] = [
     value: {
       registrationOpen: true,
       defaultRole: "user",
+      requiredConsents: [] as string[],
     },
   },
 ];
