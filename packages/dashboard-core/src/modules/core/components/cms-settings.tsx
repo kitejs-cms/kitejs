@@ -70,8 +70,14 @@ export function CmsSettings() {
 
   const onSubmit = async (values: CmsSettingsModel) => {
     try {
-      await updateSetting("core", "core:cms", values);
-      reset(values);
+      const newValues: CmsSettingsModel = {
+        ...values,
+        supportedLanguages: Array.from(
+          new Set([...(values.supportedLanguages ?? []), values.defaultLanguage])
+        ),
+      };
+      await updateSetting("core", "core:cms", newValues);
+      reset(newValues);
       setHasUnsavedChanges(false);
     } catch (error) {
       console.error("Failed to update CMS settings:", error);
@@ -133,7 +139,7 @@ export function CmsSettings() {
               <FormLabel>
                 {t("settings:cms.settings.defaultLanguage")}
               </FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a language" />
@@ -169,7 +175,11 @@ export function CmsSettings() {
           )}
         />
 
-        <Button type="submit">{t("settings:common.save")}</Button>
+        <div className="fixed bottom-4 right-4 p-4">
+          <Button type="submit" disabled={!isDirty}>
+            {t("common.save", "Save")}
+          </Button>
+        </div>
       </form>
     </Form>
   );
