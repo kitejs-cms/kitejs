@@ -8,6 +8,7 @@ export type PluginResponseModel = {
   namespace: string;
   version: string;
   enabled: boolean;
+  pendingDisable: boolean;
   installedAt: Date;
   updatedAt: Date;
   author?: string;

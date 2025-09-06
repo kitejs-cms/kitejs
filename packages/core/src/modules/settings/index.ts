@@ -9,7 +9,6 @@ export * from "./models/cms-settings.model";
 export * from "./models/storage-settings.model";
 export * from "./models/article-settings.models";
 export * from "./models/user-settings.model";
-export * from "./models/plugins-config.model";
 
 /* Dto */
 export * from "./dto/init-cms.dto";

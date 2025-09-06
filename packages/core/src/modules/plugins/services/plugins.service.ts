@@ -7,12 +7,6 @@ import {
   Logger,
 } from "@nestjs/common";
 import { PluginResponseModel } from "../models/plugin-response.model";
-import {
-  SettingsService,
-  PLUGINS_CONFIG_KEY,
-  PluginsConfigModel,
-} from "../../settings";
-import { CORE_NAMESPACE } from "../../../constants";
 
 @Injectable()
 export class PluginsService {
@@ -20,8 +14,7 @@ export class PluginsService {
 
   constructor(
     @InjectModel(Plugin.name)
-    private readonly pluginModel: Model<PluginDocument>,
-    private readonly settingsService: SettingsService
+    private readonly pluginModel: Model<PluginDocument>
   ) {}
 
   /**
@@ -120,33 +113,18 @@ export class PluginsService {
   }
 
   /**
-   * Records a disable action for a plugin and marks the CMS as requiring restart.
-   * The actual disablement is applied on next startup.
+   * Marks a plugin as disabled and flags it for disablement after restart.
    * @param namespace - The namespace of the plugin to be disabled.
-   * @returns True if the action was recorded, false otherwise.
+   * @returns True if the plugin exists, false otherwise.
    */
   async disable(namespace: string): Promise<boolean> {
     try {
-      const plugin = await this.pluginModel.findOne({ namespace }).exec();
-
-      if (!plugin) return false;
-
-      const existing = await this.settingsService.findOne<PluginsConfigModel>(
-        CORE_NAMESPACE,
-        PLUGINS_CONFIG_KEY
-      );
-      const config = existing?.value ?? { restartRequired: false, plugins: {} };
-
-      config.restartRequired = true;
-      config.plugins[namespace] = { enabled: false };
-
-      await this.settingsService.upsert(
-        CORE_NAMESPACE,
-        PLUGINS_CONFIG_KEY,
-        config
+      const result = await this.pluginModel.updateOne(
+        { namespace },
+        { $set: { enabled: false, pendingDisable: true } }
       );
 
-      return true;
+      return result.matchedCount > 0;
     } catch (error: unknown) {
       this.logger.error(
         `Error in disable (namespace: ${namespace}):`,

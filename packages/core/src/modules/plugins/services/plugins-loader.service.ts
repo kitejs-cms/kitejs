@@ -9,12 +9,7 @@ import {
   RolesService,
   PermissionResponseModel,
 } from "../../users";
-import {
-  SettingsService,
-  PLUGINS_CONFIG_KEY,
-  PluginsConfigModel,
-} from "../../settings";
-import { CORE_NAMESPACE } from "../../../constants";
+import { SettingsService } from "../../settings";
 
 @Injectable()
 export class PluginsLoaderService {
@@ -30,7 +25,7 @@ export class PluginsLoaderService {
 
   /**
    * Loads and initializes all provided plugins.
-   * - Applies pending plugin configuration from settings and clears restart flags.
+   * - Acknowledges any pending disable flags for plugins.
    * - Skips disabled plugins.
    * - Skips plugins that previously failed.
    * - Initializes new plugins and updates their status.
@@ -40,28 +35,11 @@ export class PluginsLoaderService {
   */
   async loadPlugins(plugins: IPlugin[]): Promise<Type<unknown>[]> {
     const pluginsModules: Type<unknown>[] = [];
-    // Apply pending plugin configuration (e.g., disable/enable) on startup.
-    const configSetting = await this.settingService.findOne<PluginsConfigModel>(
-      CORE_NAMESPACE,
-      PLUGINS_CONFIG_KEY
+    // Clear pendingDisable flags for plugins that were disabled before restart
+    await this.pluginModel.updateMany(
+      { pendingDisable: true, enabled: false },
+      { $set: { pendingDisable: false } }
     );
-    const config =
-      configSetting?.value ?? { restartRequired: false, plugins: {} };
-
-    for (const [namespace, { enabled }] of Object.entries(config.plugins)) {
-      await this.pluginModel.updateOne(
-        { namespace },
-        { $set: { enabled } }
-      );
-    }
-
-    // Clear restart flag and applied actions.
-    if (config.restartRequired || Object.keys(config.plugins).length > 0) {
-      await this.settingService.upsert(CORE_NAMESPACE, PLUGINS_CONFIG_KEY, {
-        restartRequired: false,
-        plugins: {},
-      });
-    }
     for (const pluginInstance of plugins) {
       try {
         let plugin = await this.pluginModel.findOne({

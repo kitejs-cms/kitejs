@@ -48,6 +48,10 @@ export class PluginResponseDto implements PluginResponseModel {
   @IsBoolean()
   enabled: boolean;
 
+  @ApiProperty({ description: 'True if disablement is pending a restart' })
+  @IsBoolean()
+  pendingDisable: boolean;
+
   @ApiProperty({ description: 'Date when the plugin was installed' })
   @IsDate()
   installedAt: Date;

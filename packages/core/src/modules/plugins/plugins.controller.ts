@@ -54,8 +54,8 @@ export class PluginsController {
   }
 
   /**
-   * Record a disable action for a plugin and mark the CMS as requiring a restart.
-   * The plugin will be disabled on next application start.
+   * Disable a plugin and flag the CMS as requiring a manual restart.
+   * The plugin will remain active until the application restarts.
    * @param namespace - The namespace of the plugin to disable.
    */
   @Post(":namespace/disable")
