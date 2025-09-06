@@ -5,7 +5,8 @@ import {
   SWAGGER_SETTINGS_KEY,
   STORAGE_SETTINGS_KEY,
   USER_SETTINGS_KEY,
-  PLUGINS_RESTART_REQUIRED_KEY,
+  PLUGINS_CONFIG_KEY,
+  PluginsConfigModel,
   SettingModel,
 } from "./modules/settings";
 import {
@@ -258,7 +259,7 @@ export const CoreSetting: SettingModel[] = [
     },
   },
   {
-    key: PLUGINS_RESTART_REQUIRED_KEY,
-    value: false,
+    key: PLUGINS_CONFIG_KEY,
+    value: { restartRequired: false, plugins: {} } as PluginsConfigModel,
   },
 ];
