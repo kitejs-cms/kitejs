@@ -46,7 +46,7 @@ export class PluginsLoaderService {
             name: pluginInstance.name,
             namespace: pluginInstance.namespace,
             status: PluginStatus.PENDING,
-            enabled: true,
+            enabled: pluginInstance.enabled ?? true,
           });
 
           this.logger.log(
