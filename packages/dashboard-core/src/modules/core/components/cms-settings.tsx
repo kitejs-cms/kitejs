@@ -1,6 +1,7 @@
 import { Resolver, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Form,
@@ -21,6 +22,7 @@ import {
 } from "../../../components/ui/select";
 import { Button } from "../../../components/ui/button";
 import { type CmsSettingsModel } from "@kitejs-cms/core/modules/settings/models/cms-settings.model";
+import { useSettingsContext } from "../../../context/settings-context";
 
 const formSchema = z.object({
   siteName: z.string().min(1, "Site name is required"),
@@ -32,6 +34,8 @@ const formSchema = z.object({
 
 export function CmsSettings() {
   const { t } = useTranslation();
+  const { cmsSettings, updateSetting, setHasUnsavedChanges } =
+    useSettingsContext();
   const form = useForm<CmsSettingsModel>({
     resolver: zodResolver(formSchema) as unknown as Resolver<CmsSettingsModel>,
     defaultValues: {
@@ -45,10 +49,30 @@ export function CmsSettings() {
     },
   });
 
+  const {
+    handleSubmit,
+    reset,
+    formState: { isDirty },
+  } = form;
+
+  useEffect(() => {
+    if (cmsSettings) {
+      reset({
+        ...cmsSettings,
+        apiUrl: cmsSettings.apiUrl ?? "",
+      });
+    }
+  }, [cmsSettings, reset]);
+
+  useEffect(() => {
+    setHasUnsavedChanges(isDirty);
+  }, [isDirty, setHasUnsavedChanges]);
+
   const onSubmit = async (values: CmsSettingsModel) => {
     try {
-      // TODO: Implement settings update
-      console.log(values);
+      await updateSetting("core", "core:cms", values);
+      reset(values);
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error("Failed to update CMS settings:", error);
     }
@@ -56,7 +80,7 @@ export function CmsSettings() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="siteName"
