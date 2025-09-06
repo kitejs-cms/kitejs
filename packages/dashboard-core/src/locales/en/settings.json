@@ -4,6 +4,7 @@
       "siteName": "Site Name",
       "siteUrl": "Site URL",
       "siteDescription": "Site Description",
+      "supportedLanguages": "Supported Languages",
       "defaultLanguage": "Default Language",
       "allowIndexing": "Allow Search Engine Indexing"
     }

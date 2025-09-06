@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
+import { MultiSelect } from "../../../components/multi-select";
 import { Button } from "../../../components/ui/button";
 import { type CmsSettingsModel } from "@kitejs-cms/core/modules/settings/models/cms-settings.model";
 import { useSettingsContext } from "../../../context/settings-context";
@@ -28,9 +29,20 @@ const formSchema = z.object({
   siteName: z.string().min(1, "Site name is required"),
   siteUrl: z.string().url("Must be a valid URL"),
   siteDescription: z.string().optional(),
+  supportedLanguages: z
+    .array(z.string())
+    .nonempty("Supported languages are required"),
   defaultLanguage: z.string().min(1, "Default language is required"),
   allowIndexing: z.boolean(),
 });
+
+const languageOptions = [
+  { value: "en", label: "English" },
+  { value: "it", label: "Italiano" },
+  { value: "es", label: "Español" },
+  { value: "fr", label: "Français" },
+  { value: "de", label: "Deutsch" },
+];
 
 export function CmsSettings() {
   const { t } = useTranslation();
@@ -140,16 +152,10 @@ export function CmsSettings() {
                 {t("settings:cms.settings.supportedLanguages")}
               </FormLabel>
               <FormControl>
-                <Input
-                  value={field.value.join(", ")}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value
-                        .split(",")
-                        .map((lang) => lang.trim())
-                        .filter(Boolean)
-                    )
-                  }
+                <MultiSelect
+                  options={languageOptions}
+                  initialTags={field.value}
+                  onChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
@@ -176,11 +182,14 @@ export function CmsSettings() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {form.watch("supportedLanguages")?.map((lang) => (
-                    <SelectItem key={lang} value={lang}>
-                      {lang}
-                    </SelectItem>
-                  ))}
+                  {form.watch("supportedLanguages")?.map((lang) => {
+                    const option = languageOptions.find((opt) => opt.value === lang);
+                    return (
+                      <SelectItem key={lang} value={lang}>
+                        {option?.label || lang}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               <FormMessage />
