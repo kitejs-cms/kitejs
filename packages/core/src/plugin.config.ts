@@ -11,6 +11,7 @@ const CorePluginConfig: IPlugin = {
   name: "Core CMS",
   version,
   description: "Default configuration for the CMS core",
+  enabled: true,
   settings: CoreSetting,
   permissions: CorePermissions,
   initialize: async () => {

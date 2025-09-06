@@ -13,6 +13,7 @@ import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";
 import { PageModule } from "./modules/pages";
 import { PostModule } from "./modules/articles";
+import { PluginsModule } from "./modules/plugins";
 import { DashboardPage } from "./modules/core/pages/dashboard";
 import { ProtectedRoute } from "./components/protected-route";
 
@@ -26,6 +27,7 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
     ProfileModule,
     PageModule,
     PostModule,
+    PluginsModule,
   ];
   const allModules = [...coreModules, ...modules];
 

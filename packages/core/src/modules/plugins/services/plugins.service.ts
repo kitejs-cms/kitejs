@@ -1,12 +1,12 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Plugin, PluginDocument } from '../plugin.schema';
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Plugin, PluginDocument } from "../plugin.schema";
 import {
   Injectable,
   InternalServerErrorException,
   Logger,
-} from '@nestjs/common';
-import { PluginResponseModel } from '../models/plugin-response.model';
+} from "@nestjs/common";
+import { PluginResponseModel } from "../models/plugin-response.model";
 
 @Injectable()
 export class PluginsService {
@@ -113,24 +113,24 @@ export class PluginsService {
   }
 
   /**
-   * Disables a plugin by setting `enabled` to false.
+   * Marks a plugin as disabled and flags it for disablement after restart.
    * @param namespace - The namespace of the plugin to be disabled.
-   * @returns True if the plugin was successfully disabled, false otherwise.
+   * @returns True if the plugin exists, false otherwise.
    */
   async disable(namespace: string): Promise<boolean> {
     try {
       const result = await this.pluginModel.updateOne(
         { namespace },
-        { $set: { enabled: false } }
+        { $set: { enabled: false, pendingDisable: true } }
       );
 
-      return result.modifiedCount > 0;
+      return result.matchedCount > 0;
     } catch (error: unknown) {
       this.logger.error(
         `Error in disable (namespace: ${namespace}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to disable the plugin.');
+      throw new InternalServerErrorException("Failed to disable the plugin.");
     }
   }
 
