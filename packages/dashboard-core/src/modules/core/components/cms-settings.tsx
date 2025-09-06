@@ -133,21 +133,54 @@ export function CmsSettings() {
 
         <FormField
           control={form.control}
+          name="supportedLanguages"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                {t("settings:cms.settings.supportedLanguages")}
+              </FormLabel>
+              <FormControl>
+                <Input
+                  value={field.value.join(", ")}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value
+                        .split(",")
+                        .map((lang) => lang.trim())
+                        .filter(Boolean)
+                    )
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="defaultLanguage"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
                 {t("settings:cms.settings.defaultLanguage")}
               </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                defaultValue={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a language" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="it">Italian</SelectItem>
+                  {form.watch("supportedLanguages")?.map((lang) => (
+                    <SelectItem key={lang} value={lang}>
+                      {lang}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
