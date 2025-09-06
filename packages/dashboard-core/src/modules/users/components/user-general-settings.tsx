@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +24,7 @@ import { Button } from "../../../components/ui/button";
 import { useApi } from "../../../hooks/use-api";
 import { RoleResponseModel } from "@kitejs-cms/core/modules/users/models/role-response.model";
 import { UserSettingsModel } from "@kitejs-cms/core/modules/settings/models/user-settings.model";
+import { Skeleton } from "../../../components/ui/skeleton";
 
 const formSchema = z.object({
   registrationOpen: z.boolean(),
@@ -37,6 +38,7 @@ export function UserGeneralSettings() {
   const { getSetting, updateSetting, setHasUnsavedChanges } =
     useSettingsContext();
   const { data: roles, fetchData } = useApi<RoleResponseModel[]>();
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<GeneralSettingsForm>({
     resolver: zodResolver(formSchema),
@@ -69,7 +71,8 @@ export function UserGeneralSettings() {
           defaultRole: setting.value.defaultRole,
         });
       }
-      fetchData("roles");
+      await fetchData("roles");
+      setIsLoading(false);
     })();
   }, [getSetting, reset, fetchData]);
 
@@ -91,6 +94,21 @@ export function UserGeneralSettings() {
     reset(values);
     setHasUnsavedChanges(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-6 w-10" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
