@@ -1,66 +1,28 @@
-import { useEffect } from "react";
-import { z } from "zod";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsContext } from "../../../context/settings-context";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "../../../components/ui/form";
-import { Switch } from "../../../components/ui/switch";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
+import { Switch } from "../../../components/ui/switch";
+import { Label } from "../../../components/ui/label";
+import { Trash2 } from "lucide-react";
 import { UserSettingsModel } from "@kitejs-cms/core/modules/settings/models/user-settings.model";
-
-const consentSchema = z.object({
-  name: z.string().min(1),
-  slug: z.string().min(1),
-  description: z.string().optional(),
-  required: z.boolean(),
-});
-
-const formSchema = z.object({
-  consentsEnabled: z.boolean(),
-  consents: z.array(consentSchema),
-});
-
-type ConsentSettingsForm = z.infer<typeof formSchema>;
 
 export function UserConsentSettings() {
   const { t } = useTranslation("users");
-  const { getSetting, updateSetting, setHasUnsavedChanges } =
-    useSettingsContext();
-
-  const form = useForm<ConsentSettingsForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      consentsEnabled: false,
-      consents: [],
-    },
-  });
-
   const {
-    control,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { isDirty },
-  } = form;
+    getSetting,
+    updateSetting,
+    setHasUnsavedChanges,
+    hasUnsavedChanges,
+  } = useSettingsContext();
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "consents",
-  });
+  type Consent = UserSettingsModel["consents"][number];
 
-  useEffect(() => {
-    setHasUnsavedChanges(isDirty);
-  }, [isDirty, setHasUnsavedChanges]);
+  const [consentsEnabled, setConsentsEnabled] = useState(false);
+  const [consents, setConsents] = useState<Consent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -69,15 +31,40 @@ export function UserConsentSettings() {
         "core:users"
       );
       if (setting?.value) {
-        reset({
-          consentsEnabled: setting.value.consentsEnabled ?? false,
-          consents: setting.value.consents || [],
-        });
+        setConsentsEnabled(setting.value.consentsEnabled ?? false);
+        setConsents(setting.value.consents || []);
       }
+      setIsLoading(false);
     })();
-  }, [getSetting, reset]);
+  }, [getSetting]);
 
-  const onSubmit = async (values: ConsentSettingsForm) => {
+  const handleConsentChange = (
+    index: number,
+    field: keyof Consent,
+    value: unknown
+  ) => {
+    setConsents((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value } as Consent;
+      return next;
+    });
+    setHasUnsavedChanges(true);
+  };
+
+  const addConsent = () => {
+    setConsents((prev) => [
+      ...prev,
+      { name: "", slug: "", description: "", required: false },
+    ]);
+    setHasUnsavedChanges(true);
+  };
+
+  const removeConsent = (index: number) => {
+    setConsents((prev) => prev.filter((_, i) => i !== index));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSave = async () => {
     const existing = await getSetting<{ value: UserSettingsModel }>(
       "core",
       "core:users"
@@ -85,129 +72,110 @@ export function UserConsentSettings() {
     const newValues: UserSettingsModel = {
       ...(existing?.value ?? {
         registrationOpen: true,
-        defaultRole: "",
+        defaultRole: "user",
         consentsEnabled: false,
         consents: [],
       }),
-      ...values,
+      consentsEnabled,
+      consents,
     };
     await updateSetting("core", "core:users", newValues);
-    reset(values);
     setHasUnsavedChanges(false);
   };
 
+  if (isLoading) {
+    return <div>{t("common.loading", "Loading...")}</div>;
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={control}
-          name="consentsEnabled"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <FormLabel>{t("settings.consents.consentsEnabled")}</FormLabel>
-              <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-            </FormItem>
-          )}
+    <div className="space-y-6 pb-16">
+      <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+        <Label>{t("settings.consents.consentsEnabled")}</Label>
+        <Switch
+          checked={consentsEnabled}
+          onCheckedChange={(checked) => {
+            setConsentsEnabled(checked);
+            setHasUnsavedChanges(true);
+          }}
         />
-        {watch("consentsEnabled") && (
-          <div className="space-y-4">
-            {fields.map((item, index) => (
-              <div key={item.id} className="space-y-2 rounded-lg border p-4">
-                <FormField
-                  control={control}
-                  name={`consents.${index}.name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t("settings.consents.consentName")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={control}
-                  name={`consents.${index}.slug`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t("settings.consents.consentSlug")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={control}
-                  name={`consents.${index}.description`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t("settings.consents.consentDescription")}
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={control}
-                  name={`consents.${index}.required`}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <FormLabel>
-                        {t("settings.consents.consentRequired")}
-                      </FormLabel>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+      </div>
+
+      {consentsEnabled && (
+        <div className="space-y-4">
+          {consents.map((consent, index) => (
+            <div key={index} className="space-y-2 rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">
+                  {consent.name || t("settings.consents.consentName")}
+                </span>
                 <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => remove(index)}
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeConsent(index)}
                 >
-                  {t("buttons.delete")}
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            ))}
-            <Button
-              type="button"
-              onClick={() =>
-                append({
-                  name: "",
-                  slug: "",
-                  description: "",
-                  required: false,
-                })
-              }
-            >
-              {t("settings.consents.addConsent")}
-            </Button>
-          </div>
-        )}
-        <div className="fixed bottom-4 right-4 p-4">
-          <Button type="submit" disabled={!isDirty}>
-            {t("buttons.save")}
+              <div className="space-y-2">
+                <div>
+                  <Label>{t("settings.consents.consentName")}</Label>
+                  <Input
+                    value={consent.name}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      handleConsentChange(index, "name", value);
+                      if (!consent.slug) {
+                        handleConsentChange(
+                          index,
+                          "slug",
+                          value.toLowerCase().trim().replace(/\s+/g, "-")
+                        );
+                      }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label>{t("settings.consents.consentSlug")}</Label>
+                  <Input
+                    value={consent.slug}
+                    onChange={(e) =>
+                      handleConsentChange(index, "slug", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>{t("settings.consents.consentDescription")}</Label>
+                  <Textarea
+                    value={consent.description ?? ""}
+                    onChange={(e) =>
+                      handleConsentChange(index, "description", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-2">
+                  <Label>{t("settings.consents.consentRequired")}</Label>
+                  <Switch
+                    checked={consent.required}
+                    onCheckedChange={(checked) =>
+                      handleConsentChange(index, "required", checked)
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          <Button type="button" onClick={addConsent}>
+            {t("settings.consents.addConsent")}
           </Button>
         </div>
-      </form>
-    </Form>
+      )}
+
+      <div className="fixed bottom-4 right-4 p-4">
+        <Button onClick={handleSave} disabled={!hasUnsavedChanges}>
+          {t("buttons.save")}
+        </Button>
+      </div>
+    </div>
   );
 }
 
