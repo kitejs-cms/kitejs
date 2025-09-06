@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, useSettingsContext } from "@kitejs-cms/dashboard-core";
 import { CustomFieldBuilder } from "@kitejs-cms/dashboard-core/components/custom-field-builder";
-import { GALLERY_PLUGIN_NAMESPACE, GALLERY_SETTINGS_KEY, type GalleryPluginSettingsModel } from "../../../plugin-gallery-api/dist";
+import { type GalleryPluginSettingsModel } from "../../../plugin-gallery-api";
+
+export const GALLERY_PLUGIN_NAMESPACE = "gallery-plugin";
+export const GALLERY_SETTINGS_KEY = `${GALLERY_PLUGIN_NAMESPACE}:gallery`;
 
 export function GalleryFieldsSettings() {
   const [fields, setFields] = useState<FieldDefinition[]>([]);
@@ -15,10 +18,9 @@ export function GalleryFieldsSettings() {
   useEffect(() => {
     const loadFields = async () => {
       try {
-        const { value } = await getSetting<{ value: GalleryPluginSettingsModel }>(
-          GALLERY_PLUGIN_NAMESPACE,
-          GALLERY_SETTINGS_KEY
-        );
+        const { value } = await getSetting<{
+          value: GalleryPluginSettingsModel;
+        }>(GALLERY_PLUGIN_NAMESPACE, GALLERY_SETTINGS_KEY);
         if (value?.customFields) {
           setFields(value.customFields);
         }
@@ -65,4 +67,3 @@ export function GalleryFieldsSettings() {
     </div>
   );
 }
-

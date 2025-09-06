@@ -1,3 +1,4 @@
+import type { FormValues } from "@kitejs-cms/dashboard-core/components/custom-field-form";
 import { EMPTY_GALLERY, DEFAULT_SETTINGS } from "../constant/empty-gallery";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -8,16 +9,17 @@ import {
   useBreadcrumb,
   useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
-import type { FormValues } from "@kitejs-cms/dashboard-core/components/custom-field-form";
 import {
   type GalleryResponseModel,
   type GalleryTranslationModel,
   type GalleryUpsertModel,
   type GallerySettingsModel,
-  GALLERY_PLUGIN_NAMESPACE,
-  GALLERY_SETTINGS_KEY,
   type GalleryPluginSettingsModel,
 } from "../../../plugin-gallery-api/dist";
+import {
+  GALLERY_PLUGIN_NAMESPACE,
+  GALLERY_SETTINGS_KEY,
+} from "../components/gallery-fields-settings";
 
 type GalleryDetails = GalleryResponseModel;
 
@@ -94,14 +96,13 @@ export function useGalleryDetails() {
   useEffect(() => {
     (async () => {
       try {
-        const { value } = await getSetting<{ value: GalleryPluginSettingsModel }>(
-          GALLERY_PLUGIN_NAMESPACE,
-          GALLERY_SETTINGS_KEY
-        );
+        const { value } = await getSetting<{
+          value: GalleryPluginSettingsModel;
+        }>(GALLERY_PLUGIN_NAMESPACE, GALLERY_SETTINGS_KEY);
         if (value?.customFields) {
           setCustomFields(value.customFields);
           const extracted: FormValues = {};
-          const record = (data as unknown) as Record<string, unknown> | null;
+          const record = data as unknown as Record<string, unknown> | null;
           value.customFields.forEach((field) => {
             if (record && record[field.key] !== undefined) {
               extracted[field.key] = record[field.key] as FormValues[string];
