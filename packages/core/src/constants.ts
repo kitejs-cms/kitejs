@@ -4,6 +4,7 @@ import {
   CACHE_SETTINGS_KEY,
   SWAGGER_SETTINGS_KEY,
   STORAGE_SETTINGS_KEY,
+  USER_SETTINGS_KEY,
   SettingModel,
 } from "./modules/settings";
 import {
@@ -109,6 +110,11 @@ export const CorePermissions: PermissionModel[] = [
     name: "core:users.delete",
     description: "Permission to delete users",
     role: ["admin"],
+  },
+  {
+    name: "core:users.profile",
+    description: "Permission for users to manage their profile",
+    role: ["user"],
   },
   /* Settings */
   {
@@ -235,5 +241,19 @@ export const CoreSetting: SettingModel[] = [
   {
     key: PAGE_SETTINGS_KEY,
     value: { filterFields: PageFilterFields, views: PageViews },
+  },
+  {
+    key: USER_SETTINGS_KEY,
+    value: {
+      registrationOpen: true,
+      defaultRole: "user",
+      consentsEnabled: false,
+      consents: [] as Array<{
+        name: string;
+        slug: string;
+        description?: string;
+        required: boolean;
+      }>,
+    },
   },
 ];

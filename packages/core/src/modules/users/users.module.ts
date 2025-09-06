@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { UsersController } from "./controllers/users.controller";
 import { RolesController } from "./controllers/roles.controller";
 import { PermissionsController } from "./controllers/permissions.controller";
@@ -10,6 +10,7 @@ import { UserService } from "./services/users.service";
 import { RolesService } from "./services/roles.service";
 import { PermissionsService } from "./services/permissions.service";
 import { CacheModule } from "../cache/cache.module";
+import { SettingsModule } from "../settings/settings.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CacheModule } from "../cache/cache.module";
       { name: Permission.name, schema: PermissionSchema },
     ]),
     CacheModule,
+    forwardRef(() => SettingsModule),
   ],
   controllers: [UsersController, RolesController, PermissionsController],
   providers: [UserService, RolesService, PermissionsService],

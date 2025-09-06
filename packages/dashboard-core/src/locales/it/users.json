@@ -26,7 +26,8 @@
     "save": "Salva",
     "addNote": "Aggiungi Nota",
     "editProfile": "Modifica Profilo",
-    "loadMore": "Carica altro"
+    "loadMore": "Carica altro",
+    "confirm": "Conferma"
   },
   "empty": "Nessun dato",
   "title": {
@@ -59,5 +60,43 @@
     "required": "Questo campo è obbligatorio.",
     "invalidEmail": "E-mail non valida.",
     "passwordMin": "La password deve essere lunga almeno 8 caratteri."
+  },
+  "settings": {
+    "menu": {
+      "title": "Impostazioni Utenti",
+      "description": "Configura registrazione, ruolo predefinito e consensi."
+    },
+    "general": {
+      "title": "Generali",
+      "registrationOpen": "Permetti registrazione",
+      "defaultRole": "Ruolo predefinito"
+    },
+    "consents": {
+      "title": "Consensi",
+      "consentsEnabled": "Abilita consensi",
+      "consentName": "Nome",
+      "consentSlug": "Slug",
+      "consentDescription": "Descrizione",
+      "consentRequired": "Richiesto",
+      "addConsent": "Aggiungi consenso"
+    }
+  },
+  "consentsCard": {
+    "title": "Consensi",
+    "given": "Dato",
+    "notGiven": "Non dato",
+    "neverGiven": "mai fornito",
+    "timestamp": "Data",
+    "noConsents": "Nessun consenso",
+    "confirmTitle": "Forzare il consenso",
+    "confirmDescription": "Sei sicuro di voler {{action}} il consenso \"{{name}}\"?",
+    "actions": {
+      "give": "concedere",
+      "revoke": "revocare"
+    },
+    "forcedNote": "{{actor}} ha forzato il consenso \"{{name}}\" come {{status}}",
+    "historyButton": "Storico",
+    "historyTitle": "Storico consensi",
+    "historyEmpty": "Nessuna azione sui consensi registrata"
   }
 }

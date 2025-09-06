@@ -32,6 +32,7 @@ import {
   InternalServerErrorException,
   UseGuards,
 } from "@nestjs/common";
+import { UpdateUserConsentsDto } from "../dto/update-user-consents.dto";
 
 @ApiTags("Users")
 @Controller("users")
@@ -149,6 +150,33 @@ export class UsersController {
       return new UserResponseDto(updatedUser);
     } catch (error) {
       throw new BadRequestException("Failed to update the user.");
+    }
+  }
+
+  @Patch(":id/consents")
+  @ApiOperation({ summary: "Update user consents" })
+  @ApiResponse({
+    status: 200,
+    description: "The user consents have been updated",
+    type: UserResponseDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async updateUserConsents(
+    @Param("id") id: string,
+    @Body() dto: UpdateUserConsentsDto
+  ) {
+    try {
+      const updatedUser = await this.userService.updateUserConsents(
+        id,
+        dto.consents
+      );
+      if (!updatedUser) {
+        throw new NotFoundException(`User with ID "${id}" not found.`);
+      }
+      return new UserResponseDto(updatedUser);
+    } catch (error) {
+      throw new BadRequestException("Failed to update user consents.");
     }
   }
 

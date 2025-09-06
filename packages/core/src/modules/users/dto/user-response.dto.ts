@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Exclude, Transform } from "class-transformer";
+import { Exclude, Transform, Type } from "class-transformer";
 import { ObjectId } from "mongoose";
 import { UserStatus } from "../models/user-status.enum";
 import { UserResponseModel } from "../models/user-response.model";
@@ -9,7 +9,9 @@ import {
   IsEnum,
   IsArray,
   IsDateString,
+  ValidateNested,
 } from "class-validator";
+import { UserConsentDto } from "./user-consent.dto";
 
 export class UserResponseDto implements UserResponseModel {
   @ApiProperty({ description: "User ID", example: "63f6e5ad4e5f4a6b97a5c1a2" })
@@ -53,6 +55,16 @@ export class UserResponseDto implements UserResponseModel {
   @IsArray()
   @IsString({ each: true })
   permissions: string[];
+
+  @ApiProperty({
+    description: "Consents given by the user",
+    type: [UserConsentDto],
+    required: false,
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserConsentDto)
+  consents?: UserConsentDto[];
 
   @ApiProperty({
     description: "Creation date of the user",

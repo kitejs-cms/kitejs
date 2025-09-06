@@ -8,6 +8,11 @@ export type UserResponseModel = {
   status: UserStatus;
   roles: string[];
   permissions: string[];
+  consents?: Array<{
+    consentType: string;
+    given: boolean;
+    timestamp: string;
+  }>;
   loginAttempts?: string | null;
   password?: string;
   createdAt: string;

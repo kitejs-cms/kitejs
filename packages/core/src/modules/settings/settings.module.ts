@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { SettingsController } from "./settings.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Setting, SettingSchema } from "./settings.schema";
@@ -10,7 +10,7 @@ import { UsersModule } from "../users/users.module";
   imports: [
     MongooseModule.forFeature([{ name: Setting.name, schema: SettingSchema }]),
     CacheModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
   ],
   providers: [SettingsService],
   controllers: [SettingsController],

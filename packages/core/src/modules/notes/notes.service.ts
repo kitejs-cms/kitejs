@@ -22,7 +22,10 @@ export class NotesService {
       targetType: dto.targetType,
       content: dto.content,
       source: dto.source,
-      createdBy: dto.source === NoteSource.ADMIN ? user.sub : null,
+      createdBy:
+        dto.source === NoteSource.ADMIN || dto.source === NoteSource.CONSENT
+          ? user.sub
+          : null,
     });
     await note.populate<{ createdBy: User }>("createdBy", "firstName lastName");
 

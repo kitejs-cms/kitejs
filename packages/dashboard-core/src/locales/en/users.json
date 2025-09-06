@@ -26,7 +26,8 @@
     "save": "Save",
     "addNote": "Add Note",
     "editProfile": "Edit Profile",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "confirm": "Confirm"
   },
   "empty": "No data",
   "title": {
@@ -59,5 +60,43 @@
     "required": "This field is required.",
     "invalidEmail": "Invalid email address.",
     "passwordMin": "Password must be at least 8 characters."
+  },
+  "settings": {
+    "menu": {
+      "title": "User Settings",
+      "description": "Configure user registration, default role and consents."
+    },
+    "general": {
+      "title": "General",
+      "registrationOpen": "Allow registration",
+      "defaultRole": "Default role"
+    },
+    "consents": {
+      "title": "Consents",
+      "consentsEnabled": "Enable consents",
+      "consentName": "Name",
+      "consentSlug": "Slug",
+      "consentDescription": "Description",
+      "consentRequired": "Required",
+      "addConsent": "Add consent"
+    }
+  },
+  "consentsCard": {
+    "title": "Consents",
+    "given": "Given",
+    "notGiven": "Not given",
+    "neverGiven": "never given",
+    "timestamp": "Date",
+    "noConsents": "No consents",
+    "confirmTitle": "Force consent change",
+    "confirmDescription": "Are you sure you want to {{action}} the consent \"{{name}}\"?",
+    "actions": {
+      "give": "give",
+      "revoke": "revoke"
+    },
+    "forcedNote": "{{actor}} forced consent \"{{name}}\" as {{status}}",
+    "historyButton": "History",
+    "historyTitle": "Consent history",
+    "historyEmpty": "No consent actions recorded"
   }
 }

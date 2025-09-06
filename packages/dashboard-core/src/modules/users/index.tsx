@@ -4,6 +4,8 @@ import { UserPlus, Users, UsersIcon, Shield } from "lucide-react";
 import { UsersManagePage } from "./pages/users-manage";
 import { RolesManagePage } from "./pages/roles-manage";
 import { UserProfilePage } from "./pages/user-profile";
+import { UserGeneralSettings } from "./components/user-general-settings";
+import { UserConsentSettings } from "./components/user-consents-settings";
 
 export const UsersModule: DashboardModule = {
   name: "users",
@@ -47,25 +49,22 @@ export const UsersModule: DashboardModule = {
       },
     ],
   },
-  //settings: {
-  //  key: "users",
-  //  title: "users:settings.title",
-  //  icon: <Users />,
-  //  description: "users:settings.description",
-  //  component: <div>Main</div>,
-  //  children: [
-  //    {
-  //      key: "users-management",
-  //      title: "users:settings.usersManagement",
-  //      icon: <UserPlus />,
-  //      component: <div>TEST</div>,
-  //    },
-  //    {
-  //      key: "roles",
-  //      title: "users:settings.roles",
-  //      icon: <Shield />,
-  //      component: <div>TEST2</div>,
-  //    },
-  //  ],
-  //},
+  settings: {
+    key: "users",
+    title: "users:settings.menu.title",
+    icon: <Users />,
+    description: "users:settings.menu.description",
+    children: [
+      {
+        key: "general",
+        title: "users:settings.general.title",
+        component: <UserGeneralSettings />,
+      },
+      {
+        key: "consents",
+        title: "users:settings.consents.title",
+        component: <UserConsentSettings />,
+      },
+    ],
+  },
 };
