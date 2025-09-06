@@ -79,5 +79,12 @@
       "consentRequired": "Richiesto",
       "addConsent": "Aggiungi consenso"
     }
+  },
+  "consentsCard": {
+    "title": "Consensi",
+    "given": "Dato",
+    "notGiven": "Non dato",
+    "timestamp": "Data",
+    "noConsents": "Nessun consenso"
   }
 }
