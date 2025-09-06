@@ -26,7 +26,7 @@ import {
   DialogTitle,
   DialogClose,
 } from "../../../components/ui/dialog";
-import { History as HistoryIcon, XIcon, CheckIcon } from "lucide-react";
+import { History as HistoryIcon, XIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useApi } from "../../../hooks/use-api";
 import { useAuthContext } from "../../../context/auth-context";
@@ -271,53 +271,33 @@ export function UserConsentsCard({
             </DialogClose>
           </DialogHeader>
           <Separator />
-          {historyLoading ? (
-            <div className="p-4">
-              <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-3 before:bottom-3 before:w-px before:bg-neutral-200">
+          <div className="p-4">
+            {historyLoading ? (
+              <ul className="space-y-4">
                 {[0, 1, 2].map((i) => (
-                  <li key={i} className="relative pl-6">
-                    <span className="absolute -left-3.5 top-1.5 h-3 w-3 rounded-full bg-neutral-300 ring-2 ring-background" />
-                    <div className="border rounded-lg p-4 bg-white">
-                      <div className="animate-pulse space-y-2">
-                        <div className="h-4 w-48 rounded bg-neutral-200" />
-                        <div className="h-3 w-32 rounded bg-neutral-200" />
-                      </div>
+                  <li key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-32" />
+                  </li>
+                ))}
+              </ul>
+            ) : history.length ? (
+              <ul className="space-y-4">
+                {history.map((item) => (
+                  <li key={item.id}>
+                    <div>{item.content}</div>
+                    <div className="mt-1 text-xs text-neutral-500">
+                      {new Date(item.createdAt).toLocaleString()}
                     </div>
                   </li>
                 ))}
               </ul>
-            </div>
-          ) : history.length ? (
-            <div className="p-4">
-              <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-3 before:bottom-3 before:w-px before:bg-neutral-200">
-                {history.map((item) => {
-                  const isGive = item.content.includes(
-                    t("consentsCard.actions.give")
-                  );
-                  const Icon = isGive ? CheckIcon : XIcon;
-                  return (
-                    <li key={item.id} className="relative pl-6">
-                      <Icon
-                        className={`absolute -left-4 top-1.5 h-4 w-4 ${
-                          isGive ? "text-green-500" : "text-red-500"
-                        }`}
-                      />
-                      <div className="border rounded-lg p-4 bg-white">
-                        <div>{item.content}</div>
-                        <div className="mt-2 text-xs text-neutral-500">
-                          {new Date(item.createdAt).toLocaleString()}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ) : (
-            <div className="p-4 text-center">
-              {t("consentsCard.historyEmpty")}
-            </div>
-          )}
+            ) : (
+              <div className="text-center">
+                {t("consentsCard.historyEmpty")}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </Card>
