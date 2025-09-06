@@ -6,6 +6,14 @@
       "siteDescription": "Site Description",
       "supportedLanguages": "Supported Languages",
       "defaultLanguage": "Default Language",
+      "selectLanguage": "Select a language",
+      "languages": {
+        "en": "English",
+        "it": "Italian",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German"
+      },
       "allowIndexing": "Allow Search Engine Indexing"
     }
   },

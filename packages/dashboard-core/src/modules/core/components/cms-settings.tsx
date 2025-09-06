@@ -1,7 +1,7 @@
 import { Resolver, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Form,
@@ -36,18 +36,20 @@ const formSchema = z.object({
   allowIndexing: z.boolean(),
 });
 
-const languageOptions = [
-  { value: "en", label: "English" },
-  { value: "it", label: "Italiano" },
-  { value: "es", label: "Español" },
-  { value: "fr", label: "Français" },
-  { value: "de", label: "Deutsch" },
-];
+const languageCodes = ["en", "it", "es", "fr", "de"] as const;
 
 export function CmsSettings() {
   const { t } = useTranslation();
   const { cmsSettings, updateSetting, setHasUnsavedChanges } =
     useSettingsContext();
+  const languageOptions = useMemo(
+    () =>
+      languageCodes.map((code) => ({
+        value: code,
+        label: t(`settings:cms.settings.languages.${code}`),
+      })),
+    [t]
+  );
   const form = useForm<CmsSettingsModel>({
     resolver: zodResolver(formSchema) as unknown as Resolver<CmsSettingsModel>,
     defaultValues: {
@@ -72,6 +74,12 @@ export function CmsSettings() {
       reset({
         ...cmsSettings,
         apiUrl: cmsSettings.apiUrl ?? "",
+        supportedLanguages: Array.from(
+          new Set([
+            ...(cmsSettings.supportedLanguages ?? []),
+            cmsSettings.defaultLanguage,
+          ])
+        ),
       });
     }
   }, [cmsSettings, reset]);
@@ -171,14 +179,12 @@ export function CmsSettings() {
               <FormLabel>
                 {t("settings:cms.settings.defaultLanguage")}
               </FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-                defaultValue={field.value}
-              >
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a language" />
+                    <SelectValue
+                      placeholder={t("settings:cms.settings.selectLanguage")}
+                    />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
