@@ -345,7 +345,6 @@ export function UserNotes({ userId, canAddNote }: UserNotesProps) {
               )}
             </>
           ) : loading ? (
-            // SKELETON LIST (timeline + 3 item fittizi)
             <ul className="relative pl-4 space-y-6 before:absolute before:left-2 before:top-3 before:bottom-3 before:w-px before:bg-neutral-200">
               {[0, 1, 2].map((i) => (
                 <li key={i} className="relative pl-6">

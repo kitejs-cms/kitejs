@@ -6,7 +6,10 @@ import { useBreadcrumb } from "../../../context/breadcrumb-context";
 import { ProfileForm } from "../../profile/components/profile-form";
 import { Button } from "../../../components/ui/button";
 import { useApi } from "../../../hooks/use-api";
-import type { UserResponseModel, RoleResponseModel } from "@kitejs-cms/core/index";
+import type {
+  UserResponseModel,
+  RoleResponseModel,
+} from "@kitejs-cms/core/index";
 import { Separator } from "../../../components/ui/separator";
 import { Badge } from "../../../components/ui/badge";
 import { JsonModal } from "../../../components/json-modal";
@@ -41,7 +44,8 @@ export function UserProfilePage() {
   const { setBreadcrumb } = useBreadcrumb();
   const { data: user, fetchData: fetchUser } = useApi<UserResponseModel>();
   const { fetchData: updateUser } = useApi<UserResponseModel>();
-  const { data: roleData, fetchData: fetchRoles } = useApi<RoleResponseModel[]>();
+  const { data: roleData, fetchData: fetchRoles } =
+    useApi<RoleResponseModel[]>();
   const { user: currentUser } = useAuthContext();
   const isAdmin = currentUser?.roles?.includes("admin");
   const { getSetting } = useSettingsContext();
@@ -151,7 +155,11 @@ export function UserProfilePage() {
               </CardTitle>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="cursor-pointer">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="cursor-pointer"
+                  >
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -175,7 +183,9 @@ export function UserProfilePage() {
           <Separator />
           <CardContent className="p-0 text-sm pb-4">
             <div className="flex justify-between border-b py-3">
-              <div className="pl-4 w-1/3 text-left">{t("fields.firstName")}</div>
+              <div className="pl-4 w-1/3 text-left">
+                {t("fields.firstName")}
+              </div>
               <div className="w-2/3 text-left">
                 {user?.firstName ? user.firstName : t("empty")}
               </div>
@@ -201,7 +211,9 @@ export function UserProfilePage() {
             </div>
 
             <div className="flex justify-between border-b py-3">
-              <div className="pl-4 w-1/3 text-left">{t("fields.createdAt")}</div>
+              <div className="pl-4 w-1/3 text-left">
+                {t("fields.createdAt")}
+              </div>
               <div className="w-2/3 text-left">
                 {user?.createdAt
                   ? new Date(user.createdAt).toLocaleString()
@@ -210,7 +222,9 @@ export function UserProfilePage() {
             </div>
 
             <div className="flex justify-between border-b py-3">
-              <div className="pl-4 w-1/3 text-left">{t("fields.updatedAt")}</div>
+              <div className="pl-4 w-1/3 text-left">
+                {t("fields.updatedAt")}
+              </div>
               <div className="w-2/3 text-left">
                 {user?.updatedAt
                   ? new Date(user.updatedAt).toLocaleString()
@@ -227,14 +241,20 @@ export function UserProfilePage() {
                     initialTags={initialRoleTags}
                     onChange={async (values) => {
                       if (!id) return;
-                      await updateUser(`users/${id}`, "PATCH", { roles: values });
+                      await updateUser(`users/${id}`, "PATCH", {
+                        roles: values,
+                      });
                       fetchUser(`users/${id}`);
                     }}
                   />
                 ) : user?.roles?.length ? (
                   <div className="flex flex-wrap gap-2">
                     {user.roles.map((role, index) => (
-                      <Badge key={index} variant="outline" className="capitalize">
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="capitalize"
+                      >
                         {role}
                       </Badge>
                     ))}

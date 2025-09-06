@@ -1,14 +1,19 @@
+import { Separator } from "../../../components/ui/separator";
+import { Skeleton } from "../../../components/ui/skeleton";
+import { Switch } from "../../../components/ui/switch";
+import { Button } from "../../../components/ui/button";
+import { useTranslation } from "react-i18next";
+import { History as HistoryIcon, XIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useApi } from "../../../hooks/use-api";
+import { useAuthContext } from "../../../context/auth-context";
+import { Badge } from "../../../components/ui/badge";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from "../../../components/ui/card";
-import { Separator } from "../../../components/ui/separator";
-import { Skeleton } from "../../../components/ui/skeleton";
-import { Switch } from "../../../components/ui/switch";
-import { Button } from "../../../components/ui/button";
-import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,10 +31,6 @@ import {
   DialogTitle,
   DialogClose,
 } from "../../../components/ui/dialog";
-import { History as HistoryIcon, XIcon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useApi } from "../../../hooks/use-api";
-import { useAuthContext } from "../../../context/auth-context";
 
 interface UserConsent {
   consentType: string;
@@ -79,14 +80,11 @@ export function UserConsentsCard({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<ConsentHistory[]>([]);
-  const [selected, setSelected] = useState<
-    | {
-        slug: string;
-        name: string;
-        given: boolean;
-      }
-    | null
-  >(null);
+  const [selected, setSelected] = useState<{
+    slug: string;
+    name: string;
+    given: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!historyOpen) return;
@@ -130,9 +128,7 @@ export function UserConsentsCard({
     );
   }
 
-  const consentMap = new Map(
-    (consents || []).map((c) => [c.consentType, c])
-  );
+  const consentMap = new Map((consents || []).map((c) => [c.consentType, c]));
 
   const merged = definitions.map((def) => {
     const match = consentMap.get(def.slug);
@@ -189,9 +185,7 @@ export function UserConsentsCard({
                 <Switch
                   checked={consent.given}
                   disabled={
-                    !canEdit ||
-                    pending ||
-                    (consent.required && consent.given)
+                    !canEdit || pending || (consent.required && consent.given)
                   }
                   onCheckedChange={(checked) => {
                     if (!canEdit || (consent.required && !checked)) return;
@@ -206,6 +200,7 @@ export function UserConsentsCard({
           <div className="p-4 text-center">{t("consentsCard.noConsents")}</div>
         )}
       </CardContent>
+
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -232,11 +227,9 @@ export function UserConsentsCard({
                     consentType: c.slug,
                     given: c.slug === selected.slug ? selected.given : c.given,
                   }));
-                  await updateConsents(
-                    `users/${userId}/consents`,
-                    "PATCH",
-                    { consents: updated }
-                  );
+                  await updateConsents(`users/${userId}/consents`, "PATCH", {
+                    consents: updated,
+                  });
                   const actor = currentUser
                     ? `${currentUser.firstName ?? ""} ${
                         currentUser.lastName ?? ""
@@ -267,12 +260,19 @@ export function UserConsentsCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
-        <DialogContent className="max-w-lg p-0">
-          <DialogHeader className="flex items-center justify-between p-4">
+        <DialogContent className="p-0 bg-white rounded-lg shadow-lg flex flex-col">
+          <DialogHeader className="flex flex-row justify-between items-center p-4">
             <DialogTitle>{t("consentsCard.historyTitle")}</DialogTitle>
-            <DialogClose className="text-neutral-500 hover:text-neutral-700">
-              <XIcon className="h-5 w-5" />
+            <DialogClose className="flex items-center gap-2 text-gray-500 hover:text-black transition cursor-pointer">
+              <Badge
+                variant="outline"
+                className="bg-gray-100 text-gray-400 border-gray-400 font-medium px-2 py-0.5"
+              >
+                Esc
+              </Badge>
+              <XIcon className="w-5 h-5" />
             </DialogClose>
           </DialogHeader>
           <Separator />
