@@ -2,6 +2,7 @@ import { Image } from "lucide-react";
 import type { DashboardModule } from "@kitejs-cms/dashboard-core";
 import { GalleriesManagePage } from "./pages/galleries-manage";
 import { GalleryDetailsPage } from "./pages/gallery-details";
+import { GalleryFieldsSettings } from "./components/gallery-fields-settings";
 
 /* i18n */
 import it from "./locales/it.json";
@@ -11,6 +12,20 @@ export const GalleryModule: DashboardModule = {
   key: "gallery",
   name: "gallery",
   translations: { it, en },
+  settings: {
+    key: "gallery",
+    title: "gallery:menu.galleries",
+    icon: <Image />,
+    description: "gallery:settings.description",
+    children: [
+      {
+        key: "gallery-fields",
+        title: "gallery:settings.gallery-fields.title",
+        icon: <Image />,
+        component: <GalleryFieldsSettings />,
+      },
+    ],
+  },
   routes: [
     {
       path: "galleries",

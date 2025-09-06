@@ -1,8 +1,9 @@
+import type { FormValues } from "@kitejs-cms/dashboard-core/components/custom-field-form";
 import { EMPTY_GALLERY, DEFAULT_SETTINGS } from "../constant/empty-gallery";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { UploadResultModel } from "@kitejs-cms/core";
+import { UploadResultModel, type FieldDefinition } from "@kitejs-cms/core";
 import {
   useApi,
   useBreadcrumb,
@@ -13,7 +14,12 @@ import {
   type GalleryTranslationModel,
   type GalleryUpsertModel,
   type GallerySettingsModel,
+  type GalleryPluginSettingsModel,
 } from "../../../plugin-gallery-api/dist";
+import {
+  GALLERY_PLUGIN_NAMESPACE,
+  GALLERY_SETTINGS_KEY,
+} from "../components/gallery-fields-settings";
 
 type GalleryDetails = GalleryResponseModel;
 
@@ -57,7 +63,7 @@ export function useGalleryDetails() {
   const navigate = useNavigate();
   const { id } = useParams() as { id?: string };
   const { setBreadcrumb } = useBreadcrumb();
-  const { cmsSettings } = useSettingsContext();
+  const { cmsSettings, getSetting } = useSettingsContext();
 
   const defaultLang = useMemo(
     () => cmsSettings?.defaultLanguage || "en",
@@ -72,6 +78,8 @@ export function useGalleryDetails() {
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
   const [navigateTo, setNavigateTo] = useState("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [customFields, setCustomFields] = useState<FieldDefinition[]>([]);
+  const [customFieldsValues, setCustomFieldsValues] = useState<FormValues>({});
 
   useEffect(() => {
     const crumbs = [
@@ -84,6 +92,31 @@ export function useGalleryDetails() {
     }
     setBreadcrumb(crumbs);
   }, [t, id, data, activeLang, setBreadcrumb]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { value } = await getSetting<{
+          value: GalleryPluginSettingsModel;
+        }>(GALLERY_PLUGIN_NAMESPACE, GALLERY_SETTINGS_KEY);
+        if (value?.customFields) {
+          setCustomFields(value.customFields);
+          const extracted: FormValues = {};
+          const record = data as unknown as Record<string, unknown> | null;
+          value.customFields.forEach((field) => {
+            if (record && record[field.key] !== undefined) {
+              extracted[field.key] = record[field.key] as FormValues[string];
+            } else if (field.defaultValue !== undefined) {
+              extracted[field.key] = field.defaultValue as FormValues[string];
+            }
+          });
+          setCustomFieldsValues(extracted);
+        }
+      } catch (error) {
+        console.error("Failed to load custom fields:", error);
+      }
+    })();
+  }, [getSetting, data]);
 
   useEffect(() => {
     if (!defaultLang) return;
@@ -177,6 +210,14 @@ export function useGalleryDetails() {
     setHasChanges(true);
   }, []);
 
+  const onChangeCustomField = useCallback(
+    (values: FormValues) => {
+      setCustomFieldsValues((prev) => ({ ...prev, ...values }));
+      setHasChanges(true);
+    },
+    [setHasChanges]
+  );
+
   const onAddLanguage = useCallback((lang: string) => {
     setData((prev) => {
       if (!prev || prev.translations[lang]) return prev;
@@ -236,6 +277,7 @@ export function useGalleryDetails() {
       })),
       settings: data.settings,
       seo: translation.seo,
+      ...customFieldsValues,
     };
 
     const result = await fetchData(
@@ -251,7 +293,7 @@ export function useGalleryDetails() {
       setFormErrors({});
       if (id === "create") navigate(`/galleries/${updated.id}`);
     }
-  }, [data, activeLang, fetchData, id, navigate, t]);
+  }, [data, activeLang, customFieldsValues, fetchData, id, navigate, t]);
 
   const handleNavigation = useCallback(
     (path: string) => {
@@ -354,5 +396,8 @@ export function useGalleryDetails() {
     closeUnsavedAlert,
     confirmDiscard,
     onGallerySettingsChange,
+    customFields,
+    customFieldsValues,
+    onChangeCustomField,
   };
 }

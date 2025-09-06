@@ -1,4 +1,8 @@
-import { PermissionModel, SettingModel } from "@kitejs-cms/core";
+import {
+  FieldDefinition,
+  PermissionModel,
+  SettingModel,
+} from "@kitejs-cms/core";
 
 export const GALLERY_PLUGIN_NAMESPACE = "gallery-plugin";
 
@@ -27,5 +31,15 @@ export const GalleryPermissions: PermissionModel[] = [
   },
 ];
 
-export const GallerySetting: SettingModel[] = [];
+export const GALLERY_SETTINGS_KEY = `${GALLERY_PLUGIN_NAMESPACE}:gallery`;
 
+export type GalleryPluginSettingsModel = {
+  customFields?: FieldDefinition[];
+};
+
+export const GallerySetting: SettingModel<GalleryPluginSettingsModel>[] = [
+  {
+    key: GALLERY_SETTINGS_KEY,
+    value: { customFields: [] },
+  },
+];

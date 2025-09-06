@@ -38,6 +38,12 @@
     "grid": "Impostazioni griglia",
     "preview": "Anteprima"
   },
+  "settings": {
+    "description": "Configura le impostazioni della galleria.",
+    "gallery-fields": {
+      "title": "Campi personalizzati"
+    }
+  },
   "errors": {
     "titleRequired": "Il titolo è obbligatorio",
     "slugRequired": "Lo slug è obbligatorio"
