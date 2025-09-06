@@ -4,6 +4,7 @@ import {
   CACHE_SETTINGS_KEY,
   SWAGGER_SETTINGS_KEY,
   STORAGE_SETTINGS_KEY,
+  USER_SETTINGS_KEY,
   SettingModel,
 } from "./modules/settings";
 import {
@@ -235,5 +236,12 @@ export const CoreSetting: SettingModel[] = [
   {
     key: PAGE_SETTINGS_KEY,
     value: { filterFields: PageFilterFields, views: PageViews },
+  },
+  {
+    key: USER_SETTINGS_KEY,
+    value: {
+      registrationOpen: true,
+      defaultRole: "user",
+    },
   },
 ];

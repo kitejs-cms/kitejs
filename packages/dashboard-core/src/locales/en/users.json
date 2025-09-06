@@ -59,5 +59,11 @@
     "required": "This field is required.",
     "invalidEmail": "Invalid email address.",
     "passwordMin": "Password must be at least 8 characters."
+  },
+  "settings": {
+    "title": "User Settings",
+    "description": "Configure user registration and default role.",
+    "registrationOpen": "Allow registration",
+    "defaultRole": "Default role"
   }
 }

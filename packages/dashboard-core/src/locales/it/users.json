@@ -59,5 +59,11 @@
     "required": "Questo campo è obbligatorio.",
     "invalidEmail": "E-mail non valida.",
     "passwordMin": "La password deve essere lunga almeno 8 caratteri."
+  },
+  "settings": {
+    "title": "Impostazioni Utenti",
+    "description": "Configura la registrazione e il ruolo predefinito.",
+    "registrationOpen": "Permetti registrazione",
+    "defaultRole": "Ruolo predefinito"
   }
 }
