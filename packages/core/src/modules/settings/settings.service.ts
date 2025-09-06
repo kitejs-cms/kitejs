@@ -36,6 +36,14 @@ export class SettingsService {
     return `settings:${key}`;
   }
 
+  getSettingType(namespace: string): SettingType {
+    const ns = namespace.toLowerCase();
+    if (ns === CORE_NAMESPACE) return SettingType.CORE;
+    if (ns.endsWith("-plugin")) return SettingType.PLUGIN;
+    if (ns.endsWith("-theme")) return SettingType.THEME;
+    return SettingType.OTHER;
+  }
+
   /**
    * Retrieve a setting by namespace and key.
    * Checks the cache first before querying the database.
@@ -99,7 +107,13 @@ export class SettingsService {
         );
       }
 
-      const createdSetting = new this.settingModel(settingData);
+      const data = {
+        ...settingData,
+        type:
+          settingData.type ?? this.getSettingType(settingData.namespace),
+      };
+
+      const createdSetting = new this.settingModel(data);
       const savedSetting = await createdSetting.save();
       const settingDataJson = savedSetting.toJSON();
 
@@ -125,10 +139,11 @@ export class SettingsService {
     value: T
   ): Promise<Setting<T>> {
     try {
+      const type = this.getSettingType(namespace);
       const updatedSetting = await this.settingModel
         .findOneAndUpdate(
           { namespace, key },
-          { $set: { value } },
+          { $set: { value, type } },
           { new: true, upsert: true }
         )
         .exec();

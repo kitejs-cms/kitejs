@@ -9,7 +9,7 @@ import {
   RolesService,
   PermissionResponseModel,
 } from "../../users";
-import { SettingsService, SettingType } from "../../settings";
+import { SettingsService } from "../../settings";
 
 @Injectable()
 export class PluginsLoaderService {
@@ -73,10 +73,9 @@ export class PluginsLoaderService {
                 namespace: pluginInstance.namespace,
                 key: setting.key,
                 value: setting.value,
-                type:
-                  pluginInstance.namespace === "core"
-                    ? SettingType.CORE
-                    : SettingType.PLUGIN,
+                type: this.settingService.getSettingType(
+                  pluginInstance.namespace
+                ),
               });
             }
           }
