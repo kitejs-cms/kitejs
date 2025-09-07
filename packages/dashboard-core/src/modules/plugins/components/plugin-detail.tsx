@@ -24,9 +24,9 @@ export function PluginDetail({ plugin, onBack }: PluginDetailProps) {
           <CardTitle className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={onBack}
-              className="cursor-pointer"
+              className="cursor-pointer w-8 p-0"
             >
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">{t("details.back")}</span>
@@ -36,25 +36,25 @@ export function PluginDetail({ plugin, onBack }: PluginDetailProps) {
         </CardHeader>
         <Separator />
         <CardContent className="p-0 text-sm">
-          <div className="flex justify-between border-b py-3">
+          <div className="flex justify-between border-b last:border-b-0 py-3">
             <div className="pl-4 w-1/3 text-left">
               {t("settings.columns.name")}
             </div>
             <div className="w-2/3 text-left">{plugin.name}</div>
           </div>
-          <div className="flex justify-between border-b py-3">
+          <div className="flex justify-between border-b last:border-b-0 py-3">
             <div className="pl-4 w-1/3 text-left">
               {t("details.namespace")}
             </div>
             <div className="w-2/3 text-left">{plugin.namespace}</div>
           </div>
-          <div className="flex justify-between border-b py-3">
+          <div className="flex justify-between border-b last:border-b-0 py-3">
             <div className="pl-4 w-1/3 text-left">
               {t("settings.columns.version")}
             </div>
             <div className="w-2/3 text-left">{plugin.version}</div>
           </div>
-          <div className="flex justify-between border-b py-3">
+          <div className="flex justify-between border-b last:border-b-0 py-3">
             <div className="pl-4 w-1/3 text-left">
               {t("settings.columns.installedAt")}
             </div>
@@ -62,7 +62,7 @@ export function PluginDetail({ plugin, onBack }: PluginDetailProps) {
               {new Date(plugin.installedAt).toLocaleString()}
             </div>
           </div>
-          <div className="flex justify-between border-b py-3">
+          <div className="flex justify-between border-b last:border-b-0 py-3">
             <div className="pl-4 w-1/3 text-left">
               {t("details.updatedAt")}
             </div>
@@ -71,7 +71,7 @@ export function PluginDetail({ plugin, onBack }: PluginDetailProps) {
             </div>
           </div>
           {plugin.author && (
-            <div className="flex justify-between border-b py-3">
+            <div className="flex justify-between border-b last:border-b-0 py-3">
               <div className="pl-4 w-1/3 text-left">
                 {t("details.author")}
               </div>
@@ -79,7 +79,7 @@ export function PluginDetail({ plugin, onBack }: PluginDetailProps) {
             </div>
           )}
           {plugin.description && (
-            <div className="flex justify-between border-b py-3">
+            <div className="flex justify-between border-b last:border-b-0 py-3">
               <div className="pl-4 w-1/3 text-left">
                 {t("details.description")}
               </div>
@@ -87,7 +87,7 @@ export function PluginDetail({ plugin, onBack }: PluginDetailProps) {
             </div>
           )}
           {plugin.dependencies && plugin.dependencies.length > 0 && (
-            <div className="flex justify-between border-b py-3">
+            <div className="flex justify-between border-b last:border-b-0 py-3">
               <div className="pl-4 w-1/3 text-left">
                 {t("details.dependencies")}
               </div>
@@ -96,14 +96,14 @@ export function PluginDetail({ plugin, onBack }: PluginDetailProps) {
               </div>
             </div>
           )}
-          <div className="flex justify-between border-b py-3">
+          <div className="flex justify-between border-b last:border-b-0 py-3">
             <div className="pl-4 w-1/3 text-left">
               {t("settings.columns.status")}
             </div>
             <div className="w-2/3 text-left">{plugin.status}</div>
           </div>
           {plugin.lastError && (
-            <div className="flex justify-between border-b py-3">
+            <div className="flex justify-between border-b last:border-b-0 py-3">
               <div className="pl-4 w-1/3 text-left">
                 {t("details.lastError")}
               </div>

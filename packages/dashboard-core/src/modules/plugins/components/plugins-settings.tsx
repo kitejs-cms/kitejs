@@ -205,25 +205,23 @@ export function PluginsSettings() {
                     : t("settings.enabled.disabled")}
               </TableCell>
               <TableCell>
-                {plugin.namespace === "core" ? null : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="shadow-none"
-                        size="icon"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => setSelectedPlugin(plugin)}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        {t("settings.buttons.view")}
-                      </DropdownMenuItem>
-                      {plugin.enabled ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="shadow-none"
+                      size="icon"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSelectedPlugin(plugin)}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      {t("settings.buttons.view")}
+                    </DropdownMenuItem>
+                    {plugin.namespace !== "core" && (
+                      plugin.enabled ? (
                         <DropdownMenuItem
                           onClick={() => handleDisable(plugin.namespace)}
                         >
@@ -237,10 +235,10 @@ export function PluginsSettings() {
                           <Check className="mr-2 h-4 w-4" />
                           {t("settings.buttons.enable")}
                         </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                      )
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
