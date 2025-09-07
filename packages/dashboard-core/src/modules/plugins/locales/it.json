@@ -32,6 +32,12 @@
     }
   },
   "details": {
-    "back": "Torna ai plugin"
+    "back": "Torna ai plugin",
+    "namespace": "Namespace",
+    "updatedAt": "Aggiornato",
+    "author": "Autore",
+    "description": "Descrizione",
+    "dependencies": "Dipendenze",
+    "lastError": "Ultimo errore"
   }
 }
