@@ -1,0 +1,32 @@
+{
+  "settings": {
+    "title": "Plugins",
+    "description": "Manage installed plugins.",
+    "loading": "Loading...",
+    "columns": {
+      "name": "Name",
+      "version": "Version",
+      "installedAt": "Installed",
+      "status": "Status",
+      "enabled": "State",
+      "actions": "Actions"
+    },
+    "status": {
+      "installed": "Installed",
+      "pending": "Pending",
+      "failed": "Error"
+    },
+    "enabled": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "pending": "Pending restart"
+    },
+    "buttons": {
+      "disable": "Disable"
+    },
+    "toast": {
+      "disabled": "Plugin disabled. Restart CMS to apply changes.",
+      "error": "Failed to disable plugin."
+    }
+  }
+}

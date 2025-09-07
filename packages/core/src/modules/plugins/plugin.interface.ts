@@ -24,6 +24,12 @@ export interface IPlugin {
   description?: string;
 
   /**
+   * Whether the plugin is enabled. Disabled plugins are skipped.
+   * Defaults to `true` when omitted.
+   */
+  enabled?: boolean;
+
+  /**
    * Default settings required for this plugin.
    * These will be inserted in the database if they don't exist.
    */
