@@ -40,6 +40,7 @@ export * from "./components/color-picker";
 export * from "./models/menu-item.model";
 export * from "./models/settings.model";
 export * from "./models/module.model";
+export * from "./models/dashboard-widget.model";
 
 /* Hooks */
 export * from "./hooks/use-api";

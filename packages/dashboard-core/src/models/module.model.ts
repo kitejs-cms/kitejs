@@ -1,6 +1,7 @@
 import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
 import { SettingsModel } from "./settings.model";
+import { DashboardWidgetModel } from "./dashboard-widget.model";
 
 export interface ModuleRouteModel {
   path: string;
@@ -25,6 +26,7 @@ export interface DashboardModule {
   routes: ModuleRouteModel[];
   settings?: SettingsModel;
   menuItem?: SidebarMenuItemModel;
+  dashboardWidgets?: DashboardWidgetModel[];
   translations?: {
     [lang: string]: { [key: string]: string } | unknown;
   };

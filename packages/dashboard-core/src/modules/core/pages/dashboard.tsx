@@ -6,8 +6,13 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 import { FileText, BookOpen, Users, ArrowRight } from "lucide-react";
+import { DashboardWidgetModel } from "../../../models/dashboard-widget.model";
 
-export function DashboardPage() {
+interface DashboardPageProps {
+  widgets?: DashboardWidgetModel[];
+}
+
+export function DashboardPage({ widgets = [] }: DashboardPageProps) {
   const navigate = useNavigate();
 
   const dashboardCards = [
@@ -79,6 +84,15 @@ export function DashboardPage() {
           );
         })}
       </div>
+
+      {/* Widgets Section */}
+      {widgets.length > 0 && (
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {widgets.map((widget) => (
+            <div key={widget.key}>{widget.component}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

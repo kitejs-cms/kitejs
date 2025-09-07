@@ -8,6 +8,7 @@ import { BreadcrumbProvider } from "./context/breadcrumb-context";
 import { ThemeProvider } from "./context/theme-context";
 import { LoadingProvider } from "./context/loading-context";
 import { DashboardModule } from "./models/module.model";
+import { DashboardWidgetModel } from "./models/dashboard-widget.model";
 import { UsersModule } from "./modules/users";
 import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";
@@ -64,6 +65,10 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
     ))
   );
 
+  const dashboardWidgets: DashboardWidgetModel[] = allModules
+    .filter((mod) => mod.dashboardWidgets)
+    .flatMap((mod) => mod.dashboardWidgets!);
+
   return (
     <BrowserRouter>
       <ThemeProvider defaultTheme="light" storageKey="ui-theme">
@@ -95,7 +100,10 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
                     }
                   >
                     {/* Dashboard route - homepage */}
-                    <Route index element={<DashboardPage />} />
+                    <Route
+                      index
+                      element={<DashboardPage widgets={dashboardWidgets} />}
+                    />
 
                     {/* Module routes */}
                     {moduleRoutes}
