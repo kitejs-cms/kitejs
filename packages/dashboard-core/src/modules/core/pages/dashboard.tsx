@@ -6,7 +6,7 @@ import {
   DashboardWidgetsSettingsModel,
 } from "../../../models/dashboard-widgets-settings.model";
 import { Button } from "../../../components/ui/button";
-import { GripVertical, Minus, Plus, X } from "lucide-react";
+import { Check, GripVertical, Minus, Plus, Settings, X } from "lucide-react";
 
 interface DashboardPageProps {
   widgets?: DashboardWidgetModel[];
@@ -90,8 +90,17 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
             utenti.
           </p>
         </div>
-        <Button onClick={() => setEditing((v) => !v)}>
-          {editing ? "Chiudi" : "Personalizza"}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setEditing((v) => !v)}
+          aria-label={editing ? "Chiudi personalizzazione" : "Personalizza"}
+        >
+          {editing ? (
+            <Check className="h-4 w-4" />
+          ) : (
+            <Settings className="h-4 w-4" />
+          )}
         </Button>
       </div>
 
@@ -117,10 +126,10 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
               >
                 {editing && (
                   <>
-                    <div className="absolute top-2 left-2 text-muted-foreground cursor-move">
+                    <div className="absolute top-2 left-2 z-10 text-muted-foreground cursor-move">
                       <GripVertical className="h-4 w-4" />
                     </div>
-                    <div className="absolute top-2 right-2 flex gap-1">
+                    <div className="absolute top-2 right-2 z-10 flex gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -155,7 +164,9 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                     </div>
                   </>
                 )}
-                {widget.component}
+                <div className={editing ? "pointer-events-none" : undefined}>
+                  {widget.component}
+                </div>
               </div>
             );
           })}
