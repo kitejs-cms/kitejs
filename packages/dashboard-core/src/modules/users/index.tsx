@@ -50,7 +50,9 @@ export const UsersModule: DashboardModule = {
       },
     ],
   },
-  dashboardWidgets: [{ key: "users-card", component: <UsersDashboardWidget /> }],
+  dashboardWidgets: [
+    { key: "users-card", component: <UsersDashboardWidget />, defaultWidth: 1 },
+  ],
   settings: {
     key: "users",
     title: "users:settings.menu.title",

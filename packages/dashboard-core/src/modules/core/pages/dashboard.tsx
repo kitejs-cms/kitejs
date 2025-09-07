@@ -6,6 +6,7 @@ import {
   DashboardWidgetsSettingsModel,
 } from "../../../models/dashboard-widgets-settings.model";
 import { Button } from "../../../components/ui/button";
+import { GripVertical, Minus, Plus, X } from "lucide-react";
 
 interface DashboardPageProps {
   widgets?: DashboardWidgetModel[];
@@ -16,6 +17,7 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
   const [layout, setLayout] = useState<DashboardWidgetLayout[]>([]);
   const [editing, setEditing] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -27,7 +29,9 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
       if (stored?.value?.widgets?.length) {
         setLayout(stored.value.widgets);
       } else {
-        setLayout(widgets.map((w) => ({ key: w.key, width: 1 })));
+        setLayout(
+          widgets.map((w) => ({ key: w.key, width: w.defaultWidth ?? 1 }))
+        );
       }
     })();
   }, [getSetting, widgets]);
@@ -49,6 +53,7 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
     newLayout.splice(index, 0, moved);
     setLayout(newLayout);
     setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   const handleRemove = (key: string) => {
@@ -56,7 +61,11 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
   };
 
   const handleAdd = (key: string) => {
-    setLayout([...layout, { key, width: 1 }]);
+    const widget = widgetMap.get(key);
+    setLayout([
+      ...layout,
+      { key, width: widget?.defaultWidth ?? 1 },
+    ]);
   };
 
   const handleWidthChange = (key: string, width: number) => {
@@ -90,38 +99,61 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayed.map((layoutItem, index) => {
             const widget = widgetMap.get(layoutItem.key)!;
+            const isDragOver = dragOverIndex === index;
             return (
               <div
                 key={layoutItem.key}
-                className={`relative lg:col-span-${layoutItem.width}`}
+                  className={`relative lg:col-span-${layoutItem.width} ${
+                    editing ? "border-2 border-dashed" : ""
+                  } ${isDragOver ? "border-primary" : "border-transparent"}`}
                 draggable={editing}
                 onDragStart={() => handleDragStart(index)}
-                onDragOver={(e) => e.preventDefault()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOverIndex(index);
+                }}
+                onDragLeave={() => setDragOverIndex(null)}
                 onDrop={() => handleDrop(index)}
               >
                 {editing && (
-                  <div className="absolute top-2 right-2 flex gap-2">
-                    <select
-                      className="border rounded px-1 py-0.5"
-                      value={layoutItem.width}
-                      onChange={(e) =>
-                        handleWidthChange(layoutItem.key, Number(e.target.value))
-                      }
-                    >
-                      {[1, 2, 3].map((w) => (
-                        <option key={w} value={w}>
-                          {w}
-                        </option>
-                      ))}
-                    </select>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => handleRemove(layoutItem.key)}
-                    >
-                      ×
-                    </Button>
-                  </div>
+                  <>
+                    <div className="absolute top-2 left-2 text-muted-foreground cursor-move">
+                      <GripVertical className="h-4 w-4" />
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleWidthChange(
+                            layoutItem.key,
+                            Math.max(1, layoutItem.width - 1)
+                          )
+                        }
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleWidthChange(
+                            layoutItem.key,
+                            Math.min(3, layoutItem.width + 1)
+                          )
+                        }
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemove(layoutItem.key)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
                 )}
                 {widget.component}
               </div>
