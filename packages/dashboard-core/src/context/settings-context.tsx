@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -123,13 +124,25 @@ export function SettingsProvider({
     })();
   }, [getSetting, navigate]);
 
+  useEffect(() => {
+    fetchPlugins();
+  }, [fetchPlugins]);
+
+  const visibleSettingsSections = useMemo(() => {
+    if (!plugins.length) return settingsSection;
+    const disabled = new Set(
+      plugins.filter((p) => !p.enabled).map((p) => p.namespace),
+    );
+    return settingsSection.filter((section) => !disabled.has(section.key));
+  }, [plugins, settingsSection]);
+
   return (
     <SettingsContext.Provider
       value={{
         getSetting,
         updateSetting,
         cmsSettings,
-        settingsSection,
+        settingsSection: visibleSettingsSections,
         hasUnsavedChanges,
         setHasUnsavedChanges,
         plugins,
