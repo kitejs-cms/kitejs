@@ -5,6 +5,7 @@ import { CategoryDetailsPage } from "./pages/category-details";
 import { ArticleDetailsPage } from "./pages/article-details";
 import { ArticlesManagePage } from "./pages/artilces-manage";
 import { ArticleFieldsSettings } from "./components/article-filds-settings";
+import { ArticlesDashboardCard } from "./components/articles-dashboard-card";
 
 /* i18n */
 import it from "./locales/it.json";
@@ -73,4 +74,7 @@ export const PostModule: DashboardModule = {
       },
     ],
   },
+  dashboardWidgets: [
+    { key: "articles-card", component: <ArticlesDashboardCard /> },
+  ],
 };

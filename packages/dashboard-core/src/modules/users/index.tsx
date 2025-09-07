@@ -7,6 +7,7 @@ import { UserProfilePage } from "./pages/user-profile";
 import { UserGeneralSettings } from "./components/user-general-settings";
 import { UserConsentSettings } from "./components/user-consents-settings";
 import { UsersDashboardWidget } from "./components/users-dashboard-widget";
+import { UsersDashboardCard } from "./components/users-dashboard-card";
 
 export const UsersModule: DashboardModule = {
   name: "users",
@@ -51,6 +52,7 @@ export const UsersModule: DashboardModule = {
     ],
   },
   dashboardWidgets: [
+    { key: "users-card", component: <UsersDashboardCard /> },
     { key: "users-latest", component: <UsersDashboardWidget /> },
   ],
   settings: {

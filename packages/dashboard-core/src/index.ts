@@ -35,6 +35,7 @@ export * from "./dashboard-provider";
 /* Components */
 export * from "./components/layout";
 export * from "./components/color-picker";
+export * from "./components/dashboard-navigation-widget";
 
 /* Models */
 export * from "./models/menu-item.model";
