@@ -29,6 +29,7 @@ interface SettingsContextType {
   pluginsLoading: boolean;
   fetchPlugins: () => Promise<void>;
   disablePlugin: (namespace: string) => Promise<boolean>;
+  enablePlugin: (namespace: string) => Promise<boolean>;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
@@ -98,6 +99,18 @@ export function SettingsProvider({
     [fetchData, fetchPlugins],
   );
 
+  const enablePlugin = useCallback(
+    async (namespace: string) => {
+      const { error } = await fetchData(`plugins/${namespace}/enable`, "POST");
+      if (!error) {
+        await fetchPlugins();
+        return true;
+      }
+      return false;
+    },
+    [fetchData, fetchPlugins],
+  );
+
   useEffect(() => {
     (async () => {
       const data = await getSetting<{ value: CmsSettingsModel }>(
@@ -123,6 +136,7 @@ export function SettingsProvider({
         pluginsLoading,
         fetchPlugins,
         disablePlugin,
+        enablePlugin,
       }}
     >
       {children}

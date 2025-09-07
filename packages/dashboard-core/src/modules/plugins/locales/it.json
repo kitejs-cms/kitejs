@@ -22,11 +22,16 @@
       "pending": "In attesa di riavvio"
     },
     "buttons": {
-      "disable": "Disabilita"
+      "disable": "Disabilita",
+      "enable": "Abilita"
     },
     "toast": {
       "disabled": "Plugin disabilitato. Riavvia il CMS per applicare le modifiche.",
-      "error": "Errore durante la disabilitazione del plugin."
+      "error": "Errore durante la disabilitazione del plugin.",
+      "enabled": "Plugin abilitato."
     }
+  },
+  "details": {
+    "back": "Torna ai plugin"
   }
 }

@@ -22,11 +22,16 @@
       "pending": "Pending restart"
     },
     "buttons": {
-      "disable": "Disable"
+      "disable": "Disable",
+      "enable": "Enable"
     },
     "toast": {
       "disabled": "Plugin disabled. Restart CMS to apply changes.",
-      "error": "Failed to disable plugin."
+      "error": "Failed to disable plugin.",
+      "enabled": "Plugin enabled."
     }
+  },
+  "details": {
+    "back": "Back to plugins"
   }
 }
