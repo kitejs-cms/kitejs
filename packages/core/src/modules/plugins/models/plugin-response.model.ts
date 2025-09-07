@@ -11,6 +11,7 @@ export type PluginResponseModel = {
   version: string;
   enabled: boolean;
   pendingDisable: boolean;
+  requiresRestart: boolean;
   installedAt: Date;
   updatedAt: Date;
   author?: string;

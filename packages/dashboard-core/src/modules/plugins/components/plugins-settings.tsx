@@ -1,7 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "../../../components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -16,33 +22,46 @@ import {
   TooltipTrigger,
 } from "../../../components/ui/tooltip";
 import { Skeleton } from "../../../components/ui/skeleton";
-import { useApi } from "../../../hooks/use-api";
+import { useSettingsContext } from "../../../context/settings-context";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
+import { MoreVertical, Check, Ban, Eye } from "lucide-react";
+import { PluginDetail } from "./plugin-detail";
 
 export function PluginsSettings() {
   const { t } = useTranslation("plugins");
   const {
-    data: plugins,
-    loading,
-    fetchData: fetchPlugins,
-  } = useApi<PluginResponseModel[]>();
-  const { fetchData: disablePlugin } = useApi<{
-    success: boolean;
-    restartRequired: boolean;
-  }>();
+    plugins,
+    pluginsLoading: loading,
+    fetchPlugins,
+    disablePlugin,
+    enablePlugin,
+  } = useSettingsContext();
+  const [selectedPlugin, setSelectedPlugin] = useState<PluginResponseModel | null>(
+    null,
+  );
 
   useEffect(() => {
-    fetchPlugins("plugins");
+    fetchPlugins();
   }, [fetchPlugins]);
 
   const handleDisable = async (namespace: string) => {
-    const { error } = await disablePlugin(
-      `plugins/${namespace}/disable`,
-      "POST"
-    );
-    if (!error) {
+    const success = await disablePlugin(namespace);
+    if (success) {
       toast.warning(t("settings.toast.disabled"));
-      fetchPlugins("plugins");
+    } else {
+      toast.error(t("settings.toast.error"));
+    }
+  };
+
+  const handleEnable = async (namespace: string) => {
+    const success = await enablePlugin(namespace);
+    if (success) {
+      toast.success(
+        t(
+          "settings.toast.enabled",
+          "Plugin enabled. Restart CMS to apply changes.",
+        ),
+      );
     } else {
       toast.error(t("settings.toast.error"));
     }
@@ -50,7 +69,7 @@ export function PluginsSettings() {
 
   const getStatusLabel = (
     status: PluginResponseModel["status"],
-    enabled?: boolean
+    enabled?: boolean,
   ) => {
     if (!enabled) {
       return t("settings.status.disabled", "Disabled");
@@ -110,6 +129,15 @@ export function PluginsSettings() {
     );
   }
 
+  if (selectedPlugin) {
+    return (
+      <PluginDetail
+        plugin={selectedPlugin}
+        onBack={() => setSelectedPlugin(null)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Table>
@@ -132,7 +160,7 @@ export function PluginsSettings() {
                       <span
                         aria-label={getStatusLabel(
                           plugin.status,
-                          plugin.enabled
+                          plugin.enabled,
                         )}
                         title={getStatusLabel(plugin.status, plugin.enabled)}
                         className={`inline-block h-3 w-3 rounded-full ${
@@ -159,9 +187,14 @@ export function PluginsSettings() {
                       </div>
                     </TooltipContent>
                   </Tooltip>
-                  <span className="truncate max-w-[28ch]" title={plugin.name}>
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto truncate max-w-[28ch] no-underline hover:no-underline"
+                    title={plugin.name}
+                    onClick={() => setSelectedPlugin(plugin)}
+                  >
                     {plugin.name}
-                  </span>
+                  </Button>
                 </div>
               </TableCell>
               <TableCell>{plugin.version}</TableCell>
@@ -170,21 +203,49 @@ export function PluginsSettings() {
               </TableCell>
 
               <TableCell>
-                {plugin.enabled
-                  ? t("settings.enabled.enabled")
-                  : plugin.pendingDisable
-                    ? t("settings.enabled.pending")
-                    : t("settings.enabled.disabled")}
+                {plugin.requiresRestart
+                  ? t("settings.enabled.pending")
+                  : plugin.enabled
+                    ? t("settings.enabled.enabled")
+                    : plugin.pendingDisable
+                      ? t("settings.enabled.pending")
+                      : t("settings.enabled.disabled")}
               </TableCell>
               <TableCell>
-                {plugin.enabled && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleDisable(plugin.namespace)}
-                  >
-                    {t("settings.buttons.disable")}
-                  </Button>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="shadow-none"
+                      size="icon"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSelectedPlugin(plugin)}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      {t("settings.buttons.view")}
+                    </DropdownMenuItem>
+                    {plugin.namespace !== "core" && (
+                      plugin.enabled ? (
+                        <DropdownMenuItem
+                          onClick={() => handleDisable(plugin.namespace)}
+                        >
+                          <Ban className="mr-2 h-4 w-4" />
+                          {t("settings.buttons.disable")}
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          onClick={() => handleEnable(plugin.namespace)}
+                        >
+                          <Check className="mr-2 h-4 w-4" />
+                          {t("settings.buttons.enable")}
+                        </DropdownMenuItem>
+                      )
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

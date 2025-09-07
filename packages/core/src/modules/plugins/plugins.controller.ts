@@ -54,6 +54,20 @@ export class PluginsController {
   }
 
   /**
+   * Enable a plugin.
+   * @param namespace - The namespace of the plugin to enable.
+   */
+  @Post(":namespace/enable")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async enablePlugin(
+    @Param("namespace") namespace: string
+  ): Promise<{ success: boolean; restartRequired: boolean }> {
+    const enabled = await this.pluginService.enable(namespace);
+    return { success: enabled, restartRequired: enabled };
+  }
+
+  /**
    * Disable a plugin and flag the CMS as requiring a manual restart.
    * The plugin will remain active until the application restarts.
    * @param namespace - The namespace of the plugin to disable.

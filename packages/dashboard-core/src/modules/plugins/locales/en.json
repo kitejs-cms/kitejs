@@ -22,11 +22,23 @@
       "pending": "Pending restart"
     },
     "buttons": {
-      "disable": "Disable"
+      "disable": "Disable",
+      "enable": "Enable",
+      "view": "View"
     },
     "toast": {
       "disabled": "Plugin disabled. Restart CMS to apply changes.",
-      "error": "Failed to disable plugin."
+      "error": "Failed to disable plugin.",
+      "enabled": "Plugin enabled. Restart CMS to apply changes."
     }
+  },
+  "details": {
+    "back": "Back to plugins",
+    "namespace": "Namespace",
+    "updatedAt": "Updated",
+    "author": "Author",
+    "description": "Description",
+    "dependencies": "Dependencies",
+    "lastError": "Last error"
   }
 }
