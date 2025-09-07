@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
+import { CORE_NAMESPACE } from "../../../constants";
 import { PluginResponseModel } from "../models/plugin-response.model";
 
 @Injectable()
@@ -122,6 +123,8 @@ export class PluginsService {
    * @returns True if the plugin exists, false otherwise.
    */
   async disable(namespace: string): Promise<boolean> {
+    if (namespace === CORE_NAMESPACE) return false;
+
     try {
       const result = await this.pluginModel.updateOne(
         { namespace },
@@ -135,6 +138,28 @@ export class PluginsService {
         error as Error
       );
       throw new InternalServerErrorException("Failed to disable the plugin.");
+    }
+  }
+
+  /**
+   * Enables a previously disabled plugin.
+   * @param namespace - The namespace of the plugin to be enabled.
+   * @returns True if the plugin exists, false otherwise.
+   */
+  async enable(namespace: string): Promise<boolean> {
+    try {
+      const result = await this.pluginModel.updateOne(
+        { namespace },
+        { $set: { enabled: true, pendingDisable: false } }
+      );
+
+      return result.matchedCount > 0;
+    } catch (error: unknown) {
+      this.logger.error(
+        `Error in enable (namespace: ${namespace}):`,
+        error as Error
+      );
+      throw new InternalServerErrorException("Failed to enable the plugin.");
     }
   }
 

@@ -25,6 +25,7 @@ import { Skeleton } from "../../../components/ui/skeleton";
 import { useSettingsContext } from "../../../context/settings-context";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
 import { MoreVertical, Check, Ban } from "lucide-react";
+import { CORE_NAMESPACE } from "@kitejs-cms/core/constants";
 import { PluginDetail } from "./plugin-detail";
 
 export function PluginsSettings() {
@@ -205,34 +206,36 @@ export function PluginsSettings() {
                     : t("settings.enabled.disabled")}
               </TableCell>
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="shadow-none"
-                      size="icon"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {plugin.enabled ? (
-                      <DropdownMenuItem
-                        onClick={() => handleDisable(plugin.namespace)}
+                {plugin.namespace === CORE_NAMESPACE ? null : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="shadow-none"
+                        size="icon"
                       >
-                        <Ban className="mr-2 h-4 w-4" />
-                        {t("settings.buttons.disable")}
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem
-                        onClick={() => handleEnable(plugin.namespace)}
-                      >
-                        <Check className="mr-2 h-4 w-4" />
-                        {t("settings.buttons.enable")}
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {plugin.enabled ? (
+                        <DropdownMenuItem
+                          onClick={() => handleDisable(plugin.namespace)}
+                        >
+                          <Ban className="mr-2 h-4 w-4" />
+                          {t("settings.buttons.disable")}
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          onClick={() => handleEnable(plugin.namespace)}
+                        >
+                          <Check className="mr-2 h-4 w-4" />
+                          {t("settings.buttons.enable")}
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </TableCell>
             </TableRow>
           ))}

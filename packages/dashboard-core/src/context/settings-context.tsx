@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useApi } from "../hooks/use-api";
 import { CmsSettingsModel } from "@kitejs-cms/core/index";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
+import { CORE_NAMESPACE } from "@kitejs-cms/core/constants";
 import { SettingsModel } from "../models/settings.model";
 import React, {
   createContext,
@@ -90,6 +91,7 @@ export function SettingsProvider({
 
   const disablePlugin = useCallback(
     async (namespace: string) => {
+      if (namespace === CORE_NAMESPACE) return false;
       const { error } = await fetchData(`plugins/${namespace}/disable`, "POST");
       if (!error) {
         await fetchPlugins();
