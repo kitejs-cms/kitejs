@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "../../../components/ui/button";
@@ -26,6 +25,7 @@ import { Skeleton } from "../../../components/ui/skeleton";
 import { useSettingsContext } from "../../../context/settings-context";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
 import { MoreVertical, Check, Ban } from "lucide-react";
+import { PluginDetail } from "./plugin-detail";
 
 export function PluginsSettings() {
   const { t } = useTranslation("plugins");
@@ -36,7 +36,9 @@ export function PluginsSettings() {
     disablePlugin,
     enablePlugin,
   } = useSettingsContext();
-  const navigate = useNavigate();
+  const [selectedPlugin, setSelectedPlugin] = useState<PluginResponseModel | null>(
+    null,
+  );
 
   useEffect(() => {
     fetchPlugins();
@@ -122,6 +124,15 @@ export function PluginsSettings() {
     );
   }
 
+  if (selectedPlugin) {
+    return (
+      <PluginDetail
+        plugin={selectedPlugin}
+        onBack={() => setSelectedPlugin(null)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Table>
@@ -175,7 +186,7 @@ export function PluginsSettings() {
                     variant="link"
                     className="p-0 h-auto truncate max-w-[28ch]"
                     title={plugin.name}
-                    onClick={() => navigate(`/plugins/${plugin.namespace}`)}
+                    onClick={() => setSelectedPlugin(plugin)}
                   >
                     {plugin.name}
                   </Button>

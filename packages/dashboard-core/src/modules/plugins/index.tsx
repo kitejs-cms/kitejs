@@ -1,7 +1,6 @@
 import { Puzzle } from "lucide-react";
 import { DashboardModule } from "../../models/module.model";
 import { PluginsSettings } from "./components/plugins-settings";
-import { PluginDetailPage } from "./pages/plugin-detail";
 
 /* i18n */
 import it from "./locales/it.json";
@@ -18,13 +17,7 @@ export const PluginsModule: DashboardModule = {
     description: "plugins:settings.description",
     component: <PluginsSettings />,
   },
-  routes: [
-    {
-      path: "plugins/:namespace",
-      element: <PluginDetailPage />,
-      label: "plugins:settings.title",
-    },
-  ],
+  routes: [],
 };
 
 export default PluginsModule;

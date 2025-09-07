@@ -1,27 +1,15 @@
-import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
-import { useApi } from "../../../hooks/use-api";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
 
-export function PluginDetailPage() {
-  const { namespace } = useParams();
-  const navigate = useNavigate();
+interface PluginDetailProps {
+  plugin: PluginResponseModel;
+  onBack: () => void;
+}
+
+export function PluginDetail({ plugin, onBack }: PluginDetailProps) {
   const { t } = useTranslation("plugins");
-  const { data: plugin, fetchData } = useApi<PluginResponseModel>();
-
-  useEffect(() => {
-    if (namespace) {
-      fetchData(`plugins/${namespace}`);
-    }
-  }, [namespace, fetchData]);
-
-  if (!plugin) {
-    return <div>{t("settings.loading")}</div>;
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -67,7 +55,7 @@ export function PluginDetailPage() {
             <strong>Last error:</strong> {plugin.lastError}
           </div>
         )}
-        <Button className="mt-4" onClick={() => navigate(-1)}>
+        <Button className="mt-4" onClick={onBack}>
           {t("details.back")}
         </Button>
       </CardContent>
@@ -75,4 +63,4 @@ export function PluginDetailPage() {
   );
 }
 
-export default PluginDetailPage;
+export default PluginDetail;
