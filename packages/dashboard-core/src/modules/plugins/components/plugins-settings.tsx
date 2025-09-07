@@ -10,7 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../../components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../../../components/ui/tooltip";
+import { Skeleton } from "../../../components/ui/skeleton";
 import { useApi } from "../../../hooks/use-api";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
 
@@ -43,8 +48,66 @@ export function PluginsSettings() {
     }
   };
 
+  const getStatusLabel = (
+    status: PluginResponseModel["status"],
+    enabled?: boolean
+  ) => {
+    if (!enabled) {
+      return t("settings.status.disabled", "Disabled");
+    }
+    switch (status) {
+      case "installed":
+        return t("settings.status.installed", "Installed");
+      case "pending":
+        return t("settings.status.pending", "Pending");
+      case "failed":
+        return t("settings.status.failed", "Failed");
+      default:
+        return status;
+    }
+  };
+
   if (loading) {
-    return <div>{t("settings.loading")}</div>;
+    // Skeleton table while loading
+    return (
+      <div className="space-y-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("settings.columns.name")}</TableHead>
+              <TableHead>{t("settings.columns.version")}</TableHead>
+              <TableHead>{t("settings.columns.installedAt")}</TableHead>
+              <TableHead>{t("settings.columns.enabled")}</TableHead>
+              <TableHead>{t("settings.columns.actions")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell>
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-3 w-3 rounded-full" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-28" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-8 w-24 rounded-xl" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
   }
 
   return (
@@ -52,54 +115,70 @@ export function PluginsSettings() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t("settings.columns.namespace")}</TableHead>
+            <TableHead>{t("settings.columns.name")}</TableHead>
             <TableHead>{t("settings.columns.version")}</TableHead>
             <TableHead>{t("settings.columns.installedAt")}</TableHead>
-            <TableHead>{t("settings.columns.status")}</TableHead>
             <TableHead>{t("settings.columns.enabled")}</TableHead>
             <TableHead>{t("settings.columns.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {plugins?.map((plugin) => (
-            <TableRow key={plugin.namespace}>
-              <TableCell>{plugin.namespace}</TableCell>
+            <TableRow key={plugin.name}>
+              <TableCell>
+                <div className="flex items-center gap-4">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span
+                        aria-label={getStatusLabel(
+                          plugin.status,
+                          plugin.enabled
+                        )}
+                        title={getStatusLabel(plugin.status, plugin.enabled)}
+                        className={`inline-block h-3 w-3 rounded-full ${
+                          !plugin.enabled
+                            ? "bg-orange-500"
+                            : plugin.status === "installed"
+                              ? "bg-green-500"
+                              : plugin.status === "pending"
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                        }`}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          {getStatusLabel(plugin.status, plugin.enabled)}
+                        </p>
+                        {plugin.status === "failed" && plugin.lastError && (
+                          <p className="text-xs opacity-80">
+                            {plugin.lastError}
+                          </p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="truncate max-w-[28ch]" title={plugin.name}>
+                    {plugin.name}
+                  </span>
+                </div>
+              </TableCell>
               <TableCell>{plugin.version}</TableCell>
               <TableCell>
                 {new Date(plugin.installedAt).toLocaleDateString()}
               </TableCell>
-              <TableCell>
-                <div className="flex items-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span
-                        className={`mr-2 inline-block h-2 w-2 rounded-full ${
-                          plugin.status === "installed"
-                            ? "bg-green-500"
-                            : plugin.status === "pending"
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
-                        }`}
-                      />
-                    </TooltipTrigger>
-                    {plugin.status === "failed" && plugin.lastError && (
-                      <TooltipContent>{plugin.lastError}</TooltipContent>
-                    )}
-                  </Tooltip>
-                  {t(`settings.status.${plugin.status}`)}
-                </div>
-              </TableCell>
+
               <TableCell>
                 {plugin.enabled
                   ? t("settings.enabled.enabled")
                   : plugin.pendingDisable
-                  ? t("settings.enabled.pending")
-                  : t("settings.enabled.disabled")}
+                    ? t("settings.enabled.pending")
+                    : t("settings.enabled.disabled")}
               </TableCell>
               <TableCell>
                 {plugin.enabled && (
                   <Button
-                    variant="destructive"
                     size="sm"
                     onClick={() => handleDisable(plugin.namespace)}
                   >
@@ -116,4 +195,3 @@ export function PluginsSettings() {
 }
 
 export default PluginsSettings;
-

@@ -4,7 +4,7 @@
     "description": "Manage installed plugins.",
     "loading": "Loading...",
     "columns": {
-      "namespace": "Namespace",
+      "name": "Name",
       "version": "Version",
       "installedAt": "Installed",
       "status": "Status",

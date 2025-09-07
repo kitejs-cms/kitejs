@@ -24,13 +24,15 @@ export class PluginsService {
    */
   async findOne(namespace: string): Promise<PluginResponseModel | null> {
     try {
-      return await this.pluginModel.findOne({ namespace }).exec();
+      return await this.pluginModel
+        .findOne<PluginDocument>({ namespace })
+        .exec();
     } catch (error: unknown) {
       this.logger.error(
         `Error in findOne (namespace: ${namespace}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to retrieve the plugin.');
+      throw new InternalServerErrorException("Failed to retrieve the plugin.");
     }
   }
 
@@ -42,12 +44,14 @@ export class PluginsService {
   async findAll(enabledOnly = false): Promise<PluginResponseModel[]> {
     try {
       const query = enabledOnly ? { enabled: true } : {};
-      const data = await this.pluginModel.find(query).exec();
+      const data = await this.pluginModel.find<PluginDocument>(query).exec();
 
-      return data.map((item) => item.toJSON());
+      return data.map(
+        (item: PluginDocument) => item.toJSON() as PluginResponseModel
+      );
     } catch (error: unknown) {
       this.logger.error(`Error in findAll:`, error as Error);
-      throw new InternalServerErrorException('Failed to retrieve plugins.');
+      throw new InternalServerErrorException("Failed to retrieve plugins.");
     }
   }
 
@@ -60,7 +64,7 @@ export class PluginsService {
   async register(pluginData: Partial<PluginResponseModel>): Promise<Plugin> {
     try {
       if (!pluginData.namespace) {
-        throw new InternalServerErrorException('Namespace is required.');
+        throw new InternalServerErrorException("Namespace is required.");
       }
 
       const registeredPlugin = await this.pluginModel.findOneAndUpdate(
@@ -75,7 +79,7 @@ export class PluginsService {
         `Error in register (pluginData: ${JSON.stringify(pluginData)}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to register the plugin.');
+      throw new InternalServerErrorException("Failed to register the plugin.");
     }
   }
 
@@ -108,7 +112,7 @@ export class PluginsService {
         `Error in update (namespace: ${namespace}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to update the plugin.');
+      throw new InternalServerErrorException("Failed to update the plugin.");
     }
   }
 
@@ -149,7 +153,7 @@ export class PluginsService {
         `Error in delete (namespace: ${namespace}):`,
         error as Error
       );
-      throw new InternalServerErrorException('Failed to delete the plugin.');
+      throw new InternalServerErrorException("Failed to delete the plugin.");
     }
   }
 }

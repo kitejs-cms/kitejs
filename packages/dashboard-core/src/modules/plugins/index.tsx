@@ -17,6 +17,7 @@ export const PluginsModule: DashboardModule = {
     description: "plugins:settings.description",
     component: <PluginsSettings />,
   },
+  routes: [],
 };
 
 export default PluginsModule;

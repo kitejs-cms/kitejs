@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 import { PluginStatus } from "./models/plugin-response.model";
 import { CORE_NAMESPACE } from "../../constants";
 
-export type PluginDocument = Plugin & Document;
+export type PluginDocument = Plugin & Document & { id: string };
 
 @Schema({
   collection: `${CORE_NAMESPACE}_plugins`,

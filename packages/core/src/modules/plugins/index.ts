@@ -9,3 +9,6 @@ export * from "./services/plugins.service";
 
 /* Interfaces */
 export * from "./plugin.interface";
+
+/* Models */
+export * from "./models/plugin-response.model";

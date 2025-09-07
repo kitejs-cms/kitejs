@@ -5,6 +5,8 @@ export enum PluginStatus {
 }
 
 export type PluginResponseModel = {
+  id: string;
+  name: string;
   namespace: string;
   version: string;
   enabled: boolean;
