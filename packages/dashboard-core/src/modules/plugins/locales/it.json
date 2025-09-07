@@ -23,7 +23,8 @@
     },
     "buttons": {
       "disable": "Disabilita",
-      "enable": "Abilita"
+      "enable": "Abilita",
+      "view": "Visualizza"
     },
     "toast": {
       "disabled": "Plugin disabilitato. Riavvia il CMS per applicare le modifiche.",

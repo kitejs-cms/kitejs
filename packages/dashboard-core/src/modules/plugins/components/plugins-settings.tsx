@@ -24,8 +24,7 @@ import {
 import { Skeleton } from "../../../components/ui/skeleton";
 import { useSettingsContext } from "../../../context/settings-context";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
-import { MoreVertical, Check, Ban } from "lucide-react";
-import { CORE_NAMESPACE } from "@kitejs-cms/core/constants";
+import { MoreVertical, Check, Ban, Eye } from "lucide-react";
 import { PluginDetail } from "./plugin-detail";
 
 export function PluginsSettings() {
@@ -185,7 +184,7 @@ export function PluginsSettings() {
                   </Tooltip>
                   <Button
                     variant="link"
-                    className="p-0 h-auto truncate max-w-[28ch]"
+                    className="p-0 h-auto truncate max-w-[28ch] no-underline hover:no-underline"
                     title={plugin.name}
                     onClick={() => setSelectedPlugin(plugin)}
                   >
@@ -206,7 +205,7 @@ export function PluginsSettings() {
                     : t("settings.enabled.disabled")}
               </TableCell>
               <TableCell>
-                {plugin.namespace === CORE_NAMESPACE ? null : (
+                {plugin.namespace === "core" ? null : (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -218,6 +217,12 @@ export function PluginsSettings() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => setSelectedPlugin(plugin)}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        {t("settings.buttons.view")}
+                      </DropdownMenuItem>
                       {plugin.enabled ? (
                         <DropdownMenuItem
                           onClick={() => handleDisable(plugin.namespace)}

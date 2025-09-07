@@ -23,7 +23,8 @@
     },
     "buttons": {
       "disable": "Disable",
-      "enable": "Enable"
+      "enable": "Enable",
+      "view": "View"
     },
     "toast": {
       "disabled": "Plugin disabled. Restart CMS to apply changes.",
