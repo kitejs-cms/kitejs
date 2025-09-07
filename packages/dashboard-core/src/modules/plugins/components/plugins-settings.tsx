@@ -16,33 +16,26 @@ import {
   TooltipTrigger,
 } from "../../../components/ui/tooltip";
 import { Skeleton } from "../../../components/ui/skeleton";
-import { useApi } from "../../../hooks/use-api";
+import { useSettingsContext } from "../../../context/settings-context";
 import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
 
 export function PluginsSettings() {
   const { t } = useTranslation("plugins");
   const {
-    data: plugins,
-    loading,
-    fetchData: fetchPlugins,
-  } = useApi<PluginResponseModel[]>();
-  const { fetchData: disablePlugin } = useApi<{
-    success: boolean;
-    restartRequired: boolean;
-  }>();
+    plugins,
+    pluginsLoading: loading,
+    fetchPlugins,
+    disablePlugin,
+  } = useSettingsContext();
 
   useEffect(() => {
-    fetchPlugins("plugins");
+    fetchPlugins();
   }, [fetchPlugins]);
 
   const handleDisable = async (namespace: string) => {
-    const { error } = await disablePlugin(
-      `plugins/${namespace}/disable`,
-      "POST"
-    );
-    if (!error) {
+    const success = await disablePlugin(namespace);
+    if (success) {
       toast.warning(t("settings.toast.disabled"));
-      fetchPlugins("plugins");
     } else {
       toast.error(t("settings.toast.error"));
     }
@@ -50,7 +43,7 @@ export function PluginsSettings() {
 
   const getStatusLabel = (
     status: PluginResponseModel["status"],
-    enabled?: boolean
+    enabled?: boolean,
   ) => {
     if (!enabled) {
       return t("settings.status.disabled", "Disabled");
@@ -132,7 +125,7 @@ export function PluginsSettings() {
                       <span
                         aria-label={getStatusLabel(
                           plugin.status,
-                          plugin.enabled
+                          plugin.enabled,
                         )}
                         title={getStatusLabel(plugin.status, plugin.enabled)}
                         className={`inline-block h-3 w-3 rounded-full ${
