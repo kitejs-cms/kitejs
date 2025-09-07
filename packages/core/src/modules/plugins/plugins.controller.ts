@@ -62,9 +62,9 @@ export class PluginsController {
   @ApiBearerAuth()
   async enablePlugin(
     @Param("namespace") namespace: string
-  ): Promise<{ success: boolean }> {
+  ): Promise<{ success: boolean; restartRequired: boolean }> {
     const enabled = await this.pluginService.enable(namespace);
-    return { success: enabled };
+    return { success: enabled, restartRequired: enabled };
   }
 
   /**

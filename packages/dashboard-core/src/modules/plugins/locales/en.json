@@ -29,7 +29,7 @@
     "toast": {
       "disabled": "Plugin disabled. Restart CMS to apply changes.",
       "error": "Failed to disable plugin.",
-      "enabled": "Plugin enabled."
+      "enabled": "Plugin enabled. Restart CMS to apply changes."
     }
   },
   "details": {

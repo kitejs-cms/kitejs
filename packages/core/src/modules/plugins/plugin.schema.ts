@@ -41,6 +41,9 @@ export class Plugin {
   @Prop({ type: Boolean, default: false })
   pendingDisable: boolean;
 
+  @Prop({ type: Boolean, default: false })
+  requiresRestart: boolean;
+
   @Prop({
     type: String,
     enum: Object.values(PluginStatus),

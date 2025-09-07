@@ -132,7 +132,9 @@ export function SettingsProvider({
   const visibleSettingsSections = useMemo(() => {
     if (!plugins.length) return settingsSection;
     const disabled = new Set(
-      plugins.filter((p) => !p.enabled).map((p) => p.namespace),
+      plugins
+        .filter((p) => !p.enabled || p.requiresRestart)
+        .map((p) => p.namespace),
     );
     return settingsSection.filter((section) => !disabled.has(section.key));
   }, [plugins, settingsSection]);

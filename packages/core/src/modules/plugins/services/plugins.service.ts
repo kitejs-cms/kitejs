@@ -128,7 +128,7 @@ export class PluginsService {
     try {
       const result = await this.pluginModel.updateOne(
         { namespace },
-        { $set: { enabled: false, pendingDisable: true } }
+        { $set: { enabled: false, pendingDisable: true, requiresRestart: true } }
       );
 
       return result.matchedCount > 0;
@@ -150,7 +150,7 @@ export class PluginsService {
     try {
       const result = await this.pluginModel.updateOne(
         { namespace },
-        { $set: { enabled: true, pendingDisable: false } }
+        { $set: { enabled: true, pendingDisable: false, requiresRestart: true } }
       );
 
       return result.matchedCount > 0;

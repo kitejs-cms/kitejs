@@ -71,7 +71,7 @@ function DashboardRoutes({ modules }: { modules: DashboardModule[] }) {
   const enabledModules = useMemo(() => {
     return modules.filter((mod) => {
       const plugin = plugins.find((p) => p.namespace === mod.key);
-      return !plugin || plugin.enabled;
+      return !plugin || (plugin.enabled && !plugin.requiresRestart);
     });
   }, [modules, plugins]);
 

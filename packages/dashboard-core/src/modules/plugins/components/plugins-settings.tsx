@@ -56,7 +56,12 @@ export function PluginsSettings() {
   const handleEnable = async (namespace: string) => {
     const success = await enablePlugin(namespace);
     if (success) {
-      toast.success(t("settings.toast.enabled", "Plugin enabled."));
+      toast.success(
+        t(
+          "settings.toast.enabled",
+          "Plugin enabled. Restart CMS to apply changes.",
+        ),
+      );
     } else {
       toast.error(t("settings.toast.error"));
     }
@@ -198,11 +203,13 @@ export function PluginsSettings() {
               </TableCell>
 
               <TableCell>
-                {plugin.enabled
-                  ? t("settings.enabled.enabled")
-                  : plugin.pendingDisable
-                    ? t("settings.enabled.pending")
-                    : t("settings.enabled.disabled")}
+                {plugin.requiresRestart
+                  ? t("settings.enabled.pending")
+                  : plugin.enabled
+                    ? t("settings.enabled.enabled")
+                    : plugin.pendingDisable
+                      ? t("settings.enabled.pending")
+                      : t("settings.enabled.disabled")}
               </TableCell>
               <TableCell>
                 <DropdownMenu>

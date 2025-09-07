@@ -29,7 +29,7 @@
     "toast": {
       "disabled": "Plugin disabilitato. Riavvia il CMS per applicare le modifiche.",
       "error": "Errore durante la disabilitazione del plugin.",
-      "enabled": "Plugin abilitato."
+      "enabled": "Plugin abilitato. Riavvia il CMS per applicare le modifiche."
     }
   },
   "details": {
