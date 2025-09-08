@@ -38,6 +38,8 @@ export const PageModule: DashboardModule = {
       component: <PagesDashboardCard />,
       defaultWidth: 1,
       defaultHeight: 1,
+      minWidth: 1,
+      minHeight: 1,
     },
   ],
 };

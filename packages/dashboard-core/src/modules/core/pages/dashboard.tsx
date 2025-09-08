@@ -39,17 +39,23 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
 
       if (stored?.value?.widgets?.length) {
         setLayout(
-          stored.value.widgets.map((w) => ({
-            ...w,
-            height: w.height ?? 1,
-          }))
+          stored.value.widgets.map((w) => {
+            const widget = widgets.find((x) => x.key === w.key);
+            const minWidth = widget?.minWidth ?? 1;
+            const minHeight = widget?.minHeight ?? 1;
+            return {
+              ...w,
+              width: Math.max(w.width, minWidth),
+              height: Math.max(w.height ?? 1, minHeight),
+            };
+          })
         );
       } else {
         setLayout(
           widgets.map((w) => ({
             key: w.key,
-            width: w.defaultWidth ?? 1,
-            height: w.defaultHeight ?? 1,
+            width: Math.max(w.defaultWidth ?? 1, w.minWidth ?? 1),
+            height: Math.max(w.defaultHeight ?? 1, w.minHeight ?? 1),
           }))
         );
       }
@@ -84,29 +90,43 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
     const widget = widgetMap.get(key);
     setLayout([
       ...layout,
-      { key, width: widget?.defaultWidth ?? 1, height: widget?.defaultHeight ?? 1 },
+      {
+        key,
+        width: Math.max(widget?.defaultWidth ?? 1, widget?.minWidth ?? 1),
+        height: Math.max(widget?.defaultHeight ?? 1, widget?.minHeight ?? 1),
+      },
     ]);
   };
 
   const handleWidthChange = (key: string, width: number) => {
-    setLayout(layout.map((l) => (l.key === key ? { ...l, width } : l)));
+    const widget = widgetMap.get(key);
+    const min = widget?.minWidth ?? 1;
+    const clamped = Math.max(min, Math.min(width, 3));
+    setLayout(layout.map((l) => (l.key === key ? { ...l, width: clamped } : l)));
   };
 
   const handleHeightChange = (key: string, height: number) => {
-    setLayout(layout.map((l) => (l.key === key ? { ...l, height } : l)));
+    const widget = widgetMap.get(key);
+    const min = widget?.minHeight ?? 1;
+    const clamped = Math.max(min, Math.min(height, 2));
+    setLayout(layout.map((l) => (l.key === key ? { ...l, height: clamped } : l)));
   };
 
   const cycleWidth = (key: string) => {
     const item = layout.find((l) => l.key === key);
-    if (!item) return;
-    const newWidth = item.width === 3 ? 1 : item.width + 1;
+    const widget = widgetMap.get(key);
+    if (!item || !widget) return;
+    const min = widget.minWidth ?? 1;
+    const newWidth = item.width >= 3 ? min : item.width + 1;
     handleWidthChange(key, newWidth);
   };
 
   const cycleHeight = (key: string) => {
     const item = layout.find((l) => l.key === key);
-    if (!item) return;
-    const newHeight = item.height === 2 ? 1 : 2;
+    const widget = widgetMap.get(key);
+    if (!item || !widget) return;
+    const min = widget.minHeight ?? 1;
+    const newHeight = item.height >= 2 ? min : item.height + 1;
     handleHeightChange(key, newHeight);
   };
 
@@ -211,6 +231,9 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => cycleWidth(layoutItem.key)}
+                        disabled={
+                          (widget.minWidth ?? 1) === 3 && layoutItem.width === 3
+                        }
                       >
                         <ArrowLeftRight className="h-4 w-4" />
                       </Button>
@@ -218,6 +241,9 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => cycleHeight(layoutItem.key)}
+                        disabled={
+                          (widget.minHeight ?? 1) === 2 && layoutItem.height === 2
+                        }
                       >
                         <ArrowUpDown className="h-4 w-4" />
                       </Button>
@@ -253,7 +279,9 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[200px] gap-6">
             {available.map((w) => {
               const heightClass =
-                w.defaultHeight === 2 ? "row-span-2" : "row-span-1";
+                Math.max(w.defaultHeight ?? 1, w.minHeight ?? 1) === 2
+                  ? "row-span-2"
+                  : "row-span-1";
               return (
                 <div
                   key={w.key}

@@ -80,6 +80,8 @@ export const PostModule: DashboardModule = {
       component: <ArticlesDashboardCard />,
       defaultWidth: 1,
       defaultHeight: 1,
+      minWidth: 1,
+      minHeight: 1,
     },
   ],
 };

@@ -13,4 +13,14 @@ export type DashboardWidgetModel = {
    * Valid values: 1-2
    */
   defaultHeight?: number;
+  /**
+   * Minimum number of grid columns the widget can be resized to.
+   * Defaults to 1. Valid values: 1-3
+   */
+  minWidth?: number;
+  /**
+   * Minimum number of grid rows the widget can be resized to.
+   * Defaults to 1. Valid values: 1-2
+   */
+  minHeight?: number;
 };

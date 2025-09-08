@@ -54,8 +54,10 @@ export const UsersModule: DashboardModule = {
     {
       key: "users-card",
       component: <UsersDashboardWidget />,
-      defaultWidth: 1,
-      defaultHeight: 1,
+      defaultWidth: 2,
+      defaultHeight: 2,
+      minWidth: 2,
+      minHeight: 2,
     },
   ],
   settings: {
