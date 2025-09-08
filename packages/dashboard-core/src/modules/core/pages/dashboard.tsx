@@ -289,14 +289,19 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
           <h2 className="text-lg font-semibold mb-2">Widget disponibili</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[200px] gap-6">
             {available.map((w) => {
-              const heightClass =
-                Math.max(w.defaultHeight ?? 1, w.minHeight ?? 1) === 2
-                  ? "row-span-2"
-                  : "row-span-1";
+              const width = Math.max(w.defaultWidth ?? 1, w.minWidth ?? 1);
+              const height = Math.max(w.defaultHeight ?? 1, w.minHeight ?? 1);
+              const widthClass =
+                width === 3
+                  ? "col-span-1 md:col-span-2 lg:col-span-3"
+                  : width === 2
+                  ? "col-span-1 md:col-span-2"
+                  : "col-span-1";
+              const heightClass = height === 2 ? "row-span-2" : "row-span-1";
               return (
                 <div
                   key={w.key}
-                  className={`relative border-2 border-dashed ${heightClass}`}
+                  className={`relative border-2 border-dashed ${widthClass} ${heightClass}`}
                 >
                   <div className="pointer-events-none opacity-50">
                     {w.component}
