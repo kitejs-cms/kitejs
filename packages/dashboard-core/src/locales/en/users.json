@@ -98,5 +98,20 @@
     "historyButton": "History",
     "historyTitle": "Consent history",
     "historyEmpty": "No consent actions recorded"
+  },
+  "dashboardWidget": {
+    "title": "Users",
+    "manage": "Manage users",
+    "last30Days": "Last 30 days",
+    "trendTooltip": "Trend vs previous period",
+    "totalUsers": "Total users",
+    "last7Days": "Last 7d",
+    "delta7": "{{value}}% vs prev. 7d",
+    "avgPerDay": "Avg/day",
+    "per30Days": "over 30 days",
+    "bestDay": "Best day",
+    "chartAriaLabel": "Daily registrations chart",
+    "chartCaption": "Shows daily registrations for the last 30 days. Period total: {{total}}.",
+    "registrations": "Registrations"
   }
 }
