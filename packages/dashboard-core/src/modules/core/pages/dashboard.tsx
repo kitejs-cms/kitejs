@@ -223,13 +223,18 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
               >
                 {editing && (
                   <>
-                    <div className="absolute top-2 left-2 z-10 text-muted-foreground cursor-move">
+                    <div
+                      className="absolute -top-3 -left-3 z-20 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow text-muted-foreground cursor-move"
+                    >
                       <GripVertical className="h-4 w-4" />
                     </div>
-                    <div className="absolute top-2 right-2 z-10 flex gap-1">
+                    <div
+                      className="absolute -top-3 -right-3 z-20 flex gap-1 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow"
+                    >
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-7 w-7"
                         onClick={() => cycleWidth(layoutItem.key)}
                         disabled={
                           (widget.minWidth ?? 1) === 3 && layoutItem.width === 3
@@ -240,6 +245,7 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-7 w-7"
                         onClick={() => cycleHeight(layoutItem.key)}
                         disabled={
                           (widget.minHeight ?? 1) === 2 && layoutItem.height === 2
@@ -250,6 +256,7 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-7 w-7"
                         onClick={() => handleRemove(layoutItem.key)}
                       >
                         <X className="h-4 w-4" />
@@ -257,7 +264,11 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                     </div>
                   </>
                 )}
-                <div className={editing ? "pointer-events-none h-full" : "h-full"}>
+                <div
+                  className={
+                    editing ? "pointer-events-none h-full opacity-50" : "h-full"
+                  }
+                >
                   {widget.component}
                 </div>
               </div>
