@@ -75,6 +75,11 @@ export const PostModule: DashboardModule = {
     ],
   },
   dashboardWidgets: [
-    { key: "articles-card", component: <ArticlesDashboardCard />, defaultWidth: 1 },
+    {
+      key: "articles-card",
+      component: <ArticlesDashboardCard />,
+      defaultWidth: 1,
+      defaultHeight: 1,
+    },
   ],
 };

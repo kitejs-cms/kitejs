@@ -8,4 +8,9 @@ export type DashboardWidgetModel = {
    * Valid values: 1-3
    */
   defaultWidth?: number;
+  /**
+   * Default number of grid rows the widget should span when first added.
+   * Valid values: 1-2
+   */
+  defaultHeight?: number;
 };

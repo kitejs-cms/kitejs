@@ -8,6 +8,7 @@ import {
 import { Button } from "../../../components/ui/button";
 import {
   ArrowLeftRight,
+  ArrowUpDown,
   Check,
   GripVertical,
   Plus,
@@ -37,10 +38,19 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
       );
 
       if (stored?.value?.widgets?.length) {
-        setLayout(stored.value.widgets);
+        setLayout(
+          stored.value.widgets.map((w) => ({
+            ...w,
+            height: w.height ?? 1,
+          }))
+        );
       } else {
         setLayout(
-          widgets.map((w) => ({ key: w.key, width: w.defaultWidth ?? 1 }))
+          widgets.map((w) => ({
+            key: w.key,
+            width: w.defaultWidth ?? 1,
+            height: w.defaultHeight ?? 1,
+          }))
         );
       }
     })();
@@ -74,7 +84,7 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
     const widget = widgetMap.get(key);
     setLayout([
       ...layout,
-      { key, width: widget?.defaultWidth ?? 1 },
+      { key, width: widget?.defaultWidth ?? 1, height: widget?.defaultHeight ?? 1 },
     ]);
   };
 
@@ -82,11 +92,22 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
     setLayout(layout.map((l) => (l.key === key ? { ...l, width } : l)));
   };
 
+  const handleHeightChange = (key: string, height: number) => {
+    setLayout(layout.map((l) => (l.key === key ? { ...l, height } : l)));
+  };
+
   const cycleWidth = (key: string) => {
     const item = layout.find((l) => l.key === key);
     if (!item) return;
     const newWidth = item.width === 3 ? 1 : item.width + 1;
     handleWidthChange(key, newWidth);
+  };
+
+  const cycleHeight = (key: string) => {
+    const item = layout.find((l) => l.key === key);
+    if (!item) return;
+    const newHeight = item.height === 2 ? 1 : 2;
+    handleHeightChange(key, newHeight);
   };
 
   const handleSave = async () => {
@@ -147,16 +168,24 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
       </div>
 
       {displayed.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[200px] gap-6">
           {displayed.map((layoutItem, index) => {
             const widget = widgetMap.get(layoutItem.key)!;
             const isDragOver = dragOverIndex === index;
+            const widthClass =
+              layoutItem.width === 3
+                ? "lg:col-span-3"
+                : layoutItem.width === 2
+                ? "lg:col-span-2"
+                : "lg:col-span-1";
+            const heightClass =
+              layoutItem.height === 2 ? "row-span-2" : "row-span-1";
             return (
               <div
                 key={layoutItem.key}
-                  className={`relative lg:col-span-${layoutItem.width} ${
-                    editing ? "border-2 border-dashed" : ""
-                  } ${isDragOver ? "border-primary" : "border-transparent"}`}
+                className={`relative ${heightClass} ${widthClass} ${
+                  editing ? "border-2 border-dashed" : ""
+                } ${isDragOver ? "border-primary" : "border-transparent"}`}
                 draggable={editing}
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={(e) => {
@@ -182,6 +211,13 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => cycleHeight(layoutItem.key)}
+                      >
+                        <ArrowUpDown className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleRemove(layoutItem.key)}
                       >
                         <X className="h-4 w-4" />
@@ -201,25 +237,29 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
       {editing && available.length > 0 && (
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-2">Widget disponibili</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {available.map((w) => (
-              <div
-                key={w.key}
-                className="relative border-2 border-dashed"
-              >
-                <div className="pointer-events-none opacity-50">
-                  {w.component}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={() => handleAdd(w.key)}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[200px] gap-6">
+            {available.map((w) => {
+              const heightClass =
+                w.defaultHeight === 2 ? "row-span-2" : "row-span-1";
+              return (
+                <div
+                  key={w.key}
+                  className={`relative border-2 border-dashed ${heightClass}`}
                 >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
+                  <div className="pointer-events-none opacity-50">
+                    {w.component}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => handleAdd(w.key)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

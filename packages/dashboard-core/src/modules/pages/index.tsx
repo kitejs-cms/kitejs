@@ -33,6 +33,11 @@ export const PageModule: DashboardModule = {
     requiredPermissions: ["core:pages.read"],
   },
   dashboardWidgets: [
-    { key: "pages-card", component: <PagesDashboardCard />, defaultWidth: 1 },
+    {
+      key: "pages-card",
+      component: <PagesDashboardCard />,
+      defaultWidth: 1,
+      defaultHeight: 1,
+    },
   ],
 };

@@ -21,7 +21,7 @@ export function DashboardNavigationWidget({
 
   return (
     <Card
-      className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group overflow-hidden"
+      className="h-full cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group overflow-hidden"
       onClick={() => navigate(path)}
     >
       <CardHeader className="pb-3">
