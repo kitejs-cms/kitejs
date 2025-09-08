@@ -6,7 +6,14 @@ import {
   DashboardWidgetsSettingsModel,
 } from "../../../models/dashboard-widgets-settings.model";
 import { Button } from "../../../components/ui/button";
-import { Check, GripVertical, Minus, Plus, Settings, X } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Check,
+  GripVertical,
+  Plus,
+  Settings,
+  X,
+} from "lucide-react";
 
 interface DashboardPageProps {
   widgets?: DashboardWidgetModel[];
@@ -15,6 +22,9 @@ interface DashboardPageProps {
 export function DashboardPage({ widgets = [] }: DashboardPageProps) {
   const { getSetting, updateSetting } = useSettingsContext();
   const [layout, setLayout] = useState<DashboardWidgetLayout[]>([]);
+  const [originalLayout, setOriginalLayout] = useState<
+    DashboardWidgetLayout[]
+  >([]);
   const [editing, setEditing] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -72,10 +82,22 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
     setLayout(layout.map((l) => (l.key === key ? { ...l, width } : l)));
   };
 
+  const cycleWidth = (key: string) => {
+    const item = layout.find((l) => l.key === key);
+    if (!item) return;
+    const newWidth = item.width === 3 ? 1 : item.width + 1;
+    handleWidthChange(key, newWidth);
+  };
+
   const handleSave = async () => {
     await updateSetting("dashboard", "dashboard:widgets", {
       widgets: layout,
     });
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setLayout(originalLayout);
     setEditing(false);
   };
 
@@ -90,18 +112,38 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
             utenti.
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setEditing((v) => !v)}
-          aria-label={editing ? "Chiudi personalizzazione" : "Personalizza"}
-        >
-          {editing ? (
-            <Check className="h-4 w-4" />
-          ) : (
+        {editing ? (
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCancel}
+              aria-label="Annulla"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSave}
+              aria-label="Conferma"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              setOriginalLayout(layout.map((l) => ({ ...l })));
+              setEditing(true);
+            }}
+            aria-label="Personalizza"
+          >
             <Settings className="h-4 w-4" />
-          )}
-        </Button>
+          </Button>
+        )}
       </div>
 
       {displayed.length > 0 && (
@@ -133,26 +175,9 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() =>
-                          handleWidthChange(
-                            layoutItem.key,
-                            Math.max(1, layoutItem.width - 1)
-                          )
-                        }
+                        onClick={() => cycleWidth(layoutItem.key)}
                       >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          handleWidthChange(
-                            layoutItem.key,
-                            Math.min(3, layoutItem.width + 1)
-                          )
-                        }
-                      >
-                        <Plus className="h-4 w-4" />
+                        <ArrowLeftRight className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -173,31 +198,30 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
         </div>
       )}
 
-      {editing && (
-        <>
-          {available.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-lg font-semibold mb-2">Widget disponibili</h2>
-              <div className="flex flex-wrap gap-4">
-                {available.map((w) => (
-                  <Button
-                    key={w.key}
-                    variant="secondary"
-                    onClick={() => handleAdd(w.key)}
-                  >
-                    {w.key}
-                  </Button>
-                ))}
+      {editing && available.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold mb-2">Widget disponibili</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {available.map((w) => (
+              <div
+                key={w.key}
+                className="relative border-2 border-dashed"
+              >
+                <div className="pointer-events-none opacity-50">
+                  {w.component}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={() => handleAdd(w.key)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
-            </div>
-          )}
-          <div className="mt-8 flex justify-end gap-4">
-            <Button variant="secondary" onClick={() => setEditing(false)}>
-              Annulla
-            </Button>
-            <Button onClick={handleSave}>Salva</Button>
+            ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
