@@ -4,6 +4,13 @@ import {
   ArrowUpRight,
   Users,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { useApi } from "../../../hooks/use-api";
 
@@ -11,32 +18,6 @@ interface UserStats {
   total: number;
   registrations: { date: string; count: number }[];
   trend: number;
-}
-
-function Sparkline({ data }: { data: number[] }) {
-  if (!data.length) return null;
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const points = data
-    .map((d, i) => {
-      const x = (i / (data.length - 1)) * 100;
-      const y = 100 - ((d - min) / range) * 100;
-      return `${x},${y}`;
-    })
-    .join(" ");
-  return (
-    <svg viewBox="0 0 100 100" className="w-full h-full">
-      <polyline
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        points={points}
-      />
-    </svg>
-  );
 }
 
 export function UsersDashboardWidget() {
@@ -48,6 +29,8 @@ export function UsersDashboardWidget() {
 
   const trendUp = (data?.trend ?? 0) >= 0;
   const TrendIcon = trendUp ? ArrowUpRight : ArrowDownRight;
+
+  const chartData = data?.registrations ?? [];
 
   return (
     <Card className="h-full">
@@ -70,9 +53,19 @@ export function UsersDashboardWidget() {
       <CardContent>
         <div className="text-2xl font-bold">{data?.total ?? "—"}</div>
         <div className="mt-4 h-16 text-primary">
-          <Sparkline
-            data={(data?.registrations || []).map((r) => r.count)}
-          />
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 0, bottom: 0, left: 0, right: 0 }}>
+              <defs>
+                <linearGradient id="usersTrend" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="currentColor" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="date" hide />
+              <YAxis hide />
+              <Area type="monotone" dataKey="count" stroke="currentColor" fill="url(#usersTrend)" />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
