@@ -122,6 +122,12 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
     setEditing(false);
   };
 
+  const totalCells = displayed.reduce(
+    (sum, item) => sum + item.width * item.height,
+    0
+  );
+  const placeholderCount = (Math.ceil(totalCells / 3) + 1) * 3 - totalCells;
+
   return (
     <div className="flex h-full w-full flex-col p-6">
       {/* Header */}
@@ -168,22 +174,22 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
       </div>
 
       {displayed.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[200px] gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[200px] gap-6 relative">
           {displayed.map((layoutItem, index) => {
             const widget = widgetMap.get(layoutItem.key)!;
             const isDragOver = dragOverIndex === index;
             const widthClass =
               layoutItem.width === 3
-                ? "lg:col-span-3"
+                ? "col-span-1 md:col-span-2 lg:col-span-3"
                 : layoutItem.width === 2
-                ? "lg:col-span-2"
-                : "lg:col-span-1";
+                ? "col-span-1 md:col-span-2"
+                : "col-span-1";
             const heightClass =
               layoutItem.height === 2 ? "row-span-2" : "row-span-1";
             return (
               <div
                 key={layoutItem.key}
-                className={`relative ${heightClass} ${widthClass} ${
+                className={`relative h-full ${heightClass} ${widthClass} ${
                   editing ? "border-2 border-dashed" : ""
                 } ${isDragOver ? "border-primary" : "border-transparent"}`}
                 draggable={editing}
@@ -225,12 +231,19 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                     </div>
                   </>
                 )}
-                <div className={editing ? "pointer-events-none" : undefined}>
+                <div className={editing ? "pointer-events-none h-full" : "h-full"}>
                   {widget.component}
                 </div>
               </div>
             );
           })}
+          {editing &&
+            Array.from({ length: placeholderCount }).map((_, i) => (
+              <div
+                key={`placeholder-${i}`}
+                className="border-2 border-dashed border-muted-foreground/20"
+              />
+            ))}
         </div>
       )}
 
