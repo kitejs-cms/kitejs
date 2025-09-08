@@ -90,8 +90,18 @@ export function UsersDashboardWidget() {
             <div className="h-8 w-8 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <Users className="h-4 w-4" />
             </div>
-            <div>
-              <CardTitle className="text-base font-semibold">Utenti</CardTitle>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-semibold">Utenti</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2"
+                  onClick={() => navigate("/users")}
+                >
+                  Gestisci utenti
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground">Ultimi 30 giorni</p>
             </div>
           </div>
@@ -121,8 +131,8 @@ export function UsersDashboardWidget() {
             <p className="text-xs text-muted-foreground">Utenti totali</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border bg-card p-3 min-w-[120px]">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border bg-card p-3 sm:min-w-[120px]">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Ultimi 7g</span>
                 <BarChart className="h-3.5 w-3.5" />
@@ -138,7 +148,7 @@ export function UsersDashboardWidget() {
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-card p-3 min-w-[120px]">
+            <div className="rounded-2xl border bg-card p-3 sm:min-w-[120px]">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Media/die</span>
                 <Users className="h-3.5 w-3.5" />
@@ -151,16 +161,13 @@ export function UsersDashboardWidget() {
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-card p-3 min-w-[140px]">
+            <div className="rounded-2xl border bg-card p-3 sm:min-w-[140px]">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Giorno migliore</span>
                 <CalendarDays className="h-3.5 w-3.5" />
               </div>
               <div className="mt-1 text-lg font-semibold leading-none">
                 {formatNumber(bestDay.count)}
-              </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">
-                {formatDateISOToIT(bestDay.date)}
               </div>
             </div>
           </div>
@@ -237,21 +244,11 @@ export function UsersDashboardWidget() {
           </ResponsiveContainer>
         </div>
 
-        <div className="flex items-center justify-between pt-1">
-          <p className="text-xs text-muted-foreground">
-            Dati simulati. Mostrano le {" "}
-            <span className="font-medium">registrazioni giornaliere</span> degli
-            ultimi 30 giorni. Totale periodo: {" "}
-            <span className="font-medium">{formatNumber(last30)}</span>.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={() => navigate("/users")}
-          >
-            Gestisci utenti
-          </Button>
+        <div className="pt-1 text-xs text-muted-foreground">
+          Dati simulati. Mostrano le {" "}
+          <span className="font-medium">registrazioni giornaliere</span> degli
+          ultimi 30 giorni. Totale periodo: {" "}
+          <span className="font-medium">{formatNumber(last30)}</span>.
         </div>
       </CardContent>
     </Card>
