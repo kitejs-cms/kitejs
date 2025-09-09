@@ -2,18 +2,21 @@ import { Image } from "lucide-react";
 import type { DashboardModule } from "@kitejs-cms/dashboard-core";
 import { GalleriesManagePage } from "./pages/galleries-manage";
 import { GalleryDetailsPage } from "./pages/gallery-details";
-import { GalleryFieldsSettings } from "./components/gallery-fields-settings";
+import {
+  GalleryFieldsSettings,
+  GALLERY_PLUGIN_NAMESPACE,
+} from "./components/gallery-fields-settings";
 
 /* i18n */
 import it from "./locales/it.json";
 import en from "./locales/en.json";
 
 export const GalleryModule: DashboardModule = {
-  key: "gallery",
+  key: GALLERY_PLUGIN_NAMESPACE,
   name: "gallery",
   translations: { it, en },
   settings: {
-    key: "gallery",
+    key: GALLERY_PLUGIN_NAMESPACE,
     title: "gallery:menu.galleries",
     icon: <Image />,
     description: "gallery:settings.description",

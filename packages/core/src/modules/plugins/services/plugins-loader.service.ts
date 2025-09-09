@@ -40,6 +40,10 @@ export class PluginsLoaderService {
       { pendingDisable: true, enabled: false },
       { $set: { pendingDisable: false } }
     );
+    await this.pluginModel.updateMany(
+      { requiresRestart: true },
+      { $set: { requiresRestart: false } }
+    );
     for (const pluginInstance of plugins) {
       try {
         let plugin = await this.pluginModel.findOne({
