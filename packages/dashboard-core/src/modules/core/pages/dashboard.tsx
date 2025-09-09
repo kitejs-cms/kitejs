@@ -306,14 +306,18 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                   <div className="pointer-events-none opacity-50">
                     {w.component}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => handleAdd(w.key)}
+                  <div
+                    className="absolute -top-3 -right-3 z-20 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow"
                   >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => handleAdd(w.key)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               );
             })}
