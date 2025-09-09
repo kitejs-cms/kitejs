@@ -10,6 +10,7 @@ import React, {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 
 interface SettingsContextType {
@@ -50,10 +51,17 @@ export function SettingsProvider({
   const [pluginsLoading, setPluginsLoading] = useState(false);
   const { fetchData } = useApi();
   const navigate = useNavigate();
+  const settingsCache = useRef<Record<string, unknown>>({});
 
   const getSetting = useCallback(
     async <T = unknown,>(namespace: string, key: string): Promise<T | null> => {
+      const cacheKey = `${namespace}:${key}`;
+      if (cacheKey in settingsCache.current) {
+        return settingsCache.current[cacheKey] as T | null;
+      }
+
       const { data } = await fetchData(`settings/${namespace}/${key}`, "GET");
+      settingsCache.current[cacheKey] = data as unknown;
       return data as T | null;
     },
     [fetchData],
@@ -68,6 +76,8 @@ export function SettingsProvider({
       const { data } = await fetchData(`settings/${namespace}/${key}`, "PUT", {
         value,
       });
+
+      settingsCache.current[`${namespace}:${key}`] = data as unknown;
 
       if (
         namespace === "core" &&
