@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useAuthContext } from "../context/auth-context";
 
 /**
@@ -10,21 +11,24 @@ import { useAuthContext } from "../context/auth-context";
 export function useHasPermission() {
   const { permissions } = useAuthContext();
 
-  return (
-    target?: string | string[],
-    options: { every?: boolean } = {},
-  ): boolean => {
-    if (!target || (Array.isArray(target) && target.length === 0)) {
-      return true;
-    }
+  return useCallback(
+    (
+      target?: string | string[],
+      options: { every?: boolean } = {},
+    ): boolean => {
+      if (!target || (Array.isArray(target) && target.length === 0)) {
+        return true;
+      }
 
-    if (target === "*") {
-      return permissions.size > 0;
-    }
+      if (target === "*") {
+        return permissions.size > 0;
+      }
 
-    const required = Array.isArray(target) ? target : [target];
-    const method = options.every === false ? "some" : "every";
+      const required = Array.isArray(target) ? target : [target];
+      const method = options.every === false ? "some" : "every";
 
-    return required[method]((perm) => permissions.has(perm));
-  };
+      return required[method]((perm) => permissions.has(perm));
+    },
+    [permissions],
+  );
 }
