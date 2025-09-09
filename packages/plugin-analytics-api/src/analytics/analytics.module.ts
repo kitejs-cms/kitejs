@@ -1,8 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
+import { SettingsModule } from "@kitejs-cms/core";
 import { AnalyticsController } from "./analytics.controller";
 import { AnalyticsService } from "./analytics.service";
-import { AnalyticsMiddleware } from "./analytics.middleware";
+import { AnalyticsSettingsService } from "./analytics-settings.service";
 import { AnalyticsEvent, AnalyticsEventSchema } from "./schemas/analytics-event.schema";
 
 @Module({
@@ -10,13 +11,10 @@ import { AnalyticsEvent, AnalyticsEventSchema } from "./schemas/analytics-event.
     MongooseModule.forFeature([
       { name: AnalyticsEvent.name, schema: AnalyticsEventSchema },
     ]),
+    SettingsModule,
   ],
   controllers: [AnalyticsController],
-  providers: [AnalyticsService, AnalyticsMiddleware],
-  exports: [AnalyticsService],
+  providers: [AnalyticsService, AnalyticsSettingsService],
+  exports: [AnalyticsService, AnalyticsSettingsService],
 })
-export class AnalyticsModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AnalyticsMiddleware).forRoutes("*");
-  }
-}
+export class AnalyticsModule {}
