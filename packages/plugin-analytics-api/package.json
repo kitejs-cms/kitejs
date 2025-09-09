@@ -39,7 +39,8 @@
     "class-validator": "^0.14.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "mongoose": "^8.10.1"
+    "mongoose": "^8.10.1",
+    "geoip-lite": "^1.4.6"
   },
   "devDependencies": {
     "@kitejs-cms/eslint-config": "workspace:*",
@@ -50,6 +51,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.0.0",
     "@nestjs/mongoose": "^11.0.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@types/geoip-lite": "^1.4.5"
   }
 }

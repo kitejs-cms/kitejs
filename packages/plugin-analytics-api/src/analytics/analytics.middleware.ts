@@ -1,6 +1,7 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 import { createHash } from "crypto";
+import geoip from "geoip-lite";
 import { AnalyticsService } from "./analytics.service";
 
 @Injectable()
@@ -39,12 +40,15 @@ export class AnalyticsMiddleware implements NestMiddleware {
       req.socket.remoteAddress ||
       undefined;
 
-    const geoEntries = [
-      ["country", req.headers["x-geo-country"]],
-      ["region", req.headers["x-geo-region"]],
-      ["city", req.headers["x-geo-city"]],
-    ].filter(([, v]) => typeof v === "string");
-    const geo = geoEntries.length ? Object.fromEntries(geoEntries) : undefined;
+    const lookup = ip ? geoip.lookup(ip) : undefined;
+    const geo = lookup
+      ? {
+          country: lookup.country,
+          region: lookup.region,
+          city: lookup.city,
+          ll: lookup.ll,
+        }
+      : undefined;
 
     let fingerprint: string | undefined;
     const ua = req.headers["user-agent"] as string | undefined;
