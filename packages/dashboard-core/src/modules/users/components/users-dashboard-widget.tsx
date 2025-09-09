@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowDownRight,
@@ -22,15 +22,13 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
 import { useNavigate } from "react-router-dom";
-
-// import { useApi } from "../../../hooks/use-api"; // Uncomment when real API is available
+import { useApi } from "../../../hooks/use-api";
 
 interface UserStats {
   total: number;
   registrations: { date: string; count: number }[];
-  trend: number; // % vs periodo precedente
+  trend: number;
 }
 
 function formatNumber(n: number, locale: string) {
@@ -45,190 +43,176 @@ function formatDateISO(iso: string, locale: string) {
 export function UsersDashboardWidget() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation("users");
+  const { data, fetchData } = useApi<UserStats>();
 
-  // const { data, fetchData } = useApi<UserStats>();
-  // useEffect(() => {
-  //   fetchData("users/stats");
-  // }, [fetchData]);
+  useEffect(() => {
+    fetchData("users/stats");
+  }, [fetchData]);
 
-  const data = useMemo<UserStats>(() => {
-    const registrations = Array.from({ length: 30 }).map((_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (29 - i));
-      return {
-        date: date.toISOString().slice(0, 10),
-        count: Math.round(10 + 5 * Math.sin(i / 5)),
-      };
-    });
+  const stats: UserStats = data ?? {
+    total: 0,
+    registrations: [],
+    trend: 0,
+  };
 
-    // trend fittizio vs i 30 giorni precedenti
-    return { total: 1234, registrations, trend: 8 };
-  }, []);
-
-  const trendUp = data.trend >= 0;
+  const trendUp = stats.trend >= 0;
   const TrendIcon = trendUp ? ArrowUpRight : ArrowDownRight;
+  const chartData = stats.registrations;
 
-  const chartData = data.registrations;
-
-  // --- Derived KPIs ---
+  // KPIs
   const last7 = chartData.slice(-7).reduce((s, d) => s + d.count, 0);
   const last30 = chartData.reduce((s, d) => s + d.count, 0);
-  const avgDaily = last30 / (chartData.length || 1);
+  const avgDaily = chartData.length ? last30 / chartData.length : 0;
   const bestDay = chartData.reduce(
     (max, cur) => (cur.count > max.count ? cur : max),
-    chartData[0]
+    chartData[0] ?? { date: "", count: 0 }
   );
-
-  // 7d vs 7d previous
   const prev7 = chartData.slice(-14, -7).reduce((s, d) => s + d.count, 0);
   const delta7Pct = prev7 === 0 ? 0 : ((last7 - prev7) / prev7) * 100;
 
+  const goUsers = () => navigate("/users");
+
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-0">
-        <div className="flex items-start justify-between gap-3">
+      <CardHeader className="">
+        <div className="flex items-start justify-between gap-1.5">
+          {/* title + subtitle + micro-trend */}
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-              <Users className="h-4 w-4" />
+            <div className="p-3 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
+              <Users className="h-6 w-6" />
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-base font-semibold">
-                  {t("dashboardWidget.title")}
-                </CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 px-2"
-                  onClick={() => navigate("/users")}
+            <div className="flex flex-col pl-2">
+              <CardTitle
+                role="button"
+                onClick={goUsers}
+                className="text-sm font-semibold hover:underline cursor-pointer"
+                title={t("dashboardWidget.manage")}
+              >
+                {t("dashboardWidget.title")}
+              </CardTitle>
+
+              <div className="flex items-center gap-1.5">
+                <p className="text-[11px] text-muted-foreground">
+                  {t("dashboardWidget.last30Days")}
+                </p>
+                <span
+                  className={`inline-flex items-center gap-1 h-4 rounded-full px-1.5 text-[11px] font-medium border ${
+                    trendUp
+                      ? "text-emerald-600 border-emerald-200 bg-emerald-50"
+                      : "text-red-600 border-red-200 bg-red-50"
+                  }`}
+                  aria-label={t("dashboardWidget.trendTooltip")}
+                  title={t("dashboardWidget.trendTooltip")}
                 >
-                  {t("dashboardWidget.manage")}
-                </Button>
+                  <TrendIcon className="h-3 w-3" />
+                  {Math.abs(stats.trend).toFixed(0)}%
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t("dashboardWidget.last30Days")}
-              </p>
             </div>
           </div>
 
-          <div
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium border ${
-              trendUp
-                ? "text-emerald-600 border-emerald-200 bg-emerald-50"
-                : "text-red-600 border-red-200 bg-red-50"
-            }`}
-            aria-label={t("dashboardWidget.trendTooltip")}
-            title={t("dashboardWidget.trendTooltip")}
-          >
-            <TrendIcon className="h-3.5 w-3.5" />
-            {Math.abs(data.trend).toFixed(0)}%
+          {/* Destra: totale (cliccabile) */}
+          <div className="text-right">
+            <button
+              onClick={goUsers}
+              className="text-2xl md:text-3xl font-bold leading-tight hover:underline cursor-pointer"
+              aria-label={t("dashboardWidget.manage")}
+              title={t("dashboardWidget.manage")}
+            >
+              {formatNumber(stats.total, i18n.language)}
+            </button>
+            <p className="text-[11px] text-muted-foreground">
+              {t("dashboardWidget.totalUsers")}
+            </p>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col pt-4 gap-4">
-        {/* Top row: total + quick KPIs */}
-        <div className="flex items-center gap-4 md:justify-between">
-          <div>
-            <div className="text-3xl md:text-4xl font-bold leading-tight">
-              {formatNumber(data.total, i18n.language)}
+      <CardContent className="flex-1 flex flex-col gap-2 -mt-1">
+        {/* KPI compatte */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-2">
+          <div className="rounded-2xl border bg-card p-4 md:min-w-[120px]">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{t("dashboardWidget.last7Days")}</span>
+              <BarChart className="h-3.5 w-3.5" />
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t("dashboardWidget.totalUsers")}
-            </p>
+            <div className="mt-0.5 text-base font-semibold leading-none">
+              {formatNumber(last7, i18n.language)}
+            </div>
+            <div
+              className={`mt-0.5 text-[11px] ${
+                delta7Pct >= 0 ? "text-emerald-600" : "text-red-600"
+              }`}
+            >
+              {t("dashboardWidget.delta7", {
+                value: `${delta7Pct >= 0 ? "+" : ""}${delta7Pct.toFixed(1)}`,
+              })}
+            </div>
           </div>
 
-          <div className="hidden gap-3 md:grid md:grid-cols-3">
-            <div className="rounded-2xl border bg-card p-3 md:min-w-[120px]">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{t("dashboardWidget.last7Days")}</span>
-                <BarChart className="h-3.5 w-3.5" />
-              </div>
-              <div className="mt-1 text-lg font-semibold leading-none">
-                {formatNumber(last7, i18n.language)}
-              </div>
-              <div
-                className={`mt-1 text-[11px] ${
-                  delta7Pct >= 0 ? "text-emerald-600" : "text-red-600"
-                }`}
-              >
-                {t("dashboardWidget.delta7", {
-                  value: `${delta7Pct >= 0 ? "+" : ""}${delta7Pct.toFixed(1)}`,
-                })}
-              </div>
+          <div className="rounded-2xl border bg-card p-4 md:min-w-[120px]">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{t("dashboardWidget.avgPerDay")}</span>
+              <Users className="h-3.5 w-3.5" />
             </div>
-
-            <div className="rounded-2xl border bg-card p-3 md:min-w-[120px]">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{t("dashboardWidget.avgPerDay")}</span>
-                <Users className="h-3.5 w-3.5" />
-              </div>
-              <div className="mt-1 text-lg font-semibold leading-none">
-                {formatNumber(Math.round(avgDaily), i18n.language)}
-              </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">
-                {t("dashboardWidget.per30Days")}
-              </div>
+            <div className="mt-0.5 text-base font-semibold leading-none">
+              {formatNumber(Math.round(avgDaily), i18n.language)}
             </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">
+              {t("dashboardWidget.per30Days")}
+            </div>
+          </div>
 
-            <div className="rounded-2xl border bg-card p-3 md:min-w-[140px]">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{t("dashboardWidget.bestDay")}</span>
-                <CalendarDays className="h-3.5 w-3.5" />
-              </div>
-              <div className="mt-1 text-lg font-semibold leading-none">
-                {formatNumber(bestDay.count, i18n.language)}
-              </div>
+          <div className="rounded-2xl border bg-card p-4 md:min-w-[140px]">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{t("dashboardWidget.bestDay")}</span>
+              <CalendarDays className="h-3.5 w-3.5" />
+            </div>
+            <div className="mt-0.5 text-base font-semibold leading-none">
+              {formatNumber(bestDay.count, i18n.language)}
             </div>
           </div>
         </div>
 
         {/* Chart */}
         <div
-          className="flex-1 w-full text-primary min-h-[180px]"
+          className="flex-1 w-full text-primary min-h-[200px] mt-2 hidden md:block"
           aria-label={t("dashboardWidget.chartAriaLabel")}
         >
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}
-              margin={{ top: 10, bottom: 0, left: 0, right: 0 }}
+              margin={{ top: 6, bottom: 0, left: 0, right: 0 }}
             >
               <defs>
+                {/* gradiente neutro */}
                 <linearGradient id="usersTrend" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="0%"
-                    stopColor="currentColor"
-                    stopOpacity={0.35}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="currentColor"
-                    stopOpacity={0}
-                  />
+                  <stop offset="0%" stopColor="#6B7280" stopOpacity={0.5} />
+                  <stop offset="100%" stopColor="#6B7280" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
-                stroke="currentColor"
-                strokeOpacity={0.08}
+                stroke="#6B7280"
+                strokeOpacity={0.07}
                 strokeDasharray="3 3"
               />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 10 }}
-                stroke="currentColor"
-                tickFormatter={(d) => formatDateISO(d, i18n.language)}
+                tick={false}
                 axisLine={false}
+                tickLine={false}
+                tickFormatter={(d) => formatDateISO(d, i18n.language)}
               />
               <YAxis
                 tick={{ fontSize: 10 }}
-                stroke="currentColor"
-                width={28}
+                stroke="#6B7280"
+                width={26}
                 axisLine={false}
               />
               <RechartsTooltip
                 cursor={{ strokeOpacity: 0.2 }}
                 contentStyle={{
-                  borderRadius: 12,
+                  borderRadius: 10,
                   borderColor: "hsl(var(--border))",
                 }}
                 labelFormatter={(l) =>
@@ -245,21 +229,16 @@ export function UsersDashboardWidget() {
               <Area
                 type="monotone"
                 dataKey="count"
-                stroke="currentColor"
-                strokeWidth={2}
+                stroke="#6B7280"
+                strokeWidth={1.75}
                 fill="url(#usersTrend)"
                 activeDot={{ r: 3 }}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-
-        <div className="pt-1 text-xs text-muted-foreground">
-          {t("dashboardWidget.chartCaption", {
-            total: formatNumber(last30, i18n.language),
-          })}
-        </div>
       </CardContent>
     </Card>
   );
 }
+
