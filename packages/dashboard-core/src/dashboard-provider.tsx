@@ -103,12 +103,10 @@ function DashboardRoutes({ modules }: { modules: DashboardModule[] }) {
     [enabledModules]
   );
 
-  const widgets: DashboardWidgetModel[] = [];
-
-  for (const module of enabledModules) {
-    if (module.dashboardWidgets)
-      for (const widget of module.dashboardWidgets) widgets.push(widget);
-  }
+  const widgets = useMemo<DashboardWidgetModel[]>(
+    () => enabledModules.flatMap((mod) => mod.dashboardWidgets ?? []),
+    [enabledModules]
+  );
 
   return (
     <Routes>
