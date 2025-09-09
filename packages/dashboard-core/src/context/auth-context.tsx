@@ -1,8 +1,10 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -46,56 +48,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return new Set([...userPermissions, ...rolePermissions]);
   }, [user, roles]);
 
+  const effectRan = useRef(false);
+
   useEffect(() => {
-    startLoading();
-    (async () => {
-      const { data } = await fetchData("auth/profile", "GET");
+    if (effectRan.current) return;
+    effectRan.current = true;
+
+    const loadProfile = async () => {
+      startLoading();
+      try {
+        const { data } = await fetchData("auth/profile", "GET");
+
+        if (data) {
+          setUser(data);
+          const { data: rolesData } = await fetchRoles("roles", "GET");
+          setRoles(rolesData ?? []);
+        } else {
+          navigate("/login");
+        }
+      } catch {
+        // no-op
+      } finally {
+        setInitializing(false);
+        stopLoading();
+      }
+    };
+
+    loadProfile();
+  }, [fetchData, fetchRoles, navigate, startLoading, stopLoading]);
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const { data, error } = await fetchData("auth/login", "POST", {
+        email,
+        password,
+      });
 
       if (data) {
-        setUser(data);
-        const { data: rolesData } = await fetchRoles("roles", "GET");
-        setRoles(rolesData ?? []);
+        const { data: userData } = await fetchData("auth/profile", "GET");
+        if (userData) {
+          setUser(userData);
+          const { data: rolesData } = await fetchRoles("roles", "GET");
+          setRoles(rolesData ?? []);
+        }
+
+        navigate("/");
+        return { data: null, error };
       } else {
-        navigate("/login");
+        return { error, data: null };
       }
-      setInitializing(false);
-      stopLoading();
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchData, fetchRoles]);
+    },
+    [fetchData, fetchRoles, navigate]
+  );
 
-  const login = async (email: string, password: string) => {
-    const { data, error } = await fetchData("auth/login", "POST", {
-      email,
-      password,
-    });
-
-    if (data) {
-      const { data: userData } = await fetchData("auth/profile", "GET");
-      if (userData) {
-        setUser(userData);
-        const { data: rolesData } = await fetchRoles("roles", "GET");
-        setRoles(rolesData ?? []);
-      }
-
-      navigate("/");
-      return { data: null, error };
-    } else {
-      return { error, data: null };
-    }
-  };
-
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await fetchData("auth/logout", "DELETE");
     setUser(null);
     setRoles([]);
     navigate("/login");
-  };
+  }, [fetchData, navigate]);
+
+  const value = useMemo(
+    () => ({ user, roles, permissions, initializing, login, logout, setUser }),
+    [user, roles, permissions, initializing, login, logout]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{ user, roles, permissions, initializing, login, logout, setUser }}
-    >
+    <AuthContext.Provider value={value}>
       {!initializing && children}
     </AuthContext.Provider>
   );
