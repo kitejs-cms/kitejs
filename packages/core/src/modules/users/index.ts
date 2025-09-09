@@ -18,6 +18,7 @@ export * from "./dto/user-consent.dto";
 export * from "./dto/update-user-consents.dto";
 export * from "./dto/role-response.dto";
 export * from "./dto/permission-response.dto";
+export * from "./dto/user-stats-response.dto";
 
 /* Services */
 export * from "./services/permissions.service";
@@ -25,6 +26,7 @@ export * from "./services/roles.service";
 export * from "./services/users.service";
 export * from "./models/role-response.model";
 export * from "./models/permission-response.model";
+export * from "./models/user-stats-response.model";
 
 /* Module */
 export * from "./users.module";

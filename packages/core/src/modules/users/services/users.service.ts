@@ -21,6 +21,7 @@ import {
   USER_SETTINGS_KEY,
   UserSettingsModel,
 } from "../../settings";
+import { UserStatsResponseModel } from "../models/user-stats-response.model";
 
 @Injectable()
 export class UserService {
@@ -73,6 +74,63 @@ export class UserService {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to count users. ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Returns user registration statistics for the last 30 days.
+   */
+  async getRegistrationStats(): Promise<UserStatsResponseModel> {
+    try {
+      const now = new Date();
+      const start = new Date(now);
+      start.setDate(start.getDate() - 29);
+      const prevStart = new Date(start);
+      prevStart.setDate(prevStart.getDate() - 30);
+
+      const [total, currentAgg, previous] = await Promise.all([
+        this.userModel.countDocuments().exec(),
+        this.userModel
+          .aggregate([
+            { $match: { createdAt: { $gte: start, $lte: now } } },
+            {
+              $group: {
+                _id: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: "$createdAt",
+                  },
+                },
+                count: { $sum: 1 },
+              },
+            },
+            { $sort: { _id: 1 } },
+          ])
+          .exec(),
+        this.userModel
+          .countDocuments({ createdAt: { $gte: prevStart, $lt: start } })
+          .exec(),
+      ]);
+
+      const registrations: { date: string; count: number }[] = [];
+      for (let i = 0; i < 30; i++) {
+        const day = new Date(start);
+        day.setDate(start.getDate() + i);
+        const dateStr = day.toISOString().split("T")[0];
+        const found = currentAgg.find((d) => d._id === dateStr);
+        registrations.push({ date: dateStr, count: found ? found.count : 0 });
+      }
+
+      const currentTotal = registrations.reduce((s, r) => s + r.count, 0);
+      const trend = previous === 0 ? 100 : ((currentTotal - previous) / previous) * 100;
+
+      return { total, registrations, trend };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to compute user stats. ${errorMessage}`,
+      );
     }
   }
 

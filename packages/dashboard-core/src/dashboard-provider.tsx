@@ -9,6 +9,7 @@ import { ThemeProvider } from "./context/theme-context";
 import { LoadingProvider } from "./context/loading-context";
 import { useMemo } from "react";
 import { DashboardModule } from "./models/module.model";
+import { DashboardWidgetModel } from "./models/dashboard-widget.model";
 import { UsersModule } from "./modules/users";
 import { ProfileModule } from "./modules/profile";
 import { CoreModule } from "./modules/core";

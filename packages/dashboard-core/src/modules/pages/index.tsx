@@ -2,6 +2,7 @@ import { DashboardModule } from "../../models/module.model";
 import { PagesManagePage } from "./pages/pages-manage";
 import { FilePenLine } from "lucide-react";
 import { PageDetailsPage } from "./pages/pages-details";
+import { PagesDashboardCard } from "./components/pages-dashboard-card";
 
 /* i18n */
 import it from "./locales/it.json";
@@ -31,4 +32,14 @@ export const PageModule: DashboardModule = {
     url: "/pages",
     requiredPermissions: ["core:pages.read"],
   },
+  dashboardWidgets: [
+    {
+      key: "pages-card",
+      component: <PagesDashboardCard />,
+      defaultWidth: 1,
+      defaultHeight: 1,
+      minWidth: 1,
+      minHeight: 1,
+    },
+  ],
 };

@@ -98,5 +98,20 @@
     "historyButton": "Storico",
     "historyTitle": "Storico consensi",
     "historyEmpty": "Nessuna azione sui consensi registrata"
+  },
+  "dashboardWidget": {
+    "title": "Utenti",
+    "manage": "Gestisci utenti",
+    "last30Days": "Ultimi 30 giorni",
+    "trendTooltip": "Trend vs periodo precedente",
+    "totalUsers": "Utenti totali",
+    "last7Days": "Ultimi 7g",
+    "delta7": "{{value}}% vs 7g prec.",
+    "avgPerDay": "Media/die",
+    "per30Days": "su 30 giorni",
+    "bestDay": "Giorno migliore",
+    "chartAriaLabel": "Grafico registrazioni giornaliere",
+    "chartCaption": "Mostra le registrazioni giornaliere degli ultimi 30 giorni. Totale periodo: {{total}}.",
+    "registrations": "Registrazioni"
   }
 }

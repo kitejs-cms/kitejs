@@ -6,6 +6,7 @@ import { RolesManagePage } from "./pages/roles-manage";
 import { UserProfilePage } from "./pages/user-profile";
 import { UserGeneralSettings } from "./components/user-general-settings";
 import { UserConsentSettings } from "./components/user-consents-settings";
+import { UsersDashboardWidget } from "./components/users-dashboard-widget";
 
 export const UsersModule: DashboardModule = {
   name: "users",
@@ -49,6 +50,16 @@ export const UsersModule: DashboardModule = {
       },
     ],
   },
+  dashboardWidgets: [
+    {
+      key: "users-card",
+      component: <UsersDashboardWidget />,
+      defaultWidth: 2,
+      defaultHeight: 2,
+      minWidth: 2,
+      minHeight: 2,
+    },
+  ],
   settings: {
     key: "users",
     title: "users:settings.menu.title",
