@@ -57,21 +57,27 @@ export function useApi<T>(): UseApiResult<T> {
       setError(null);
 
       try {
+        const { headers: optionHeaders, ...restOptions } = options || {};
+
         const response = await fetch(`${baseUrl}/${url}`, {
           credentials: "include",
           mode: "cors",
           cache: "no-cache",
-          ...options,
           method,
           body: body ? JSON.stringify(body) : undefined,
           headers: {
             "Content-Type": "application/json",
-            ...(options?.headers || {}),
+            ...(optionHeaders || {}),
           },
-          ...options,
+          ...restOptions,
         });
 
-        const result: ApiResponse<T> = await response.json();
+        let result: ApiResponse<T>;
+        try {
+          result = await response.json();
+        } catch {
+          throw new Error("Failed to parse response");
+        }
 
         if (!response.ok || result.status !== "success") {
           throw new Error(result.message || "An error occurred");
@@ -87,7 +93,8 @@ export function useApi<T>(): UseApiResult<T> {
           error: null,
         };
       } catch (err) {
-        const errorMessage = (err as Error).message;
+        const errorMessage =
+          err instanceof Error ? err.message : "Request failed";
         setError(errorMessage);
         setData(null);
         setMeta(null);
@@ -114,17 +121,24 @@ export function useApi<T>(): UseApiResult<T> {
       setError(null);
 
       try {
+        const { headers: optionHeaders, ...restOptions } = options || {};
+
         const response = await fetch(`${baseUrl}/${url}`, {
           credentials: "include",
           method: "POST",
           body: formData,
-          ...options,
           headers: {
-            ...(options?.headers || {}),
+            ...(optionHeaders || {}),
           },
+          ...restOptions,
         });
 
-        const result: ApiResponse<T> = await response.json();
+        let result: ApiResponse<T>;
+        try {
+          result = await response.json();
+        } catch {
+          throw new Error("Failed to parse response");
+        }
 
         if (!response.ok || result.status !== "success") {
           throw new Error(result.message || "Upload failed");
@@ -140,7 +154,8 @@ export function useApi<T>(): UseApiResult<T> {
           error: null,
         };
       } catch (err) {
-        const errorMessage = (err as Error).message;
+        const errorMessage =
+          err instanceof Error ? err.message : "Request failed";
         setError(errorMessage);
         setData(null);
         setMeta(null);
