@@ -12,19 +12,17 @@ import React, {
   useState,
 } from "react";
 
-const settingsCache: Record<string, unknown> = {};
-
 interface SettingsContextType {
   cmsSettings: CmsSettingsModel | null;
   settingsSection: SettingsModel[];
   getSetting: <T = unknown>(
     namespace: string,
-    key: string,
+    key: string
   ) => Promise<T | null>;
   updateSetting: <T = unknown>(
     namespace: string,
     key: string,
-    value: T,
+    value: T
   ) => Promise<T | null>;
   hasUnsavedChanges: boolean;
   setHasUnsavedChanges: (value: boolean) => void;
@@ -36,7 +34,7 @@ interface SettingsContextType {
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export function SettingsProvider({
@@ -50,34 +48,39 @@ export function SettingsProvider({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [plugins, setPlugins] = useState<PluginResponseModel[]>([]);
   const [pluginsLoading, setPluginsLoading] = useState(false);
+
+  const settingsCacheRef = React.useRef<Map<string, unknown>>(new Map());
+
   const { fetchData } = useApi();
   const navigate = useNavigate();
 
   const getSetting = useCallback(
     async <T = unknown,>(namespace: string, key: string): Promise<T | null> => {
       const cacheKey = `${namespace}:${key}`;
-      if (cacheKey in settingsCache) {
-        return settingsCache[cacheKey] as T | null;
+      const cache = settingsCacheRef.current.get(cacheKey);
+
+      if (cache) {
+        return cache as T | null;
       }
 
       const { data } = await fetchData(`settings/${namespace}/${key}`, "GET");
-      settingsCache[cacheKey] = data as unknown;
+      settingsCacheRef.current.set(cacheKey, data as unknown);
       return data as T | null;
     },
-    [fetchData],
+    [fetchData]
   );
 
   const updateSetting = useCallback(
     async <T = unknown,>(
       namespace: string,
       key: string,
-      value: T,
+      value: T
     ): Promise<T | null> => {
       const { data } = await fetchData(`settings/${namespace}/${key}`, "PUT", {
         value,
       });
 
-      settingsCache[`${namespace}:${key}`] = data as unknown;
+      settingsCacheRef.current[`${namespace}:${key}`] = data as unknown;
 
       if (
         namespace === "core" &&
@@ -88,7 +91,7 @@ export function SettingsProvider({
       }
       return data as T | null;
     },
-    [fetchData],
+    [fetchData]
   );
 
   const fetchPlugins = useCallback(async () => {
@@ -108,7 +111,7 @@ export function SettingsProvider({
       }
       return false;
     },
-    [fetchData, fetchPlugins],
+    [fetchData, fetchPlugins]
   );
 
   const enablePlugin = useCallback(
@@ -120,14 +123,14 @@ export function SettingsProvider({
       }
       return false;
     },
-    [fetchData, fetchPlugins],
+    [fetchData, fetchPlugins]
   );
 
   useEffect(() => {
     (async () => {
       const data = await getSetting<{ value: CmsSettingsModel }>(
         "core",
-        "core:cms",
+        "core:cms"
       );
 
       if (!data) navigate("/init-cms");
@@ -144,7 +147,7 @@ export function SettingsProvider({
     const disabled = new Set(
       plugins
         .filter((p) => !p.enabled || p.requiresRestart)
-        .map((p) => p.namespace),
+        .map((p) => p.namespace)
     );
     return settingsSection.filter((section) => !disabled.has(section.key));
   }, [plugins, settingsSection]);
@@ -174,7 +177,7 @@ export function useSettingsContext() {
   const context = useContext(SettingsContext);
   if (!context) {
     throw new Error(
-      "useSettingsContext must be used within a SettingsProvider",
+      "useSettingsContext must be used within a SettingsProvider"
     );
   }
   return context;

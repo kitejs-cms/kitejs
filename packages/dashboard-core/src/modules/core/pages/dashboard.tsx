@@ -23,9 +23,9 @@ interface DashboardPageProps {
 export function DashboardPage({ widgets = [] }: DashboardPageProps) {
   const { getSetting, updateSetting } = useSettingsContext();
   const [layout, setLayout] = useState<DashboardWidgetLayout[]>([]);
-  const [originalLayout, setOriginalLayout] = useState<
-    DashboardWidgetLayout[]
-  >([]);
+  const [originalLayout, setOriginalLayout] = useState<DashboardWidgetLayout[]>(
+    []
+  );
   const [editing, setEditing] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -60,13 +60,12 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
         );
       }
     })();
-  }, [getSetting, widgets]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const widgetMap = new Map(widgets.map((w) => [w.key, w]));
   const displayed = layout.filter((l) => widgetMap.has(l.key));
-  const available = widgets.filter(
-    (w) => !layout.some((l) => l.key === w.key)
-  );
+  const available = widgets.filter((w) => !layout.some((l) => l.key === w.key));
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -102,14 +101,18 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
     const widget = widgetMap.get(key);
     const min = widget?.minWidth ?? 1;
     const clamped = Math.max(min, Math.min(width, 3));
-    setLayout(layout.map((l) => (l.key === key ? { ...l, width: clamped } : l)));
+    setLayout(
+      layout.map((l) => (l.key === key ? { ...l, width: clamped } : l))
+    );
   };
 
   const handleHeightChange = (key: string, height: number) => {
     const widget = widgetMap.get(key);
     const min = widget?.minHeight ?? 1;
     const clamped = Math.max(min, Math.min(height, 2));
-    setLayout(layout.map((l) => (l.key === key ? { ...l, height: clamped } : l)));
+    setLayout(
+      layout.map((l) => (l.key === key ? { ...l, height: clamped } : l))
+    );
   };
 
   const cycleWidth = (key: string) => {
@@ -202,8 +205,8 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
               layoutItem.width === 3
                 ? "col-span-1 md:col-span-2 lg:col-span-3"
                 : layoutItem.width === 2
-                ? "col-span-1 md:col-span-2"
-                : "col-span-1";
+                  ? "col-span-1 md:col-span-2"
+                  : "col-span-1";
             const heightClass =
               layoutItem.height === 2 ? "row-span-2" : "row-span-1";
             return (
@@ -223,14 +226,10 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
               >
                 {editing && (
                   <>
-                    <div
-                      className="absolute -top-3 -left-3 z-20 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow text-muted-foreground cursor-move"
-                    >
+                    <div className="absolute -top-3 -left-3 z-20 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow text-muted-foreground cursor-move">
                       <GripVertical className="h-4 w-4" />
                     </div>
-                    <div
-                      className="absolute -top-3 -right-3 z-20 flex gap-1 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow"
-                    >
+                    <div className="absolute -top-3 -right-3 z-20 flex gap-1 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -248,7 +247,8 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                         className="h-7 w-7"
                         onClick={() => cycleHeight(layoutItem.key)}
                         disabled={
-                          (widget.minHeight ?? 1) === 2 && layoutItem.height === 2
+                          (widget.minHeight ?? 1) === 2 &&
+                          layoutItem.height === 2
                         }
                       >
                         <ArrowUpDown className="h-4 w-4" />
@@ -295,8 +295,8 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                 width === 3
                   ? "col-span-1 md:col-span-2 lg:col-span-3"
                   : width === 2
-                  ? "col-span-1 md:col-span-2"
-                  : "col-span-1";
+                    ? "col-span-1 md:col-span-2"
+                    : "col-span-1";
               const heightClass = height === 2 ? "row-span-2" : "row-span-1";
               return (
                 <div
@@ -306,9 +306,7 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
                   <div className="pointer-events-none opacity-50">
                     {w.component}
                   </div>
-                  <div
-                    className="absolute -top-3 -right-3 z-20 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow"
-                  >
+                  <div className="absolute -top-3 -right-3 z-20 p-1 rounded-md bg-background/80 backdrop-blur-sm shadow">
                     <Button
                       variant="ghost"
                       size="icon"

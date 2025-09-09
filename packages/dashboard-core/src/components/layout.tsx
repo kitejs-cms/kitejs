@@ -6,7 +6,6 @@ import { useBreadcrumb } from "../context/breadcrumb-context";
 import { SidebarMenuItemModel } from "../models/module.model";
 import { useState } from "react";
 import { SettingsModal } from "./settings-modal";
-import { StorageExplorer } from "../modules/core/components/storage-explorer/storage-explorer";
 import { Toaster } from "./ui/toaster";
 import {
   Breadcrumb,
@@ -27,7 +26,7 @@ export function Layout({ menuItems }: { menuItems: SidebarMenuItemModel[] }) {
         items={menuItems}
         openSettings={() => setSettingsModal(true)}
       />
-      <StorageExplorer />
+      {/*   <StorageExplorer /> */}
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
