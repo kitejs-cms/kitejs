@@ -19,4 +19,16 @@ export class TrackEventDto {
   @IsOptional()
   @IsString()
   origin?: string;
+
+  @IsOptional()
+  @IsString()
+  ip?: string;
+
+  @IsOptional()
+  @IsObject()
+  geo?: Record<string, any>;
+
+  @IsOptional()
+  @IsString()
+  fingerprint?: string;
 }

@@ -22,6 +22,15 @@ export class AnalyticsEvent extends Document {
 
   @Prop({ type: String })
   origin?: string;
+
+  @Prop({ type: String })
+  ip?: string;
+
+  @Prop({ type: Object })
+  geo?: Record<string, any>;
+
+  @Prop({ type: String })
+  fingerprint?: string;
 }
 
 export const AnalyticsEventSchema = SchemaFactory.createForClass(AnalyticsEvent);
