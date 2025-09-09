@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import {
   ANALYTICS_PLUGIN_NAMESPACE,
   ANALYTICS_SETTINGS_KEY,
+  DEFAULT_RETENTION_DAYS,
   type AnalyticsPluginSettingsModel,
 } from "../constants";
 
@@ -21,10 +22,25 @@ export class AnalyticsSettingsService {
     );
 
     if (setting?.value?.apiKey) {
-      return setting.value;
+      const value = {
+        apiKey: setting.value.apiKey,
+        retentionDays:
+          setting.value.retentionDays ?? DEFAULT_RETENTION_DAYS,
+      };
+      if (value.retentionDays !== setting.value.retentionDays) {
+        await this.settingsService.upsert(
+          ANALYTICS_PLUGIN_NAMESPACE,
+          ANALYTICS_SETTINGS_KEY,
+          value
+        );
+      }
+      return value;
     }
 
-    const value = { apiKey: randomUUID() };
+    const value: AnalyticsPluginSettingsModel = {
+      apiKey: randomUUID(),
+      retentionDays: DEFAULT_RETENTION_DAYS,
+    };
     await this.settingsService.upsert(
       ANALYTICS_PLUGIN_NAMESPACE,
       ANALYTICS_SETTINGS_KEY,

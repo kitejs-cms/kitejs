@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 import { ANALYTICS_PLUGIN_NAMESPACE } from "../../constants";
 
 @Schema({
-  collection: `${ANALYTICS_PLUGIN_NAMESPACE}_events`,
+  collection: `plugin-${ANALYTICS_PLUGIN_NAMESPACE}-events`,
   timestamps: true,
   toJSON: { getters: true },
 })
