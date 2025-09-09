@@ -1,4 +1,8 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req } from "@nestjs/common";
+import { Request } from "express";
+import geoip from "geoip-lite";
+import UAParser from "ua-parser-js";
+import { createHash } from "crypto";
 import { AnalyticsService } from "./analytics.service";
 import { AnalyticsSettingsService } from "./analytics-settings.service";
 import { TrackEventDto } from "./dto/track-event.dto";
@@ -11,8 +15,37 @@ export class AnalyticsController {
   ) {}
 
   @Post("events")
-  async track(@Body() dto: TrackEventDto) {
-    await this.analyticsService.trackEvent(dto);
+  async track(@Body() dto: TrackEventDto, @Req() req: Request) {
+    const ip =
+      ((req.headers["x-forwarded-for"] as string) || req.ip || "")
+        .split(",")[0]
+        .trim();
+    const userAgent = req.headers["user-agent"] as string | undefined;
+    const ua = userAgent ? new UAParser(userAgent).getResult() : undefined;
+    const geo = ip ? geoip.lookup(ip) ?? undefined : undefined;
+    const fingerprint =
+      userAgent && ip
+        ? createHash("sha256")
+            .update(`${ip}-${userAgent}`)
+            .digest("hex")
+        : undefined;
+
+    const event: TrackEventDto = {
+      ...dto,
+      userAgent,
+      origin: (req.headers.origin as string) || dto.origin,
+      age: req.headers["x-user-age"]
+        ? Number(req.headers["x-user-age"])
+        : dto.age,
+      ip,
+      geo: geo || dto.geo,
+      fingerprint: fingerprint || dto.fingerprint,
+      browser: ua?.browser.name,
+      os: ua?.os.name,
+      device: ua?.device.type,
+    };
+
+    await this.analyticsService.trackEvent(event);
     return { status: "ok" };
   }
 

@@ -31,4 +31,16 @@ export class TrackEventDto {
   @IsOptional()
   @IsString()
   fingerprint?: string;
+
+  @IsOptional()
+  @IsString()
+  browser?: string;
+
+  @IsOptional()
+  @IsString()
+  os?: string;
+
+  @IsOptional()
+  @IsString()
+  device?: string;
 }

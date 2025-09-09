@@ -40,7 +40,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "mongoose": "^8.10.1",
-    "geoip-lite": "^1.4.6"
+    "geoip-lite": "^1.4.6",
+    "ua-parser-js": "^1.0.39"
   },
   "devDependencies": {
     "@kitejs-cms/eslint-config": "workspace:*",
@@ -52,6 +53,7 @@
     "@nestjs/swagger": "^11.0.0",
     "@nestjs/mongoose": "^11.0.0",
     "typescript": "^5.7.3",
-    "@types/geoip-lite": "^1.4.5"
+    "@types/geoip-lite": "^1.4.5",
+    "@types/ua-parser-js": "^0.7.39"
   }
 }

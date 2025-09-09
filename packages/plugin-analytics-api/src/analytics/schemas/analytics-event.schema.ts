@@ -31,6 +31,15 @@ export class AnalyticsEvent extends Document {
 
   @Prop({ type: String })
   fingerprint?: string;
+
+  @Prop({ type: String })
+  browser?: string;
+
+  @Prop({ type: String })
+  os?: string;
+
+  @Prop({ type: String })
+  device?: string;
 }
 
 export const AnalyticsEventSchema = SchemaFactory.createForClass(AnalyticsEvent);
