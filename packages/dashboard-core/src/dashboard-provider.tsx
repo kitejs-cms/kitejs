@@ -1,7 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/layout";
 import { AuthProvider } from "./context/auth-context";
-import { SettingsProvider, useSettingsContext } from "./context/settings-context";
+import {
+  SettingsProvider,
+  useSettingsContext,
+} from "./context/settings-context";
 import i18n from "./i18n";
 import { I18nextProvider } from "react-i18next";
 import { BreadcrumbProvider } from "./context/breadcrumb-context";
@@ -78,10 +81,8 @@ function DashboardRoutes({ modules }: { modules: DashboardModule[] }) {
 
   const menuItems = useMemo(
     () =>
-      enabledModules
-        .filter((mod) => mod.menuItem)
-        .map((mod) => mod.menuItem),
-    [enabledModules],
+      enabledModules.filter((mod) => mod.menuItem).map((mod) => mod.menuItem),
+    [enabledModules]
   );
 
   const moduleRoutes = useMemo(
@@ -97,10 +98,17 @@ function DashboardRoutes({ modules }: { modules: DashboardModule[] }) {
               </ProtectedRoute>
             }
           />
-        )),
+        ))
       ),
-    [enabledModules],
+    [enabledModules]
   );
+
+  const widgets: DashboardWidgetModel[] = [];
+
+  for (const module of enabledModules) {
+    if (module.dashboardWidgets)
+      for (const widget of module.dashboardWidgets) widgets.push(widget);
+  }
 
   return (
     <Routes>
@@ -126,7 +134,7 @@ function DashboardRoutes({ modules }: { modules: DashboardModule[] }) {
         }
       >
         {/* Dashboard route - homepage */}
-        <Route index element={<DashboardPage />} />
+        <Route index element={<DashboardPage widgets={widgets} />} />
 
         {/* Module routes */}
         {moduleRoutes}
