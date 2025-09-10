@@ -51,7 +51,11 @@ export class AnalyticsService {
   }
 
   async countEvents(
-    filter: { type?: string; createdAt?: Record<string, Date> } = {}
+    filter: {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    } = {}
   ): Promise<number> {
     try {
       return await this.eventModel.countDocuments(filter).exec();
@@ -65,7 +69,11 @@ export class AnalyticsService {
     skip = 0,
     take = 10,
     sort: Record<string, 1 | -1> = { createdAt: -1 },
-    filter: { type?: string; createdAt?: Record<string, Date> } = {}
+    filter: {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    } = {}
   ): Promise<AnalyticsEventDocument[]> {
     try {
       return this.eventModel
@@ -81,7 +89,11 @@ export class AnalyticsService {
   }
 
   async getEventSummary(
-    filter: { type?: string; createdAt?: Record<string, Date> } = {}
+    filter: {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    } = {}
   ): Promise<{
     totalEvents: number;
     uniqueVisitors: number;
@@ -107,6 +119,42 @@ export class AnalyticsService {
         eventsByType[_id] = count;
       }
       return { totalEvents, uniqueVisitors, eventsByType };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to aggregate events. ${message}`);
+    }
+  }
+  async aggregateEvents(
+    filter: {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    } = {},
+  ): Promise<{
+    totalEvents: number;
+    uniqueVisitors: number;
+    eventsByIdentifier: Record<string, number>;
+  }> {
+    try {
+      const match = filter;
+      const totalEvents = await this.eventModel.countDocuments(match).exec();
+      const uniqueVisitors = (
+        await this.eventModel.distinct("fingerprint", match).exec()
+      ).length;
+      const eventsByIdentifierAgg = await this.eventModel
+        .aggregate<{
+          _id: string;
+          count: number;
+        }>([
+          { $match: match },
+          { $group: { _id: "$identifier", count: { $sum: 1 } } },
+        ])
+        .exec();
+      const eventsByIdentifier: Record<string, number> = {};
+      for (const { _id, count } of eventsByIdentifierAgg) {
+        if (_id) eventsByIdentifier[_id] = count;
+      }
+      return { totalEvents, uniqueVisitors, eventsByIdentifier };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to aggregate events. ${message}`);
