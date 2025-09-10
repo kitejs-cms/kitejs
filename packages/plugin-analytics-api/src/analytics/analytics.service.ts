@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, OnModuleInit } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { TrackEventDto } from "./dto/track-event.dto";
@@ -78,7 +78,10 @@ export class AnalyticsService {
         await this.eventModel.distinct("fingerprint", match).exec()
       ).length;
       const eventsByTypeAgg = await this.eventModel
-        .aggregate<{ _id: string; count: number }>([
+        .aggregate<{
+          _id: string;
+          count: number;
+        }>([
           { $match: match },
           { $group: { _id: "$type", count: { $sum: 1 } } },
         ])

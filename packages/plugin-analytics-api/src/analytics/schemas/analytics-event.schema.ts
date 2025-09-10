@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 import { ANALYTICS_PLUGIN_NAMESPACE } from "../../constants";
 
 @Schema({
-  collection: `plugin-${ANALYTICS_PLUGIN_NAMESPACE}-events`,
+  collection: `plugin-${ANALYTICS_PLUGIN_NAMESPACE}_events`,
   timestamps: true,
   toJSON: { getters: true },
 })
@@ -42,6 +42,7 @@ export class AnalyticsEvent extends Document {
   device?: string;
 }
 
-export const AnalyticsEventSchema = SchemaFactory.createForClass(AnalyticsEvent);
+export const AnalyticsEventSchema =
+  SchemaFactory.createForClass(AnalyticsEvent);
 
 export type AnalyticsEventDocument = AnalyticsEvent & Document;
