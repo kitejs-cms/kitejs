@@ -29,7 +29,8 @@
   "scripts": {
     "dev": "pnpm build --watch",
     "build": "tsc -b -v",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "seed": "ts-node --project tsconfig.json scripts/seed-events.ts"
   },
   "peerDependencies": {
     "@kitejs-cms/core": "workspace:*",

@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { SettingsModule } from "@kitejs-cms/core";
+import { SettingsModule, UsersModule } from "@kitejs-cms/core";
 import { AnalyticsController } from "./analytics.controller";
 import { AnalyticsService } from "./analytics.service";
 import {
@@ -14,6 +14,7 @@ import {
       { name: AnalyticsEvent.name, schema: AnalyticsEventSchema },
     ]),
     SettingsModule,
+    UsersModule,
   ],
   controllers: [AnalyticsController],
   providers: [AnalyticsService],

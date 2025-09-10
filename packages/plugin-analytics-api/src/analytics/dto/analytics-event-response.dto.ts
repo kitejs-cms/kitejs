@@ -1,63 +1,56 @@
-import {
-  IsString,
-  IsOptional,
-  IsObject,
-  IsNumber,
-} from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { Exclude } from "class-transformer";
+import type { ObjectId } from "mongoose";
+import type { AnalyticsEventDocument } from "../schemas/analytics-event.schema";
 
-export class TrackEventDto {
+export class AnalyticsEventResponseDto {
   @ApiProperty()
-  @IsString()
-  type!: string;
+  id: string;
+
+  @ApiProperty()
+  type: string;
 
   @ApiProperty({ type: Object, required: false })
-  @IsOptional()
-  @IsObject()
   payload?: Record<string, any>;
 
   @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   userAgent?: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
   age?: number;
 
   @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   origin?: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   ip?: string;
 
   @ApiProperty({ type: Object, required: false })
-  @IsOptional()
-  @IsObject()
   geo?: Record<string, any>;
 
   @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   fingerprint?: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   browser?: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   os?: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   device?: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @Exclude()
+  _id: ObjectId;
+
+  @Exclude()
+  __v: number;
+
+  constructor(event: AnalyticsEventDocument) {
+    Object.assign(this, event.toObject());
+    this.id = event._id.toString();
+  }
 }
