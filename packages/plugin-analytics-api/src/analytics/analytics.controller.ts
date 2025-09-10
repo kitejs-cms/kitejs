@@ -6,7 +6,6 @@ import {
   Query,
   Req,
   UseGuards,
-  UnauthorizedException,
 } from "@nestjs/common";
 import type { Request } from "express";
 import geoip from "geoip-lite";
@@ -16,6 +15,7 @@ import { AnalyticsService } from "./analytics.service";
 import { TrackEventDto, TrackEvent } from "./dto/track-event.dto";
 import { AnalyticsEventResponseDto } from "./dto/analytics-event-response.dto";
 import { AnalyticsSummaryResponseDto } from "./dto/analytics-summary-response.dto";
+import { AnalyticsApiKeyGuard } from "./guards/api-key.guard";
 import {
   JwtAuthGuard,
   PermissionsGuard,
@@ -24,13 +24,10 @@ import {
   ApiSort,
   parseQuery,
   createMetaModel,
-  SettingsService,
 } from "@kitejs-cms/core";
 import {
   ANALYTICS_PLUGIN_NAMESPACE,
-  ANALYTICS_SETTINGS_KEY,
 } from "../constants";
-import type { AnalyticsPluginSettingsModel } from "./models/analytics-plugin-settings.model";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -42,24 +39,13 @@ import {
 @ApiTags("Analytics")
 @Controller("analytics")
 export class AnalyticsController {
-  constructor(
-    private readonly analyticsService: AnalyticsService,
-    private readonly settingsService: SettingsService
-  ) {}
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Post("events")
   @ApiOperation({ summary: "Track analytics event" })
   @ApiResponse({ status: 201, description: "Event tracked" })
+  @UseGuards(AnalyticsApiKeyGuard)
   async track(@Body() dto: TrackEventDto, @Req() req: Request) {
-    const apiKey = req.headers["x-api-key"] as string | undefined;
-    const { value } =
-      await this.settingsService.findOne<AnalyticsPluginSettingsModel>(
-        ANALYTICS_PLUGIN_NAMESPACE,
-        ANALYTICS_SETTINGS_KEY
-      );
-    if (!apiKey || apiKey !== value?.apiKey) {
-      throw new UnauthorizedException("Invalid API key");
-    }
     const ip = ((req.headers["x-forwarded-for"] as string) || req.ip || "")
       .split(",")[0]
       .trim();
@@ -134,7 +120,7 @@ export class AnalyticsController {
 
   @Get("events/summary")
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(`${ANALYTICS_PLUGIN_NAMESPACE}:events.read`)
+  @Permissions(`${ANALYTICS_PLUGIN_NAMESPACE}:summary.read`)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Retrieve analytics event summary" })
   @ApiResponse({

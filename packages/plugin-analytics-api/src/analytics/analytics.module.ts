@@ -7,6 +7,7 @@ import {
   AnalyticsEvent,
   AnalyticsEventSchema,
 } from "./schemas/analytics-event.schema";
+import { AnalyticsApiKeyGuard } from "./guards/api-key.guard";
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import {
     UsersModule,
   ],
   controllers: [AnalyticsController],
-  providers: [AnalyticsService],
+  providers: [AnalyticsService, AnalyticsApiKeyGuard],
   exports: [AnalyticsService],
 })
 export class AnalyticsModule {}
