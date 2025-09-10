@@ -18,11 +18,6 @@ export class TrackEventDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  userAgent?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
   @IsNumber()
   age?: number;
 
@@ -31,33 +26,14 @@ export class TrackEventDto {
   @IsString()
   origin?: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  ip?: string;
-
-  @ApiProperty({ type: Object, required: false })
-  @IsOptional()
-  @IsObject()
-  geo?: Record<string, any>;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  fingerprint?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  browser?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  os?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  device?: string;
 }
+
+export type TrackEvent = TrackEventDto & {
+  userAgent?: string;
+  ip?: string;
+  geo?: Record<string, any>;
+  fingerprint?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
+};

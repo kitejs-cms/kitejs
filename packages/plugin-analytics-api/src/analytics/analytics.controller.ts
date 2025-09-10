@@ -12,7 +12,7 @@ import geoip from "geoip-lite";
 import UAParser from "ua-parser-js";
 import { createHash } from "crypto";
 import { AnalyticsService } from "./analytics.service";
-import { TrackEventDto } from "./dto/track-event.dto";
+import { TrackEventDto, TrackEvent } from "./dto/track-event.dto";
 import { AnalyticsEventResponseDto } from "./dto/analytics-event-response.dto";
 import { AnalyticsSummaryResponseDto } from "./dto/analytics-summary-response.dto";
 import {
@@ -53,7 +53,7 @@ export class AnalyticsController {
         ? createHash("sha256").update(`${ip}-${userAgent}`).digest("hex")
         : undefined;
 
-    const event: TrackEventDto = {
+    const event: TrackEvent = {
       ...dto,
       userAgent,
       origin: (req.headers.origin as string) || dto.origin,
@@ -61,8 +61,8 @@ export class AnalyticsController {
         ? Number(req.headers["x-user-age"])
         : dto.age,
       ip,
-      geo: geo || dto.geo,
-      fingerprint: fingerprint || dto.fingerprint,
+      geo,
+      fingerprint,
       browser: ua?.browser.name,
       os: ua?.os.name,
       device: ua?.device.type,

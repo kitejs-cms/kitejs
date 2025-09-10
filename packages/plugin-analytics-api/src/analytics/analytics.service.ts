@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable, OnModuleInit } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { TrackEventDto } from "./dto/track-event.dto";
+import { TrackEvent } from "./dto/track-event.dto";
 import {
   AnalyticsEvent,
   AnalyticsEventDocument,
@@ -21,7 +21,7 @@ export class AnalyticsService {
     private readonly settingsService: SettingsService
   ) {}
 
-  async trackEvent(dto: TrackEventDto) {
+  async trackEvent(dto: TrackEvent) {
     await this.eventModel.create(dto);
     const { value } =
       await this.settingsService.findOne<AnalyticsPluginSettingsModel>(
