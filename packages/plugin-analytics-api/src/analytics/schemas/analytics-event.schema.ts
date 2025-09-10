@@ -17,11 +17,14 @@ export class AnalyticsEvent extends Document {
   @Prop({ type: String })
   userAgent?: string;
 
-  @Prop({ type: Number })
-  age?: number;
-
   @Prop({ type: String })
   origin?: string;
+
+  @Prop({ type: String })
+  identifier?: string;
+
+  @Prop({ type: Number })
+  duration?: number;
 
   @Prop({ type: String })
   ip?: string;
@@ -40,6 +43,15 @@ export class AnalyticsEvent extends Document {
 
   @Prop({ type: String })
   device?: string;
+
+  @Prop({ type: String })
+  country?: string;
+
+  @Prop({ type: String })
+  region?: string;
+
+  @Prop({ type: String })
+  city?: string;
 }
 
 export const AnalyticsEventSchema =

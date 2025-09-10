@@ -14,6 +14,11 @@ export const AnalyticsPermissions: PermissionModel[] = [
     description: "Permission to view analytics events",
     role: ["admin"],
   },
+  {
+    name: `${ANALYTICS_PLUGIN_NAMESPACE}:summary.read`,
+    description: "Permission to view analytics summary",
+    role: ["admin"],
+  },
 ];
 
 export const AnalyticsSetting: SettingModel<AnalyticsPluginSettingsModel>[] = [

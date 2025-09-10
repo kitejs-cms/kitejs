@@ -5,8 +5,9 @@ import {
   IsNumber,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import type { TrackEventModel } from "../models/track-event.model";
 
-export class TrackEventDto {
+export class TrackEventDto implements TrackEventModel {
   @ApiProperty()
   @IsString()
   type!: string;
@@ -19,45 +20,28 @@ export class TrackEventDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  userAgent?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  age?: number;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   origin?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  ip?: string;
-
-  @ApiProperty({ type: Object, required: false })
-  @IsOptional()
-  @IsObject()
-  geo?: Record<string, any>;
+  identifier?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  fingerprint?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  browser?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  os?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  device?: string;
+  @IsNumber()
+  duration?: number;
 }
+
+export type TrackEvent = TrackEventModel & {
+  userAgent?: string;
+  ip?: string;
+  geo?: Record<string, any>;
+  fingerprint?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+};

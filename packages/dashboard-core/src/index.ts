@@ -28,6 +28,7 @@ export * from "./components/skeleton-page";
 export * from "./components/multi-select";
 export * from "./components/file-uploader";
 export * from "./components/filter-modal";
+export * from "./components/data-table";
 
 /* Provider */
 export * from "./dashboard-provider";

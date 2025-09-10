@@ -12,9 +12,11 @@ import geoip from "geoip-lite";
 import UAParser from "ua-parser-js";
 import { createHash } from "crypto";
 import { AnalyticsService } from "./analytics.service";
-import { TrackEventDto } from "./dto/track-event.dto";
+import { TrackEventDto, TrackEvent } from "./dto/track-event.dto";
 import { AnalyticsEventResponseDto } from "./dto/analytics-event-response.dto";
 import { AnalyticsSummaryResponseDto } from "./dto/analytics-summary-response.dto";
+import { AnalyticsAggregateResponseDto } from "./dto/analytics-aggregate-response.dto";
+import { AnalyticsApiKeyGuard } from "./guards/api-key.guard";
 import {
   JwtAuthGuard,
   PermissionsGuard,
@@ -24,7 +26,9 @@ import {
   parseQuery,
   createMetaModel,
 } from "@kitejs-cms/core";
-import { ANALYTICS_PLUGIN_NAMESPACE } from "../constants";
+import {
+  ANALYTICS_PLUGIN_NAMESPACE,
+} from "../constants";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -41,6 +45,7 @@ export class AnalyticsController {
   @Post("events")
   @ApiOperation({ summary: "Track analytics event" })
   @ApiResponse({ status: 201, description: "Event tracked" })
+  @UseGuards(AnalyticsApiKeyGuard)
   async track(@Body() dto: TrackEventDto, @Req() req: Request) {
     const ip = ((req.headers["x-forwarded-for"] as string) || req.ip || "")
       .split(",")[0]
@@ -53,19 +58,19 @@ export class AnalyticsController {
         ? createHash("sha256").update(`${ip}-${userAgent}`).digest("hex")
         : undefined;
 
-    const event: TrackEventDto = {
+    const event: TrackEvent = {
       ...dto,
       userAgent,
       origin: (req.headers.origin as string) || dto.origin,
-      age: req.headers["x-user-age"]
-        ? Number(req.headers["x-user-age"])
-        : dto.age,
       ip,
-      geo: geo || dto.geo,
-      fingerprint: fingerprint || dto.fingerprint,
+      geo,
+      fingerprint,
       browser: ua?.browser.name,
       os: ua?.os.name,
       device: ua?.device.type,
+      country: geo?.country,
+      region: geo?.region,
+      city: geo?.city,
     };
 
     await this.analyticsService.trackEvent(event);
@@ -85,14 +90,16 @@ export class AnalyticsController {
   @ApiPagination()
   @ApiSort(["createdAt"])
   @ApiQuery({ name: "type", required: false, type: String })
+  @ApiQuery({ name: "identifier", required: false, type: String })
   @ApiQuery({ name: "startDate", required: false, type: String })
   @ApiQuery({ name: "endDate", required: false, type: String })
   async getEvents(@Query() query: Record<string, string>) {
     const { filter, sort, skip, take } = parseQuery(query, {
-      allowedFilters: ["type"],
+      allowedFilters: ["type", "identifier"],
     });
     const typedFilter = filter as {
       type?: string;
+      identifier?: string;
       createdAt?: Record<string, Date>;
     };
     const { startDate, endDate } = query;
@@ -116,7 +123,7 @@ export class AnalyticsController {
 
   @Get("events/summary")
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(`${ANALYTICS_PLUGIN_NAMESPACE}:events.read`)
+  @Permissions(`${ANALYTICS_PLUGIN_NAMESPACE}:summary.read`)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Retrieve analytics event summary" })
   @ApiResponse({
@@ -125,14 +132,16 @@ export class AnalyticsController {
     type: AnalyticsSummaryResponseDto,
   })
   @ApiQuery({ name: "type", required: false, type: String })
+  @ApiQuery({ name: "identifier", required: false, type: String })
   @ApiQuery({ name: "startDate", required: false, type: String })
   @ApiQuery({ name: "endDate", required: false, type: String })
   async getSummary(@Query() query: Record<string, string>) {
     const { filter } = parseQuery(query, {
-      allowedFilters: ["type"],
+      allowedFilters: ["type", "identifier"],
     });
     const typedFilter = filter as {
       type?: string;
+      identifier?: string;
       createdAt?: Record<string, Date>;
     };
     const { startDate, endDate } = query;
@@ -143,5 +152,38 @@ export class AnalyticsController {
     }
     const summary = await this.analyticsService.getEventSummary(typedFilter);
     return new AnalyticsSummaryResponseDto(summary);
+  }
+
+  @Get("events/aggregate")
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(`${ANALYTICS_PLUGIN_NAMESPACE}:events.read`)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Aggregate analytics events" })
+  @ApiResponse({
+    status: 200,
+    description: "Aggregated analytics events",
+    type: AnalyticsAggregateResponseDto,
+  })
+  @ApiQuery({ name: "type", required: false, type: String })
+  @ApiQuery({ name: "identifier", required: false, type: String })
+  @ApiQuery({ name: "startDate", required: false, type: String })
+  @ApiQuery({ name: "endDate", required: false, type: String })
+  async aggregate(@Query() query: Record<string, string>) {
+    const { filter } = parseQuery(query, {
+      allowedFilters: ["type", "identifier"],
+    });
+    const typedFilter = filter as {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    };
+    const { startDate, endDate } = query;
+    if (startDate || endDate) {
+      typedFilter.createdAt = {};
+      if (startDate) typedFilter.createdAt.$gte = new Date(startDate);
+      if (endDate) typedFilter.createdAt.$lte = new Date(endDate);
+    }
+    const result = await this.analyticsService.aggregateEvents(typedFilter);
+    return new AnalyticsAggregateResponseDto(result);
   }
 }
