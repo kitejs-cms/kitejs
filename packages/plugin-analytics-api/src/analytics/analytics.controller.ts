@@ -16,6 +16,7 @@ import { TrackEventDto, TrackEvent } from "./dto/track-event.dto";
 import { AnalyticsEventResponseDto } from "./dto/analytics-event-response.dto";
 import { AnalyticsSummaryResponseDto } from "./dto/analytics-summary-response.dto";
 import { AnalyticsAggregateResponseDto } from "./dto/analytics-aggregate-response.dto";
+import { AnalyticsTechnologiesResponseDto } from "./dto/analytics-technologies-response.dto";
 import { AnalyticsApiKeyGuard } from "./guards/api-key.guard";
 import {
   JwtAuthGuard,
@@ -185,5 +186,38 @@ export class AnalyticsController {
     }
     const result = await this.analyticsService.aggregateEvents(typedFilter);
     return new AnalyticsAggregateResponseDto(result);
+  }
+
+  @Get("events/technologies")
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(`${ANALYTICS_PLUGIN_NAMESPACE}:events.read`)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Retrieve analytics technologies" })
+  @ApiResponse({
+    status: 200,
+    description: "Aggregated technologies data",
+    type: AnalyticsTechnologiesResponseDto,
+  })
+  @ApiQuery({ name: "type", required: false, type: String })
+  @ApiQuery({ name: "identifier", required: false, type: String })
+  @ApiQuery({ name: "startDate", required: false, type: String })
+  @ApiQuery({ name: "endDate", required: false, type: String })
+  async getTechnologies(@Query() query: Record<string, string>) {
+    const { filter } = parseQuery(query, {
+      allowedFilters: ["type", "identifier"],
+    });
+    const typedFilter = filter as {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    };
+    const { startDate, endDate } = query;
+    if (startDate || endDate) {
+      typedFilter.createdAt = {};
+      if (startDate) typedFilter.createdAt.$gte = new Date(startDate);
+      if (endDate) typedFilter.createdAt.$lte = new Date(endDate);
+    }
+    const result = await this.analyticsService.getTechnologies(typedFilter);
+    return new AnalyticsTechnologiesResponseDto(result);
   }
 }
