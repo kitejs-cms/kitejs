@@ -2,8 +2,9 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Exclude } from "class-transformer";
 import type { ObjectId } from "mongoose";
 import type { AnalyticsEventDocument } from "../schemas/analytics-event.schema";
+import type { AnalyticsEventResponseModel } from "../models/analytics-event-response.model";
 
-export class AnalyticsEventResponseDto {
+export class AnalyticsEventResponseDto implements AnalyticsEventResponseModel {
   @ApiProperty()
   id: string;
 

@@ -7,10 +7,8 @@ export * from "./analytics.service";
 /* Controllers */
 export * from "./analytics.controller";
 
-/* Dto */
-export * from "./dto/track-event.dto";
-export * from "./dto/analytics-event-response.dto";
-export * from "./dto/analytics-summary-response.dto";
-
 /* Models */
 export * from "./models/analytics-plugin-settings.model";
+export * from "./models/track-event.model";
+export * from "./models/analytics-event-response.model";
+export * from "./models/analytics-summary-response.model";

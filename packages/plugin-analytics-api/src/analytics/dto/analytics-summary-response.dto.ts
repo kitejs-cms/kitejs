@@ -1,6 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
+import type { AnalyticsSummaryResponseModel } from "../models/analytics-summary-response.model";
 
-export class AnalyticsSummaryResponseDto {
+export class AnalyticsSummaryResponseDto
+  implements AnalyticsSummaryResponseModel
+{
   @ApiProperty()
   totalEvents!: number;
 

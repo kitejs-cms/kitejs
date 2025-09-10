@@ -5,8 +5,9 @@ import {
   IsNumber,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import type { TrackEventModel } from "../models/track-event.model";
 
-export class TrackEventDto {
+export class TrackEventDto implements TrackEventModel {
   @ApiProperty()
   @IsString()
   type!: string;
@@ -32,7 +33,7 @@ export class TrackEventDto {
   duration?: number;
 }
 
-export type TrackEvent = TrackEventDto & {
+export type TrackEvent = TrackEventModel & {
   userAgent?: string;
   ip?: string;
   geo?: Record<string, any>;
