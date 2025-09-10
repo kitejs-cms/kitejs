@@ -1,0 +1,19 @@
+{
+  "menu": {
+    "analytics": "Analytics"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "analytics": "Analytics"
+  },
+  "summary": {
+    "title": "Summary",
+    "totalEvents": "Total events",
+    "uniqueVisitors": "Unique visitors"
+  },
+  "events": {
+    "title": "Events",
+    "type": "Type",
+    "createdAt": "Date"
+  }
+}

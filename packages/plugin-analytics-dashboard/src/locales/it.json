@@ -1,0 +1,19 @@
+{
+  "menu": {
+    "analytics": "Analitica"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "analytics": "Analitica"
+  },
+  "summary": {
+    "title": "Riepilogo",
+    "totalEvents": "Eventi totali",
+    "uniqueVisitors": "Visitatori unici"
+  },
+  "events": {
+    "title": "Eventi",
+    "type": "Tipo",
+    "createdAt": "Data"
+  }
+}
