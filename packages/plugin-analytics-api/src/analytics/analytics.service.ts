@@ -10,6 +10,7 @@ import { SettingsService } from "@kitejs-cms/core";
 import {
   ANALYTICS_PLUGIN_NAMESPACE,
   ANALYTICS_SETTINGS_KEY,
+  DEFAULT_RETENTION_DAYS,
 } from "../constants";
 import { AnalyticsPluginSettingsModel } from "./models/analytics-plugin-settings.model";
 
@@ -22,14 +23,29 @@ export class AnalyticsService {
   ) {}
 
   async trackEvent(dto: TrackEvent) {
-    await this.eventModel.create(dto);
+    if (dto.identifier) {
+      const query: Record<string, any> = {
+        type: dto.type,
+        identifier: dto.identifier,
+      };
+      if (dto.fingerprint) query.fingerprint = dto.fingerprint;
+      await this.eventModel
+        .findOneAndUpdate(query, dto, {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true,
+        })
+        .exec();
+    } else {
+      await this.eventModel.create(dto);
+    }
     const { value } =
       await this.settingsService.findOne<AnalyticsPluginSettingsModel>(
         ANALYTICS_PLUGIN_NAMESPACE,
         ANALYTICS_SETTINGS_KEY
       );
 
-    const retentionDays = value?.retentionDays ?? 90;
+    const retentionDays = value?.retentionDays ?? DEFAULT_RETENTION_DAYS;
     const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
     await this.eventModel.deleteMany({ createdAt: { $lt: cutoff } }).exec();
   }

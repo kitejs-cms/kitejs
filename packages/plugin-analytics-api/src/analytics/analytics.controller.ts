@@ -6,6 +6,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UnauthorizedException,
 } from "@nestjs/common";
 import type { Request } from "express";
 import geoip from "geoip-lite";
@@ -23,8 +24,13 @@ import {
   ApiSort,
   parseQuery,
   createMetaModel,
+  SettingsService,
 } from "@kitejs-cms/core";
-import { ANALYTICS_PLUGIN_NAMESPACE } from "../constants";
+import {
+  ANALYTICS_PLUGIN_NAMESPACE,
+  ANALYTICS_SETTINGS_KEY,
+} from "../constants";
+import type { AnalyticsPluginSettingsModel } from "./models/analytics-plugin-settings.model";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -36,12 +42,24 @@ import {
 @ApiTags("Analytics")
 @Controller("analytics")
 export class AnalyticsController {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+  constructor(
+    private readonly analyticsService: AnalyticsService,
+    private readonly settingsService: SettingsService
+  ) {}
 
   @Post("events")
   @ApiOperation({ summary: "Track analytics event" })
   @ApiResponse({ status: 201, description: "Event tracked" })
   async track(@Body() dto: TrackEventDto, @Req() req: Request) {
+    const apiKey = req.headers["x-api-key"] as string | undefined;
+    const { value } =
+      await this.settingsService.findOne<AnalyticsPluginSettingsModel>(
+        ANALYTICS_PLUGIN_NAMESPACE,
+        ANALYTICS_SETTINGS_KEY
+      );
+    if (!apiKey || apiKey !== value?.apiKey) {
+      throw new UnauthorizedException("Invalid API key");
+    }
     const ip = ((req.headers["x-forwarded-for"] as string) || req.ip || "")
       .split(",")[0]
       .trim();
