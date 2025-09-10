@@ -1,0 +1,30 @@
+{
+  "menu": {
+    "analytics": "Analytics",
+    "overview": "Riepilogo",
+    "events": "Eventi",
+    "technologies": "Tecnologie"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "analytics": "Analytics",
+    "events": "Eventi",
+    "technologies": "Tecnologie"
+  },
+  "summary": {
+    "title": "Riepilogo",
+    "totalEvents": "Eventi totali",
+    "uniqueVisitors": "Visitatori unici"
+  },
+  "events": {
+    "title": "Eventi",
+    "type": "Tipo",
+    "createdAt": "Data"
+  },
+  "technologies": {
+    "browser": "Browser",
+    "os": "Sistema operativo",
+    "device": "Dispositivo",
+    "count": "Conteggio"
+  }
+}
