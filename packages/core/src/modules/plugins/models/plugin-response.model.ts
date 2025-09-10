@@ -5,9 +5,13 @@ export enum PluginStatus {
 }
 
 export type PluginResponseModel = {
+  id: string;
+  name: string;
   namespace: string;
   version: string;
   enabled: boolean;
+  pendingDisable: boolean;
+  requiresRestart: boolean;
   installedAt: Date;
   updatedAt: Date;
   author?: string;

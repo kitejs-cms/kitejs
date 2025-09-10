@@ -25,14 +25,25 @@ export class PluginsLoaderService {
 
   /**
    * Loads and initializes all provided plugins.
+   * - Acknowledges any pending disable flags for plugins.
    * - Skips disabled plugins.
    * - Skips plugins that previously failed.
    * - Initializes new plugins and updates their status.
+   * - Ensures default settings are inserted idempotently, even for existing installations.
    * If a plugin is not found in the database, it is created immediately.
    * @param plugins - Array of IPlugin instances.
-   */
+  */
   async loadPlugins(plugins: IPlugin[]): Promise<Type<unknown>[]> {
     const pluginsModules: Type<unknown>[] = [];
+    // Clear pendingDisable flags for plugins that were disabled before restart
+    await this.pluginModel.updateMany(
+      { pendingDisable: true, enabled: false },
+      { $set: { pendingDisable: false } }
+    );
+    await this.pluginModel.updateMany(
+      { requiresRestart: true },
+      { $set: { requiresRestart: false } }
+    );
     for (const pluginInstance of plugins) {
       try {
         let plugin = await this.pluginModel.findOne({
@@ -45,7 +56,7 @@ export class PluginsLoaderService {
             name: pluginInstance.name,
             namespace: pluginInstance.namespace,
             status: PluginStatus.PENDING,
-            enabled: true,
+            enabled: pluginInstance.enabled ?? true,
           });
 
           this.logger.log(
@@ -65,18 +76,21 @@ export class PluginsLoaderService {
         if (isPending) {
           // Initialize the plugin
           await pluginInstance.initialize();
+        }
 
-          // Create default settings if provided
-          if (pluginInstance.settings) {
-            for (const setting of pluginInstance.settings) {
-              await this.settingService.create({
-                namespace: pluginInstance.namespace,
-                key: setting.key,
-                value: setting.value,
-                type: this.settingService.getSettingType(
-                  pluginInstance.namespace
-                ),
-              });
+        // Insert default settings idempotently for new or existing plugins
+        if (pluginInstance.settings) {
+          for (const setting of pluginInstance.settings) {
+            const exists = await this.settingService.findOne(
+              pluginInstance.namespace,
+              setting.key
+            );
+            if (!exists) {
+              await this.settingService.upsert(
+                pluginInstance.namespace,
+                setting.key,
+                setting.value
+              );
             }
           }
         }

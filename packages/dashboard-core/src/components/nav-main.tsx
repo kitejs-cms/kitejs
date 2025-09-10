@@ -16,6 +16,7 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 export function NavMain({
   items,
@@ -59,16 +60,16 @@ export function NavMain({
               >
                 {item.items?.length ? (
                   <CollapsibleTrigger asChild>
-                    <a href={item.url}>
+                    <Link to={item.url}>
                       <item.icon />
                       <span>{t(item.title)}</span>
-                    </a>
+                    </Link>
                   </CollapsibleTrigger>
                 ) : (
-                  <a href={item.url}>
+                  <Link to={item.url}>
                     <item.icon />
                     <span>{t(item.title)}</span>
-                  </a>
+                  </Link>
                 )}
               </SidebarMenuButton>
               {item.items?.length ? (
@@ -87,9 +88,9 @@ export function NavMain({
                             asChild
                             isActive={window.location.pathname === subItem.url}
                           >
-                            <a href={subItem.url}>
+                            <Link to={subItem.url}>
                               <span>{t(subItem.title)}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}

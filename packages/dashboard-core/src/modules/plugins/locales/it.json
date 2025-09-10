@@ -1,0 +1,44 @@
+{
+  "settings": {
+    "title": "Plugin",
+    "description": "Gestisci i plugin installati.",
+    "loading": "Caricamento...",
+    "columns": {
+      "name": "Nome",
+      "version": "Versione",
+      "installedAt": "Installato",
+      "status": "Stato installazione",
+      "enabled": "Stato",
+      "actions": "Azioni"
+    },
+    "status": {
+      "installed": "Installato",
+      "pending": "In attesa",
+      "failed": "Errore"
+    },
+    "enabled": {
+      "enabled": "Abilitato",
+      "disabled": "Disabilitato",
+      "pending": "In attesa di riavvio"
+    },
+    "buttons": {
+      "disable": "Disabilita",
+      "enable": "Abilita",
+      "view": "Visualizza"
+    },
+    "toast": {
+      "disabled": "Plugin disabilitato. Riavvia il CMS per applicare le modifiche.",
+      "error": "Errore durante la disabilitazione del plugin.",
+      "enabled": "Plugin abilitato. Riavvia il CMS per applicare le modifiche."
+    }
+  },
+  "details": {
+    "back": "Torna ai plugin",
+    "namespace": "Namespace",
+    "updatedAt": "Aggiornato",
+    "author": "Autore",
+    "description": "Descrizione",
+    "dependencies": "Dipendenze",
+    "lastError": "Ultimo errore"
+  }
+}

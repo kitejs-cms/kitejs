@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useApi } from "../hooks/use-api";
 import { CmsSettingsModel } from "@kitejs-cms/core/index";
+import type { PluginResponseModel } from "@kitejs-cms/core/modules/plugins/models/plugin-response.model";
 import { SettingsModel } from "../models/settings.model";
 import React, {
   createContext,
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -24,6 +26,11 @@ interface SettingsContextType {
   ) => Promise<T | null>;
   hasUnsavedChanges: boolean;
   setHasUnsavedChanges: (value: boolean) => void;
+  plugins: PluginResponseModel[];
+  pluginsLoading: boolean;
+  fetchPlugins: () => Promise<void>;
+  disablePlugin: (namespace: string) => Promise<boolean>;
+  enablePlugin: (namespace: string) => Promise<boolean>;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
@@ -39,12 +46,25 @@ export function SettingsProvider({
 }) {
   const [cmsSettings, setCmsSettings] = useState<CmsSettingsModel | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [plugins, setPlugins] = useState<PluginResponseModel[]>([]);
+  const [pluginsLoading, setPluginsLoading] = useState(false);
+
+  const settingsCacheRef = React.useRef<Map<string, unknown>>(new Map());
+
   const { fetchData } = useApi();
   const navigate = useNavigate();
 
   const getSetting = useCallback(
     async <T = unknown,>(namespace: string, key: string): Promise<T | null> => {
+      const cacheKey = `${namespace}:${key}`;
+      const cache = settingsCacheRef.current.get(cacheKey);
+
+      if (cache) {
+        return cache as T | null;
+      }
+
       const { data } = await fetchData(`settings/${namespace}/${key}`, "GET");
+      settingsCacheRef.current.set(cacheKey, data as unknown);
       return data as T | null;
     },
     [fetchData]
@@ -60,6 +80,8 @@ export function SettingsProvider({
         value,
       });
 
+      settingsCacheRef.current[`${namespace}:${key}`] = data as unknown;
+
       if (
         namespace === "core" &&
         key === "core:cms" &&
@@ -70,6 +92,38 @@ export function SettingsProvider({
       return data as T | null;
     },
     [fetchData]
+  );
+
+  const fetchPlugins = useCallback(async () => {
+    setPluginsLoading(true);
+    const { data } = await fetchData("plugins", "GET");
+    setPlugins((data as PluginResponseModel[]) ?? []);
+    setPluginsLoading(false);
+  }, [fetchData]);
+
+  const disablePlugin = useCallback(
+    async (namespace: string) => {
+      if (namespace === "core") return false;
+      const { error } = await fetchData(`plugins/${namespace}/disable`, "POST");
+      if (!error) {
+        await fetchPlugins();
+        return true;
+      }
+      return false;
+    },
+    [fetchData, fetchPlugins]
+  );
+
+  const enablePlugin = useCallback(
+    async (namespace: string) => {
+      const { error } = await fetchData(`plugins/${namespace}/enable`, "POST");
+      if (!error) {
+        await fetchPlugins();
+        return true;
+      }
+      return false;
+    },
+    [fetchData, fetchPlugins]
   );
 
   useEffect(() => {
@@ -84,15 +138,34 @@ export function SettingsProvider({
     })();
   }, [getSetting, navigate]);
 
+  useEffect(() => {
+    fetchPlugins();
+  }, [fetchPlugins]);
+
+  const visibleSettingsSections = useMemo(() => {
+    if (!plugins.length) return settingsSection;
+    const disabled = new Set(
+      plugins
+        .filter((p) => !p.enabled || p.requiresRestart)
+        .map((p) => p.namespace)
+    );
+    return settingsSection.filter((section) => !disabled.has(section.key));
+  }, [plugins, settingsSection]);
+
   return (
     <SettingsContext.Provider
       value={{
         getSetting,
         updateSetting,
         cmsSettings,
-        settingsSection,
+        settingsSection: visibleSettingsSections,
         hasUnsavedChanges,
         setHasUnsavedChanges,
+        plugins,
+        pluginsLoading,
+        fetchPlugins,
+        disablePlugin,
+        enablePlugin,
       }}
     >
       {children}

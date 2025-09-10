@@ -33,11 +33,26 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { UpdateUserConsentsDto } from "../dto/update-user-consents.dto";
+import { UserStatsResponseDto } from "../dto/user-stats-response.dto";
 
 @ApiTags("Users")
 @Controller("users")
 export class UsersController {
   constructor(private readonly userService: UserService) {}
+
+  @Get("stats")
+  @ApiOperation({ summary: "Retrieve user registration statistics" })
+  @ApiResponse({ status: 200, type: UserStatsResponseDto })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getUserStats() {
+    try {
+      const data = await this.userService.getRegistrationStats();
+      return new UserStatsResponseDto(data);
+    } catch (error) {
+      throw new BadRequestException("Failed to retrieve user stats.");
+    }
+  }
 
   @Get()
   @ApiOperation({ summary: "Retrieve all users" })

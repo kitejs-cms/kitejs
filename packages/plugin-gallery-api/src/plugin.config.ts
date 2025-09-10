@@ -15,6 +15,7 @@ export const GalleryPlugin: IPlugin = {
   name: "Gallery Plugin",
   version,
   description: "Plugin providing gallery functionality",
+  enabled: true,
   settings: GallerySetting,
   permissions: GalleryPermissions,
   initialize: async () => {

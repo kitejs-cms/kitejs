@@ -1,0 +1,44 @@
+{
+  "settings": {
+    "title": "Plugins",
+    "description": "Manage installed plugins.",
+    "loading": "Loading...",
+    "columns": {
+      "name": "Name",
+      "version": "Version",
+      "installedAt": "Installed",
+      "status": "Status",
+      "enabled": "State",
+      "actions": "Actions"
+    },
+    "status": {
+      "installed": "Installed",
+      "pending": "Pending",
+      "failed": "Error"
+    },
+    "enabled": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "pending": "Pending restart"
+    },
+    "buttons": {
+      "disable": "Disable",
+      "enable": "Enable",
+      "view": "View"
+    },
+    "toast": {
+      "disabled": "Plugin disabled. Restart CMS to apply changes.",
+      "error": "Failed to disable plugin.",
+      "enabled": "Plugin enabled. Restart CMS to apply changes."
+    }
+  },
+  "details": {
+    "back": "Back to plugins",
+    "namespace": "Namespace",
+    "updatedAt": "Updated",
+    "author": "Author",
+    "description": "Description",
+    "dependencies": "Dependencies",
+    "lastError": "Last error"
+  }
+}

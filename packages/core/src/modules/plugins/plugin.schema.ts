@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 import { PluginStatus } from "./models/plugin-response.model";
 import { CORE_NAMESPACE } from "../../constants";
 
-export type PluginDocument = Plugin & Document;
+export type PluginDocument = Plugin & Document & { id: string };
 
 @Schema({
   collection: `${CORE_NAMESPACE}_plugins`,
@@ -37,6 +37,12 @@ export class Plugin {
 
   @Prop({ type: Boolean, default: true })
   enabled: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  pendingDisable: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  requiresRestart: boolean;
 
   @Prop({
     type: String,

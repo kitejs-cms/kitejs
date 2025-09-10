@@ -35,11 +35,14 @@ export * from "./dashboard-provider";
 /* Components */
 export * from "./components/layout";
 export * from "./components/color-picker";
+export * from "./components/dashboard-navigation-widget";
 
 /* Models */
 export * from "./models/menu-item.model";
 export * from "./models/settings.model";
 export * from "./models/module.model";
+export * from "./models/dashboard-widget.model";
+export * from "./models/dashboard-widgets-settings.model";
 
 /* Hooks */
 export * from "./hooks/use-api";
