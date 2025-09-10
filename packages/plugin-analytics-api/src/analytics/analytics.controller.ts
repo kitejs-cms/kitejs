@@ -57,15 +57,15 @@ export class AnalyticsController {
       ...dto,
       userAgent,
       origin: (req.headers.origin as string) || dto.origin,
-      age: req.headers["x-user-age"]
-        ? Number(req.headers["x-user-age"])
-        : dto.age,
       ip,
       geo,
       fingerprint,
       browser: ua?.browser.name,
       os: ua?.os.name,
       device: ua?.device.type,
+      country: geo?.country,
+      region: geo?.region,
+      city: geo?.city,
     };
 
     await this.analyticsService.trackEvent(event);

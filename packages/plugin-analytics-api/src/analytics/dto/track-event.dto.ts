@@ -18,14 +18,18 @@ export class TrackEventDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumber()
-  age?: number;
+  @IsString()
+  origin?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  origin?: string;
+  identifier?: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  duration?: number;
 }
 
 export type TrackEvent = TrackEventDto & {
@@ -36,4 +40,7 @@ export type TrackEvent = TrackEventDto & {
   browser?: string;
   os?: string;
   device?: string;
+  country?: string;
+  region?: string;
+  city?: string;
 };

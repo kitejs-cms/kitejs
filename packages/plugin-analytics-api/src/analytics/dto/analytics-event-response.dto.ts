@@ -17,10 +17,13 @@ export class AnalyticsEventResponseDto {
   userAgent?: string;
 
   @ApiProperty({ required: false })
-  age?: number;
+  origin?: string;
 
   @ApiProperty({ required: false })
-  origin?: string;
+  identifier?: string;
+
+  @ApiProperty({ required: false })
+  duration?: number;
 
   @ApiProperty({ required: false })
   ip?: string;
@@ -39,6 +42,15 @@ export class AnalyticsEventResponseDto {
 
   @ApiProperty({ required: false })
   device?: string;
+
+  @ApiProperty({ required: false })
+  country?: string;
+
+  @ApiProperty({ required: false })
+  region?: string;
+
+  @ApiProperty({ required: false })
+  city?: string;
 
   @ApiProperty()
   createdAt: Date;
