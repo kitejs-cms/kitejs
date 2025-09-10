@@ -1,10 +1,15 @@
 {
   "menu": {
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "overview": "Overview",
+    "events": "Events",
+    "technologies": "Technologies"
   },
   "breadcrumb": {
     "home": "Home",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "events": "Events",
+    "technologies": "Technologies"
   },
   "summary": {
     "title": "Summary",
@@ -15,5 +20,11 @@
     "title": "Events",
     "type": "Type",
     "createdAt": "Date"
+  },
+  "technologies": {
+    "browser": "Browser",
+    "os": "OS",
+    "device": "Device",
+    "count": "Count"
   }
 }
