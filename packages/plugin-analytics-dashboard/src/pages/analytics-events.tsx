@@ -26,7 +26,7 @@ export function AnalyticsEventsPage() {
       { label: t("breadcrumb.analytics"), path: "/analytics" },
       { label: t("breadcrumb.events"), path: "/analytics/events" },
     ]);
-    fetchEvents("/analytics/events");
+    fetchEvents("analytics/events");
   }, [setBreadcrumb, t, fetchEvents]);
 
   return (
@@ -50,7 +50,7 @@ export function AnalyticsEventsPage() {
                         dateStyle: "medium",
                         timeStyle: "short",
                       } as Intl.DateTimeFormatOptions).format(
-                        new Date(v as string),
+                        new Date(v as string)
                       )
                     : "",
               },

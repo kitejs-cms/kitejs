@@ -3,7 +3,8 @@ import type { DashboardModule } from "@kitejs-cms/dashboard-core";
 import { AnalyticsOverviewPage } from "./pages/analytics-overview";
 import { AnalyticsEventsPage } from "./pages/analytics-events";
 import { AnalyticsTechnologiesPage } from "./pages/analytics-technologies";
-import { ANALYTICS_PLUGIN_NAMESPACE } from "@kitejs-cms/plugin-analytics-api";
+
+export const ANALYTICS_PLUGIN_NAMESPACE = "analytics";
 
 /* i18n */
 import it from "./locales/it.json";

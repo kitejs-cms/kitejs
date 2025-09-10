@@ -14,7 +14,7 @@ import type { AnalyticsSummaryResponseModel } from "@kitejs-cms/plugin-analytics
 export function AnalyticsOverviewPage() {
   const { t } = useTranslation("analytics");
   const { setBreadcrumb } = useBreadcrumb();
-  const { hasPermission } = useHasPermission();
+  const hasPermission = useHasPermission();
   const { data: summary, fetchData: fetchSummary } =
     useApi<AnalyticsSummaryResponseModel>();
 
@@ -24,7 +24,7 @@ export function AnalyticsOverviewPage() {
       { label: t("breadcrumb.analytics"), path: "/analytics" },
     ]);
     if (hasPermission("analytics:summary.read")) {
-      fetchSummary("/analytics/events/summary");
+      fetchSummary("analytics/events/summary");
     }
   }, [setBreadcrumb, t, fetchSummary, hasPermission]);
 

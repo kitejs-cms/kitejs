@@ -13,7 +13,7 @@ import type { AnalyticsEventResponseModel } from "@kitejs-cms/plugin-analytics-a
 
 function aggregate(
   events: AnalyticsEventResponseModel[] | undefined,
-  field: keyof AnalyticsEventResponseModel,
+  field: keyof AnalyticsEventResponseModel
 ) {
   const counts: Record<string, number> = {};
   events?.forEach((e) => {
@@ -26,8 +26,9 @@ function aggregate(
 export function AnalyticsTechnologiesPage() {
   const { t } = useTranslation("analytics");
   const { setBreadcrumb } = useBreadcrumb();
-  const { data, fetchData, loading } =
-    useApi<{ data: AnalyticsEventResponseModel[] }>();
+  const { data, fetchData, loading } = useApi<{
+    data: AnalyticsEventResponseModel[];
+  }>();
 
   useEffect(() => {
     setBreadcrumb([
@@ -35,18 +36,12 @@ export function AnalyticsTechnologiesPage() {
       { label: t("breadcrumb.analytics"), path: "/analytics" },
       { label: t("breadcrumb.technologies"), path: "/analytics/technologies" },
     ]);
-    fetchData("/analytics/events");
+    fetchData("analytics/events");
   }, [setBreadcrumb, t, fetchData]);
 
-  const browserData = useMemo(
-    () => aggregate(data?.data, "browser"),
-    [data],
-  );
+  const browserData = useMemo(() => aggregate(data?.data, "browser"), [data]);
   const osData = useMemo(() => aggregate(data?.data, "os"), [data]);
-  const deviceData = useMemo(
-    () => aggregate(data?.data, "device"),
-    [data],
-  );
+  const deviceData = useMemo(() => aggregate(data?.data, "device"), [data]);
 
   return (
     <div className="space-y-4 p-4">
