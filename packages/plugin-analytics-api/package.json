@@ -4,10 +4,16 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
-  "engines": { "node": ">=18" },
-  "publishConfig": { "access": "public" },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -53,7 +59,8 @@
     "@nestjs/swagger": "^11.0.0",
     "@nestjs/mongoose": "^11.0.0",
     "typescript": "^5.7.3",
-    "@types/geoip-lite": "^1.4.5",
-    "@types/ua-parser-js": "^0.7.39"
+    "@types/geoip-lite": "^1.4.4",
+    "@types/ua-parser-js": "^0.7.39",
+    "@types/express": "^5.0.0"
   }
 }

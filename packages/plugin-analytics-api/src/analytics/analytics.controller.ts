@@ -1,33 +1,26 @@
 import { Body, Controller, Get, Post, Req } from "@nestjs/common";
-import { Request } from "express";
+import type { Request } from "express";
 import geoip from "geoip-lite";
 import UAParser from "ua-parser-js";
 import { createHash } from "crypto";
 import { AnalyticsService } from "./analytics.service";
-import { AnalyticsSettingsService } from "./analytics-settings.service";
 import { TrackEventDto } from "./dto/track-event.dto";
 
 @Controller("analytics")
 export class AnalyticsController {
-  constructor(
-    private readonly analyticsService: AnalyticsService,
-    private readonly settingsService: AnalyticsSettingsService
-  ) {}
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Post("events")
   async track(@Body() dto: TrackEventDto, @Req() req: Request) {
-    const ip =
-      ((req.headers["x-forwarded-for"] as string) || req.ip || "")
-        .split(",")[0]
-        .trim();
+    const ip = ((req.headers["x-forwarded-for"] as string) || req.ip || "")
+      .split(",")[0]
+      .trim();
     const userAgent = req.headers["user-agent"] as string | undefined;
     const ua = userAgent ? new UAParser(userAgent).getResult() : undefined;
-    const geo = ip ? geoip.lookup(ip) ?? undefined : undefined;
+    const geo = ip ? (geoip.lookup(ip) ?? undefined) : undefined;
     const fingerprint =
       userAgent && ip
-        ? createHash("sha256")
-            .update(`${ip}-${userAgent}`)
-            .digest("hex")
+        ? createHash("sha256").update(`${ip}-${userAgent}`).digest("hex")
         : undefined;
 
     const event: TrackEventDto = {
@@ -47,15 +40,5 @@ export class AnalyticsController {
 
     await this.analyticsService.trackEvent(event);
     return { status: "ok" };
-  }
-
-  @Get("events")
-  list() {
-    return this.analyticsService.getEvents();
-  }
-
-  @Get("settings")
-  getSettings() {
-    return this.settingsService.getSettings();
   }
 }

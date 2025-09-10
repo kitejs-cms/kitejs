@@ -3,8 +3,10 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { SettingsModule } from "@kitejs-cms/core";
 import { AnalyticsController } from "./analytics.controller";
 import { AnalyticsService } from "./analytics.service";
-import { AnalyticsSettingsService } from "./analytics-settings.service";
-import { AnalyticsEvent, AnalyticsEventSchema } from "./schemas/analytics-event.schema";
+import {
+  AnalyticsEvent,
+  AnalyticsEventSchema,
+} from "./schemas/analytics-event.schema";
 
 @Module({
   imports: [
@@ -14,7 +16,7 @@ import { AnalyticsEvent, AnalyticsEventSchema } from "./schemas/analytics-event.
     SettingsModule,
   ],
   controllers: [AnalyticsController],
-  providers: [AnalyticsService, AnalyticsSettingsService],
-  exports: [AnalyticsService, AnalyticsSettingsService],
+  providers: [AnalyticsService],
+  exports: [AnalyticsService],
 })
 export class AnalyticsModule {}

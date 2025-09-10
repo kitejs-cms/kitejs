@@ -1,6 +1,11 @@
+/* Module */
 export * from "./analytics.module";
+
+/* Services */
 export * from "./analytics.service";
+
+/* Controllers */
 export * from "./analytics.controller";
-export * from "./dto/track-event.dto";
-export * from "./analytics-settings.service";
-export * from "./schemas/analytics-event.schema";
+
+/* Models */
+export * from "./models/analytics-plugin-settings.model";
