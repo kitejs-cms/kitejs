@@ -1,10 +1,13 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
+  Button,
+  Input,
+  Label,
   DataTable,
   useApi,
   useBreadcrumb,
@@ -32,14 +35,28 @@ export function AnalyticsTechnologiesPage() {
   const { data, fetchData, loading } =
     useApi<AnalyticsTechnologiesResponseModel>();
 
+  const [startDate, setStartDate] = useState(() =>
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10)
+  );
+  const [endDate, setEndDate] = useState(() =>
+    new Date().toISOString().slice(0, 10)
+  );
+
+  const loadTechnologies = useCallback(() => {
+    const params = new URLSearchParams({ startDate, endDate });
+    fetchData(`analytics/events/technologies?${params.toString()}`);
+  }, [fetchData, startDate, endDate]);
+
   useEffect(() => {
     setBreadcrumb([
       { label: t("breadcrumb.home"), path: "/" },
       { label: t("breadcrumb.analytics"), path: "/analytics" },
       { label: t("breadcrumb.technologies"), path: "/analytics/technologies" },
     ]);
-    fetchData("analytics/events/technologies");
-  }, [setBreadcrumb, t, fetchData]);
+    loadTechnologies();
+  }, [setBreadcrumb, t, loadTechnologies]);
 
   const browserData = useMemo(
     () =>
@@ -65,6 +82,36 @@ export function AnalyticsTechnologiesPage() {
 
   return (
     <div className="space-y-4 p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("technologies.dateRange")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:gap-4">
+            <div className="flex flex-col">
+              <Label htmlFor="startDate">{t("technologies.startDate")}</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <Label htmlFor="endDate">{t("technologies.endDate")}</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+            <Button onClick={loadTechnologies} className="md:self-start">
+              {t("technologies.apply")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>{t("technologies.browser")}</CardTitle>

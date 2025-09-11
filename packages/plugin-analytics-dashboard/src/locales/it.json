@@ -25,6 +25,10 @@
     "browser": "Browser",
     "os": "Sistema operativo",
     "device": "Dispositivo",
-    "count": "Conteggio"
+    "count": "Conteggio",
+    "dateRange": "Intervallo date",
+    "startDate": "Data inizio",
+    "endDate": "Data fine",
+    "apply": "Applica"
   }
 }
