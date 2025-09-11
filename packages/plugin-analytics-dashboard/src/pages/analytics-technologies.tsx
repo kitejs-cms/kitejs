@@ -45,33 +45,36 @@ export function AnalyticsTechnologiesPage() {
     new Date().toISOString().slice(0, 10),
   );
   const [jsonOpen, setJsonOpen] = useState(false);
-  const [jsonData, setJsonData] = useState<unknown>({});
+  const [jsonData, setJsonData] = useState<object>({});
 
   const loadTechnologies = useCallback(() => {
     const params = new URLSearchParams({ startDate, endDate });
     fetchData(`analytics/events/technologies?${params.toString()}`);
   }, [fetchData, startDate, endDate]);
 
-  const datasetToCsv = (dataset: unknown) => {
-    if (!Array.isArray(dataset) || dataset.length === 0) return "";
+  const datasetToCsv = (dataset: Record<string, string | number>[]) => {
+    if (dataset.length === 0) return "";
     const keys = Object.keys(dataset[0] ?? {});
-    const rows = (dataset as Record<string, unknown>[]).map((row) =>
+    const rows = dataset.map((row) =>
       keys.map((key) => String(row[key] ?? "")).join(","),
     );
     return [keys.join(","), ...rows].join("\n");
   };
 
-  const openJson = (dataset: unknown) => {
+  const openJson = (dataset: object) => {
     setJsonData(dataset);
     setJsonOpen(true);
   };
 
-  const copyDataset = (dataset: unknown) => {
+  const copyDataset = (dataset: Record<string, string | number>[]) => {
     const csv = datasetToCsv(dataset);
     navigator.clipboard.writeText(csv);
   };
 
-  const downloadDataset = (dataset: unknown, filename: string) => {
+  const downloadDataset = (
+    dataset: Record<string, string | number>[],
+    filename: string,
+  ) => {
     const csv = datasetToCsv(dataset);
     const blob = new Blob([csv], {
       type: "text/csv",
@@ -147,7 +150,7 @@ export function AnalyticsTechnologiesPage() {
         </Button>
       </div>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex items-center justify-between">
+        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             {t("technologies.browser")}
@@ -212,7 +215,7 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex items-center justify-between">
+        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-4 w-4" />
             {t("technologies.os")}
@@ -277,7 +280,7 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex items-center justify-between">
+        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-4 w-4" />
             {t("technologies.device")}
@@ -342,7 +345,7 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <JsonModal
-        data={jsonData ?? {}}
+        data={jsonData}
         isOpen={jsonOpen}
         onClose={() => setJsonOpen(false)}
       />
