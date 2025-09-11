@@ -12,7 +12,13 @@ import {
   useApi,
   useBreadcrumb,
 } from "@kitejs-cms/dashboard-core";
-import { CalendarDays, Globe, Monitor, Smartphone } from "lucide-react";
+import {
+  CalendarDays,
+  FileJson,
+  Globe,
+  Monitor,
+  Smartphone,
+} from "lucide-react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -38,12 +44,10 @@ export function AnalyticsTechnologiesPage() {
     useApi<AnalyticsTechnologiesResponseModel>();
 
   const [startDate, setStartDate] = useState(() =>
-    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10)
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   );
   const [endDate, setEndDate] = useState(() =>
-    new Date().toISOString().slice(0, 10)
+    new Date().toISOString().slice(0, 10),
   );
   const [jsonOpen, setJsonOpen] = useState(false);
 
@@ -85,21 +89,20 @@ export function AnalyticsTechnologiesPage() {
 
   return (
     <div className="space-y-4 p-4">
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={() => setJsonOpen(true)}>
-          {t("technologies.viewJson")}
-        </Button>
-      </div>
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
-              <CalendarDays className="h-5 w-5" />
-            </div>
-            <CardTitle className="text-sm font-semibold">
-              {t("technologies.dateRange")}
-            </CardTitle>
-          </div>
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            {t("technologies.dateRange")}
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setJsonOpen(true)}
+            aria-label={t("technologies.viewJson")}
+          >
+            <FileJson className="h-4 w-4" />
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -135,14 +138,10 @@ export function AnalyticsTechnologiesPage() {
       </Card>
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
-              <Globe className="h-5 w-5" />
-            </div>
-            <CardTitle className="text-sm font-semibold">
-              {t("technologies.browser")}
-            </CardTitle>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            {t("technologies.browser")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -174,14 +173,10 @@ export function AnalyticsTechnologiesPage() {
       </Card>
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
-              <Monitor className="h-5 w-5" />
-            </div>
-            <CardTitle className="text-sm font-semibold">
-              {t("technologies.os")}
-            </CardTitle>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Monitor className="h-4 w-4" />
+            {t("technologies.os")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,14 +208,10 @@ export function AnalyticsTechnologiesPage() {
       </Card>
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
-              <Smartphone className="h-5 w-5" />
-            </div>
-            <CardTitle className="text-sm font-semibold">
-              {t("technologies.device")}
-            </CardTitle>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Smartphone className="h-4 w-4" />
+            {t("technologies.device")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
