@@ -31,7 +31,7 @@
     "endDate": "End date",
     "apply": "Apply",
     "viewJson": "View JSON",
-    "downloadJson": "Download JSON",
-    "copyJson": "Copy JSON"
+    "downloadCsv": "Download CSV",
+    "copyCsv": "Copy CSV"
   }
 }

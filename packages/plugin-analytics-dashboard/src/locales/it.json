@@ -31,7 +31,7 @@
     "endDate": "Data fine",
     "apply": "Applica",
     "viewJson": "Vedi JSON",
-    "downloadJson": "Scarica JSON",
-    "copyJson": "Copia JSON"
+    "downloadCsv": "Scarica CSV",
+    "copyCsv": "Copia CSV"
   }
 }

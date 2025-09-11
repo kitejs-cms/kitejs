@@ -60,18 +60,29 @@ export function AnalyticsTechnologiesPage() {
     fetchData(`analytics/events/technologies?${params.toString()}`);
   }, [fetchData, startDate, endDate]);
 
+  const datasetToCsv = (dataset: unknown) => {
+    if (!Array.isArray(dataset) || dataset.length === 0) return "";
+    const keys = Object.keys(dataset[0] ?? {});
+    const rows = (dataset as Record<string, unknown>[]).map((row) =>
+      keys.map((key) => String(row[key] ?? "")).join(","),
+    );
+    return [keys.join(","), ...rows].join("\n");
+  };
+
   const openJson = (dataset: unknown) => {
     setJsonData(dataset);
     setJsonOpen(true);
   };
 
   const copyDataset = (dataset: unknown) => {
-    navigator.clipboard.writeText(JSON.stringify(dataset, null, 2));
+    const csv = datasetToCsv(dataset);
+    navigator.clipboard.writeText(csv);
   };
 
   const downloadDataset = (dataset: unknown, filename: string) => {
-    const blob = new Blob([JSON.stringify(dataset, null, 2)], {
-      type: "application/json",
+    const csv = datasetToCsv(dataset);
+    const blob = new Blob([csv], {
+      type: "text/csv",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -115,7 +126,7 @@ export function AnalyticsTechnologiesPage() {
   return (
     <div className="space-y-4 p-4">
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
+        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl">
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4" />
             {t("technologies.dateRange")}
@@ -155,7 +166,7 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl flex items-center justify-between">
+        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             {t("technologies.browser")}
@@ -173,8 +184,8 @@ export function AnalyticsTechnologiesPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => downloadDataset(browserData, "browsers.json")}
-              aria-label={t("technologies.downloadJson")}
+              onClick={() => downloadDataset(browserData, "browsers.csv")}
+              aria-label={t("technologies.downloadCsv")}
               className="flex items-center"
             >
               <Download className="h-4 w-4" />
@@ -183,7 +194,7 @@ export function AnalyticsTechnologiesPage() {
               variant="ghost"
               size="sm"
               onClick={() => copyDataset(browserData)}
-              aria-label={t("technologies.copyJson")}
+              aria-label={t("technologies.copyCsv")}
               className="flex items-center"
             >
               <Copy className="h-4 w-4" />
@@ -220,7 +231,7 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl flex items-center justify-between">
+        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-4 w-4" />
             {t("technologies.os")}
@@ -238,8 +249,8 @@ export function AnalyticsTechnologiesPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => downloadDataset(osData, "os.json")}
-              aria-label={t("technologies.downloadJson")}
+              onClick={() => downloadDataset(osData, "os.csv")}
+              aria-label={t("technologies.downloadCsv")}
               className="flex items-center"
             >
               <Download className="h-4 w-4" />
@@ -248,7 +259,7 @@ export function AnalyticsTechnologiesPage() {
               variant="ghost"
               size="sm"
               onClick={() => copyDataset(osData)}
-              aria-label={t("technologies.copyJson")}
+              aria-label={t("technologies.copyCsv")}
               className="flex items-center"
             >
               <Copy className="h-4 w-4" />
@@ -285,7 +296,7 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl flex items-center justify-between">
+        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-4 w-4" />
             {t("technologies.device")}
@@ -303,8 +314,8 @@ export function AnalyticsTechnologiesPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => downloadDataset(deviceData, "devices.json")}
-              aria-label={t("technologies.downloadJson")}
+              onClick={() => downloadDataset(deviceData, "devices.csv")}
+              aria-label={t("technologies.downloadCsv")}
               className="flex items-center"
             >
               <Download className="h-4 w-4" />
@@ -313,7 +324,7 @@ export function AnalyticsTechnologiesPage() {
               variant="ghost"
               size="sm"
               onClick={() => copyDataset(deviceData)}
-              aria-label={t("technologies.copyJson")}
+              aria-label={t("technologies.copyCsv")}
               className="flex items-center"
             >
               <Copy className="h-4 w-4" />
