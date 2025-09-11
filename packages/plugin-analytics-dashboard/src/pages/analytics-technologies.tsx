@@ -104,27 +104,33 @@ export function AnalyticsTechnologiesPage() {
     loadTechnologies();
   }, [loadTechnologies]);
 
-  const browserData = useMemo(
-    () =>
-      Object.entries(data?.browsers ?? {}).map(([key, count]) => ({
-        key,
-        count,
-      })),
-    [data],
-  );
-  const osData = useMemo(
-    () =>
-      Object.entries(data?.os ?? {}).map(([key, count]) => ({ key, count })),
-    [data],
-  );
-  const deviceData = useMemo(
-    () =>
-      Object.entries(data?.devices ?? {}).map(([key, count]) => ({
-        key,
-        count,
-      })),
-    [data],
-  );
+  const browserData = useMemo(() => {
+    const entries = Object.entries(data?.browsers ?? {});
+    const total = entries.reduce((sum, [, count]) => sum + count, 0);
+    return entries.map(([key, count]) => ({
+      key,
+      count,
+      percentage: total ? +((count / total) * 100).toFixed(2) : 0,
+    }));
+  }, [data]);
+  const osData = useMemo(() => {
+    const entries = Object.entries(data?.os ?? {});
+    const total = entries.reduce((sum, [, count]) => sum + count, 0);
+    return entries.map(([key, count]) => ({
+      key,
+      count,
+      percentage: total ? +((count / total) * 100).toFixed(2) : 0,
+    }));
+  }, [data]);
+  const deviceData = useMemo(() => {
+    const entries = Object.entries(data?.devices ?? {});
+    const total = entries.reduce((sum, [, count]) => sum + count, 0);
+    return entries.map(([key, count]) => ({
+      key,
+      count,
+      percentage: total ? +((count / total) * 100).toFixed(2) : 0,
+    }));
+  }, [data]);
 
   return (
     <div className="space-y-6 p-4">
@@ -189,11 +195,11 @@ export function AnalyticsTechnologiesPage() {
                 <PieChart>
                   <Pie
                     data={browserData}
-                    dataKey="count"
+                    dataKey="percentage"
                     nameKey="key"
                     innerRadius="40%"
                     outerRadius="80%"
-                    label
+                    label={({ value }) => `${value.toFixed(1)}%`}
                   >
                     {browserData.map((_, index) => (
                       <Cell
@@ -202,16 +208,32 @@ export function AnalyticsTechnologiesPage() {
                       />
                     ))}
                   </Pie>
-                  <RechartsTooltip />
+                  <RechartsTooltip
+                    formatter={(value: number) => `${value.toFixed(1)}%`}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <DataTable<{ key: string; count: number }>
+            <DataTable<{
+              key: string;
+              count: number;
+              percentage: number;
+            }>
               data={browserData}
               isLoading={loading}
               columns={[
                 { key: "key" as never, label: t("technologies.browser") },
-                { key: "count" as never, label: t("technologies.count") },
+                {
+                  key: "count" as never,
+                  label: t("technologies.count"),
+                  align: "right",
+                },
+                {
+                  key: "percentage" as never,
+                  label: t("technologies.percentage"),
+                  align: "right",
+                  render: (value) => `${value.toFixed(2)}%`,
+                },
               ]}
             />
           </div>
@@ -261,11 +283,11 @@ export function AnalyticsTechnologiesPage() {
                 <PieChart>
                   <Pie
                     data={osData}
-                    dataKey="count"
+                    dataKey="percentage"
                     nameKey="key"
                     innerRadius="40%"
                     outerRadius="80%"
-                    label
+                    label={({ value }) => `${value.toFixed(1)}%`}
                   >
                     {osData.map((_, index) => (
                       <Cell
@@ -274,16 +296,32 @@ export function AnalyticsTechnologiesPage() {
                       />
                     ))}
                   </Pie>
-                  <RechartsTooltip />
+                  <RechartsTooltip
+                    formatter={(value: number) => `${value.toFixed(1)}%`}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <DataTable<{ key: string; count: number }>
+            <DataTable<{
+              key: string;
+              count: number;
+              percentage: number;
+            }>
               data={osData}
               isLoading={loading}
               columns={[
                 { key: "key" as never, label: t("technologies.os") },
-                { key: "count" as never, label: t("technologies.count") },
+                {
+                  key: "count" as never,
+                  label: t("technologies.count"),
+                  align: "right",
+                },
+                {
+                  key: "percentage" as never,
+                  label: t("technologies.percentage"),
+                  align: "right",
+                  render: (value) => `${value.toFixed(2)}%`,
+                },
               ]}
             />
           </div>
@@ -333,11 +371,11 @@ export function AnalyticsTechnologiesPage() {
                 <PieChart>
                   <Pie
                     data={deviceData}
-                    dataKey="count"
+                    dataKey="percentage"
                     nameKey="key"
                     innerRadius="40%"
                     outerRadius="80%"
-                    label
+                    label={({ value }) => `${value.toFixed(1)}%`}
                   >
                     {deviceData.map((_, index) => (
                       <Cell
@@ -346,16 +384,32 @@ export function AnalyticsTechnologiesPage() {
                       />
                     ))}
                   </Pie>
-                  <RechartsTooltip />
+                  <RechartsTooltip
+                    formatter={(value: number) => `${value.toFixed(1)}%`}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <DataTable<{ key: string; count: number }>
+            <DataTable<{
+              key: string;
+              count: number;
+              percentage: number;
+            }>
               data={deviceData}
               isLoading={loading}
               columns={[
                 { key: "key" as never, label: t("technologies.device") },
-                { key: "count" as never, label: t("technologies.count") },
+                {
+                  key: "count" as never,
+                  label: t("technologies.count"),
+                  align: "right",
+                },
+                {
+                  key: "percentage" as never,
+                  label: t("technologies.percentage"),
+                  align: "right",
+                  render: (value) => `${value.toFixed(2)}%`,
+                },
               ]}
             />
           </div>

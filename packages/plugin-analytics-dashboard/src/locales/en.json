@@ -26,6 +26,7 @@
     "os": "OS",
     "device": "Device",
     "count": "Count",
+    "percentage": "Percentage",
     "dateRange": "Date range",
     "viewJson": "View JSON",
     "downloadCsv": "Download CSV",

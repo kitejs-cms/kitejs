@@ -26,6 +26,7 @@
     "os": "Sistema operativo",
     "device": "Dispositivo",
     "count": "Conteggio",
+    "percentage": "Percentuale",
     "dateRange": "Intervallo date",
     "viewJson": "Vedi JSON",
     "downloadCsv": "Scarica CSV",
