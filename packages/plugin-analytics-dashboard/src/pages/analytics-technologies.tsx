@@ -12,6 +12,7 @@ import {
   useApi,
   useBreadcrumb,
 } from "@kitejs-cms/dashboard-core";
+import { CalendarDays, Globe, Monitor, Smartphone } from "lucide-react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -22,11 +23,11 @@ import {
 import type { AnalyticsTechnologiesResponseModel } from "@kitejs-cms/plugin-analytics-api";
 
 const CHART_COLORS = [
-  "var(--color-chart-1)",
-  "var(--color-chart-2)",
-  "var(--color-chart-3)",
-  "var(--color-chart-4)",
-  "var(--color-chart-5)",
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
 ];
 
 export function AnalyticsTechnologiesPage() {
@@ -84,29 +85,42 @@ export function AnalyticsTechnologiesPage() {
     <div className="space-y-4 p-4">
       <Card>
         <CardHeader>
-          <CardTitle>{t("technologies.dateRange")}</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
+              <CalendarDays className="h-5 w-5" />
+            </div>
+            <CardTitle className="text-sm font-semibold">
+              {t("technologies.dateRange")}
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-2 md:flex-row md:items-end md:gap-4">
-            <div className="flex flex-col">
-              <Label htmlFor="startDate">{t("technologies.startDate")}</Label>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="flex flex-col flex-1">
+              <Label htmlFor="startDate" className="text-xs">
+                {t("technologies.startDate")}
+              </Label>
               <Input
                 id="startDate"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                className="mt-1"
               />
             </div>
-            <div className="flex flex-col">
-              <Label htmlFor="endDate">{t("technologies.endDate")}</Label>
+            <div className="flex flex-col flex-1">
+              <Label htmlFor="endDate" className="text-xs">
+                {t("technologies.endDate")}
+              </Label>
               <Input
                 id="endDate"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                className="mt-1"
               />
             </div>
-            <Button onClick={loadTechnologies} className="md:self-start">
+            <Button onClick={loadTechnologies} className="sm:ml-2">
               {t("technologies.apply")}
             </Button>
           </div>
@@ -114,7 +128,14 @@ export function AnalyticsTechnologiesPage() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>{t("technologies.browser")}</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
+              <Globe className="h-5 w-5" />
+            </div>
+            <CardTitle className="text-sm font-semibold">
+              {t("technologies.browser")}
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -146,7 +167,14 @@ export function AnalyticsTechnologiesPage() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>{t("technologies.os")}</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
+              <Monitor className="h-5 w-5" />
+            </div>
+            <CardTitle className="text-sm font-semibold">
+              {t("technologies.os")}
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,7 +206,14 @@ export function AnalyticsTechnologiesPage() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>{t("technologies.device")}</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-gray-400 to-gray-600 text-white">
+              <Smartphone className="h-5 w-5" />
+            </div>
+            <CardTitle className="text-sm font-semibold">
+              {t("technologies.device")}
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
