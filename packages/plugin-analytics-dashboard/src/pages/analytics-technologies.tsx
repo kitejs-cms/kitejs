@@ -191,7 +191,14 @@ export function AnalyticsTechnologiesPage() {
             <div className="h-80 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={browserData} dataKey="count" nameKey="key" label>
+                  <Pie
+                    data={browserData}
+                    dataKey="count"
+                    nameKey="key"
+                    innerRadius="60%"
+                    outerRadius="80%"
+                    label
+                  >
                     {browserData.map((_, index) => (
                       <Cell
                         key={`browser-cell-${index}`}
@@ -256,7 +263,14 @@ export function AnalyticsTechnologiesPage() {
             <div className="h-80 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={osData} dataKey="count" nameKey="key" label>
+                  <Pie
+                    data={osData}
+                    dataKey="count"
+                    nameKey="key"
+                    innerRadius="60%"
+                    outerRadius="80%"
+                    label
+                  >
                     {osData.map((_, index) => (
                       <Cell
                         key={`os-cell-${index}`}
@@ -321,7 +335,14 @@ export function AnalyticsTechnologiesPage() {
             <div className="h-80 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={deviceData} dataKey="count" nameKey="key" label>
+                  <Pie
+                    data={deviceData}
+                    dataKey="count"
+                    nameKey="key"
+                    innerRadius="60%"
+                    outerRadius="80%"
+                    label
+                  >
                     {deviceData.map((_, index) => (
                       <Cell
                         key={`device-cell-${index}`}
