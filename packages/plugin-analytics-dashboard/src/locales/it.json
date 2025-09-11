@@ -29,6 +29,7 @@
     "dateRange": "Intervallo date",
     "viewJson": "Vedi JSON",
     "downloadCsv": "Scarica CSV",
-    "copyCsv": "Copia CSV"
+    "copyCsv": "Copia CSV",
+    "selectedRange": "Ultimi {{days}} giorni"
   }
 }

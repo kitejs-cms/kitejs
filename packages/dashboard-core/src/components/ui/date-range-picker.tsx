@@ -29,6 +29,12 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
   const [open, setOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    if (value?.from && value?.to) {
+      setOpen(false);
+    }
+  }, [value]);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

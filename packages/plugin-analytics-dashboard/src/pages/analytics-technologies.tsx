@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { differenceInCalendarDays } from "date-fns";
 import { useTranslation } from "react-i18next";
 import {
   Card,
@@ -37,7 +38,7 @@ export function AnalyticsTechnologiesPage() {
   const { data, fetchData, loading } =
     useApi<AnalyticsTechnologiesResponseModel>();
 
-  const [range, setRange] = useState<{ from: Date; to: Date }>(
+  const [range, setRange] = useState<{ from?: Date; to?: Date }>(
     () => ({
       from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
       to: new Date(),
@@ -127,14 +128,22 @@ export function AnalyticsTechnologiesPage() {
 
   return (
     <div className="space-y-6 p-4">
-      <div>
+      <div className="flex items-center gap-2">
         <DateRangePicker
           value={range}
-          onChange={(r) => r?.from && r?.to && setRange(r)}
-          numberOfMonths={1}
+          onChange={(r) => setRange(r ?? {})}
+          numberOfMonths={2}
           placeholder={t("technologies.dateRange")}
           className="w-[260px]"
         />
+        {range.from && range.to && (
+          <span className="text-sm text-muted-foreground">
+            {t("technologies.selectedRange", {
+              days:
+                differenceInCalendarDays(range.to, range.from) + 1,
+            })}
+          </span>
+        )}
       </div>
       <Card className="shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
