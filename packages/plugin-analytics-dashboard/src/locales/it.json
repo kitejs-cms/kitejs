@@ -26,9 +26,9 @@
     "os": "Sistema operativo",
     "device": "Dispositivo",
     "count": "Conteggio",
-    "startDate": "Data inizio",
-    "endDate": "Data fine",
-    "apply": "Applica",
+    "last7Days": "Ultimi 7 giorni",
+    "last30Days": "Ultimi 30 giorni",
+    "customRange": "Filtra per date",
     "viewJson": "Vedi JSON",
     "downloadCsv": "Scarica CSV",
     "copyCsv": "Copia CSV"

@@ -7,8 +7,12 @@ import {
   CardContent,
   Separator,
   Button,
-  Input,
-  Label,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Calendar,
   DataTable,
   useApi,
   useBreadcrumb,
@@ -44,6 +48,15 @@ export function AnalyticsTechnologiesPage() {
   const [endDate, setEndDate] = useState(() =>
     new Date().toISOString().slice(0, 10),
   );
+  const [rangePreset, setRangePreset] = useState<"7" | "30" | "custom">("30");
+  const [customRange, setCustomRange] = useState<{
+    from?: Date;
+    to?: Date;
+  }>({
+    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    to: new Date(),
+  });
+  const [showCalendar, setShowCalendar] = useState(false);
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
 
@@ -87,14 +100,43 @@ export function AnalyticsTechnologiesPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleRangeChange = (value: string) => {
+    if (value === "custom") {
+      setRangePreset("custom");
+      setShowCalendar(true);
+      return;
+    }
+    setRangePreset(value as "7" | "30");
+    const end = new Date();
+    const start = new Date(
+      end.getTime() - Number(value) * 24 * 60 * 60 * 1000,
+    );
+    setStartDate(start.toISOString().slice(0, 10));
+    setEndDate(end.toISOString().slice(0, 10));
+    setShowCalendar(false);
+  };
+
+  const handleCalendarSelect = (range?: { from?: Date; to?: Date }) => {
+    setCustomRange(range ?? {});
+    if (range?.from && range?.to) {
+      setStartDate(range.from.toISOString().slice(0, 10));
+      setEndDate(range.to.toISOString().slice(0, 10));
+      setRangePreset("custom");
+      setShowCalendar(false);
+    }
+  };
+
   useEffect(() => {
     setBreadcrumb([
       { label: t("breadcrumb.home"), path: "/" },
       { label: t("breadcrumb.analytics"), path: "/analytics" },
       { label: t("breadcrumb.technologies"), path: "/analytics/technologies" },
     ]);
+  }, [setBreadcrumb, t]);
+
+  useEffect(() => {
     loadTechnologies();
-  }, [setBreadcrumb, t, loadTechnologies]);
+  }, [loadTechnologies]);
 
   const browserData = useMemo(
     () =>
@@ -119,35 +161,28 @@ export function AnalyticsTechnologiesPage() {
   );
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-        <div className="flex flex-col flex-1">
-          <Label htmlFor="startDate" className="text-xs">
-            {t("technologies.startDate")}
-          </Label>
-          <Input
-            id="startDate"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="mt-1"
-          />
-        </div>
-        <div className="flex flex-col flex-1">
-          <Label htmlFor="endDate" className="text-xs">
-            {t("technologies.endDate")}
-          </Label>
-          <Input
-            id="endDate"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="mt-1"
-          />
-        </div>
-        <Button onClick={loadTechnologies} className="sm:ml-2">
-          {t("technologies.apply")}
-        </Button>
+    <div className="space-y-6 p-4">
+      <div>
+        <Select value={rangePreset} onValueChange={handleRangeChange}>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">{t("technologies.last7Days")}</SelectItem>
+            <SelectItem value="30">{t("technologies.last30Days")}</SelectItem>
+            <SelectItem value="custom">{t("technologies.customRange")}</SelectItem>
+          </SelectContent>
+        </Select>
+        {showCalendar && (
+          <div className="mt-2 border rounded-md w-fit">
+            <Calendar
+              mode="range"
+              selected={customRange}
+              onSelect={handleCalendarSelect}
+              numberOfMonths={1}
+            />
+          </div>
+        )}
       </div>
       <Card className="shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
@@ -195,7 +230,7 @@ export function AnalyticsTechnologiesPage() {
                     data={browserData}
                     dataKey="count"
                     nameKey="key"
-                    innerRadius="60%"
+                    innerRadius="40%"
                     outerRadius="80%"
                     label
                   >
@@ -267,7 +302,7 @@ export function AnalyticsTechnologiesPage() {
                     data={osData}
                     dataKey="count"
                     nameKey="key"
-                    innerRadius="60%"
+                    innerRadius="40%"
                     outerRadius="80%"
                     label
                   >
@@ -339,7 +374,7 @@ export function AnalyticsTechnologiesPage() {
                     data={deviceData}
                     dataKey="count"
                     nameKey="key"
-                    innerRadius="60%"
+                    innerRadius="40%"
                     outerRadius="80%"
                     label
                   >

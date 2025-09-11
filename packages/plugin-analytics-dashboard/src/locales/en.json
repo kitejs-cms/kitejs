@@ -26,9 +26,9 @@
     "os": "OS",
     "device": "Device",
     "count": "Count",
-    "startDate": "Start date",
-    "endDate": "End date",
-    "apply": "Apply",
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "customRange": "Custom range",
     "viewJson": "View JSON",
     "downloadCsv": "Download CSV",
     "copyCsv": "Copy CSV"
