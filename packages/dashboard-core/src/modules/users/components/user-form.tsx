@@ -74,7 +74,14 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
   };
 
   return (
-    <Dialog onClose={onClose} open={isOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="p-0 bg-white rounded-lg shadow-lg flex flex-col">
         <DialogHeader className="flex flex-row justify-between items-center p-4">
           <DialogTitle className="text-xl font-semibold text-gray-900">
