@@ -26,10 +26,11 @@
     "os": "OS",
     "device": "Device",
     "count": "Count",
+    "percentage": "Percentage",
     "dateRange": "Date range",
-    "startDate": "Start date",
-    "endDate": "End date",
-    "apply": "Apply",
-    "viewJson": "View JSON"
+    "viewJson": "View JSON",
+    "downloadCsv": "Download CSV",
+    "copyCsv": "Copy CSV",
+    "selectedRange": "Last {{days}} days"
   }
 }

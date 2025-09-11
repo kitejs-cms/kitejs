@@ -26,10 +26,11 @@
     "os": "Sistema operativo",
     "device": "Dispositivo",
     "count": "Conteggio",
+    "percentage": "Percentuale",
     "dateRange": "Intervallo date",
-    "startDate": "Data inizio",
-    "endDate": "Data fine",
-    "apply": "Applica",
-    "viewJson": "Vedi JSON"
+    "viewJson": "Vedi JSON",
+    "downloadCsv": "Scarica CSV",
+    "copyCsv": "Copia CSV",
+    "selectedRange": "Ultimi {{days}} giorni"
   }
 }
