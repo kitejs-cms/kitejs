@@ -4,8 +4,12 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "sideEffects": ["**/*.css"],
-  "files": ["dist"],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -38,7 +42,8 @@
     "react-router-dom": "^7.2.0"
   },
   "dependencies": {
-    "lucide-react": "^0.475.0"
+    "lucide-react": "^0.475.0",
+    "recharts": "^2.12.0"
   },
   "devDependencies": {
     "@kitejs-cms/plugin-analytics-api": "workspace:*",
