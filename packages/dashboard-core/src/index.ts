@@ -22,6 +22,7 @@ export * from "./components/ui/alert-dialog";
 export * from "./components/ui/switch";
 export * from "./components/ui/tabs";
 export * from "./components/ui/calendar";
+export * from "./components/ui/date-range-picker";
 export * from "./components/tag-input";
 export * from "./components/html-editor/html-editor";
 export * from "./components/skeleton-page";

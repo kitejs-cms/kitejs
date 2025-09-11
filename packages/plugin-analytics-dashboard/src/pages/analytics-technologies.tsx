@@ -7,13 +7,8 @@ import {
   CardContent,
   Separator,
   Button,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-  Calendar,
   DataTable,
+  DateRangePicker,
   useApi,
   useBreadcrumb,
 } from "@kitejs-cms/dashboard-core";
@@ -42,28 +37,23 @@ export function AnalyticsTechnologiesPage() {
   const { data, fetchData, loading } =
     useApi<AnalyticsTechnologiesResponseModel>();
 
-  const [startDate, setStartDate] = useState(() =>
-    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+  const [range, setRange] = useState<{ from: Date; to: Date }>(
+    () => ({
+      from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      to: new Date(),
+    }),
   );
-  const [endDate, setEndDate] = useState(() =>
-    new Date().toISOString().slice(0, 10),
-  );
-  const [rangePreset, setRangePreset] = useState<"7" | "30" | "custom">("30");
-  const [customRange, setCustomRange] = useState<{
-    from?: Date;
-    to?: Date;
-  }>({
-    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    to: new Date(),
-  });
-  const [showCalendar, setShowCalendar] = useState(false);
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
 
   const loadTechnologies = useCallback(() => {
-    const params = new URLSearchParams({ startDate, endDate });
+    if (!range.from || !range.to) return;
+    const params = new URLSearchParams({
+      startDate: range.from.toISOString().slice(0, 10),
+      endDate: range.to.toISOString().slice(0, 10),
+    });
     fetchData(`analytics/events/technologies?${params.toString()}`);
-  }, [fetchData, startDate, endDate]);
+  }, [fetchData, range]);
 
   const datasetToCsv = (dataset: Record<string, string | number>[]) => {
     if (dataset.length === 0) return "";
@@ -100,31 +90,6 @@ export function AnalyticsTechnologiesPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handleRangeChange = (value: string) => {
-    if (value === "custom") {
-      setRangePreset("custom");
-      setShowCalendar(true);
-      return;
-    }
-    setRangePreset(value as "7" | "30");
-    const end = new Date();
-    const start = new Date(
-      end.getTime() - Number(value) * 24 * 60 * 60 * 1000,
-    );
-    setStartDate(start.toISOString().slice(0, 10));
-    setEndDate(end.toISOString().slice(0, 10));
-    setShowCalendar(false);
-  };
-
-  const handleCalendarSelect = (range?: { from?: Date; to?: Date }) => {
-    setCustomRange(range ?? {});
-    if (range?.from && range?.to) {
-      setStartDate(range.from.toISOString().slice(0, 10));
-      setEndDate(range.to.toISOString().slice(0, 10));
-      setRangePreset("custom");
-      setShowCalendar(false);
-    }
-  };
 
   useEffect(() => {
     setBreadcrumb([
@@ -163,26 +128,13 @@ export function AnalyticsTechnologiesPage() {
   return (
     <div className="space-y-6 p-4">
       <div>
-        <Select value={rangePreset} onValueChange={handleRangeChange}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7">{t("technologies.last7Days")}</SelectItem>
-            <SelectItem value="30">{t("technologies.last30Days")}</SelectItem>
-            <SelectItem value="custom">{t("technologies.customRange")}</SelectItem>
-          </SelectContent>
-        </Select>
-        {showCalendar && (
-          <div className="mt-2 border rounded-md w-fit">
-            <Calendar
-              mode="range"
-              selected={customRange}
-              onSelect={handleCalendarSelect}
-              numberOfMonths={1}
-            />
-          </div>
-        )}
+        <DateRangePicker
+          value={range}
+          onChange={(r) => r?.from && r?.to && setRange(r)}
+          numberOfMonths={1}
+          placeholder={t("technologies.dateRange")}
+          className="w-[260px]"
+        />
       </div>
       <Card className="shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
