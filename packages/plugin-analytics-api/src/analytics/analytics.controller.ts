@@ -27,9 +27,7 @@ import {
   parseQuery,
   createMetaModel,
 } from "@kitejs-cms/core";
-import {
-  ANALYTICS_PLUGIN_NAMESPACE,
-} from "../constants";
+import { ANALYTICS_PLUGIN_NAMESPACE } from "../constants";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -204,8 +202,12 @@ export class AnalyticsController {
   @ApiQuery({ name: "endDate", required: false, type: String })
   async getTechnologies(@Query() query: Record<string, string>) {
     const { filter } = parseQuery(query, {
-      allowedFilters: ["type", "identifier"],
+      allowedFilters: ["type", "identifier", "startDate", "endDate"],
     });
+
+    delete filter.startDate;
+    delete filter.endDate;
+
     const typedFilter = filter as {
       type?: string;
       identifier?: string;

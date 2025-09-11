@@ -1,6 +1,8 @@
+import type { AnalyticsTechnologiesResponseModel } from "@kitejs-cms/plugin-analytics-api";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { differenceInCalendarDays } from "date-fns";
+import { DatePicker } from "../components/date-picker";
 import { useTranslation } from "react-i18next";
+import type { DateRange } from "react-day-picker";
 import {
   Card,
   CardHeader,
@@ -9,11 +11,18 @@ import {
   Separator,
   Button,
   DataTable,
-  DateRangePicker,
   useApi,
   useBreadcrumb,
+  JsonModal,
 } from "@kitejs-cms/dashboard-core";
-import { FileJson, Globe, Monitor, Smartphone, Download, Copy } from "lucide-react";
+import {
+  FileJson,
+  Globe,
+  Monitor,
+  Smartphone,
+  Download,
+  Copy,
+} from "lucide-react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -21,16 +30,11 @@ import {
   Cell,
   Tooltip as RechartsTooltip,
 } from "recharts";
-import type { AnalyticsTechnologiesResponseModel } from "@kitejs-cms/plugin-analytics-api";
-import { JsonModal } from "@kitejs-cms/dashboard-core/components/json-modal";
 
-const CHART_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-];
+export const CHART_COLORS = Array.from(
+  { length: 10 },
+  (_, i) => `var(--chart-${i + 1})`
+);
 
 export function AnalyticsTechnologiesPage() {
   const { t } = useTranslation("analytics");
@@ -38,17 +42,16 @@ export function AnalyticsTechnologiesPage() {
   const { data, fetchData, loading } =
     useApi<AnalyticsTechnologiesResponseModel>();
 
-  const [range, setRange] = useState<{ from?: Date; to?: Date }>(
-    () => ({
-      from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      to: new Date(),
-    }),
-  );
+  const [range, setRange] = useState<DateRange | undefined>(() => ({
+    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    to: new Date(),
+  }));
+
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
 
   const loadTechnologies = useCallback(() => {
-    if (!range.from || !range.to) return;
+    if (!range?.from || !range?.to) return;
     const params = new URLSearchParams({
       startDate: range.from.toISOString().slice(0, 10),
       endDate: range.to.toISOString().slice(0, 10),
@@ -60,7 +63,7 @@ export function AnalyticsTechnologiesPage() {
     if (dataset.length === 0) return "";
     const keys = Object.keys(dataset[0] ?? {});
     const rows = dataset.map((row) =>
-      keys.map((key) => String(row[key] ?? "")).join(","),
+      keys.map((key) => String(row[key] ?? "")).join(",")
     );
     return [keys.join(","), ...rows].join("\n");
   };
@@ -77,12 +80,10 @@ export function AnalyticsTechnologiesPage() {
 
   const downloadDataset = (
     dataset: Record<string, string | number>[],
-    filename: string,
+    filename: string
   ) => {
     const csv = datasetToCsv(dataset);
-    const blob = new Blob([csv], {
-      type: "text/csv",
-    });
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -90,7 +91,6 @@ export function AnalyticsTechnologiesPage() {
     link.click();
     URL.revokeObjectURL(url);
   };
-
 
   useEffect(() => {
     setBreadcrumb([
@@ -113,6 +113,7 @@ export function AnalyticsTechnologiesPage() {
       percentage: total ? +((count / total) * 100).toFixed(2) : 0,
     }));
   }, [data]);
+
   const osData = useMemo(() => {
     const entries = Object.entries(data?.os ?? {});
     const total = entries.reduce((sum, [, count]) => sum + count, 0);
@@ -122,6 +123,7 @@ export function AnalyticsTechnologiesPage() {
       percentage: total ? +((count / total) * 100).toFixed(2) : 0,
     }));
   }, [data]);
+
   const deviceData = useMemo(() => {
     const entries = Object.entries(data?.devices ?? {});
     const total = entries.reduce((sum, [, count]) => sum + count, 0);
@@ -134,23 +136,8 @@ export function AnalyticsTechnologiesPage() {
 
   return (
     <div className="space-y-6 p-4">
-      <div className="flex items-center gap-2">
-        <DateRangePicker
-          value={range}
-          onChange={(r) => setRange(r ?? {})}
-          numberOfMonths={2}
-          placeholder={t("technologies.dateRange")}
-          className="w-[260px]"
-        />
-        {range.from && range.to && (
-          <span className="text-sm text-muted-foreground">
-            {t("technologies.selectedRange", {
-              days:
-                differenceInCalendarDays(range.to, range.from) + 1,
-            })}
-          </span>
-        )}
-      </div>
+      <DatePicker value={range} onValueChange={setRange} />
+
       <Card className="shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
@@ -232,13 +219,15 @@ export function AnalyticsTechnologiesPage() {
                   key: "percentage" as never,
                   label: t("technologies.percentage"),
                   align: "right",
-                  render: (value) => `${value.toFixed(2)}%`,
+                  render: (value) =>
+                    typeof value === "number" ? `${value.toFixed(2)}%` : value,
                 },
               ]}
             />
           </div>
         </CardContent>
       </Card>
+
       <Card className="shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
@@ -320,13 +309,15 @@ export function AnalyticsTechnologiesPage() {
                   key: "percentage" as never,
                   label: t("technologies.percentage"),
                   align: "right",
-                  render: (value) => `${value.toFixed(2)}%`,
+                  render: (value) =>
+                    typeof value === "number" ? `${value.toFixed(2)}%` : value,
                 },
               ]}
             />
           </div>
         </CardContent>
       </Card>
+
       <Card className="shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
@@ -408,13 +399,15 @@ export function AnalyticsTechnologiesPage() {
                   key: "percentage" as never,
                   label: t("technologies.percentage"),
                   align: "right",
-                  render: (value) => `${value.toFixed(2)}%`,
+                  render: (value) =>
+                    typeof value === "number" ? `${value.toFixed(2)}%` : value,
                 },
               ]}
             />
           </div>
         </CardContent>
       </Card>
+
       <JsonModal
         data={jsonData}
         isOpen={jsonOpen}

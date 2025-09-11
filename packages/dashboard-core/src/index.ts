@@ -22,7 +22,6 @@ export * from "./components/ui/alert-dialog";
 export * from "./components/ui/switch";
 export * from "./components/ui/tabs";
 export * from "./components/ui/calendar";
-export * from "./components/ui/date-range-picker";
 export * from "./components/tag-input";
 export * from "./components/html-editor/html-editor";
 export * from "./components/skeleton-page";
@@ -30,6 +29,7 @@ export * from "./components/multi-select";
 export * from "./components/file-uploader";
 export * from "./components/filter-modal";
 export * from "./components/data-table";
+export * from "./components/json-modal";
 
 /* Provider */
 export * from "./dashboard-provider";
@@ -63,3 +63,4 @@ export * from "./context/loading-context";
 
 /* Utils */
 export * from "./lib/generate-id";
+export * from "./lib/utils";
