@@ -13,15 +13,7 @@ import {
   useApi,
   useBreadcrumb,
 } from "@kitejs-cms/dashboard-core";
-import {
-  CalendarDays,
-  FileJson,
-  Globe,
-  Monitor,
-  Smartphone,
-  Download,
-  Copy,
-} from "lucide-react";
+import { FileJson, Globe, Monitor, Smartphone, Download, Copy } from "lucide-react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -125,46 +117,35 @@ export function AnalyticsTechnologiesPage() {
 
   return (
     <div className="space-y-4 p-4">
-      <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl">
-          <CardTitle className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" />
-            {t("technologies.dateRange")}
-          </CardTitle>
-        </CardHeader>
-        <Separator />
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="flex flex-col flex-1">
-              <Label htmlFor="startDate" className="text-xs">
-                {t("technologies.startDate")}
-              </Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div className="flex flex-col flex-1">
-              <Label htmlFor="endDate" className="text-xs">
-                {t("technologies.endDate")}
-              </Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <Button onClick={loadTechnologies} className="sm:ml-2">
-              {t("technologies.apply")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+        <div className="flex flex-col flex-1">
+          <Label htmlFor="startDate" className="text-xs">
+            {t("technologies.startDate")}
+          </Label>
+          <Input
+            id="startDate"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+        <div className="flex flex-col flex-1">
+          <Label htmlFor="endDate" className="text-xs">
+            {t("technologies.endDate")}
+          </Label>
+          <Input
+            id="endDate"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+        <Button onClick={loadTechnologies} className="sm:ml-2">
+          {t("technologies.apply")}
+        </Button>
+      </div>
       <Card className="shadow-neutral-50 gap-0 py-0">
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">

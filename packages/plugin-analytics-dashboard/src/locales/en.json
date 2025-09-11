@@ -26,7 +26,6 @@
     "os": "OS",
     "device": "Device",
     "count": "Count",
-    "dateRange": "Date range",
     "startDate": "Start date",
     "endDate": "End date",
     "apply": "Apply",
