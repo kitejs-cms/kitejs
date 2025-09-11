@@ -30,6 +30,8 @@
     "startDate": "Start date",
     "endDate": "End date",
     "apply": "Apply",
-    "viewJson": "View JSON"
+    "viewJson": "View JSON",
+    "downloadJson": "Download JSON",
+    "copyJson": "Copy JSON"
   }
 }

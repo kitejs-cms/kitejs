@@ -19,6 +19,8 @@ import {
   Globe,
   Monitor,
   Smartphone,
+  Download,
+  Copy,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -51,11 +53,33 @@ export function AnalyticsTechnologiesPage() {
     new Date().toISOString().slice(0, 10),
   );
   const [jsonOpen, setJsonOpen] = useState(false);
+  const [jsonData, setJsonData] = useState<unknown>({});
 
   const loadTechnologies = useCallback(() => {
     const params = new URLSearchParams({ startDate, endDate });
     fetchData(`analytics/events/technologies?${params.toString()}`);
   }, [fetchData, startDate, endDate]);
+
+  const openJson = (dataset: unknown) => {
+    setJsonData(dataset);
+    setJsonOpen(true);
+  };
+
+  const copyDataset = (dataset: unknown) => {
+    navigator.clipboard.writeText(JSON.stringify(dataset, null, 2));
+  };
+
+  const downloadDataset = (dataset: unknown, filename: string) => {
+    const blob = new Blob([JSON.stringify(dataset, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     setBreadcrumb([
@@ -91,20 +115,11 @@ export function AnalyticsTechnologiesPage() {
   return (
     <div className="space-y-4 p-4">
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl flex items-center justify-between">
+        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4" />
             {t("technologies.dateRange")}
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setJsonOpen(true)}
-            aria-label={t("technologies.viewJson")}
-            className="flex items-center"
-          >
-            <FileJson className="h-4 w-4" />
-          </Button>
         </CardHeader>
         <Separator />
         <CardContent className="p-6">
@@ -140,16 +155,45 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
+        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             {t("technologies.browser")}
           </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openJson(browserData)}
+              aria-label={t("technologies.viewJson")}
+              className="flex items-center"
+            >
+              <FileJson className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => downloadDataset(browserData, "browsers.json")}
+              aria-label={t("technologies.downloadJson")}
+              className="flex items-center"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => copyDataset(browserData)}
+              aria-label={t("technologies.copyJson")}
+              className="flex items-center"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <Separator />
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-64">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+            <div className="h-80 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={browserData} dataKey="count" nameKey="key" label>
@@ -176,16 +220,45 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
+        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-4 w-4" />
             {t("technologies.os")}
           </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openJson(osData)}
+              aria-label={t("technologies.viewJson")}
+              className="flex items-center"
+            >
+              <FileJson className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => downloadDataset(osData, "os.json")}
+              aria-label={t("technologies.downloadJson")}
+              className="flex items-center"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => copyDataset(osData)}
+              aria-label={t("technologies.copyJson")}
+              className="flex items-center"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <Separator />
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-64">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+            <div className="h-80 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={osData} dataKey="count" nameKey="key" label>
@@ -212,16 +285,45 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
+        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-4 w-4" />
             {t("technologies.device")}
           </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openJson(deviceData)}
+              aria-label={t("technologies.viewJson")}
+              className="flex items-center"
+            >
+              <FileJson className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => downloadDataset(deviceData, "devices.json")}
+              aria-label={t("technologies.downloadJson")}
+              className="flex items-center"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => copyDataset(deviceData)}
+              aria-label={t("technologies.copyJson")}
+              className="flex items-center"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <Separator />
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-64">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+            <div className="h-80 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={deviceData} dataKey="count" nameKey="key" label>
@@ -248,7 +350,7 @@ export function AnalyticsTechnologiesPage() {
         </CardContent>
       </Card>
       <JsonModal
-        data={data ?? {}}
+        data={jsonData ?? {}}
         isOpen={jsonOpen}
         onClose={() => setJsonOpen(false)}
       />
