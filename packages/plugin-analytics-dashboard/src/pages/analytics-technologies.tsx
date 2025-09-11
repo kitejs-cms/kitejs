@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  Separator,
   Button,
   Input,
   Label,
@@ -89,8 +90,8 @@ export function AnalyticsTechnologiesPage() {
 
   return (
     <div className="space-y-4 p-4">
-      <Card>
-        <CardHeader className="flex items-center justify-between">
+      <Card className="shadow-neutral-50 gap-0 py-0">
+        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4" />
             {t("technologies.dateRange")}
@@ -100,11 +101,13 @@ export function AnalyticsTechnologiesPage() {
             size="sm"
             onClick={() => setJsonOpen(true)}
             aria-label={t("technologies.viewJson")}
+            className="flex items-center"
           >
             <FileJson className="h-4 w-4" />
           </Button>
         </CardHeader>
-        <CardContent>
+        <Separator />
+        <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex flex-col flex-1">
               <Label htmlFor="startDate" className="text-xs">
@@ -136,14 +139,15 @@ export function AnalyticsTechnologiesPage() {
           </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
+      <Card className="shadow-neutral-50 gap-0 py-0">
+        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             {t("technologies.browser")}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <Separator />
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -171,14 +175,15 @@ export function AnalyticsTechnologiesPage() {
           </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
+      <Card className="shadow-neutral-50 gap-0 py-0">
+        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-4 w-4" />
             {t("technologies.os")}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <Separator />
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -206,14 +211,15 @@ export function AnalyticsTechnologiesPage() {
           </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
+      <Card className="shadow-neutral-50 gap-0 py-0">
+        <CardHeader className="bg-neutral-50 py-4 rounded-t-xl">
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-4 w-4" />
             {t("technologies.device")}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <Separator />
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
