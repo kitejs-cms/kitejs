@@ -25,6 +25,12 @@
     "browser": "Browser",
     "os": "OS",
     "device": "Device",
-    "count": "Count"
+    "count": "Count",
+    "percentage": "Percentage",
+    "dateRange": "Date range",
+    "viewJson": "View JSON",
+    "downloadCsv": "Download CSV",
+    "copyCsv": "Copy CSV",
+    "selectedRange": "Last {{days}} days"
   }
 }

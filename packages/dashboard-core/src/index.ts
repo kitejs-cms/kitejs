@@ -29,6 +29,7 @@ export * from "./components/multi-select";
 export * from "./components/file-uploader";
 export * from "./components/filter-modal";
 export * from "./components/data-table";
+export * from "./components/json-modal";
 
 /* Provider */
 export * from "./dashboard-provider";
@@ -62,3 +63,4 @@ export * from "./context/loading-context";
 
 /* Utils */
 export * from "./lib/generate-id";
+export * from "./lib/utils";

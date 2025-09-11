@@ -160,4 +160,55 @@ export class AnalyticsService {
       throw new BadRequestException(`Failed to aggregate events. ${message}`);
     }
   }
+
+  async getTechnologies(
+    filter: {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    } = {},
+  ): Promise<{
+    browsers: Record<string, number>;
+    os: Record<string, number>;
+    devices: Record<string, number>;
+  }> {
+    try {
+      const match = filter;
+      const aggregateField = (field: string) =>
+        this.eventModel
+          .aggregate<{ _id: string; count: number }>([
+            { $match: match },
+            { $group: { _id: `$${field}`, count: { $sum: 1 } } },
+          ])
+          .exec();
+
+      const [browsersAgg, osAgg, devicesAgg] = await Promise.all([
+        aggregateField("browser"),
+        aggregateField("os"),
+        aggregateField("device"),
+      ]);
+
+      const browsers: Record<string, number> = {};
+      for (const { _id, count } of browsersAgg) {
+        if (_id) browsers[_id] = count;
+      }
+
+      const os: Record<string, number> = {};
+      for (const { _id, count } of osAgg) {
+        if (_id) os[_id] = count;
+      }
+
+      const devices: Record<string, number> = {};
+      for (const { _id, count } of devicesAgg) {
+        if (_id) devices[_id] = count;
+      }
+
+      return { browsers, os, devices };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to aggregate technologies. ${message}`,
+      );
+    }
+  }
 }
