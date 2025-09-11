@@ -29,6 +29,7 @@
     "dateRange": "Date range",
     "startDate": "Start date",
     "endDate": "End date",
-    "apply": "Apply"
+    "apply": "Apply",
+    "viewJson": "View JSON"
   }
 }

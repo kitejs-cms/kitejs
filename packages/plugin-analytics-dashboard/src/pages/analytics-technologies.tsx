@@ -21,6 +21,7 @@ import {
   Tooltip as RechartsTooltip,
 } from "recharts";
 import type { AnalyticsTechnologiesResponseModel } from "@kitejs-cms/plugin-analytics-api";
+import { JsonModal } from "@kitejs-cms/dashboard-core/components/json-modal";
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -44,6 +45,7 @@ export function AnalyticsTechnologiesPage() {
   const [endDate, setEndDate] = useState(() =>
     new Date().toISOString().slice(0, 10)
   );
+  const [jsonOpen, setJsonOpen] = useState(false);
 
   const loadTechnologies = useCallback(() => {
     const params = new URLSearchParams({ startDate, endDate });
@@ -83,6 +85,11 @@ export function AnalyticsTechnologiesPage() {
 
   return (
     <div className="space-y-4 p-4">
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={() => setJsonOpen(true)}>
+          {t("technologies.viewJson")}
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -243,6 +250,11 @@ export function AnalyticsTechnologiesPage() {
           </div>
         </CardContent>
       </Card>
+      <JsonModal
+        data={data ?? {}}
+        isOpen={jsonOpen}
+        onClose={() => setJsonOpen(false)}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
+import { Separator } from "./ui/separator";
 
 interface JsonModalProps {
   data: object;
@@ -30,14 +31,14 @@ export function JsonModal({ data, isOpen, onClose }: JsonModalProps) {
 
   return (
     <Dialog onClose={onClose} open={isOpen}>
-      <DialogContent className="p-2 rounded-md bg-zinc-900">
-        <DialogHeader className="flex flex-row justify-between items-center bg-zinc-900 py-4 px-2 border-zinc-700">
+      <DialogContent className="p-0 bg-white rounded-lg shadow-lg flex flex-col">
+        <DialogHeader className="flex flex-row justify-between items-center p-4">
           <div className="flex items-center gap-2">
-            <DialogTitle className="text-white font-light">
+            <DialogTitle className="text-xl font-semibold text-gray-900">
               {t("json-modal.title")}
             </DialogTitle>
             {data && Object.keys(data).length > 0 && (
-              <span className="text-sm text-zinc-400">
+              <span className="text-sm text-gray-400">
                 ({Object.keys(data).length} {t("json-modal.keys")})
               </span>
             )}
@@ -45,10 +46,10 @@ export function JsonModal({ data, isOpen, onClose }: JsonModalProps) {
           <div className="flex items-center gap-4">
             <button
               onClick={handleCopy}
-              className="text-zinc-400 hover:text-white transition flex items-center gap-1"
+              className="text-gray-500 hover:text-black transition flex items-center gap-1"
             >
               {copied ? (
-                <CheckIcon className="w-5 h-5 text-green-400" />
+                <CheckIcon className="w-5 h-5 text-green-600" />
               ) : (
                 <ClipboardIcon className="w-5 h-5" />
               )}
@@ -57,10 +58,10 @@ export function JsonModal({ data, isOpen, onClose }: JsonModalProps) {
               </span>
             </button>
 
-            <DialogClose className="flex items-center gap-2 text-zinc-400 hover:text-white transition cursor-pointer">
+            <DialogClose className="flex items-center gap-2 text-gray-500 hover:text-black transition cursor-pointer">
               <Badge
                 variant="outline"
-                className="bg-zinc-800 text-zinc-400 border-zinc-400 font-light"
+                className="bg-gray-100 text-gray-400 border-gray-400 font-medium px-2 py-0.5"
               >
                 Esc
               </Badge>
@@ -69,18 +70,12 @@ export function JsonModal({ data, isOpen, onClose }: JsonModalProps) {
           </div>
         </DialogHeader>
 
-        <ScrollArea
-          className="bg-zinc-800 rounded-md p-4"
-          style={{ height: "calc(100vh - 88px)" }}
-        >
+        <Separator className="w-full" />
+
+        <ScrollArea className="flex-1 overflow-auto p-6 h-full">
           <ReactJson
             src={data}
-            style={{
-              backgroundColor: "#27272B",
-              padding: "10px",
-              borderRadius: "6px",
-            }}
-            theme="tube"
+            theme="rjv-default"
             enableClipboard={false}
             displayDataTypes={false}
             displayObjectSize={true}

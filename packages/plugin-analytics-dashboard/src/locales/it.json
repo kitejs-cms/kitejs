@@ -29,6 +29,7 @@
     "dateRange": "Intervallo date",
     "startDate": "Data inizio",
     "endDate": "Data fine",
-    "apply": "Applica"
+    "apply": "Applica",
+    "viewJson": "Vedi JSON"
   }
 }
