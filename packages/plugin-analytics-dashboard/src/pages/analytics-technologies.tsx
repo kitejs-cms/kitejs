@@ -14,6 +14,13 @@ import {
   useApi,
   useBreadcrumb,
   JsonModal,
+  Skeleton,
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@kitejs-cms/dashboard-core";
 import {
   FileJson,
@@ -176,55 +183,88 @@ export function AnalyticsTechnologiesPage() {
         </CardHeader>
         <Separator />
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-            <div className="h-80 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={browserData}
-                    dataKey="percentage"
-                    nameKey="key"
-                    innerRadius="40%"
-                    outerRadius="80%"
-                    label={({ value }) => `${value.toFixed(1)}%`}
-                  >
-                    {browserData.map((_, index) => (
-                      <Cell
-                        key={`browser-cell-${index}`}
-                        fill={CHART_COLORS[index % CHART_COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip
-                    formatter={(value: number) => `${value.toFixed(1)}%`}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+              <Skeleton className="h-80 w-full" />
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("technologies.browser")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("technologies.count")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("technologies.percentage")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            <DataTable<{
-              key: string;
-              count: number;
-              percentage: number;
-            }>
-              data={browserData}
-              isLoading={loading}
-              columns={[
-                { key: "key" as never, label: t("technologies.browser") },
-                {
-                  key: "count" as never,
-                  label: t("technologies.count"),
-                  align: "right",
-                },
-                {
-                  key: "percentage" as never,
-                  label: t("technologies.percentage"),
-                  align: "right",
-                  render: (value) =>
-                    typeof value === "number" ? `${value.toFixed(2)}%` : value,
-                },
-              ]}
-            />
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+              <div className="h-80 flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={browserData}
+                      dataKey="percentage"
+                      nameKey="key"
+                      innerRadius="40%"
+                      outerRadius="80%"
+                      label={({ value }) => `${value.toFixed(1)}%`}
+                    >
+                      {browserData.map((_, index) => (
+                        <Cell
+                          key={`browser-cell-${index}`}
+                          fill={CHART_COLORS[index % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip
+                      formatter={(value: number) => `${value.toFixed(1)}%`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <DataTable<{
+                key: string;
+                count: number;
+                percentage: number;
+              }>
+                data={browserData}
+                columns={[
+                  { key: "key" as never, label: t("technologies.browser") },
+                  {
+                    key: "count" as never,
+                    label: t("technologies.count"),
+                    align: "right",
+                  },
+                  {
+                    key: "percentage" as never,
+                    label: t("technologies.percentage"),
+                    align: "right",
+                    render: (value) =>
+                      typeof value === "number" ? `${value.toFixed(2)}%` : value,
+                  },
+                ]}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -266,55 +306,88 @@ export function AnalyticsTechnologiesPage() {
         </CardHeader>
         <Separator />
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-            <div className="h-80 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={osData}
-                    dataKey="percentage"
-                    nameKey="key"
-                    innerRadius="40%"
-                    outerRadius="80%"
-                    label={({ value }) => `${value.toFixed(1)}%`}
-                  >
-                    {osData.map((_, index) => (
-                      <Cell
-                        key={`os-cell-${index}`}
-                        fill={CHART_COLORS[index % CHART_COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip
-                    formatter={(value: number) => `${value.toFixed(1)}%`}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+              <Skeleton className="h-80 w-full" />
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("technologies.os")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("technologies.count")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("technologies.percentage")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            <DataTable<{
-              key: string;
-              count: number;
-              percentage: number;
-            }>
-              data={osData}
-              isLoading={loading}
-              columns={[
-                { key: "key" as never, label: t("technologies.os") },
-                {
-                  key: "count" as never,
-                  label: t("technologies.count"),
-                  align: "right",
-                },
-                {
-                  key: "percentage" as never,
-                  label: t("technologies.percentage"),
-                  align: "right",
-                  render: (value) =>
-                    typeof value === "number" ? `${value.toFixed(2)}%` : value,
-                },
-              ]}
-            />
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+              <div className="h-80 flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={osData}
+                      dataKey="percentage"
+                      nameKey="key"
+                      innerRadius="40%"
+                      outerRadius="80%"
+                      label={({ value }) => `${value.toFixed(1)}%`}
+                    >
+                      {osData.map((_, index) => (
+                        <Cell
+                          key={`os-cell-${index}`}
+                          fill={CHART_COLORS[index % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip
+                      formatter={(value: number) => `${value.toFixed(1)}%`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <DataTable<{
+                key: string;
+                count: number;
+                percentage: number;
+              }>
+                data={osData}
+                columns={[
+                  { key: "key" as never, label: t("technologies.os") },
+                  {
+                    key: "count" as never,
+                    label: t("technologies.count"),
+                    align: "right",
+                  },
+                  {
+                    key: "percentage" as never,
+                    label: t("technologies.percentage"),
+                    align: "right",
+                    render: (value) =>
+                      typeof value === "number" ? `${value.toFixed(2)}%` : value,
+                  },
+                ]}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -356,55 +429,88 @@ export function AnalyticsTechnologiesPage() {
         </CardHeader>
         <Separator />
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-            <div className="h-80 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={deviceData}
-                    dataKey="percentage"
-                    nameKey="key"
-                    innerRadius="40%"
-                    outerRadius="80%"
-                    label={({ value }) => `${value.toFixed(1)}%`}
-                  >
-                    {deviceData.map((_, index) => (
-                      <Cell
-                        key={`device-cell-${index}`}
-                        fill={CHART_COLORS[index % CHART_COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip
-                    formatter={(value: number) => `${value.toFixed(1)}%`}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+              <Skeleton className="h-80 w-full" />
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("technologies.device")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("technologies.count")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("technologies.percentage")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            <DataTable<{
-              key: string;
-              count: number;
-              percentage: number;
-            }>
-              data={deviceData}
-              isLoading={loading}
-              columns={[
-                { key: "key" as never, label: t("technologies.device") },
-                {
-                  key: "count" as never,
-                  label: t("technologies.count"),
-                  align: "right",
-                },
-                {
-                  key: "percentage" as never,
-                  label: t("technologies.percentage"),
-                  align: "right",
-                  render: (value) =>
-                    typeof value === "number" ? `${value.toFixed(2)}%` : value,
-                },
-              ]}
-            />
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+              <div className="h-80 flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={deviceData}
+                      dataKey="percentage"
+                      nameKey="key"
+                      innerRadius="40%"
+                      outerRadius="80%"
+                      label={({ value }) => `${value.toFixed(1)}%`}
+                    >
+                      {deviceData.map((_, index) => (
+                        <Cell
+                          key={`device-cell-${index}`}
+                          fill={CHART_COLORS[index % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip
+                      formatter={(value: number) => `${value.toFixed(1)}%`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <DataTable<{
+                key: string;
+                count: number;
+                percentage: number;
+              }>
+                data={deviceData}
+                columns={[
+                  { key: "key" as never, label: t("technologies.device") },
+                  {
+                    key: "count" as never,
+                    label: t("technologies.count"),
+                    align: "right",
+                  },
+                  {
+                    key: "percentage" as never,
+                    label: t("technologies.percentage"),
+                    align: "right",
+                    render: (value) =>
+                      typeof value === "number" ? `${value.toFixed(2)}%` : value,
+                  },
+                ]}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
