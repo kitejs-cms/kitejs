@@ -20,7 +20,8 @@
     "title": "Eventi",
     "type": "Tipo",
     "identifier": "Identificatore",
-    "createdAt": "Data"
+    "createdAt": "Data",
+    "duration": "Durata (s)"
   },
   "technologies": {
     "browser": "Browser",

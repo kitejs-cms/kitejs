@@ -72,11 +72,12 @@ export function AnalyticsEventsPage() {
 
   const eventsData = useMemo(() => {
     const entries = Object.entries(data?.eventsByIdentifier ?? {});
-    const total = entries.reduce((sum, [, count]) => sum + count, 0);
-    return entries.map(([key, count]) => ({
+    const total = entries.reduce((sum, [, value]) => sum + value.count, 0);
+    return entries.map(([key, value]) => ({
       key,
-      count,
-      percentage: total ? +((count / total) * 100).toFixed(2) : 0,
+      count: value.count,
+      duration: value.duration,
+      percentage: total ? +((value.count / total) * 100).toFixed(2) : 0,
     }));
   }, [data]);
 
@@ -168,6 +169,9 @@ export function AnalyticsEventsPage() {
                       {t("technologies.count")}
                     </TableHead>
                     <TableHead className="text-right">
+                      {t("events.duration")}
+                    </TableHead>
+                    <TableHead className="text-right">
                       {t("technologies.percentage")}
                     </TableHead>
                   </TableRow>
@@ -177,6 +181,9 @@ export function AnalyticsEventsPage() {
                     <TableRow key={i}>
                       <TableCell>
                         <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
                       </TableCell>
                       <TableCell className="text-right">
                         <Skeleton className="h-4 w-16 ml-auto" />
@@ -218,6 +225,7 @@ export function AnalyticsEventsPage() {
               <DataTable<{
                 key: string;
                 count: number;
+                duration?: number;
                 percentage: number;
               }>
                 data={eventsData}
@@ -227,6 +235,13 @@ export function AnalyticsEventsPage() {
                     key: "count" as never,
                     label: t("technologies.count"),
                     align: "right",
+                  },
+                  {
+                    key: "duration" as never,
+                    label: t("events.duration"),
+                    align: "right",
+                    render: (value) =>
+                      typeof value === "number" ? value.toFixed(2) : "-",
                   },
                   {
                     key: "percentage" as never,

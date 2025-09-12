@@ -133,7 +133,10 @@ export class AnalyticsService {
   ): Promise<{
     totalEvents: number;
     uniqueVisitors: number;
-    eventsByIdentifier: Record<string, number>;
+    eventsByIdentifier: Record<
+      string,
+      { count: number; duration?: number }
+    >;
   }> {
     try {
       const match = filter;
@@ -145,14 +148,30 @@ export class AnalyticsService {
         .aggregate<{
           _id: string;
           count: number;
+          duration: number | null;
         }>([
           { $match: match },
-          { $group: { _id: "$identifier", count: { $sum: 1 } } },
+          {
+            $group: {
+              _id: "$identifier",
+              count: { $sum: 1 },
+              duration: { $avg: "$duration" },
+            },
+          },
         ])
         .exec();
-      const eventsByIdentifier: Record<string, number> = {};
-      for (const { _id, count } of eventsByIdentifierAgg) {
-        if (_id) eventsByIdentifier[_id] = count;
+      const eventsByIdentifier: Record<
+        string,
+        { count: number; duration?: number }
+      > = {};
+      for (const { _id, count, duration } of eventsByIdentifierAgg) {
+        if (_id)
+          eventsByIdentifier[_id] = {
+            count,
+            ...(duration != null
+              ? { duration: +(duration / 1000).toFixed(2) }
+              : {}),
+          };
       }
       return { totalEvents, uniqueVisitors, eventsByIdentifier };
     } catch (error) {

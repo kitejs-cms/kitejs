@@ -20,7 +20,8 @@
     "title": "Events",
     "type": "Type",
     "identifier": "Identifier",
-    "createdAt": "Date"
+    "createdAt": "Date",
+    "duration": "Duration (s)"
   },
   "technologies": {
     "browser": "Browser",

@@ -11,7 +11,14 @@ export class AnalyticsAggregateResponseDto
   uniqueVisitors!: number;
 
   @ApiProperty({ type: Object })
-  eventsByIdentifier!: Record<string, number>;
+  eventsByIdentifier!: Record<
+    string,
+    {
+      count: number;
+      /** Average duration in seconds */
+      duration?: number;
+    }
+  >;
 
   constructor(partial: Partial<AnalyticsAggregateResponseDto>) {
     Object.assign(this, partial);
