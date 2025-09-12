@@ -129,14 +129,11 @@ export class AnalyticsService {
       type?: string;
       identifier?: string;
       createdAt?: Record<string, Date>;
-    } = {},
+    } = {}
   ): Promise<{
     totalEvents: number;
     uniqueVisitors: number;
-    eventsByIdentifier: Record<
-      string,
-      { count: number; duration?: number }
-    >;
+    eventsByIdentifier: Record<string, { count: number; duration?: number }>;
     eventsByType: Record<
       string,
       {
@@ -254,7 +251,7 @@ export class AnalyticsService {
       type?: string;
       identifier?: string;
       createdAt?: Record<string, Date>;
-    } = {},
+    } = {}
   ): Promise<{
     browsers: Record<string, number>;
     os: Record<string, number>;
@@ -264,7 +261,10 @@ export class AnalyticsService {
       const match = filter;
       const aggregateField = (field: string) =>
         this.eventModel
-          .aggregate<{ _id: string; count: number }>([
+          .aggregate<{
+            _id: string;
+            count: number;
+          }>([
             { $match: match },
             { $group: { _id: `$${field}`, count: { $sum: 1 } } },
           ])
@@ -295,7 +295,7 @@ export class AnalyticsService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(
-        `Failed to aggregate technologies. ${message}`,
+        `Failed to aggregate technologies. ${message}`
       );
     }
   }

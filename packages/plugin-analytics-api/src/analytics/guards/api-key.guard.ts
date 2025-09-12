@@ -1,8 +1,16 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import type { Request } from "express";
 import { SettingsService } from "@kitejs-cms/core";
-import { ANALYTICS_PLUGIN_NAMESPACE, ANALYTICS_SETTINGS_KEY } from "../../constants";
 import type { AnalyticsPluginSettingsModel } from "../models/analytics-plugin-settings.model";
+import {
+  ANALYTICS_PLUGIN_NAMESPACE,
+  ANALYTICS_SETTINGS_KEY,
+} from "../../constants";
 
 @Injectable()
 export class AnalyticsApiKeyGuard implements CanActivate {
