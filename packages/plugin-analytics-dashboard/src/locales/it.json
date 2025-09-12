@@ -19,6 +19,7 @@
   "events": {
     "title": "Eventi",
     "type": "Tipo",
+    "identifier": "Identificatore",
     "createdAt": "Data"
   },
   "technologies": {

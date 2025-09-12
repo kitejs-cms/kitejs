@@ -19,6 +19,7 @@
   "events": {
     "title": "Events",
     "type": "Type",
+    "identifier": "Identifier",
     "createdAt": "Date"
   },
   "technologies": {
