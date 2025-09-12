@@ -21,6 +21,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
   Input,
+  Skeleton,
 } from "@kitejs-cms/dashboard-core";
 import type {
   AnalyticsAggregateResponseModel,
@@ -187,6 +188,27 @@ export function AnalyticsEventsPage() {
   return (
     <div className="space-y-6 p-4">
       <DatePicker value={range} onValueChange={setRange} />
+
+      {loading && typeCards.length === 0 && (
+        <Card className="shadow-neutral-50 gap-0 py-0">
+          <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl">
+            <CardTitle>
+              <Skeleton className="h-5 w-40" />
+            </CardTitle>
+          </CardHeader>
+          <Separator />
+          <CardContent className="p-6">
+            <AnalyticsSkeleton
+              headers={[
+                t("events.identifier"),
+                t("technologies.count"),
+                t("events.duration"),
+                t("technologies.percentage"),
+              ]}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {typeCards.map(({ type, label, dataset, count, duration }) => (
         <Card key={type} className="shadow-neutral-50 gap-0 py-0">
