@@ -20,13 +20,23 @@ import {
   TableRow,
   TableCell,
   useSettingsContext,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+  Input,
 } from "@kitejs-cms/dashboard-core";
+import type {
+  AnalyticsAggregateResponseModel,
+  AnalyticsPluginSettingsModel,
+} from "@kitejs-cms/plugin-analytics-api";
 import {
   ANALYTICS_PLUGIN_NAMESPACE,
   ANALYTICS_SETTINGS_KEY,
-  type AnalyticsAggregateResponseModel,
-  type AnalyticsPluginSettingsModel,
-} from "@kitejs-cms/plugin-analytics-api";
+} from "../module";
 import { DatePicker } from "../components/date-picker";
 import { FileJson, Download, Copy, Tag, Pencil } from "lucide-react";
 import {
@@ -59,6 +69,8 @@ export function AnalyticsEventsPage() {
 
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
+  const [editType, setEditType] = useState<string | null>(null);
+  const [editLabelValue, setEditLabelValue] = useState("");
 
   useEffect(() => {
     const loadLabels = async () => {
@@ -152,11 +164,14 @@ export function AnalyticsEventsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handleEditLabel = async (type: string) => {
-    const current = typeLabels[type] ?? type;
-    const newLabel = prompt(t("events.editLabelPrompt"), current);
-    if (!newLabel) return;
-    const newLabels = { ...typeLabels, [type]: newLabel };
+  const startEditLabel = (type: string) => {
+    setEditType(type);
+    setEditLabelValue(typeLabels[type] ?? type);
+  };
+
+  const saveEditLabel = async () => {
+    if (!editType) return;
+    const newLabels = { ...typeLabels, [editType]: editLabelValue };
     setTypeLabels(newLabels);
     const newSettings: AnalyticsPluginSettingsModel = {
       ...(pluginSettings ?? { apiKey: "", retentionDays: 0 }),
@@ -172,6 +187,7 @@ export function AnalyticsEventsPage() {
     } catch (err) {
       console.error("Failed to update event label", err);
     }
+    setEditType(null);
   };
 
   return (
@@ -193,7 +209,7 @@ export function AnalyticsEventsPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleEditLabel(type)}
+                onClick={() => startEditLabel(type)}
                 aria-label={t("events.editLabel")}
                 className="flex items-center"
               >
@@ -329,6 +345,30 @@ export function AnalyticsEventsPage() {
           </CardContent>
         </Card>
       ))}
+
+      <AlertDialog
+        open={editType !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditType(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("events.editLabel")}</AlertDialogTitle>
+          </AlertDialogHeader>
+          <Input
+            value={editLabelValue}
+            onChange={(e) => setEditLabelValue(e.target.value)}
+            placeholder={t("events.editLabelPrompt") || ""}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("events.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={saveEditLabel}>
+              {t("events.save")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <JsonModal
         data={jsonData}

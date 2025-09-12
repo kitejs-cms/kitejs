@@ -24,7 +24,9 @@
     "duration": "Durata (s)",
     "typeCardTitle": "Eventi - {{type}}",
     "editLabel": "Modifica etichetta",
-    "editLabelPrompt": "Inserisci nuova etichetta"
+    "editLabelPrompt": "Inserisci nuova etichetta",
+    "cancel": "Annulla",
+    "save": "Salva"
   },
   "technologies": {
     "browser": "Browser",

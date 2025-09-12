@@ -5,6 +5,7 @@ import { AnalyticsEventsPage } from "./pages/analytics-events";
 import { AnalyticsTechnologiesPage } from "./pages/analytics-technologies";
 
 export const ANALYTICS_PLUGIN_NAMESPACE = "analytics";
+export const ANALYTICS_SETTINGS_KEY = `${ANALYTICS_PLUGIN_NAMESPACE}:config`;
 
 /* i18n */
 import it from "./locales/it.json";
