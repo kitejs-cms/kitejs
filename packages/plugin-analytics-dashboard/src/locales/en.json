@@ -22,7 +22,9 @@
     "identifier": "Identifier",
     "createdAt": "Date",
     "duration": "Duration (s)",
-    "typeCardTitle": "Events - {{type}}"
+    "typeCardTitle": "Events - {{type}}",
+    "editLabel": "Edit label",
+    "editLabelPrompt": "Enter new label"
   },
   "technologies": {
     "browser": "Browser",

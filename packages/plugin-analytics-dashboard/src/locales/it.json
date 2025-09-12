@@ -22,7 +22,9 @@
     "identifier": "Identificatore",
     "createdAt": "Data",
     "duration": "Durata (s)",
-    "typeCardTitle": "Eventi - {{type}}"
+    "typeCardTitle": "Eventi - {{type}}",
+    "editLabel": "Modifica etichetta",
+    "editLabelPrompt": "Inserisci nuova etichetta"
   },
   "technologies": {
     "browser": "Browser",

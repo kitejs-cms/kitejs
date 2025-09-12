@@ -19,10 +19,16 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
-import type { AnalyticsAggregateResponseModel } from "@kitejs-cms/plugin-analytics-api";
+import {
+  ANALYTICS_PLUGIN_NAMESPACE,
+  ANALYTICS_SETTINGS_KEY,
+  type AnalyticsAggregateResponseModel,
+  type AnalyticsPluginSettingsModel,
+} from "@kitejs-cms/plugin-analytics-api";
 import { DatePicker } from "../components/date-picker";
-import { FileJson, Download, Copy, Tag } from "lucide-react";
+import { FileJson, Download, Copy, Tag, Pencil } from "lucide-react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -40,6 +46,11 @@ export function AnalyticsEventsPage() {
   const { t } = useTranslation("analytics");
   const { setBreadcrumb } = useBreadcrumb();
   const { data, fetchData, loading } = useApi<AnalyticsAggregateResponseModel>();
+  const { getSetting, updateSetting } = useSettingsContext();
+
+  const [pluginSettings, setPluginSettings] =
+    useState<AnalyticsPluginSettingsModel | null>(null);
+  const [typeLabels, setTypeLabels] = useState<Record<string, string>>({});
 
   const [range, setRange] = useState<DateRange | undefined>(() => ({
     from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
@@ -48,6 +59,20 @@ export function AnalyticsEventsPage() {
 
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
+
+  useEffect(() => {
+    const loadLabels = async () => {
+      const res = await getSetting<{ value: AnalyticsPluginSettingsModel }>(
+        ANALYTICS_PLUGIN_NAMESPACE,
+        ANALYTICS_SETTINGS_KEY
+      );
+      if (res?.value) {
+        setPluginSettings(res.value);
+        setTypeLabels(res.value.eventTypeLabels ?? {});
+      }
+    };
+    loadLabels();
+  }, [getSetting]);
 
   const loadEvents = useCallback(() => {
     if (!range?.from || !range?.to) return;
@@ -83,12 +108,13 @@ export function AnalyticsEventsPage() {
         }));
         return {
           type,
+          label: typeLabels[type] ?? type,
           count: value.count,
           duration: value.duration,
           dataset,
         };
       }),
-    [data]
+    [data, typeLabels]
   );
 
   const datasetToCsv = (
@@ -126,22 +152,53 @@ export function AnalyticsEventsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleEditLabel = async (type: string) => {
+    const current = typeLabels[type] ?? type;
+    const newLabel = prompt(t("events.editLabelPrompt"), current);
+    if (!newLabel) return;
+    const newLabels = { ...typeLabels, [type]: newLabel };
+    setTypeLabels(newLabels);
+    const newSettings: AnalyticsPluginSettingsModel = {
+      ...(pluginSettings ?? { apiKey: "", retentionDays: 0 }),
+      eventTypeLabels: newLabels,
+    };
+    setPluginSettings(newSettings);
+    try {
+      await updateSetting(
+        ANALYTICS_PLUGIN_NAMESPACE,
+        ANALYTICS_SETTINGS_KEY,
+        newSettings
+      );
+    } catch (err) {
+      console.error("Failed to update event label", err);
+    }
+  };
+
   return (
     <div className="space-y-6 p-4">
       <DatePicker value={range} onValueChange={setRange} />
 
-      {typeCards.map(({ type, dataset, count, duration }) => (
+      {typeCards.map(({ type, label, dataset, count, duration }) => (
         <Card key={type} className="shadow-neutral-50 gap-0 py-0">
           <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
             <CardTitle className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
-              {t("events.typeCardTitle", { type })}
+              {t("events.typeCardTitle", { type: label })}
               <span className="text-sm font-normal text-muted-foreground">
                 {count}
                 {typeof duration === "number" && ` • ${duration.toFixed(2)}s`}
               </span>
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleEditLabel(type)}
+                aria-label={t("events.editLabel")}
+                className="flex items-center"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

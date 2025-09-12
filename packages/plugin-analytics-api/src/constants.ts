@@ -24,6 +24,10 @@ export const AnalyticsPermissions: PermissionModel[] = [
 export const AnalyticsSetting: SettingModel<AnalyticsPluginSettingsModel>[] = [
   {
     key: ANALYTICS_SETTINGS_KEY,
-    value: { apiKey: randomUUID(), retentionDays: DEFAULT_RETENTION_DAYS },
+    value: {
+      apiKey: randomUUID(),
+      retentionDays: DEFAULT_RETENTION_DAYS,
+      eventTypeLabels: {},
+    },
   },
 ];
