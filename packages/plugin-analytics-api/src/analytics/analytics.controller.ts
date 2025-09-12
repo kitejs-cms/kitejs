@@ -94,8 +94,12 @@ export class AnalyticsController {
   @ApiQuery({ name: "endDate", required: false, type: String })
   async getEvents(@Query() query: Record<string, string>) {
     const { filter, sort, skip, take } = parseQuery(query, {
-      allowedFilters: ["type", "identifier"],
+      allowedFilters: ["type", "identifier", "startDate", "endDate"],
     });
+
+    delete filter.startDate;
+    delete filter.endDate;
+
     const typedFilter = filter as {
       type?: string;
       identifier?: string;
@@ -136,8 +140,12 @@ export class AnalyticsController {
   @ApiQuery({ name: "endDate", required: false, type: String })
   async getSummary(@Query() query: Record<string, string>) {
     const { filter } = parseQuery(query, {
-      allowedFilters: ["type", "identifier"],
+      allowedFilters: ["type", "identifier", "startDate", "endDate"],
     });
+
+    delete filter.startDate;
+    delete filter.endDate;
+
     const typedFilter = filter as {
       type?: string;
       identifier?: string;
@@ -169,8 +177,12 @@ export class AnalyticsController {
   @ApiQuery({ name: "endDate", required: false, type: String })
   async aggregate(@Query() query: Record<string, string>) {
     const { filter } = parseQuery(query, {
-      allowedFilters: ["type", "identifier"],
+      allowedFilters: ["type", "identifier", "startDate", "endDate"],
     });
+
+    delete filter.startDate;
+    delete filter.endDate;
+
     const typedFilter = filter as {
       type?: string;
       identifier?: string;

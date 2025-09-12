@@ -19,7 +19,14 @@
   "events": {
     "title": "Events",
     "type": "Type",
-    "createdAt": "Date"
+    "identifier": "Identifier",
+    "createdAt": "Date",
+    "duration": "Duration (s)",
+    "typeCardTitle": "Events - {{type}}",
+    "editLabel": "Edit label",
+    "editLabelPrompt": "Enter new label",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "technologies": {
     "browser": "Browser",

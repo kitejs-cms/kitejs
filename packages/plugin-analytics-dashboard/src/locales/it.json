@@ -19,7 +19,14 @@
   "events": {
     "title": "Eventi",
     "type": "Tipo",
-    "createdAt": "Data"
+    "identifier": "Identificatore",
+    "createdAt": "Data",
+    "duration": "Durata (s)",
+    "typeCardTitle": "Eventi - {{type}}",
+    "editLabel": "Modifica etichetta",
+    "editLabelPrompt": "Inserisci nuova etichetta",
+    "cancel": "Annulla",
+    "save": "Salva"
   },
   "technologies": {
     "browser": "Browser",

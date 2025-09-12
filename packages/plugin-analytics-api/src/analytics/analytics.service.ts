@@ -129,11 +129,19 @@ export class AnalyticsService {
       type?: string;
       identifier?: string;
       createdAt?: Record<string, Date>;
-    } = {},
+    } = {}
   ): Promise<{
     totalEvents: number;
     uniqueVisitors: number;
-    eventsByIdentifier: Record<string, number>;
+    eventsByIdentifier: Record<string, { count: number; duration?: number }>;
+    eventsByType: Record<
+      string,
+      {
+        count: number;
+        duration?: number;
+        identifiers: Record<string, { count: number; duration?: number }>;
+      }
+    >;
   }> {
     try {
       const match = filter;
@@ -145,16 +153,93 @@ export class AnalyticsService {
         .aggregate<{
           _id: string;
           count: number;
+          duration: number | null;
         }>([
           { $match: match },
-          { $group: { _id: "$identifier", count: { $sum: 1 } } },
+          {
+            $group: {
+              _id: "$identifier",
+              count: { $sum: 1 },
+              duration: { $avg: "$duration" },
+            },
+          },
         ])
         .exec();
-      const eventsByIdentifier: Record<string, number> = {};
-      for (const { _id, count } of eventsByIdentifierAgg) {
-        if (_id) eventsByIdentifier[_id] = count;
+      const eventsByTypeAgg = await this.eventModel
+        .aggregate<{
+          _id: string;
+          count: number;
+          duration: number | null;
+        }>([
+          { $match: match },
+          {
+            $group: {
+              _id: "$type",
+              count: { $sum: 1 },
+              duration: { $avg: "$duration" },
+            },
+          },
+        ])
+        .exec();
+      const eventsByTypeIdentifierAgg = await this.eventModel
+        .aggregate<{
+          _id: { type: string; identifier: string };
+          count: number;
+          duration: number | null;
+        }>([
+          { $match: match },
+          {
+            $group: {
+              _id: { type: "$type", identifier: "$identifier" },
+              count: { $sum: 1 },
+              duration: { $avg: "$duration" },
+            },
+          },
+        ])
+        .exec();
+      const eventsByIdentifier: Record<
+        string,
+        { count: number; duration?: number }
+      > = {};
+      for (const { _id, count, duration } of eventsByIdentifierAgg) {
+        if (_id)
+          eventsByIdentifier[_id] = {
+            count,
+            ...(duration != null ? { duration: +duration.toFixed(2) } : {}),
+          };
       }
-      return { totalEvents, uniqueVisitors, eventsByIdentifier };
+      const eventsByType: Record<
+        string,
+        {
+          count: number;
+          duration?: number;
+          identifiers: Record<string, { count: number; duration?: number }>;
+        }
+      > = {};
+      for (const { _id, count, duration } of eventsByTypeAgg) {
+        if (_id)
+          eventsByType[_id] = {
+            count,
+            ...(duration != null ? { duration: +duration.toFixed(2) } : {}),
+            identifiers: {},
+          };
+      }
+      for (const {
+        _id: { type, identifier },
+        count,
+        duration,
+      } of eventsByTypeIdentifierAgg) {
+        if (type && identifier) {
+          if (!eventsByType[type]) {
+            eventsByType[type] = { count: 0, identifiers: {} };
+          }
+          eventsByType[type].identifiers[identifier] = {
+            count,
+            ...(duration != null ? { duration: +duration.toFixed(2) } : {}),
+          };
+        }
+      }
+      return { totalEvents, uniqueVisitors, eventsByIdentifier, eventsByType };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to aggregate events. ${message}`);
@@ -166,7 +251,7 @@ export class AnalyticsService {
       type?: string;
       identifier?: string;
       createdAt?: Record<string, Date>;
-    } = {},
+    } = {}
   ): Promise<{
     browsers: Record<string, number>;
     os: Record<string, number>;
@@ -176,7 +261,10 @@ export class AnalyticsService {
       const match = filter;
       const aggregateField = (field: string) =>
         this.eventModel
-          .aggregate<{ _id: string; count: number }>([
+          .aggregate<{
+            _id: string;
+            count: number;
+          }>([
             { $match: match },
             { $group: { _id: `$${field}`, count: { $sum: 1 } } },
           ])
@@ -207,7 +295,7 @@ export class AnalyticsService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(
-        `Failed to aggregate technologies. ${message}`,
+        `Failed to aggregate technologies. ${message}`
       );
     }
   }
