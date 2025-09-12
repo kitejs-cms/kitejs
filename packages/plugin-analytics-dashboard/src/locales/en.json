@@ -22,7 +22,8 @@
     "type": "Type",
     "identifier": "Identifier",
     "createdAt": "Date",
-    "duration": "Duration (s)"
+    "duration": "Duration (s)",
+    "typeCardTitle": "Events - {{type}}"
   },
   "technologies": {
     "browser": "Browser",

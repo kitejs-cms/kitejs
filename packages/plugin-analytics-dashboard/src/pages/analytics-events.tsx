@@ -70,17 +70,6 @@ export function AnalyticsEventsPage() {
     loadEvents();
   }, [loadEvents]);
 
-  const eventsData = useMemo(() => {
-    const entries = Object.entries(data?.eventsByIdentifier ?? {});
-    const total = entries.reduce((sum, [, value]) => sum + value.count, 0);
-    return entries.map(([key, value]) => ({
-      key,
-      count: value.count,
-      duration: value.duration,
-      percentage: total ? +((value.count / total) * 100).toFixed(2) : 0,
-    }));
-  }, [data]);
-
   const eventTypesData = useMemo(() => {
     const entries = Object.entries(data?.eventsByType ?? {});
     const total = entries.reduce((sum, [, value]) => sum + value.count, 0);
@@ -91,6 +80,22 @@ export function AnalyticsEventsPage() {
       percentage: total ? +((value.count / total) * 100).toFixed(2) : 0,
     }));
   }, [data]);
+
+  const typeCards = useMemo(
+    () =>
+      Object.entries(data?.eventsByType ?? {}).map(([type, value]) => {
+        const entries = Object.entries(value.identifiers ?? {});
+        const total = entries.reduce((sum, [, v]) => sum + v.count, 0);
+        const dataset = entries.map(([key, v]) => ({
+          key,
+          count: v.count,
+          duration: v.duration,
+          percentage: total ? +((v.count / total) * 100).toFixed(2) : 0,
+        }));
+        return { type, dataset };
+      }),
+    [data]
+  );
 
   const datasetToCsv = (
     dataset: Record<string, string | number>[]
@@ -268,142 +273,144 @@ export function AnalyticsEventsPage() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-neutral-50 gap-0 py-0">
-        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="flex items-center gap-2">
-            <Tag className="h-4 w-4" />
-            {t("events.title")}
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openJson(eventsData)}
-              aria-label={t("technologies.viewJson")}
-              className="flex items-center"
-            >
-              <FileJson className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => downloadDataset(eventsData, "events.csv")}
-              aria-label={t("technologies.downloadCsv")}
-              className="flex items-center"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => copyDataset(eventsData)}
-              aria-label={t("technologies.copyCsv")}
-              className="flex items-center"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <Separator />
-        <CardContent className="p-6">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-              <Skeleton className="h-80 w-full" />
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("events.identifier")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("technologies.count")}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t("events.duration")}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t("technologies.percentage")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-40" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
+      {typeCards.map(({ type, dataset }) => (
+        <Card key={type} className="shadow-neutral-50 gap-0 py-0">
+          <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              {t("events.typeCardTitle", { type })}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => openJson(dataset)}
+                aria-label={t("technologies.viewJson")}
+                className="flex items-center"
+              >
+                <FileJson className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => downloadDataset(dataset, `${type}.csv`)}
+                aria-label={t("technologies.downloadCsv")}
+                className="flex items-center"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => copyDataset(dataset)}
+                aria-label={t("technologies.copyCsv")}
+                className="flex items-center"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <Separator />
+          <CardContent className="p-6">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+                <Skeleton className="h-80 w-full" />
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("events.identifier")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("technologies.count")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("events.duration")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("technologies.percentage")}
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-              <div className="h-80 flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={eventsData}
-                      dataKey="percentage"
-                      nameKey="key"
-                      innerRadius="40%"
-                      outerRadius="80%"
-                      label={({ value }) => `${value.toFixed(1)}%`}
-                    >
-                      {eventsData.map((_, index) => (
-                        <Cell
-                          key={`event-cell-${index}`}
-                          fill={CHART_COLORS[index % CHART_COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip
-                      formatter={(value: number) => `${value.toFixed(1)}%`}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-40" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Skeleton className="h-4 w-16 ml-auto" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Skeleton className="h-4 w-16 ml-auto" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Skeleton className="h-4 w-16 ml-auto" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-              <DataTable<{
-                key: string;
-                count: number;
-                duration?: number;
-                percentage: number;
-              }>
-                data={eventsData}
-                columns={[
-                  { key: "key" as never, label: t("events.identifier") },
-                  {
-                    key: "count" as never,
-                    label: t("technologies.count"),
-                    align: "right",
-                  },
-                  {
-                    key: "duration" as never,
-                    label: t("events.duration"),
-                    align: "right",
-                    render: (value) =>
-                      typeof value === "number" ? value.toFixed(2) : "-",
-                  },
-                  {
-                    key: "percentage" as never,
-                    label: t("technologies.percentage"),
-                    align: "right",
-                    render: (value) =>
-                      typeof value === "number" ? `${value.toFixed(2)}%` : value,
-                  },
-                ]}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+                <div className="h-80 flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={dataset}
+                        dataKey="percentage"
+                        nameKey="key"
+                        innerRadius="40%"
+                        outerRadius="80%"
+                        label={({ value }) => `${value.toFixed(1)}%`}
+                      >
+                        {dataset.map((_, index) => (
+                          <Cell
+                            key={`${type}-cell-${index}`}
+                            fill={CHART_COLORS[index % CHART_COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip
+                        formatter={(value: number) => `${value.toFixed(1)}%`}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <DataTable<{
+                  key: string;
+                  count: number;
+                  duration?: number;
+                  percentage: number;
+                }>
+                  data={dataset}
+                  columns={[
+                    { key: "key" as never, label: t("events.identifier") },
+                    {
+                      key: "count" as never,
+                      label: t("technologies.count"),
+                      align: "right",
+                    },
+                    {
+                      key: "duration" as never,
+                      label: t("events.duration"),
+                      align: "right",
+                      render: (value) =>
+                        typeof value === "number" ? value.toFixed(2) : "-",
+                    },
+                    {
+                      key: "percentage" as never,
+                      label: t("technologies.percentage"),
+                      align: "right",
+                      render: (value) =>
+                        typeof value === "number" ? `${value.toFixed(2)}%` : value,
+                    },
+                  ]}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
 
       <JsonModal
         data={jsonData}

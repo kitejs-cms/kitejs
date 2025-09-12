@@ -137,7 +137,14 @@ export class AnalyticsService {
       string,
       { count: number; duration?: number }
     >;
-    eventsByType: Record<string, { count: number; duration?: number }>;
+    eventsByType: Record<
+      string,
+      {
+        count: number;
+        duration?: number;
+        identifiers: Record<string, { count: number; duration?: number }>;
+      }
+    >;
   }> {
     try {
       const match = filter;
@@ -177,6 +184,22 @@ export class AnalyticsService {
           },
         ])
         .exec();
+      const eventsByTypeIdentifierAgg = await this.eventModel
+        .aggregate<{
+          _id: { type: string; identifier: string };
+          count: number;
+          duration: number | null;
+        }>([
+          { $match: match },
+          {
+            $group: {
+              _id: { type: "$type", identifier: "$identifier" },
+              count: { $sum: 1 },
+              duration: { $avg: "$duration" },
+            },
+          },
+        ])
+        .exec();
       const eventsByIdentifier: Record<
         string,
         { count: number; duration?: number }
@@ -190,14 +213,34 @@ export class AnalyticsService {
       }
       const eventsByType: Record<
         string,
-        { count: number; duration?: number }
+        {
+          count: number;
+          duration?: number;
+          identifiers: Record<string, { count: number; duration?: number }>;
+        }
       > = {};
       for (const { _id, count, duration } of eventsByTypeAgg) {
         if (_id)
           eventsByType[_id] = {
             count,
             ...(duration != null ? { duration: +duration.toFixed(2) } : {}),
+            identifiers: {},
           };
+      }
+      for (const {
+        _id: { type, identifier },
+        count,
+        duration,
+      } of eventsByTypeIdentifierAgg) {
+        if (type && identifier) {
+          if (!eventsByType[type]) {
+            eventsByType[type] = { count: 0, identifiers: {} };
+          }
+          eventsByType[type].identifiers[identifier] = {
+            count,
+            ...(duration != null ? { duration: +duration.toFixed(2) } : {}),
+          };
+        }
       }
       return { totalEvents, uniqueVisitors, eventsByIdentifier, eventsByType };
     } catch (error) {

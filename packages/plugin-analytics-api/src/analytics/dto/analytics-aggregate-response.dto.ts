@@ -27,6 +27,14 @@ export class AnalyticsAggregateResponseDto
       count: number;
       /** Average duration in seconds */
       duration?: number;
+      identifiers: Record<
+        string,
+        {
+          count: number;
+          /** Average duration in seconds */
+          duration?: number;
+        }
+      >;
     }
   >;
 

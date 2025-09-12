@@ -22,7 +22,8 @@
     "type": "Tipo",
     "identifier": "Identificatore",
     "createdAt": "Data",
-    "duration": "Durata (s)"
+    "duration": "Durata (s)",
+    "typeCardTitle": "Eventi - {{type}}"
   },
   "technologies": {
     "browser": "Browser",
