@@ -18,6 +18,7 @@
   },
   "events": {
     "title": "Eventi",
+    "types": "Tipi di evento",
     "type": "Tipo",
     "identifier": "Identificatore",
     "createdAt": "Data",

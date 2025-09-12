@@ -22,7 +22,7 @@ import {
 } from "@kitejs-cms/dashboard-core";
 import type { AnalyticsAggregateResponseModel } from "@kitejs-cms/plugin-analytics-api";
 import { DatePicker } from "../components/date-picker";
-import { FileJson, Download, Copy, BarChart3 } from "lucide-react";
+import { FileJson, Download, Copy, BarChart3, Tag } from "lucide-react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -81,6 +81,17 @@ export function AnalyticsEventsPage() {
     }));
   }, [data]);
 
+  const eventTypesData = useMemo(() => {
+    const entries = Object.entries(data?.eventsByType ?? {});
+    const total = entries.reduce((sum, [, value]) => sum + value.count, 0);
+    return entries.map(([key, value]) => ({
+      key,
+      count: value.count,
+      duration: value.duration,
+      percentage: total ? +((value.count / total) * 100).toFixed(2) : 0,
+    }));
+  }, [data]);
+
   const datasetToCsv = (
     dataset: Record<string, string | number>[]
   ): string => {
@@ -124,6 +135,143 @@ export function AnalyticsEventsPage() {
         <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
+            {t("events.types")}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openJson(eventTypesData)}
+              aria-label={t("technologies.viewJson")}
+              className="flex items-center"
+            >
+              <FileJson className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => downloadDataset(eventTypesData, "event-types.csv")}
+              aria-label={t("technologies.downloadCsv")}
+              className="flex items-center"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => copyDataset(eventTypesData)}
+              aria-label={t("technologies.copyCsv")}
+              className="flex items-center"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <Separator />
+        <CardContent className="p-6">
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+              <Skeleton className="h-80 w-full" />
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("events.type")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("technologies.count")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("events.duration")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("technologies.percentage")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
+              <div className="h-80 flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={eventTypesData}
+                      dataKey="percentage"
+                      nameKey="key"
+                      innerRadius="40%"
+                      outerRadius="80%"
+                      label={({ value }) => `${value.toFixed(1)}%`}
+                    >
+                      {eventTypesData.map((_, index) => (
+                        <Cell
+                          key={`type-cell-${index}`}
+                          fill={CHART_COLORS[index % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip
+                      formatter={(value: number) => `${value.toFixed(1)}%`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <DataTable<{
+                key: string;
+                count: number;
+                duration?: number;
+                percentage: number;
+              }>
+                data={eventTypesData}
+                columns={[
+                  { key: "key" as never, label: t("events.type") },
+                  {
+                    key: "count" as never,
+                    label: t("technologies.count"),
+                    align: "right",
+                  },
+                  {
+                    key: "duration" as never,
+                    label: t("events.duration"),
+                    align: "right",
+                    render: (value) =>
+                      typeof value === "number" ? value.toFixed(2) : "-",
+                  },
+                  {
+                    key: "percentage" as never,
+                    label: t("technologies.percentage"),
+                    align: "right",
+                    render: (value) =>
+                      typeof value === "number" ? `${value.toFixed(2)}%` : value,
+                  },
+                ]}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-neutral-50 gap-0 py-0">
+        <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="flex items-center gap-2">
+            <Tag className="h-4 w-4" />
             {t("events.title")}
           </CardTitle>
           <div className="flex items-center gap-2">

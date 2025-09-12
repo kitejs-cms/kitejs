@@ -18,6 +18,7 @@
   },
   "events": {
     "title": "Events",
+    "types": "Event types",
     "type": "Type",
     "identifier": "Identifier",
     "createdAt": "Date",

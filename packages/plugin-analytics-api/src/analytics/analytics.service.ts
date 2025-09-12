@@ -137,6 +137,7 @@ export class AnalyticsService {
       string,
       { count: number; duration?: number }
     >;
+    eventsByType: Record<string, { count: number; duration?: number }>;
   }> {
     try {
       const match = filter;
@@ -160,6 +161,22 @@ export class AnalyticsService {
           },
         ])
         .exec();
+      const eventsByTypeAgg = await this.eventModel
+        .aggregate<{
+          _id: string;
+          count: number;
+          duration: number | null;
+        }>([
+          { $match: match },
+          {
+            $group: {
+              _id: "$type",
+              count: { $sum: 1 },
+              duration: { $avg: "$duration" },
+            },
+          },
+        ])
+        .exec();
       const eventsByIdentifier: Record<
         string,
         { count: number; duration?: number }
@@ -168,12 +185,21 @@ export class AnalyticsService {
         if (_id)
           eventsByIdentifier[_id] = {
             count,
-            ...(duration != null
-              ? { duration: +(duration / 1000).toFixed(2) }
-              : {}),
+            ...(duration != null ? { duration: +duration.toFixed(2) } : {}),
           };
       }
-      return { totalEvents, uniqueVisitors, eventsByIdentifier };
+      const eventsByType: Record<
+        string,
+        { count: number; duration?: number }
+      > = {};
+      for (const { _id, count, duration } of eventsByTypeAgg) {
+        if (_id)
+          eventsByType[_id] = {
+            count,
+            ...(duration != null ? { duration: +duration.toFixed(2) } : {}),
+          };
+      }
+      return { totalEvents, uniqueVisitors, eventsByIdentifier, eventsByType };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to aggregate events. ${message}`);

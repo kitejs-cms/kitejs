@@ -9,4 +9,12 @@ export interface AnalyticsAggregateResponseModel {
       duration?: number;
     }
   >;
+  eventsByType: Record<
+    string,
+    {
+      count: number;
+      /** Average duration in seconds */
+      duration?: number;
+    }
+  >;
 }
