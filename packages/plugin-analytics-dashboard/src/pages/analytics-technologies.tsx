@@ -14,13 +14,6 @@ import {
   useApi,
   useBreadcrumb,
   JsonModal,
-  Skeleton,
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
 } from "@kitejs-cms/dashboard-core";
 import {
   FileJson,
@@ -37,6 +30,7 @@ import {
   Cell,
   Tooltip as RechartsTooltip,
 } from "recharts";
+import { AnalyticsSkeleton } from "../components/analytics-skeleton";
 
 export const CHART_COLORS = Array.from(
   { length: 10 },
@@ -184,37 +178,13 @@ export function AnalyticsTechnologiesPage() {
         <Separator />
         <CardContent className="p-6">
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-              <Skeleton className="h-80 w-full" />
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("technologies.browser")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("technologies.count")}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t("technologies.percentage")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-40" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <AnalyticsSkeleton
+              headers={[
+                t("technologies.browser"),
+                t("technologies.count"),
+                t("technologies.percentage"),
+              ]}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
               <div className="h-80 flex items-center justify-center">
@@ -307,37 +277,13 @@ export function AnalyticsTechnologiesPage() {
         <Separator />
         <CardContent className="p-6">
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-              <Skeleton className="h-80 w-full" />
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("technologies.os")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("technologies.count")}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t("technologies.percentage")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-40" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <AnalyticsSkeleton
+              headers={[
+                t("technologies.os"),
+                t("technologies.count"),
+                t("technologies.percentage"),
+              ]}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
               <div className="h-80 flex items-center justify-center">
@@ -430,37 +376,13 @@ export function AnalyticsTechnologiesPage() {
         <Separator />
         <CardContent className="p-6">
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-              <Skeleton className="h-80 w-full" />
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("technologies.device")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("technologies.count")}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t("technologies.percentage")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-40" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <AnalyticsSkeleton
+              headers={[
+                t("technologies.device"),
+                t("technologies.count"),
+                t("technologies.percentage"),
+              ]}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
               <div className="h-80 flex items-center justify-center">

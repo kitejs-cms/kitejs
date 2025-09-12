@@ -12,13 +12,6 @@ import {
   useApi,
   useBreadcrumb,
   JsonModal,
-  Skeleton,
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
   useSettingsContext,
   AlertDialog,
   AlertDialogContent,
@@ -38,6 +31,7 @@ import {
   ANALYTICS_SETTINGS_KEY,
 } from "../module";
 import { DatePicker } from "../components/date-picker";
+import { AnalyticsSkeleton } from "../components/analytics-skeleton";
 import { FileJson, Download, Copy, Tag, Pencil } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -247,43 +241,14 @@ export function AnalyticsEventsPage() {
           <Separator />
           <CardContent className="p-6">
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
-                <Skeleton className="h-80 w-full" />
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("events.identifier")}</TableHead>
-                      <TableHead className="text-right">
-                        {t("technologies.count")}
-                      </TableHead>
-                      <TableHead className="text-right">
-                        {t("events.duration")}
-                      </TableHead>
-                      <TableHead className="text-right">
-                        {t("technologies.percentage")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell>
-                          <Skeleton className="h-4 w-40" />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Skeleton className="h-4 w-16 ml-auto" />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Skeleton className="h-4 w-16 ml-auto" />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Skeleton className="h-4 w-16 ml-auto" />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <AnalyticsSkeleton
+                headers={[
+                  t("events.identifier"),
+                  t("technologies.count"),
+                  t("events.duration"),
+                  t("technologies.percentage"),
+                ]}
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 md:items-center gap-4">
                 <div className="h-80 flex items-center justify-center">
