@@ -56,6 +56,7 @@
     "totalEvents": "Eventi totali",
     "uniqueVisitors": "Visitatori unici",
     "newUsers": "Nuovi utenti",
-    "viewDetails": "Vai a Analytics"
+    "viewDetails": "Vai a Analytics",
+    "trendChartAriaLabel": "Grafico visitatori e nuovi utenti"
   }
 }

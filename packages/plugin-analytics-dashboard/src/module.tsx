@@ -66,9 +66,9 @@ export const AnalyticsModule: DashboardModule = {
       key: "analytics-dashboard",
       component: <AnalyticsDashboardWidget />,
       defaultWidth: 2,
-      defaultHeight: 1,
+      defaultHeight: 2,
       minWidth: 2,
-      minHeight: 1,
+      minHeight: 2,
     },
   ],
 };
