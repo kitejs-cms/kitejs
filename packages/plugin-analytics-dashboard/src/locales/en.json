@@ -19,7 +19,8 @@
     "newUsers": "New users",
     "locations": "Locations",
     "cities": "Cities",
-    "noCityData": "No data"
+    "noCityData": "No data",
+    "world": "World"
   },
   "events": {
     "title": "Events",

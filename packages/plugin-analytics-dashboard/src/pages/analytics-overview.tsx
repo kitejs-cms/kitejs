@@ -39,9 +39,15 @@ export function AnalyticsOverviewPage() {
   const { fetchData: fetchSummary, loading: loadingSummary } =
     useApi<AnalyticsSummaryResponseModel>();
   const {
-    data: locations,
-    fetchData: fetchLocations,
-    loading: loadingLocations,
+    data: countryLocations,
+    fetchData: fetchCountryLocations,
+    loading: loadingCountryLocations,
+  } = useApi<AnalyticsLocationsResponseModel>();
+
+  const {
+    data: cityLocations,
+    fetchData: fetchCityLocations,
+    loading: loadingCityLocations,
   } = useApi<AnalyticsLocationsResponseModel>();
 
   const [summary, setSummary] = useState<AnalyticsSummaryResponseModel | null>(
@@ -93,7 +99,19 @@ export function AnalyticsOverviewPage() {
     }
   }, [range, fetchSummary, hasPermission]);
 
-  const loadLocations = useCallback(() => {
+  const loadCountries = useCallback(() => {
+    if (!range?.from || !range?.to || !hasPermission("analytics:events.read"))
+      return;
+    const params = new URLSearchParams({
+      startDate: range.from.toISOString().slice(0, 10),
+      endDate: range.to.toISOString().slice(0, 10),
+    });
+    fetchCountryLocations(
+      `analytics/events/locations?${params.toString()}`
+    );
+  }, [range, fetchCountryLocations, hasPermission]);
+
+  const loadCities = useCallback(() => {
     if (!range?.from || !range?.to || !hasPermission("analytics:events.read"))
       return;
     const params = new URLSearchParams({
@@ -101,16 +119,20 @@ export function AnalyticsOverviewPage() {
       endDate: range.to.toISOString().slice(0, 10),
     });
     if (selectedCountry) params.set("country", selectedCountry.iso3);
-    fetchLocations(`analytics/events/locations?${params.toString()}`);
-  }, [range, fetchLocations, selectedCountry, hasPermission]);
+    fetchCityLocations(`analytics/events/locations?${params.toString()}`);
+  }, [range, fetchCityLocations, selectedCountry, hasPermission]);
 
   useEffect(() => {
     loadSummary();
   }, [loadSummary]);
 
   useEffect(() => {
-    loadLocations();
-  }, [loadLocations]);
+    loadCountries();
+  }, [loadCountries]);
+
+  useEffect(() => {
+    loadCities();
+  }, [loadCities]);
 
   return (
     <div className="space-y-6 p-4">
@@ -229,7 +251,7 @@ export function AnalyticsOverviewPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => openJson(locations ?? {})}
+                  onClick={() => openJson(countryLocations ?? {})}
                   aria-label={t("technologies.viewJson")}
                   className="flex items-center"
                 >
@@ -238,11 +260,11 @@ export function AnalyticsOverviewPage() {
               </CardHeader>
               <Separator />
               <CardContent className="p-6">
-                {loadingLocations ? (
+                {loadingCountryLocations ? (
                   <Skeleton className="h-80 w-full" />
                 ) : (
                   <WorldChoroplethD3
-                    data={locations ? locations.countries : {}}
+                    data={countryLocations ? countryLocations.countries : {}}
                     onSelectCountry={(iso3, name) =>
                       setSelectedCountry((prev) =>
                         prev?.iso3 === iso3 ? null : { iso3, name }
@@ -256,17 +278,15 @@ export function AnalyticsOverviewPage() {
             <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-1">
               <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
                 <div>
-                  {selectedCountry && (
-                    <p className="text-xs text-muted-foreground">
-                      {selectedCountry.name}
-                    </p>
-                  )}
                   <CardTitle>{t("summary.cities")}</CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedCountry?.name ?? t("summary.world")}
+                  </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => openJson(locations?.cities ?? {})}
+                  onClick={() => openJson(cityLocations?.cities ?? {})}
                   aria-label={t("technologies.viewJson")}
                   className="flex items-center"
                 >
@@ -275,7 +295,7 @@ export function AnalyticsOverviewPage() {
               </CardHeader>
               <Separator />
               <CardContent className="p-6">
-                {loadingLocations ? (
+                {loadingCityLocations ? (
                   <ul className="space-y-1">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <li key={i} className="flex justify-between text-sm">
@@ -284,9 +304,11 @@ export function AnalyticsOverviewPage() {
                       </li>
                     ))}
                   </ul>
-                ) : locations?.cities && Object.keys(locations.cities).length > 0 ? (
+                ) :
+                cityLocations?.cities &&
+                  Object.keys(cityLocations.cities).length > 0 ? (
                   <ul className="space-y-1">
-                    {Object.entries(locations.cities)
+                    {Object.entries(cityLocations.cities)
                       .sort((a, b) => b[1] - a[1])
                       .map(([city, count]) => (
                         <li key={city} className="flex justify-between text-sm">

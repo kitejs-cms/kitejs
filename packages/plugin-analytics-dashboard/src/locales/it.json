@@ -19,7 +19,8 @@
     "newUsers": "Nuovi utenti",
     "locations": "Provenienza",
     "cities": "Città",
-    "noCityData": "Nessun dato"
+    "noCityData": "Nessun dato",
+    "world": "Mondo"
   },
   "events": {
     "title": "Eventi",
