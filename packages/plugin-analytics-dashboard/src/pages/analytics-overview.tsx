@@ -108,9 +108,9 @@ export function AnalyticsOverviewPage() {
     <div className="space-y-6 p-4">
       <DatePicker value={range} onValueChange={setRange} />
 
-      <div className="grid gap-6 md:grid-cols-1">
+      <div className="grid gap-6 md:grid-cols-3">
         {hasPermission("analytics:summary.read") && (
-          <Card className="shadow-neutral-50 gap-0 py-0">
+          <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-3">
             <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
               <CardTitle>{t("summary.title")}</CardTitle>
               <Button
@@ -192,33 +192,51 @@ export function AnalyticsOverviewPage() {
         )}
 
         {hasPermission("analytics:events.read") && (
-          <Card className="shadow-neutral-50 gap-0 py-0">
-            <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
-              <CardTitle>{t("summary.locations")}</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => openJson(locations ?? {})}
-                aria-label={t("technologies.viewJson")}
-                className="flex items-center"
-              >
-                <FileJson className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-            <Separator />
-            <CardContent className="p-6 flex gap-4">
-              <WorldChoroplethD3
-                data={locations ? locations.countries : {}}
-                onSelectCountry={setSelectedCountry}
-              />
-              {selectedCountry && locations?.cities && (
-                <div className="w-64 flex-shrink-0">
-                  <div className="rounded-2xl border bg-card p-4">
-                    <div className="mb-2 font-medium">
-                      {t("summary.cities")}
-                    </div>
-                    <ul className="space-y-1">
-                      {Object.entries(locations.cities).map(([city, count]) => (
+          <>
+            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-2">
+              <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
+                <CardTitle>{t("summary.locations")}</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openJson(locations ?? {})}
+                  aria-label={t("technologies.viewJson")}
+                  className="flex items-center"
+                >
+                  <FileJson className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <Separator />
+              <CardContent className="p-6">
+                <WorldChoroplethD3
+                  data={locations ? locations.countries : {}}
+                  onSelectCountry={(iso3) =>
+                    setSelectedCountry((prev) => (prev === iso3 ? null : iso3))
+                  }
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-1">
+              <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
+                <CardTitle>{t("summary.cities")}</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openJson(locations?.cities ?? {})}
+                  aria-label={t("technologies.viewJson")}
+                  className="flex items-center"
+                >
+                  <FileJson className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <Separator />
+              <CardContent className="p-6">
+                {locations?.cities ? (
+                  <ul className="space-y-1">
+                    {Object.entries(locations.cities)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([city, count]) => (
                         <li key={city} className="flex justify-between text-sm">
                           <span>{city}</span>
                           <span className="font-medium">
@@ -226,12 +244,15 @@ export function AnalyticsOverviewPage() {
                           </span>
                         </li>
                       ))}
-                    </ul>
+                  </ul>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    Nessun dato
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+          </>
         )}
       </div>
 
