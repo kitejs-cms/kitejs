@@ -27,14 +27,8 @@ import {
   Tooltip as RechartsTooltip,
   CartesianGrid,
 } from "recharts";
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-} from "react-simple-maps";
 import { FileJson, Users, UserPlus } from "lucide-react";
-const geoUrl =
-  "https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json";
+import { WorldChoroplethD3 } from "../components/locations-card";
 
 export function AnalyticsOverviewPage() {
   const { t, i18n } = useTranslation("analytics");
@@ -42,13 +36,12 @@ export function AnalyticsOverviewPage() {
   const hasPermission = useHasPermission();
 
   const { fetchData: fetchSummary } = useApi<AnalyticsSummaryResponseModel>();
-  const {
-    data: locations,
-    fetchData: fetchLocations,
-  } = useApi<AnalyticsLocationsResponseModel>();
+  const { data: locations, fetchData: fetchLocations } =
+    useApi<AnalyticsLocationsResponseModel>();
 
-  const [summary, setSummary] =
-    useState<AnalyticsSummaryResponseModel | null>(null);
+  const [summary, setSummary] = useState<AnalyticsSummaryResponseModel | null>(
+    null
+  );
   const [range, setRange] = useState<DateRange | undefined>(() => ({
     from: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
     to: new Date(),
@@ -111,14 +104,11 @@ export function AnalyticsOverviewPage() {
     loadLocations();
   }, [loadLocations]);
 
-  const maxCountry =
-    Math.max(...Object.values(locations?.countries ?? { none: 0 })) || 1;
-
   return (
     <div className="space-y-6 p-4">
       <DatePicker value={range} onValueChange={setRange} />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-1">
         {hasPermission("analytics:summary.read") && (
           <Card className="shadow-neutral-50 gap-0 py-0">
             <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
@@ -142,7 +132,8 @@ export function AnalyticsOverviewPage() {
                       {t("summary.activeUsers")}
                     </span>
                     <span className="mt-0.5 text-base font-semibold leading-none">
-                      {summary?.uniqueVisitors?.toLocaleString(i18n.language) ?? "-"}
+                      {summary?.uniqueVisitors?.toLocaleString(i18n.language) ??
+                        "-"}
                     </span>
                   </div>
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -161,10 +152,17 @@ export function AnalyticsOverviewPage() {
               </div>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
+                  <LineChart
+                    data={chartData}
+                    margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" hide />
-                    <YAxis allowDecimals={false} />
+                    <XAxis dataKey="date" tick={false} tickLine={false} />
+                    <YAxis
+                      tick={{ fontSize: 10 }}
+                      stroke="#6B7280"
+                      width={26}
+                    />
                     <RechartsTooltip
                       labelFormatter={(label) =>
                         new Date(label as string).toLocaleDateString()
@@ -209,56 +207,7 @@ export function AnalyticsOverviewPage() {
             </CardHeader>
             <Separator />
             <CardContent className="p-6 flex gap-4">
-              <div className="flex-1 h-80">
-                <ComposableMap projectionConfig={{ scale: 145 }} className="w-full h-full">
-                  <Geographies geography={geoUrl}>
-                    {({ geographies }) =>
-                      geographies.map((geo) => {
-                        const iso = geo.properties.ISO_A2 as string;
-                        const count = locations?.countries?.[iso] ?? 0;
-                        const fill =
-                          count > 0
-                            ? `rgba(37,99,235,${0.3 + (count / maxCountry) * 0.7})`
-                            : "#EEE";
-                        return (
-                          <Geography
-                            key={geo.rsmKey}
-                            geography={geo}
-                            fill={fill}
-                            stroke="#FFF"
-                            onClick={() => setSelectedCountry(iso)}
-                            style={{
-                              default: { outline: "none" },
-                              hover: { outline: "none" },
-                              pressed: { outline: "none" },
-                            }}
-                          >
-                            <title>
-                              {`${geo.properties.NAME}: ${count}`}
-                            </title>
-                          </Geography>
-                        );
-                      })
-                    }
-                  </Geographies>
-                </ComposableMap>
-              </div>
-              {selectedCountry && locations?.cities && (
-                <div className="w-64 overflow-y-auto">
-                  <h4 className="font-semibold mb-2">
-                    {t("summary.cities")} (
-                    {locations?.countries?.[selectedCountry] ?? 0})
-                  </h4>
-                  <ul className="space-y-1">
-                    {Object.entries(locations.cities).map(([city, count]) => (
-                      <li key={city} className="flex justify-between">
-                        <span>{city}</span>
-                        <span>{count}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <WorldChoroplethD3 data={locations ? locations.countries : {}} />
             </CardContent>
           </Card>
         )}
