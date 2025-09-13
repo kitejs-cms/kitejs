@@ -1,3 +1,15 @@
+import { AnalyticsService } from "./analytics.service";
+import { TrackEventDto, TrackEvent } from "./dto/track-event.dto";
+import { AnalyticsEventResponseDto } from "./dto/analytics-event-response.dto";
+import { AnalyticsSummaryResponseDto } from "./dto/analytics-summary-response.dto";
+import { AnalyticsAggregateResponseDto } from "./dto/analytics-aggregate-response.dto";
+import { AnalyticsTechnologiesResponseDto } from "./dto/analytics-technologies-response.dto";
+import { AnalyticsLocationsResponseDto } from "./dto/analytics-locations-response.dto";
+import { AnalyticsApiKeyGuard } from "./guards/api-key.guard";
+import type { Request } from "express";
+import geoip from "geoip-lite";
+import UAParser from "ua-parser-js";
+import { createHash } from "crypto";
 import {
   Body,
   Controller,
@@ -7,18 +19,6 @@ import {
   Req,
   UseGuards,
 } from "@nestjs/common";
-import type { Request } from "express";
-import geoip from "geoip-lite";
-import UAParser from "ua-parser-js";
-import { createHash } from "crypto";
-import { AnalyticsService } from "./analytics.service";
-import { TrackEventDto, TrackEvent } from "./dto/track-event.dto";
-import { AnalyticsEventResponseDto } from "./dto/analytics-event-response.dto";
-import { AnalyticsSummaryResponseDto } from "./dto/analytics-summary-response.dto";
-import { AnalyticsAggregateResponseDto } from "./dto/analytics-aggregate-response.dto";
-import { AnalyticsTechnologiesResponseDto } from "./dto/analytics-technologies-response.dto";
-import { AnalyticsLocationsResponseDto } from "./dto/analytics-locations-response.dto";
-import { AnalyticsApiKeyGuard } from "./guards/api-key.guard";
 import {
   JwtAuthGuard,
   PermissionsGuard,
@@ -253,11 +253,12 @@ export class AnalyticsController {
   @ApiQuery({ name: "country", required: false, type: String })
   async getLocations(@Query() query: Record<string, string>) {
     const { filter } = parseQuery(query, {
-      allowedFilters: ["type", "identifier", "startDate", "endDate"],
+      allowedFilters: ["type", "identifier", "startDate", "endDate", "country"],
     });
 
     delete filter.startDate;
     delete filter.endDate;
+    delete filter.country;
 
     const typedFilter = filter as {
       type?: string;
@@ -271,7 +272,10 @@ export class AnalyticsController {
       if (startDate) typedFilter.createdAt.$gte = new Date(startDate);
       if (endDate) typedFilter.createdAt.$lte = new Date(endDate);
     }
-    const result = await this.analyticsService.getLocations(typedFilter, country);
+    const result = await this.analyticsService.getLocations(
+      typedFilter,
+      country
+    );
     return new AnalyticsLocationsResponseDto(result);
   }
 }

@@ -66,9 +66,10 @@ export function AnalyticsOverviewPage() {
   const [chartData, setChartData] = useState<
     { date: string; active: number; new: number }[]
   >([]);
-  const [selectedCountry, setSelectedCountry] = useState<
-    { iso3: string; name: string } | null
-  >(null);
+  const [selectedCountry, setSelectedCountry] = useState<{
+    iso3: string;
+    name: string;
+  } | null>(null);
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
 
@@ -112,9 +113,7 @@ export function AnalyticsOverviewPage() {
       startDate: range.from.toISOString().slice(0, 10),
       endDate: range.to.toISOString().slice(0, 10),
     });
-    fetchCountryLocations(
-      `analytics/events/locations?${params.toString()}`
-    );
+    fetchCountryLocations(`analytics/events/locations?${params.toString()}`);
   }, [range, fetchCountryLocations, hasPermission]);
 
   const loadCities = useCallback(() => {
@@ -188,8 +187,9 @@ export function AnalyticsOverviewPage() {
                           {t("summary.activeUsers")}
                         </span>
                         <span className="mt-0.5 text-base font-semibold leading-none">
-                          {summary?.uniqueVisitors?.toLocaleString(i18n.language) ??
-                            "-"}
+                          {summary?.uniqueVisitors?.toLocaleString(
+                            i18n.language
+                          ) ?? "-"}
                         </span>
                       </div>
                       <Users className="h-4 w-4 text-muted-foreground" />
@@ -200,7 +200,8 @@ export function AnalyticsOverviewPage() {
                           {t("summary.newUsers")}
                         </span>
                         <span className="mt-0.5 text-base font-semibold leading-none">
-                          {summary?.newUsers?.toLocaleString(i18n.language) ?? "-"}
+                          {summary?.newUsers?.toLocaleString(i18n.language) ??
+                            "-"}
                         </span>
                       </div>
                       <UserPlus className="h-4 w-4 text-muted-foreground" />
@@ -265,7 +266,7 @@ export function AnalyticsOverviewPage() {
                 </Button>
               </CardHeader>
               <Separator />
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 {loadingCountryLocations ? (
                   <Skeleton className="h-80 w-full" />
                 ) : (
@@ -283,7 +284,7 @@ export function AnalyticsOverviewPage() {
 
             <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-1 rounded-2xl overflow-hidden">
               <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
-                <div>
+                <div className="flex flex-col gap-1">
                   <CardTitle>{t("summary.cities")}</CardTitle>
                   <p className="text-xs text-muted-foreground">
                     {selectedCountry?.name ?? t("summary.world")}
@@ -300,9 +301,9 @@ export function AnalyticsOverviewPage() {
                 </Button>
               </CardHeader>
               <Separator />
-              <CardContent className="p-6">
+              <CardContent className="py-2 max-h-[550px] overflow-y-auto">
                 {loadingCityLocations ? (
-                  <Table className="[&_th]:p-0 [&_td]:p-0">
+                  <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-xs">
@@ -327,16 +328,15 @@ export function AnalyticsOverviewPage() {
                       ))}
                     </TableBody>
                   </Table>
-                ) :
-                cityLocations?.cities &&
+                ) : cityLocations?.cities &&
                   Object.keys(cityLocations.cities).length > 0 ? (
                   (() => {
-                    const cityEntries = Object.entries(cityLocations.cities).sort(
-                      (a, b) => b[1] - a[1]
-                    );
+                    const cityEntries = Object.entries(
+                      cityLocations.cities
+                    ).sort((a, b) => b[1] - a[1]);
                     const maxCount = cityEntries[0]?.[1] ?? 0;
                     return (
-                      <Table className="[&_th]:p-0 [&_td]:p-0">
+                      <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead className="text-xs">
@@ -351,19 +351,21 @@ export function AnalyticsOverviewPage() {
                           {cityEntries.map(([city, count]) => (
                             <TableRow key={city}>
                               <TableCell>
-                                <div className="space-y-1">
+                                <div className="space-y-1 py-1">
                                   <span>{city}</span>
-                          <div className="h-1 w-full rounded bg-muted">
-                            <div
-                              className="h-full rounded bg-primary"
-                              style={{ width: `${(count / maxCount) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {count.toLocaleString(i18n.language)}
-                      </TableCell>
+                                  <div className="h-1 w-full rounded bg-muted">
+                                    <div
+                                      className="h-full rounded bg-blue-300 mt-1"
+                                      style={{
+                                        width: `${(count / maxCount) * 100}%`,
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                {count.toLocaleString(i18n.language)}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -371,9 +373,11 @@ export function AnalyticsOverviewPage() {
                     );
                   })()
                 ) : (
-                  <div className="flex h-48 flex-col items-center justify-center text-sm text-muted-foreground">
-                    <MapPinOff className="mb-3 h-12 w-12" />
-                    {t("summary.noCityData")}
+                  <div className="flex flex-col items-center justify-center text-sm text-muted-foreground">
+                    <MapPinOff className="mb-3 h-22 w-22 mt-8 text-gray-100" />
+                    <span className="text-gray-100">
+                      {t("summary.noCityData")}
+                    </span>
                   </div>
                 )}
               </CardContent>
