@@ -49,5 +49,14 @@
     "downloadCsv": "Scarica CSV",
     "copyCsv": "Copia CSV",
     "selectedRange": "Ultimi {{days}} giorni"
+  },
+  "dashboardWidget": {
+    "title": "Analytics",
+    "last30Days": "Ultimi 30 giorni",
+    "totalEvents": "Eventi totali",
+    "uniqueVisitors": "Visitatori unici",
+    "newUsers": "Nuovi utenti",
+    "viewDetails": "Vai a Analytics",
+    "trendChartAriaLabel": "Grafico visitatori e nuovi utenti"
   }
 }

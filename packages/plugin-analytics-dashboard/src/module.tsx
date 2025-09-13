@@ -3,6 +3,7 @@ import type { DashboardModule } from "@kitejs-cms/dashboard-core";
 import { AnalyticsOverviewPage } from "./pages/analytics-overview";
 import { AnalyticsEventsPage } from "./pages/analytics-events";
 import { AnalyticsTechnologiesPage } from "./pages/analytics-technologies";
+import { AnalyticsDashboardWidget } from "./components/analytics-dashboard-widget";
 
 export const ANALYTICS_PLUGIN_NAMESPACE = "analytics";
 export const ANALYTICS_SETTINGS_KEY = `${ANALYTICS_PLUGIN_NAMESPACE}:config`;
@@ -60,4 +61,14 @@ export const AnalyticsModule: DashboardModule = {
       },
     ],
   },
+  dashboardWidgets: [
+    {
+      key: "analytics-dashboard",
+      component: <AnalyticsDashboardWidget />,
+      defaultWidth: 2,
+      defaultHeight: 2,
+      minWidth: 2,
+      minHeight: 2,
+    },
+  ],
 };
