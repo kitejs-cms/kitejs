@@ -302,7 +302,7 @@ export function AnalyticsOverviewPage() {
               <Separator />
               <CardContent className="p-6">
                 {loadingCityLocations ? (
-                  <Table>
+                  <Table className="[&_th]:p-0 [&_td]:p-0">
                     <TableHeader>
                       <TableRow>
                         <TableHead>{t("summary.city")}</TableHead>
@@ -316,6 +316,7 @@ export function AnalyticsOverviewPage() {
                         <TableRow key={i}>
                           <TableCell>
                             <Skeleton className="h-4 w-32" />
+                            <Skeleton className="mt-2 h-1 w-full" />
                           </TableCell>
                           <TableCell className="text-right">
                             <Skeleton className="h-4 w-12 ml-auto" />
@@ -327,28 +328,44 @@ export function AnalyticsOverviewPage() {
                 ) :
                 cityLocations?.cities &&
                   Object.keys(cityLocations.cities).length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t("summary.city")}</TableHead>
-                        <TableHead className="text-right">
-                          {t("summary.visitors")}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Object.entries(cityLocations.cities)
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([city, count]) => (
-                          <TableRow key={city}>
-                            <TableCell>{city}</TableCell>
-                            <TableCell className="text-right font-medium">
-                              {count.toLocaleString(i18n.language)}
-                            </TableCell>
+                  (() => {
+                    const cityEntries = Object.entries(cityLocations.cities).sort(
+                      (a, b) => b[1] - a[1]
+                    );
+                    const maxCount = cityEntries[0]?.[1] ?? 0;
+                    return (
+                      <Table className="[&_th]:p-0 [&_td]:p-0">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t("summary.city")}</TableHead>
+                            <TableHead className="text-right">
+                              {t("summary.visitors")}
+                            </TableHead>
                           </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {cityEntries.map(([city, count]) => (
+                            <TableRow key={city}>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <span>{city}</span>
+                                  <div className="h-1 w-full rounded bg-secondary">
+                                    <div
+                                      className="h-full bg-primary"
+                                      style={{ width: `${(count / maxCount) * 100}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                {count.toLocaleString(i18n.language)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    );
+                  })()
                 ) : (
                   <div className="flex flex-col items-center justify-center text-sm text-muted-foreground py-8">
                     <MapPinOff className="h-8 w-8 mb-2" />
