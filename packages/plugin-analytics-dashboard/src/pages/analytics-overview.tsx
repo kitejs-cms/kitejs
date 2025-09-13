@@ -23,6 +23,11 @@ import {
   YAxis,
   Tooltip as RechartsTooltip,
 } from "recharts";
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+} from "react-simple-maps";
 const geoUrl =
   "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
 
@@ -52,11 +57,6 @@ export function AnalyticsOverviewPage() {
     { date: string; active: number; new: number }[]
   >([]);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [mapComponents, setMapComponents] = useState<{
-    ComposableMap: React.ComponentType<Record<string, unknown>>;
-    Geographies: React.ComponentType<Record<string, unknown>>;
-    Geography: React.ComponentType<Record<string, unknown>>;
-  } | null>(null);
 
   useEffect(() => {
     setBreadcrumb([
@@ -115,18 +115,6 @@ export function AnalyticsOverviewPage() {
     loadLocations();
   }, [loadLocations]);
 
-  useEffect(() => {
-    import("https://cdn.skypack.dev/react-simple-maps@3?min").then((mod) => {
-      setMapComponents(
-        mod as {
-          ComposableMap: React.ComponentType<Record<string, unknown>>;
-          Geographies: React.ComponentType<Record<string, unknown>>;
-          Geography: React.ComponentType<Record<string, unknown>>;
-        }
-      );
-    });
-  }, []);
-
   const maxCountry = Math.max(
     ...Object.values(locations?.countries ?? { none: 0 })
   );
@@ -181,35 +169,33 @@ export function AnalyticsOverviewPage() {
           </CardHeader>
           <CardContent className="flex gap-4">
             <div className="flex-1 h-80">
-              {mapComponents && (
-                <mapComponents.ComposableMap projectionConfig={{ scale: 150 }}>
-                  <mapComponents.Geographies geography={geoUrl}>
-                    {({ geographies }: { geographies: GeoFeature[] }) =>
-                      geographies.map((geo) => {
-                        const iso = geo.properties.ISO_A2;
-                        const val = locations?.countries?.[iso] ?? 0;
-                        const fill = val
-                          ? `rgba(37,99,235,${0.2 + (val / maxCountry) * 0.8})`
-                          : "#EEE";
-                        return (
-                          <mapComponents.Geography
-                            key={geo.rsmKey}
-                            geography={geo as unknown as Record<string, unknown>}
-                            onClick={() => {
-                              setSelectedCountry(iso);
-                            }}
-                            style={{
-                              default: { fill, outline: "none" },
-                              hover: { fill: "#999", outline: "none" },
-                              pressed: { fill: "#666", outline: "none" },
-                            }}
-                          />
-                        );
-                      })
-                    }
-                  </mapComponents.Geographies>
-                </mapComponents.ComposableMap>
-              )}
+              <ComposableMap projectionConfig={{ scale: 150 }}>
+                <Geographies geography={geoUrl}>
+                  {({ geographies }: { geographies: GeoFeature[] }) =>
+                    geographies.map((geo) => {
+                      const iso = geo.properties.ISO_A2;
+                      const val = locations?.countries?.[iso] ?? 0;
+                      const fill = val
+                        ? `rgba(37,99,235,${0.2 + (val / maxCountry) * 0.8})`
+                        : "#EEE";
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo as unknown as Record<string, unknown>}
+                          onClick={() => {
+                            setSelectedCountry(iso);
+                          }}
+                          style={{
+                            default: { fill, outline: "none" },
+                            hover: { fill: "#999", outline: "none" },
+                            pressed: { fill: "#666", outline: "none" },
+                          }}
+                        />
+                      );
+                    })
+                  }
+                </Geographies>
+              </ComposableMap>
             </div>
             {selectedCountry && locations?.cities && (
               <div className="w-64 overflow-y-auto">
