@@ -416,7 +416,12 @@ export class AnalyticsService {
       const countriesAgg = await this.eventModel
         .aggregate<{ _id: string; count: number }>([
           { $match: match },
-          { $group: { _id: "$country", count: { $sum: 1 } } },
+          {
+            $group: {
+              _id: { country: "$country", fingerprint: "$fingerprint" },
+            },
+          },
+          { $group: { _id: "$_id.country", count: { $sum: 1 } } },
         ])
         .exec();
       const countries: Record<string, number> = {};
@@ -429,7 +434,12 @@ export class AnalyticsService {
         const cityAgg = await this.eventModel
           .aggregate<{ _id: string; count: number }>([
             { $match: { ...match, country } },
-            { $group: { _id: "$city", count: { $sum: 1 } } },
+            {
+              $group: {
+                _id: { city: "$city", fingerprint: "$fingerprint" },
+              },
+            },
+            { $group: { _id: "$_id.city", count: { $sum: 1 } } },
           ])
           .exec();
         cities = {};

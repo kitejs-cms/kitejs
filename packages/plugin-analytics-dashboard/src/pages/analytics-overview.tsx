@@ -22,6 +22,7 @@ import {
   XAxis,
   YAxis,
   Tooltip as RechartsTooltip,
+  CartesianGrid,
 } from "recharts";
 import {
   ComposableMap,
@@ -123,19 +124,28 @@ export function AnalyticsOverviewPage() {
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <RechartsTooltip />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="date" hide />
+                  <YAxis allowDecimals={false} />
+                  <RechartsTooltip
+                    labelFormatter={(label) =>
+                      new Date(label as string).toLocaleDateString()
+                    }
+                  />
                   <Line
                     type="monotone"
                     dataKey="active"
                     stroke="var(--chart-1)"
+                    strokeWidth={2}
+                    dot={false}
                     name={t("summary.activeUsers")}
                   />
                   <Line
                     type="monotone"
                     dataKey="new"
                     stroke="var(--chart-2)"
+                    strokeWidth={2}
+                    dot={false}
                     name={t("summary.newUsers")}
                   />
                 </LineChart>
@@ -174,7 +184,11 @@ export function AnalyticsOverviewPage() {
                             hover: { outline: "none" },
                             pressed: { outline: "none" },
                           }}
-                        />
+                        >
+                          <title>
+                            {`${geo.properties.NAME}: ${count}`}
+                          </title>
+                        </Geography>
                       );
                     })
                   }
@@ -183,7 +197,10 @@ export function AnalyticsOverviewPage() {
             </div>
             {selectedCountry && locations?.cities && (
               <div className="w-64 overflow-y-auto">
-                <h4 className="font-semibold mb-2">{t("summary.cities")}</h4>
+                <h4 className="font-semibold mb-2">
+                  {t("summary.cities")} (
+                  {locations?.countries?.[selectedCountry] ?? 0})
+                </h4>
                 <ul className="space-y-1">
                   {Object.entries(locations.cities).map(([city, count]) => (
                     <li key={city} className="flex justify-between">
