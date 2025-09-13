@@ -118,149 +118,151 @@ export function AnalyticsOverviewPage() {
     <div className="space-y-6 p-4">
       <DatePicker value={range} onValueChange={setRange} />
 
-      {hasPermission("analytics:summary.read") && (
-        <Card className="shadow-neutral-50 gap-0 py-0">
-          <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
-            <CardTitle>{t("summary.title")}</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openJson(summary ?? {})}
-              aria-label={t("technologies.viewJson")}
-              className="flex items-center"
-            >
-              <FileJson className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <Separator />
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-[11px] text-muted-foreground">
-                    {t("summary.activeUsers")}
-                  </span>
-                  <span className="mt-0.5 text-base font-semibold leading-none">
-                    {summary?.uniqueVisitors?.toLocaleString(i18n.language) ?? "-"}
-                  </span>
+      <div className="grid gap-6 md:grid-cols-2">
+        {hasPermission("analytics:summary.read") && (
+          <Card className="shadow-neutral-50 gap-0 py-0">
+            <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
+              <CardTitle>{t("summary.title")}</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => openJson(summary ?? {})}
+                aria-label={t("technologies.viewJson")}
+                className="flex items-center"
+              >
+                <FileJson className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <Separator />
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] text-muted-foreground">
+                      {t("summary.activeUsers")}
+                    </span>
+                    <span className="mt-0.5 text-base font-semibold leading-none">
+                      {summary?.uniqueVisitors?.toLocaleString(i18n.language) ?? "-"}
+                    </span>
+                  </div>
+                  <Users className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-[11px] text-muted-foreground">
-                    {t("summary.newUsers")}
-                  </span>
-                  <span className="mt-0.5 text-base font-semibold leading-none">
-                    {summary?.newUsers?.toLocaleString(i18n.language) ?? "-"}
-                  </span>
+                <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] text-muted-foreground">
+                      {t("summary.newUsers")}
+                    </span>
+                    <span className="mt-0.5 text-base font-semibold leading-none">
+                      {summary?.newUsers?.toLocaleString(i18n.language) ?? "-"}
+                    </span>
+                  </div>
+                  <UserPlus className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <UserPlus className="h-4 w-4 text-muted-foreground" />
               </div>
-            </div>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" hide />
-                  <YAxis allowDecimals={false} />
-                  <RechartsTooltip
-                    labelFormatter={(label) =>
-                      new Date(label as string).toLocaleDateString()
-                    }
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="active"
-                    stroke="var(--chart-1)"
-                    strokeWidth={2}
-                    dot={false}
-                    name={t("summary.activeUsers")}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="new"
-                    stroke="var(--chart-2)"
-                    strokeWidth={2}
-                    dot={false}
-                    name={t("summary.newUsers")}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" hide />
+                    <YAxis allowDecimals={false} />
+                    <RechartsTooltip
+                      labelFormatter={(label) =>
+                        new Date(label as string).toLocaleDateString()
+                      }
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="active"
+                      stroke="var(--chart-1)"
+                      strokeWidth={2}
+                      dot={false}
+                      name={t("summary.activeUsers")}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="new"
+                      stroke="var(--chart-2)"
+                      strokeWidth={2}
+                      dot={false}
+                      name={t("summary.newUsers")}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {hasPermission("analytics:events.read") && (
-        <Card className="shadow-neutral-50 gap-0 py-0">
-          <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
-            <CardTitle>{t("summary.locations")}</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openJson(locations ?? {})}
-              aria-label={t("technologies.viewJson")}
-              className="flex items-center"
-            >
-              <FileJson className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <Separator />
-          <CardContent className="p-6 flex gap-4">
-            <div className="flex-1 h-80">
-              <ComposableMap projectionConfig={{ scale: 145 }} className="w-full h-full">
-                <Geographies geography={geoUrl}>
-                  {({ geographies }) =>
-                    geographies.map((geo) => {
-                      const iso = geo.properties.ISO_A2 as string;
-                      const count = locations?.countries?.[iso] ?? 0;
-                      const fill =
-                        count > 0
-                          ? `rgba(37,99,235,${0.3 + (count / maxCountry) * 0.7})`
-                          : "#EEE";
-                      return (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          fill={fill}
-                          stroke="#FFF"
-                          onClick={() => setSelectedCountry(iso)}
-                          style={{
-                            default: { outline: "none" },
-                            hover: { outline: "none" },
-                            pressed: { outline: "none" },
-                          }}
-                        >
-                          <title>
-                            {`${geo.properties.NAME}: ${count}`}
-                          </title>
-                        </Geography>
-                      );
-                    })
-                  }
-                </Geographies>
-              </ComposableMap>
-            </div>
-            {selectedCountry && locations?.cities && (
-              <div className="w-64 overflow-y-auto">
-                <h4 className="font-semibold mb-2">
-                  {t("summary.cities")} (
-                  {locations?.countries?.[selectedCountry] ?? 0})
-                </h4>
-                <ul className="space-y-1">
-                  {Object.entries(locations.cities).map(([city, count]) => (
-                    <li key={city} className="flex justify-between">
-                      <span>{city}</span>
-                      <span>{count}</span>
-                    </li>
-                  ))}
-                </ul>
+        {hasPermission("analytics:events.read") && (
+          <Card className="shadow-neutral-50 gap-0 py-0">
+            <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
+              <CardTitle>{t("summary.locations")}</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => openJson(locations ?? {})}
+                aria-label={t("technologies.viewJson")}
+                className="flex items-center"
+              >
+                <FileJson className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <Separator />
+            <CardContent className="p-6 flex gap-4">
+              <div className="flex-1 h-80">
+                <ComposableMap projectionConfig={{ scale: 145 }} className="w-full h-full">
+                  <Geographies geography={geoUrl}>
+                    {({ geographies }) =>
+                      geographies.map((geo) => {
+                        const iso = geo.properties.ISO_A2 as string;
+                        const count = locations?.countries?.[iso] ?? 0;
+                        const fill =
+                          count > 0
+                            ? `rgba(37,99,235,${0.3 + (count / maxCountry) * 0.7})`
+                            : "#EEE";
+                        return (
+                          <Geography
+                            key={geo.rsmKey}
+                            geography={geo}
+                            fill={fill}
+                            stroke="#FFF"
+                            onClick={() => setSelectedCountry(iso)}
+                            style={{
+                              default: { outline: "none" },
+                              hover: { outline: "none" },
+                              pressed: { outline: "none" },
+                            }}
+                          >
+                            <title>
+                              {`${geo.properties.NAME}: ${count}`}
+                            </title>
+                          </Geography>
+                        );
+                      })
+                    }
+                  </Geographies>
+                </ComposableMap>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              {selectedCountry && locations?.cities && (
+                <div className="w-64 overflow-y-auto">
+                  <h4 className="font-semibold mb-2">
+                    {t("summary.cities")} (
+                    {locations?.countries?.[selectedCountry] ?? 0})
+                  </h4>
+                  <ul className="space-y-1">
+                    {Object.entries(locations.cities).map(([city, count]) => (
+                      <li key={city} className="flex justify-between">
+                        <span>{city}</span>
+                        <span>{count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       <JsonModal
         data={jsonData}
