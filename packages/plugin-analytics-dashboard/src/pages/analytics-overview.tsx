@@ -146,7 +146,7 @@ export function AnalyticsOverviewPage() {
 
       <div className="grid gap-6 md:grid-cols-3">
         {hasPermission("analytics:summary.read") && (
-          <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-3">
+          <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-3 rounded-2xl overflow-hidden">
             <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
               <CardTitle>{t("summary.title")}</CardTitle>
               <Button
@@ -251,7 +251,7 @@ export function AnalyticsOverviewPage() {
 
         {hasPermission("analytics:events.read") && (
           <>
-            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-2">
+            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-2 rounded-2xl overflow-hidden">
               <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
                 <CardTitle>{t("summary.locations")}</CardTitle>
                 <Button
@@ -281,7 +281,7 @@ export function AnalyticsOverviewPage() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-1">
+            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-1 rounded-2xl overflow-hidden">
               <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
                 <div>
                   <CardTitle>{t("summary.cities")}</CardTitle>
@@ -305,8 +305,10 @@ export function AnalyticsOverviewPage() {
                   <Table className="[&_th]:p-0 [&_td]:p-0">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("summary.city")}</TableHead>
-                        <TableHead className="text-right">
+                        <TableHead className="text-xs">
+                          {t("summary.city")}
+                        </TableHead>
+                        <TableHead className="text-right text-xs">
                           {t("summary.visitors")}
                         </TableHead>
                       </TableRow>
@@ -337,8 +339,10 @@ export function AnalyticsOverviewPage() {
                       <Table className="[&_th]:p-0 [&_td]:p-0">
                         <TableHeader>
                           <TableRow>
-                            <TableHead>{t("summary.city")}</TableHead>
-                            <TableHead className="text-right">
+                            <TableHead className="text-xs">
+                              {t("summary.city")}
+                            </TableHead>
+                            <TableHead className="text-right text-xs">
                               {t("summary.visitors")}
                             </TableHead>
                           </TableRow>
@@ -349,17 +353,17 @@ export function AnalyticsOverviewPage() {
                               <TableCell>
                                 <div className="space-y-1">
                                   <span>{city}</span>
-                                  <div className="h-1 w-full rounded bg-secondary">
-                                    <div
-                                      className="h-full bg-primary"
-                                      style={{ width: `${(count / maxCount) * 100}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right font-medium">
-                                {count.toLocaleString(i18n.language)}
-                              </TableCell>
+                          <div className="h-1 w-full rounded bg-muted">
+                            <div
+                              className="h-full rounded bg-primary"
+                              style={{ width: `${(count / maxCount) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {count.toLocaleString(i18n.language)}
+                      </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -367,8 +371,8 @@ export function AnalyticsOverviewPage() {
                     );
                   })()
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-sm text-muted-foreground py-8">
-                    <MapPinOff className="h-8 w-8 mb-2" />
+                  <div className="flex h-48 flex-col items-center justify-center text-sm text-muted-foreground">
+                    <MapPinOff className="mb-3 h-12 w-12" />
                     {t("summary.noCityData")}
                   </div>
                 )}

@@ -429,25 +429,22 @@ export class AnalyticsService {
         if (_id) countries[_id] = count;
       }
 
-      let cities: Record<string, number> | undefined;
-      if (country) {
-        const cityAgg = await this.eventModel
-          .aggregate<{ _id: string; count: number }>([
-            { $match: { ...match, country } },
-            {
-              $group: {
-                _id: { city: "$city", fingerprint: "$fingerprint" },
-              },
+      const cityAgg = await this.eventModel
+        .aggregate<{ _id: string; count: number }>([
+          { $match: country ? { ...match, country } : match },
+          {
+            $group: {
+              _id: { city: "$city", fingerprint: "$fingerprint" },
             },
-            { $group: { _id: "$_id.city", count: { $sum: 1 } } },
-          ])
-          .exec();
-        cities = {};
-        for (const { _id, count } of cityAgg) {
-          if (_id) cities[_id] = count;
-        }
+          },
+          { $group: { _id: "$_id.city", count: { $sum: 1 } } },
+        ])
+        .exec();
+      const cities: Record<string, number> = {};
+      for (const { _id, count } of cityAgg) {
+        if (_id) cities[_id] = count;
       }
-      return { countries, ...(cities ? { cities } : {}) };
+      return { countries, ...(Object.keys(cities).length ? { cities } : {}) };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to aggregate locations. ${message}`);
