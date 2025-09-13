@@ -45,7 +45,13 @@
   "dependencies": {
     "lucide-react": "^0.475.0",
     "react-day-picker": "^9.9.0",
-    "recharts": "^2.12.0"
+    "recharts": "^2.12.0",
+    "topojson-client": "^3.1.0",
+    "d3-scale-chromatic": "^3.1.0",
+    "d3-array": "3.2.4",
+    "d3-format": "3.1.0",
+    "d3-geo": "3.1.1",
+    "d3-scale": "4.0.2"
   },
   "devDependencies": {
     "@kitejs-cms/core": "workspace:*",
@@ -56,6 +62,13 @@
     "@types/react-dom": "19.0.3",
     "eslint": "^9.20.0",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "@types/geojson": "^7946.0.8",
+    "@types/d3-format": "3.0.4",
+    "@types/d3-scale-chromatic": "3.0.1",
+    "@types/d3-scale": "4.0.9",
+    "@types/d3-array": "3.2.2",
+    "@types/d3-geo": "3.0.8",
+    "@types/topojson-client": "^3.0.1"
   }
 }
