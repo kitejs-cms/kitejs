@@ -6,6 +6,9 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  Separator,
+  Button,
+  JsonModal,
   useApi,
   useBreadcrumb,
   useHasPermission,
@@ -29,6 +32,7 @@ import {
   Geographies,
   Geography,
 } from "react-simple-maps";
+import { FileJson } from "lucide-react";
 const geoUrl =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json";
 
@@ -53,6 +57,13 @@ export function AnalyticsOverviewPage() {
     { date: string; active: number; new: number }[]
   >([]);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [jsonOpen, setJsonOpen] = useState(false);
+  const [jsonData, setJsonData] = useState<object>({});
+
+  const openJson = (data: object) => {
+    setJsonData(data);
+    setJsonOpen(true);
+  };
 
   useEffect(() => {
     setBreadcrumb([
@@ -104,15 +115,25 @@ export function AnalyticsOverviewPage() {
     Math.max(...Object.values(locations?.countries ?? { none: 0 })) || 1;
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-6 p-4">
       <DatePicker value={range} onValueChange={setRange} />
 
       {hasPermission("analytics:summary.read") && (
-        <Card>
-          <CardHeader>
+        <Card className="shadow-neutral-50 gap-0 py-0">
+          <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
             <CardTitle>{t("summary.title")}</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openJson(summary ?? {})}
+              aria-label={t("technologies.viewJson")}
+              className="flex items-center"
+            >
+              <FileJson className="h-4 w-4" />
+            </Button>
           </CardHeader>
-          <CardContent>
+          <Separator />
+          <CardContent className="p-6">
             <div className="flex gap-4 mb-4">
               <div>
                 {t("summary.activeUsers")}: {summary?.uniqueVisitors ?? "-"}
@@ -156,11 +177,21 @@ export function AnalyticsOverviewPage() {
       )}
 
       {hasPermission("analytics:events.read") && (
-        <Card>
-          <CardHeader>
+        <Card className="shadow-neutral-50 gap-0 py-0">
+          <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
             <CardTitle>{t("summary.locations")}</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openJson(locations ?? {})}
+              aria-label={t("technologies.viewJson")}
+              className="flex items-center"
+            >
+              <FileJson className="h-4 w-4" />
+            </Button>
           </CardHeader>
-          <CardContent className="flex gap-4">
+          <Separator />
+          <CardContent className="p-6 flex gap-4">
             <div className="flex-1 h-80">
               <ComposableMap projectionConfig={{ scale: 145 }} className="w-full h-full">
                 <Geographies geography={geoUrl}>
@@ -214,6 +245,12 @@ export function AnalyticsOverviewPage() {
           </CardContent>
         </Card>
       )}
+
+      <JsonModal
+        data={jsonData}
+        isOpen={jsonOpen}
+        onClose={() => setJsonOpen(false)}
+      />
     </div>
   );
 }
