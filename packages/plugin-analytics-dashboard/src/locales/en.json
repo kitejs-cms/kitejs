@@ -19,6 +19,8 @@
     "newUsers": "New users",
     "locations": "Locations",
     "cities": "Cities",
+    "city": "City",
+    "visitors": "Visitors",
     "noCityData": "No data",
     "world": "World"
   },

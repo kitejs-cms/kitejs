@@ -10,6 +10,12 @@ import {
   Button,
   JsonModal,
   Skeleton,
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
   useApi,
   useBreadcrumb,
   useHasPermission,
@@ -296,29 +302,53 @@ export function AnalyticsOverviewPage() {
               <Separator />
               <CardContent className="p-6">
                 {loadingCityLocations ? (
-                  <ul className="space-y-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <li key={i} className="flex justify-between text-sm">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-4 w-12" />
-                      </li>
-                    ))}
-                  </ul>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("summary.city")}</TableHead>
+                        <TableHead className="text-right">
+                          {t("summary.visitors")}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell>
+                            <Skeleton className="h-4 w-32" />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Skeleton className="h-4 w-12 ml-auto" />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 ) :
                 cityLocations?.cities &&
                   Object.keys(cityLocations.cities).length > 0 ? (
-                  <ul className="space-y-1">
-                    {Object.entries(cityLocations.cities)
-                      .sort((a, b) => b[1] - a[1])
-                      .map(([city, count]) => (
-                        <li key={city} className="flex justify-between text-sm">
-                          <span>{city}</span>
-                          <span className="font-medium">
-                            {count.toLocaleString(i18n.language)}
-                          </span>
-                        </li>
-                      ))}
-                  </ul>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("summary.city")}</TableHead>
+                        <TableHead className="text-right">
+                          {t("summary.visitors")}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {Object.entries(cityLocations.cities)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([city, count]) => (
+                          <TableRow key={city}>
+                            <TableCell>{city}</TableCell>
+                            <TableCell className="text-right font-medium">
+                              {count.toLocaleString(i18n.language)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
                 ) : (
                   <div className="flex flex-col items-center justify-center text-sm text-muted-foreground py-8">
                     <MapPinOff className="h-8 w-8 mb-2" />
