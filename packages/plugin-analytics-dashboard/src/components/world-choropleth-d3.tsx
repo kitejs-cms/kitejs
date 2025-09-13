@@ -5,6 +5,8 @@ import {
   geoGraticule10,
   type GeoProjection,
 } from "d3-geo";
+import { select } from "d3-selection";
+import { zoom } from "d3-zoom";
 import type {
   Feature as GeoFeature,
   FeatureCollection,
@@ -104,6 +106,8 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
 
   const fmt = useMemo(() => format(",.0f"), []);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const gRef = useRef<SVGGElement>(null);
   const [width, setWidth] = useState<number>(1100);
 
   useEffect(() => {
@@ -122,6 +126,23 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
   const path = useMemo(() => geoPath(projection), [projection]);
   const graticule = useMemo(() => geoGraticule10(), []);
 
+  useEffect(() => {
+    const svgEl = svgRef.current;
+    const gEl = gRef.current;
+    if (!svgEl || !gEl) return;
+    const svg = select(svgEl);
+    const g = select(gEl);
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 8])
+      .on("zoom", (e) => {
+        g.attr("transform", e.transform.toString());
+      });
+    svg.call(zoomBehavior);
+    return () => {
+      svg.on(".zoom", null);
+    };
+  }, [width, height]);
+
   const [tooltip, setTooltip] = useState<TooltipState>({
     x: 0,
     y: 0,
@@ -134,6 +155,7 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
   return (
     <div ref={containerRef} className="relative w-full">
       <svg
+        ref={svgRef}
         width={width}
         height={height}
         role="img"
@@ -155,7 +177,7 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
           strokeWidth={1}
         />
 
-        <g clipPath="url(#sphereClip)">
+        <g ref={gRef} clipPath="url(#sphereClip)">
           {/* grid */}
           <path
             d={path(graticule) ?? undefined}

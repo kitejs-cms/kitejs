@@ -49,7 +49,7 @@ export function AnalyticsOverviewPage() {
   const [chartData, setChartData] = useState<
     { date: string; active: number; new: number }[]
   >([]);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [selectedCountry] = useState<string | null>(null);
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
 
