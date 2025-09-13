@@ -97,6 +97,7 @@ export class AnalyticsService {
   ): Promise<{
     totalEvents: number;
     uniqueVisitors: number;
+    newUsers: number;
     eventsByType: Record<string, number>;
   }> {
     try {
@@ -105,6 +106,39 @@ export class AnalyticsService {
       const uniqueVisitors = (
         await this.eventModel.distinct("fingerprint", match).exec()
       ).length;
+
+      // calculate new users within the provided date range
+      let newUsers = 0;
+      const rangeStart = match.createdAt?.$gte;
+      const rangeEnd = match.createdAt?.$lte;
+      if (rangeStart || rangeEnd) {
+        const globalMatch = { ...match } as Record<string, any>;
+        delete globalMatch.createdAt;
+        const newUsersAgg = await this.eventModel
+          .aggregate<{
+            _id: string;
+            firstEvent: Date;
+          }>([
+            { $match: globalMatch },
+            {
+              $group: {
+                _id: "$fingerprint",
+                firstEvent: { $min: "$createdAt" },
+              },
+            },
+            {
+              $match: {
+                firstEvent: {
+                  ...(rangeStart ? { $gte: rangeStart } : {}),
+                  ...(rangeEnd ? { $lte: rangeEnd } : {}),
+                },
+              },
+            },
+          ])
+          .exec();
+        newUsers = newUsersAgg.length;
+      }
+
       const eventsByTypeAgg = await this.eventModel
         .aggregate<{
           _id: string;
@@ -118,7 +152,7 @@ export class AnalyticsService {
       for (const { _id, count } of eventsByTypeAgg) {
         eventsByType[_id] = count;
       }
-      return { totalEvents, uniqueVisitors, eventsByType };
+      return { totalEvents, uniqueVisitors, newUsers, eventsByType };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to aggregate events. ${message}`);
@@ -297,6 +331,37 @@ export class AnalyticsService {
       throw new BadRequestException(
         `Failed to aggregate technologies. ${message}`
       );
+    }
+  }
+
+  async getLocations(
+    filter: {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    } = {},
+    country?: string
+  ): Promise<{ countries?: Record<string, number>; cities?: Record<string, number> }> {
+    try {
+      const match = { ...filter } as Record<string, any>;
+      if (country) {
+        match.country = country;
+      }
+      const field = country ? "city" : "country";
+      const agg = await this.eventModel
+        .aggregate<{ _id: string; count: number }>([
+          { $match: match },
+          { $group: { _id: `$${field}`, count: { $sum: 1 } } },
+        ])
+        .exec();
+      const result: Record<string, number> = {};
+      for (const { _id, count } of agg) {
+        if (_id) result[_id] = count;
+      }
+      return country ? { cities: result } : { countries: result };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to aggregate locations. ${message}`);
     }
   }
 }

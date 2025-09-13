@@ -10,6 +10,9 @@ export class AnalyticsSummaryResponseDto
   @ApiProperty()
   uniqueVisitors!: number;
 
+  @ApiProperty()
+  newUsers!: number;
+
   @ApiProperty({ type: Object })
   eventsByType!: Record<string, number>;
 

@@ -14,7 +14,11 @@
   "summary": {
     "title": "Summary",
     "totalEvents": "Total events",
-    "uniqueVisitors": "Unique visitors"
+    "uniqueVisitors": "Unique visitors",
+    "activeUsers": "Active users",
+    "newUsers": "New users",
+    "locations": "Locations",
+    "cities": "Cities"
   },
   "events": {
     "title": "Events",

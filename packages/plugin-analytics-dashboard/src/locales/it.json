@@ -14,7 +14,11 @@
   "summary": {
     "title": "Riepilogo",
     "totalEvents": "Eventi totali",
-    "uniqueVisitors": "Visitatori unici"
+    "uniqueVisitors": "Visitatori unici",
+    "activeUsers": "Utenti attivi",
+    "newUsers": "Nuovi utenti",
+    "locations": "Provenienza",
+    "cities": "Città"
   },
   "events": {
     "title": "Eventi",
