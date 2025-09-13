@@ -161,7 +161,7 @@ export function AnalyticsOverviewPage() {
               </div>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
+                  <LineChart data={chartData} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="date" hide />
                     <YAxis allowDecimals={false} />
