@@ -22,7 +22,9 @@
     "city": "City",
     "visitors": "Visitors",
     "noCityData": "No data",
-    "world": "World"
+    "world": "World",
+    "sources": "Traffic sources",
+    "noSourceData": "No data"
   },
   "events": {
     "title": "Events",

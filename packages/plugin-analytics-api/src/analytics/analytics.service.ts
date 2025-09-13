@@ -450,4 +450,31 @@ export class AnalyticsService {
       throw new BadRequestException(`Failed to aggregate locations. ${message}`);
     }
   }
+
+  async getSources(
+    filter: {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    } = {}
+  ): Promise<{ sources: Record<string, number> }> {
+    try {
+      const match = filter;
+      const sourcesAgg = await this.eventModel
+        .aggregate<{ _id: string; count: number }>([
+          { $match: match },
+          { $group: { _id: "$referrer", count: { $sum: 1 } } },
+        ])
+        .exec();
+      const sources: Record<string, number> = {};
+      for (const { _id, count } of sourcesAgg) {
+        const key = _id || "direct";
+        sources[key] = count;
+      }
+      return { sources };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to aggregate sources. ${message}`);
+    }
+  }
 }

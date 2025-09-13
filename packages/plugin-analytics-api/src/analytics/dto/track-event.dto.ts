@@ -29,6 +29,11 @@ export class TrackEventDto implements TrackEventModel {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @IsString()
+  referrer?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsNumber()
   duration?: number;
 }

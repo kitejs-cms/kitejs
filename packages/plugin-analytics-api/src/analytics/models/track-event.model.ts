@@ -3,5 +3,6 @@ export type TrackEventModel = {
   payload?: Record<string, any>;
   origin?: string;
   identifier?: string;
+  referrer?: string;
   duration?: number;
 };

@@ -22,7 +22,9 @@
     "city": "Città",
     "visitors": "Visitatori",
     "noCityData": "Nessun dato",
-    "world": "Mondo"
+    "world": "Mondo",
+    "sources": "Origini traffico",
+    "noSourceData": "Nessun dato"
   },
   "events": {
     "title": "Eventi",
