@@ -9,6 +9,7 @@ import {
   Separator,
   Button,
   JsonModal,
+  Skeleton,
   useApi,
   useBreadcrumb,
   useHasPermission,
@@ -27,7 +28,7 @@ import {
   Tooltip as RechartsTooltip,
   CartesianGrid,
 } from "recharts";
-import { FileJson, Users, UserPlus } from "lucide-react";
+import { FileJson, Users, UserPlus, MapPinOff } from "lucide-react";
 import { WorldChoroplethD3 } from "../components/world-choropleth-d3";
 
 export function AnalyticsOverviewPage() {
@@ -35,9 +36,13 @@ export function AnalyticsOverviewPage() {
   const { setBreadcrumb } = useBreadcrumb();
   const hasPermission = useHasPermission();
 
-  const { fetchData: fetchSummary } = useApi<AnalyticsSummaryResponseModel>();
-  const { data: locations, fetchData: fetchLocations } =
-    useApi<AnalyticsLocationsResponseModel>();
+  const { fetchData: fetchSummary, loading: loadingSummary } =
+    useApi<AnalyticsSummaryResponseModel>();
+  const {
+    data: locations,
+    fetchData: fetchLocations,
+    loading: loadingLocations,
+  } = useApi<AnalyticsLocationsResponseModel>();
 
   const [summary, setSummary] = useState<AnalyticsSummaryResponseModel | null>(
     null
@@ -49,7 +54,9 @@ export function AnalyticsOverviewPage() {
   const [chartData, setChartData] = useState<
     { date: string; active: number; new: number }[]
   >([]);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<
+    { iso3: string; name: string } | null
+  >(null);
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
 
@@ -70,6 +77,7 @@ export function AnalyticsOverviewPage() {
       return;
     const start = range.from.toISOString().slice(0, 10);
     const end = range.to.toISOString().slice(0, 10);
+    setSummary(null);
     const { data } = await fetchSummary(
       `analytics/events/summary?startDate=${start}&endDate=${end}`
     );
@@ -92,7 +100,7 @@ export function AnalyticsOverviewPage() {
       startDate: range.from.toISOString().slice(0, 10),
       endDate: range.to.toISOString().slice(0, 10),
     });
-    if (selectedCountry) params.set("country", selectedCountry);
+    if (selectedCountry) params.set("country", selectedCountry.iso3);
     fetchLocations(`analytics/events/locations?${params.toString()}`);
   }, [range, fetchLocations, selectedCountry, hasPermission]);
 
@@ -125,68 +133,90 @@ export function AnalyticsOverviewPage() {
             </CardHeader>
             <Separator />
             <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[11px] text-muted-foreground">
-                      {t("summary.activeUsers")}
-                    </span>
-                    <span className="mt-0.5 text-base font-semibold leading-none">
-                      {summary?.uniqueVisitors?.toLocaleString(i18n.language) ??
-                        "-"}
-                    </span>
+              {loadingSummary || !summary ? (
+                <>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    {Array.from({ length: 2 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-2xl border bg-card p-4 flex items-center justify-between"
+                      >
+                        <div className="flex flex-col space-y-2">
+                          <Skeleton className="h-3 w-20" />
+                          <Skeleton className="h-4 w-12" />
+                        </div>
+                        <Skeleton className="h-4 w-4 rounded-full" />
+                      </div>
+                    ))}
                   </div>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[11px] text-muted-foreground">
-                      {t("summary.newUsers")}
-                    </span>
-                    <span className="mt-0.5 text-base font-semibold leading-none">
-                      {summary?.newUsers?.toLocaleString(i18n.language) ?? "-"}
-                    </span>
+                  <Skeleton className="h-64 w-full" />
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-[11px] text-muted-foreground">
+                          {t("summary.activeUsers")}
+                        </span>
+                        <span className="mt-0.5 text-base font-semibold leading-none">
+                          {summary?.uniqueVisitors?.toLocaleString(i18n.language) ??
+                            "-"}
+                        </span>
+                      </div>
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-[11px] text-muted-foreground">
+                          {t("summary.newUsers")}
+                        </span>
+                        <span className="mt-0.5 text-base font-semibold leading-none">
+                          {summary?.newUsers?.toLocaleString(i18n.language) ?? "-"}
+                        </span>
+                      </div>
+                      <UserPlus className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <UserPlus className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </div>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={chartData}
-                    margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" tick={false} tickLine={false} />
-                    <YAxis
-                      tick={{ fontSize: 10 }}
-                      stroke="#6B7280"
-                      width={26}
-                    />
-                    <RechartsTooltip
-                      labelFormatter={(label) =>
-                        new Date(label as string).toLocaleDateString()
-                      }
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="active"
-                      stroke="var(--chart-1)"
-                      strokeWidth={2}
-                      dot={false}
-                      name={t("summary.activeUsers")}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="new"
-                      stroke="var(--chart-2)"
-                      strokeWidth={2}
-                      dot={false}
-                      name={t("summary.newUsers")}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={chartData}
+                        margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="date" tick={false} tickLine={false} />
+                        <YAxis
+                          tick={{ fontSize: 10 }}
+                          stroke="#6B7280"
+                          width={26}
+                        />
+                        <RechartsTooltip
+                          labelFormatter={(label) =>
+                            new Date(label as string).toLocaleDateString()
+                          }
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="active"
+                          stroke="var(--chart-1)"
+                          strokeWidth={2}
+                          dot={false}
+                          name={t("summary.activeUsers")}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="new"
+                          stroke="var(--chart-2)"
+                          strokeWidth={2}
+                          dot={false}
+                          name={t("summary.newUsers")}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         )}
@@ -208,18 +238,31 @@ export function AnalyticsOverviewPage() {
               </CardHeader>
               <Separator />
               <CardContent className="p-6">
-                <WorldChoroplethD3
-                  data={locations ? locations.countries : {}}
-                  onSelectCountry={(iso3) =>
-                    setSelectedCountry((prev) => (prev === iso3 ? null : iso3))
-                  }
-                />
+                {loadingLocations ? (
+                  <Skeleton className="h-80 w-full" />
+                ) : (
+                  <WorldChoroplethD3
+                    data={locations ? locations.countries : {}}
+                    onSelectCountry={(iso3, name) =>
+                      setSelectedCountry((prev) =>
+                        prev?.iso3 === iso3 ? null : { iso3, name }
+                      )
+                    }
+                  />
+                )}
               </CardContent>
             </Card>
 
             <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-1">
               <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
-                <CardTitle>{t("summary.cities")}</CardTitle>
+                <div>
+                  {selectedCountry && (
+                    <p className="text-xs text-muted-foreground">
+                      {selectedCountry.name}
+                    </p>
+                  )}
+                  <CardTitle>{t("summary.cities")}</CardTitle>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -232,7 +275,16 @@ export function AnalyticsOverviewPage() {
               </CardHeader>
               <Separator />
               <CardContent className="p-6">
-                {locations?.cities ? (
+                {loadingLocations ? (
+                  <ul className="space-y-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <li key={i} className="flex justify-between text-sm">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-12" />
+                      </li>
+                    ))}
+                  </ul>
+                ) : locations?.cities && Object.keys(locations.cities).length > 0 ? (
                   <ul className="space-y-1">
                     {Object.entries(locations.cities)
                       .sort((a, b) => b[1] - a[1])
@@ -246,8 +298,9 @@ export function AnalyticsOverviewPage() {
                       ))}
                   </ul>
                 ) : (
-                  <div className="text-sm text-muted-foreground">
-                    Nessun dato
+                  <div className="flex flex-col items-center justify-center text-sm text-muted-foreground py-8">
+                    <MapPinOff className="h-8 w-8 mb-2" />
+                    {t("summary.noCityData")}
                   </div>
                 )}
               </CardContent>

@@ -18,7 +18,8 @@
     "activeUsers": "Utenti attivi",
     "newUsers": "Nuovi utenti",
     "locations": "Provenienza",
-    "cities": "Città"
+    "cities": "Città",
+    "noCityData": "Nessun dato"
   },
   "events": {
     "title": "Eventi",

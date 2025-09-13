@@ -51,7 +51,7 @@ type WorldAtlas = {
 type Props = {
   data: Record<string, number>;
   height?: number;
-  onSelectCountry?: (iso3: string) => void;
+  onSelectCountry?: (iso3: string, name: string) => void;
 };
 
 type CountryFeature = GeoFeature<Polygon | MultiPolygon, CountryProps>;
@@ -206,7 +206,7 @@ export function WorldChoroplethD3({
                   onMouseLeave={() =>
                     setTooltip((t) => ({ ...t, show: false }))
                   }
-                  onClick={() => onSelectCountry?.(iso3)}
+                  onClick={() => onSelectCountry?.(iso3, name)}
                   style={{ cursor: "pointer" }}
                 />
               );
