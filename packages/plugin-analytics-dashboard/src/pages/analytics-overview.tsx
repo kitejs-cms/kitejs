@@ -75,7 +75,7 @@ export function AnalyticsOverviewPage() {
     null
   );
   const [range, setRange] = useState<DateRange | undefined>(() => ({
-    from: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+    from: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000),
     to: new Date(),
   }));
   const [chartData, setChartData] = useState<
@@ -176,7 +176,11 @@ export function AnalyticsOverviewPage() {
 
       <div className="grid gap-6 md:grid-cols-3">
         {hasPermission("analytics:summary.read") && (
-          <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-3 rounded-2xl overflow-hidden">
+          <Card
+            className={`shadow-neutral-50 gap-0 py-0 rounded-2xl overflow-hidden ${
+              hasPermission("analytics:events.read") ? "md:col-span-2" : "md:col-span-3"
+            }`}
+          >
             <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
               <CardTitle>{t("summary.title")}</CardTitle>
               <Button
@@ -283,7 +287,7 @@ export function AnalyticsOverviewPage() {
 
         {hasPermission("analytics:events.read") && (
           <>
-            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-3 rounded-2xl overflow-hidden">
+            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-1 rounded-2xl overflow-hidden">
               <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
                 <CardTitle>{t("summary.sources")}</CardTitle>
                 <Button
