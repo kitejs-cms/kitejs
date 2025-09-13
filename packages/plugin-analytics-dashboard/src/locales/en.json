@@ -49,5 +49,13 @@
     "downloadCsv": "Download CSV",
     "copyCsv": "Copy CSV",
     "selectedRange": "Last {{days}} days"
+  },
+  "dashboardWidget": {
+    "title": "Analytics",
+    "last30Days": "Last 30 days",
+    "totalEvents": "Total events",
+    "uniqueVisitors": "Unique visitors",
+    "newUsers": "New users",
+    "viewDetails": "View analytics"
   }
 }
