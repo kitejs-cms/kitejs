@@ -99,6 +99,7 @@ export class AnalyticsService {
     uniqueVisitors: number;
     newUsers: number;
     eventsByType: Record<string, number>;
+    daily: { date: string; uniqueVisitors: number; newUsers: number }[];
   }> {
     try {
       const match = filter;
@@ -152,7 +153,74 @@ export class AnalyticsService {
       for (const { _id, count } of eventsByTypeAgg) {
         eventsByType[_id] = count;
       }
-      return { totalEvents, uniqueVisitors, newUsers, eventsByType };
+      const daily: { date: string; uniqueVisitors: number; newUsers: number }[] = [];
+      if (rangeStart || rangeEnd) {
+        const dailyVisitorsAgg = await this.eventModel
+          .aggregate<{
+            _id: string;
+            uniqueVisitors: number;
+          }>([
+            { $match: match },
+            {
+              $group: {
+                _id: {
+                  day: {
+                    $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+                  },
+                  fingerprint: "$fingerprint",
+                },
+              },
+            },
+            { $group: { _id: "$_id.day", uniqueVisitors: { $sum: 1 } } },
+          ])
+          .exec();
+
+        const firstEventsAgg = await this.eventModel
+          .aggregate<{
+            _id: string;
+            count: number;
+          }>([
+            { $group: { _id: "$fingerprint", firstEvent: { $min: "$createdAt" } } },
+            {
+              $match: {
+                firstEvent: {
+                  ...(rangeStart ? { $gte: rangeStart } : {}),
+                  ...(rangeEnd ? { $lte: rangeEnd } : {}),
+                },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  $dateToString: { format: "%Y-%m-%d", date: "$firstEvent" },
+                },
+                count: { $sum: 1 },
+              },
+            },
+          ])
+          .exec();
+
+        const map = new Map<string, { uniqueVisitors: number; newUsers: number }>();
+        for (const { _id, uniqueVisitors } of dailyVisitorsAgg) {
+          map.set(_id, { uniqueVisitors, newUsers: 0 });
+        }
+        for (const { _id, count } of firstEventsAgg) {
+          const entry = map.get(_id) ?? { uniqueVisitors: 0, newUsers: 0 };
+          entry.newUsers = count;
+          map.set(_id, entry);
+        }
+        daily.push(
+          ...Array.from(map.entries())
+            .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+            .map(([date, vals]) => ({
+              date,
+              uniqueVisitors: vals.uniqueVisitors,
+              newUsers: vals.newUsers,
+            }))
+        );
+      }
+
+      return { totalEvents, uniqueVisitors, newUsers, eventsByType, daily };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to aggregate events. ${message}`);
@@ -341,24 +409,35 @@ export class AnalyticsService {
       createdAt?: Record<string, Date>;
     } = {},
     country?: string
-  ): Promise<{ countries?: Record<string, number>; cities?: Record<string, number> }> {
+  ): Promise<{ countries: Record<string, number>; cities?: Record<string, number> }> {
     try {
       const match = { ...filter } as Record<string, any>;
-      if (country) {
-        match.country = country;
-      }
-      const field = country ? "city" : "country";
-      const agg = await this.eventModel
+
+      const countriesAgg = await this.eventModel
         .aggregate<{ _id: string; count: number }>([
           { $match: match },
-          { $group: { _id: `$${field}`, count: { $sum: 1 } } },
+          { $group: { _id: "$country", count: { $sum: 1 } } },
         ])
         .exec();
-      const result: Record<string, number> = {};
-      for (const { _id, count } of agg) {
-        if (_id) result[_id] = count;
+      const countries: Record<string, number> = {};
+      for (const { _id, count } of countriesAgg) {
+        if (_id) countries[_id] = count;
       }
-      return country ? { cities: result } : { countries: result };
+
+      let cities: Record<string, number> | undefined;
+      if (country) {
+        const cityAgg = await this.eventModel
+          .aggregate<{ _id: string; count: number }>([
+            { $match: { ...match, country } },
+            { $group: { _id: "$city", count: { $sum: 1 } } },
+          ])
+          .exec();
+        cities = {};
+        for (const { _id, count } of cityAgg) {
+          if (_id) cities[_id] = count;
+        }
+      }
+      return { countries, ...(cities ? { cities } : {}) };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(`Failed to aggregate locations. ${message}`);

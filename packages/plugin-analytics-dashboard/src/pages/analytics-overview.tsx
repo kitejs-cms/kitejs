@@ -23,28 +23,13 @@ import {
   YAxis,
   Tooltip as RechartsTooltip,
 } from "recharts";
-// Basic lat/long positions for a subset of countries used to plot events
-const COUNTRY_POSITIONS: Record<string, [number, number]> = {
-  US: [-98.35, 39.5],
-  CA: [-106.35, 56.13],
-  BR: [-51.93, -14.24],
-  GB: [-3.43, 55.38],
-  FR: [2.21, 46.23],
-  DE: [10.45, 51.17],
-  IT: [12.57, 42.77],
-  ES: [-3.75, 40.46],
-  RU: [105.32, 61.52],
-  CN: [104.19, 35.86],
-  IN: [78.96, 20.59],
-  AU: [133.78, -25.27],
-  JP: [138.25, 36.20],
-  ZA: [22.94, -30.56],
-  EG: [30.80, 26.82],
-};
-
-function project([lon, lat]: [number, number], width: number, height: number) {
-  return [((lon + 180) * width) / 360, ((90 - lat) * height) / 180];
-}
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+} from "react-simple-maps";
+const geoUrl =
+  "https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json";
 
 export function AnalyticsOverviewPage() {
   const { t } = useTranslation("analytics");
@@ -83,24 +68,16 @@ export function AnalyticsOverviewPage() {
     const { data } = await fetchSummary(
       `analytics/events/summary?startDate=${start}&endDate=${end}`
     );
-    if (data) setSummary(data);
-
-    const days =
-      Math.floor((range.to.getTime() - range.from.getTime()) / 86400000) + 1;
-    const promises = Array.from({ length: days }).map(async (_, i) => {
-      const d = new Date(range.from!.getTime() + i * 86400000);
-      const ds = d.toISOString().slice(0, 10);
-      const { data } = await fetchSummary(
-        `analytics/events/summary?startDate=${ds}&endDate=${ds}`
+    if (data) {
+      setSummary(data);
+      setChartData(
+        (data.daily ?? []).map((d) => ({
+          date: d.date,
+          active: d.uniqueVisitors,
+          new: d.newUsers,
+        }))
       );
-      return {
-        date: ds,
-        active: data?.uniqueVisitors ?? 0,
-        new: data?.newUsers ?? 0,
-      };
-    });
-    const results = await Promise.all(promises);
-    setChartData(results);
+    }
   }, [range, fetchSummary, hasPermission]);
 
   const loadLocations = useCallback(() => {
@@ -175,26 +152,34 @@ export function AnalyticsOverviewPage() {
           </CardHeader>
           <CardContent className="flex gap-4">
             <div className="flex-1 h-80">
-              <svg viewBox="0 0 360 180" className="w-full h-full bg-gray-100">
-                {Object.entries(locations?.countries ?? {}).map(([iso, count]) => {
-                  const coords = COUNTRY_POSITIONS[iso];
-                  if (!coords) return null;
-                  const [cx, cy] = project(coords, 360, 180);
-                  const r = 3 + (count / maxCountry) * 7;
-                  const fill = `rgba(37,99,235,0.7)`;
-                  return (
-                    <circle
-                      key={iso}
-                      cx={cx}
-                      cy={cy}
-                      r={r}
-                      fill={fill}
-                      stroke="#fff"
-                      onClick={() => setSelectedCountry(iso)}
-                    />
-                  );
-                })}
-              </svg>
+              <ComposableMap projectionConfig={{ scale: 145 }} className="w-full h-full">
+                <Geographies geography={geoUrl}>
+                  {({ geographies }) =>
+                    geographies.map((geo) => {
+                      const iso = geo.properties.ISO_A2 as string;
+                      const count = locations?.countries?.[iso] ?? 0;
+                      const fill =
+                        count > 0
+                          ? `rgba(37,99,235,${0.3 + (count / maxCountry) * 0.7})`
+                          : "#EEE";
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          fill={fill}
+                          stroke="#FFF"
+                          onClick={() => setSelectedCountry(iso)}
+                          style={{
+                            default: { outline: "none" },
+                            hover: { outline: "none" },
+                            pressed: { outline: "none" },
+                          }}
+                        />
+                      );
+                    })
+                  }
+                </Geographies>
+              </ComposableMap>
             </div>
             {selectedCountry && locations?.cities && (
               <div className="w-64 overflow-y-auto">

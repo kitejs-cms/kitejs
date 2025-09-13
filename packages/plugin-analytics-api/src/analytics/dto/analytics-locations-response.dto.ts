@@ -4,8 +4,8 @@ import type { AnalyticsLocationsResponseModel } from "../models/analytics-locati
 export class AnalyticsLocationsResponseDto
   implements AnalyticsLocationsResponseModel
 {
-  @ApiProperty({ type: Object, required: false })
-  countries?: Record<string, number>;
+  @ApiProperty({ type: Object })
+  countries!: Record<string, number>;
 
   @ApiProperty({ type: Object, required: false })
   cities?: Record<string, number>;
