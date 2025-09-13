@@ -5,6 +5,7 @@ export type AnalyticsEventResponseModel = {
   userAgent?: string;
   origin?: string;
   identifier?: string;
+  referrer?: string;
   duration?: number;
   ip?: string;
   geo?: Record<string, any>;

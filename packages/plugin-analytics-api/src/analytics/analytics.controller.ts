@@ -5,6 +5,7 @@ import { AnalyticsSummaryResponseDto } from "./dto/analytics-summary-response.dt
 import { AnalyticsAggregateResponseDto } from "./dto/analytics-aggregate-response.dto";
 import { AnalyticsTechnologiesResponseDto } from "./dto/analytics-technologies-response.dto";
 import { AnalyticsLocationsResponseDto } from "./dto/analytics-locations-response.dto";
+import { AnalyticsSourcesResponseDto } from "./dto/analytics-sources-response.dto";
 import { AnalyticsApiKeyGuard } from "./guards/api-key.guard";
 import type { Request } from "express";
 import geoip from "geoip-lite";
@@ -58,10 +59,27 @@ export class AnalyticsController {
         ? createHash("sha256").update(`${ip}-${userAgent}`).digest("hex")
         : undefined;
 
+    const referrerHeader =
+      (req.headers.referer as string) || (req.headers.referrer as string);
+    let referrer = dto.referrer || dto.payload?.referrer;
+    if (referrerHeader) {
+      try {
+        referrer = new URL(referrerHeader).hostname.replace(/^www\./, "");
+      } catch {
+        referrer = referrerHeader;
+      }
+    }
+    if (!referrer) referrer = "direct";
+
+    const payload = dto.payload ? { ...dto.payload } : undefined;
+    if (payload) delete payload.referrer;
+
     const event: TrackEvent = {
       ...dto,
+      payload,
       userAgent,
       origin: (req.headers.origin as string) || dto.origin,
+      referrer,
       ip,
       geo,
       fingerprint,
@@ -277,5 +295,42 @@ export class AnalyticsController {
       country
     );
     return new AnalyticsLocationsResponseDto(result);
+  }
+
+  @Get("events/sources")
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(`${ANALYTICS_PLUGIN_NAMESPACE}:events.read`)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Retrieve analytics traffic sources" })
+  @ApiResponse({
+    status: 200,
+    description: "Aggregated sources data",
+    type: AnalyticsSourcesResponseDto,
+  })
+  @ApiQuery({ name: "type", required: false, type: String })
+  @ApiQuery({ name: "identifier", required: false, type: String })
+  @ApiQuery({ name: "startDate", required: false, type: String })
+  @ApiQuery({ name: "endDate", required: false, type: String })
+  async getSources(@Query() query: Record<string, string>) {
+    const { filter } = parseQuery(query, {
+      allowedFilters: ["type", "identifier", "startDate", "endDate"],
+    });
+
+    delete filter.startDate;
+    delete filter.endDate;
+
+    const typedFilter = filter as {
+      type?: string;
+      identifier?: string;
+      createdAt?: Record<string, Date>;
+    };
+    const { startDate, endDate } = query;
+    if (startDate || endDate) {
+      typedFilter.createdAt = {};
+      if (startDate) typedFilter.createdAt.$gte = new Date(startDate);
+      if (endDate) typedFilter.createdAt.$lte = new Date(endDate);
+    }
+    const result = await this.analyticsService.getSources(typedFilter);
+    return new AnalyticsSourcesResponseDto(result);
   }
 }

@@ -23,6 +23,9 @@ export class AnalyticsEvent extends Document {
   @Prop({ type: String })
   identifier?: string;
 
+  @Prop({ type: String })
+  referrer?: string;
+
   @Prop({ type: Number })
   duration?: number;
 
