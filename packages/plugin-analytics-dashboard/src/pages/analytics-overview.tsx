@@ -87,20 +87,17 @@ export function AnalyticsOverviewPage() {
 
     const days =
       Math.floor((range.to.getTime() - range.from.getTime()) / 86400000) + 1;
-    // eslint-disable-next-line turbo/no-undeclared-env-vars
-    const baseUrl = import.meta.env.VITE_API_URL;
-    const promises = Array.from({ length: days }).map((_, i) => {
+    const promises = Array.from({ length: days }).map(async (_, i) => {
       const d = new Date(range.from!.getTime() + i * 86400000);
       const ds = d.toISOString().slice(0, 10);
-      return fetch(`${baseUrl}/analytics/events/summary?startDate=${ds}&endDate=${ds}`, {
-        credentials: "include",
-      })
-        .then((r) => r.json())
-        .then((res) => ({
-          date: ds,
-          active: res.data?.uniqueVisitors ?? 0,
-          new: res.data?.newUsers ?? 0,
-        }));
+      const { data } = await fetchSummary(
+        `analytics/events/summary?startDate=${ds}&endDate=${ds}`
+      );
+      return {
+        date: ds,
+        active: data?.uniqueVisitors ?? 0,
+        new: data?.newUsers ?? 0,
+      };
     });
     const results = await Promise.all(promises);
     setChartData(results);
