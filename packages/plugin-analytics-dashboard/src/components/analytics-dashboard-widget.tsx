@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Users, UserPlus } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -53,7 +53,7 @@ export function AnalyticsDashboardWidget() {
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="flex items-start justify-between gap-1.5">
+      <CardHeader>
         <div className="flex items-center gap-2">
           <div className="p-3 rounded-lg bg-gradient-to-r from-blue-400 to-blue-600 text-white">
             <BarChart3 className="h-6 w-6" />
@@ -72,37 +72,35 @@ export function AnalyticsDashboardWidget() {
             </span>
           </div>
         </div>
-        <div className="text-right">
-          <button
-            onClick={goAnalytics}
-            className="text-2xl md:text-3xl font-bold leading-tight hover:underline cursor-pointer"
-            aria-label={t("dashboardWidget.viewDetails")}
-            title={t("dashboardWidget.viewDetails")}
-          >
-            {formatNumber(summary.totalEvents, i18n.language)}
-          </button>
-          <p className="text-[11px] text-muted-foreground">
-            {t("dashboardWidget.totalEvents")}
-          </p>
-        </div>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-4 pt-0">
-        <div className="grid grid-cols-2 gap-4 text-center">
-          <div>
-            <p className="text-[11px] text-muted-foreground">
-              {t("dashboardWidget.uniqueVisitors")}
-            </p>
-            <p className="text-base font-semibold">
-              {formatNumber(summary.uniqueVisitors, i18n.language)}
-            </p>
+      <CardContent className="flex-1 flex flex-col gap-4 -mt-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-2">
+          <div className="rounded-2xl border bg-card p-4 md:min-w-[120px]">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{t("dashboardWidget.totalEvents")}</span>
+              <BarChart3 className="h-3.5 w-3.5" />
+            </div>
+            <div className="mt-0.5 text-base font-semibold leading-none">
+              {formatNumber(summary.totalEvents, i18n.language)}
+            </div>
           </div>
-          <div>
-            <p className="text-[11px] text-muted-foreground">
-              {t("dashboardWidget.newUsers")}
-            </p>
-            <p className="text-base font-semibold">
+          <div className="rounded-2xl border bg-card p-4 md:min-w-[120px]">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{t("dashboardWidget.uniqueVisitors")}</span>
+              <Users className="h-3.5 w-3.5" />
+            </div>
+            <div className="mt-0.5 text-base font-semibold leading-none">
+              {formatNumber(summary.uniqueVisitors, i18n.language)}
+            </div>
+          </div>
+          <div className="rounded-2xl border bg-card p-4 md:min-w-[120px]">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{t("dashboardWidget.newUsers")}</span>
+              <UserPlus className="h-3.5 w-3.5" />
+            </div>
+            <div className="mt-0.5 text-base font-semibold leading-none">
               {formatNumber(summary.newUsers, i18n.language)}
-            </p>
+            </div>
           </div>
         </div>
         <div
