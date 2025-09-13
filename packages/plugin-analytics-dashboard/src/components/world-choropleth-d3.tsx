@@ -163,21 +163,7 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
         className="rounded-2xl"
         style={{ display: "block" }}
       >
-        <defs>
-          <clipPath id="sphereClip">
-            <path d={path({ type: "Sphere" }) ?? undefined} />
-          </clipPath>
-        </defs>
-
-        {/* bordo sfera */}
-        <path
-          d={path({ type: "Sphere" }) ?? undefined}
-          fill="white"
-          stroke="#E5EDF6"
-          strokeWidth={1}
-        />
-
-        <g ref={gRef} clipPath="url(#sphereClip)">
+        <g ref={gRef}>
           {/* grid */}
           <path
             d={path(graticule) ?? undefined}
@@ -221,13 +207,6 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
             })}
         </g>
 
-        {/* bordo sopra i paesi */}
-        <path
-          d={path({ type: "Sphere" }) ?? undefined}
-          fill="none"
-          stroke="#E5EDF6"
-          strokeWidth={1.2}
-        />
       </svg>
 
       {tooltip.show && (
