@@ -28,7 +28,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { FileJson, Users, UserPlus } from "lucide-react";
-import { WorldChoroplethD3 } from "../components/locations-card";
+import { WorldChoroplethD3 } from "../components/world-choropleth-d3";
 
 export function AnalyticsOverviewPage() {
   const { t, i18n } = useTranslation("analytics");
