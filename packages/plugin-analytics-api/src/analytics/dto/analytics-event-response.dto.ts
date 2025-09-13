@@ -24,6 +24,9 @@ export class AnalyticsEventResponseDto implements AnalyticsEventResponseModel {
   identifier?: string;
 
   @ApiProperty({ required: false })
+  referrer?: string;
+
+  @ApiProperty({ required: false })
   duration?: number;
 
   @ApiProperty({ required: false })

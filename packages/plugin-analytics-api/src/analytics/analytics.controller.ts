@@ -61,7 +61,7 @@ export class AnalyticsController {
 
     const referrerHeader =
       (req.headers.referer as string) || (req.headers.referrer as string);
-    let referrer = dto.referrer;
+    let referrer = dto.referrer || dto.payload?.referrer;
     if (referrerHeader) {
       try {
         referrer = new URL(referrerHeader).hostname.replace(/^www\./, "");
@@ -71,11 +71,15 @@ export class AnalyticsController {
     }
     if (!referrer) referrer = "direct";
 
+    const payload = dto.payload ? { ...dto.payload } : undefined;
+    if (payload) delete payload.referrer;
+
     const event: TrackEvent = {
       ...dto,
+      payload,
       userAgent,
       origin: (req.headers.origin as string) || dto.origin,
-       referrer,
+      referrer,
       ip,
       geo,
       fingerprint,
