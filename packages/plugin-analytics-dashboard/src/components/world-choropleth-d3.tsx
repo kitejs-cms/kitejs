@@ -5,6 +5,8 @@ import {
   geoGraticule10,
   type GeoProjection,
 } from "d3-geo";
+import { select } from "d3-selection";
+import { zoom } from "d3-zoom";
 import type {
   Feature as GeoFeature,
   FeatureCollection,
@@ -49,6 +51,7 @@ type WorldAtlas = {
 type Props = {
   data: Record<string, number>;
   height?: number;
+  onSelectCountry?: (iso3: string, name: string) => void;
 };
 
 type CountryFeature = GeoFeature<Polygon | MultiPolygon, CountryProps>;
@@ -70,7 +73,11 @@ const numericToAlpha3: Record<string, string> = (isoMap as IsoRow[]).reduce(
   {} as Record<string, string>
 );
 
-export function WorldChoroplethD3({ data, height = 520 }: Props) {
+export function WorldChoroplethD3({
+  data,
+  height = 520,
+  onSelectCountry,
+}: Props) {
   const geos: CountryFeature[] = useMemo(() => {
     const topo = countriesData as unknown as WorldAtlas;
     const fc = topoToGeo(
@@ -104,6 +111,8 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
 
   const fmt = useMemo(() => format(",.0f"), []);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const gRef = useRef<SVGGElement>(null);
   const [width, setWidth] = useState<number>(1100);
 
   useEffect(() => {
@@ -122,6 +131,23 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
   const path = useMemo(() => geoPath(projection), [projection]);
   const graticule = useMemo(() => geoGraticule10(), []);
 
+  useEffect(() => {
+    const svgEl = svgRef.current;
+    const gEl = gRef.current;
+    if (!svgEl || !gEl) return;
+    const svg = select(svgEl);
+    const g = select(gEl);
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 8])
+      .on("zoom", (e) => {
+        g.attr("transform", e.transform.toString());
+      });
+    svg.call(zoomBehavior);
+    return () => {
+      svg.on(".zoom", null);
+    };
+  }, [width, height]);
+
   const [tooltip, setTooltip] = useState<TooltipState>({
     x: 0,
     y: 0,
@@ -134,6 +160,7 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
   return (
     <div ref={containerRef} className="relative w-full">
       <svg
+        ref={svgRef}
         width={width}
         height={height}
         role="img"
@@ -141,21 +168,7 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
         className="rounded-2xl"
         style={{ display: "block" }}
       >
-        <defs>
-          <clipPath id="sphereClip">
-            <path d={path({ type: "Sphere" }) ?? undefined} />
-          </clipPath>
-        </defs>
-
-        {/* bordo sfera */}
-        <path
-          d={path({ type: "Sphere" }) ?? undefined}
-          fill="white"
-          stroke="#E5EDF6"
-          strokeWidth={1}
-        />
-
-        <g clipPath="url(#sphereClip)">
+        <g ref={gRef}>
           {/* grid */}
           <path
             d={path(graticule) ?? undefined}
@@ -193,19 +206,13 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
                   onMouseLeave={() =>
                     setTooltip((t) => ({ ...t, show: false }))
                   }
-                  style={{ cursor: "default" }}
+                  onClick={() => onSelectCountry?.(iso3, name)}
+                  style={{ cursor: "pointer" }}
                 />
               );
             })}
         </g>
 
-        {/* bordo sopra i paesi */}
-        <path
-          d={path({ type: "Sphere" }) ?? undefined}
-          fill="none"
-          stroke="#E5EDF6"
-          strokeWidth={1.2}
-        />
       </svg>
 
       {tooltip.show && (

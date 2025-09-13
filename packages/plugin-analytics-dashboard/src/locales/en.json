@@ -18,7 +18,11 @@
     "activeUsers": "Active users",
     "newUsers": "New users",
     "locations": "Locations",
-    "cities": "Cities"
+    "cities": "Cities",
+    "city": "City",
+    "visitors": "Visitors",
+    "noCityData": "No data",
+    "world": "World"
   },
   "events": {
     "title": "Events",
