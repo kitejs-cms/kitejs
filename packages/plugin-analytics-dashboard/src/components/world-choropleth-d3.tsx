@@ -51,6 +51,7 @@ type WorldAtlas = {
 type Props = {
   data: Record<string, number>;
   height?: number;
+  onSelectCountry?: (iso3: string) => void;
 };
 
 type CountryFeature = GeoFeature<Polygon | MultiPolygon, CountryProps>;
@@ -72,7 +73,11 @@ const numericToAlpha3: Record<string, string> = (isoMap as IsoRow[]).reduce(
   {} as Record<string, string>
 );
 
-export function WorldChoroplethD3({ data, height = 520 }: Props) {
+export function WorldChoroplethD3({
+  data,
+  height = 520,
+  onSelectCountry,
+}: Props) {
   const geos: CountryFeature[] = useMemo(() => {
     const topo = countriesData as unknown as WorldAtlas;
     const fc = topoToGeo(
@@ -201,7 +206,8 @@ export function WorldChoroplethD3({ data, height = 520 }: Props) {
                   onMouseLeave={() =>
                     setTooltip((t) => ({ ...t, show: false }))
                   }
-                  style={{ cursor: "default" }}
+                  onClick={() => onSelectCountry?.(iso3)}
+                  style={{ cursor: "pointer" }}
                 />
               );
             })}

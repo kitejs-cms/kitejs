@@ -49,7 +49,7 @@ export function AnalyticsOverviewPage() {
   const [chartData, setChartData] = useState<
     { date: string; active: number; new: number }[]
   >([]);
-  const [selectedCountry] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
 
@@ -207,7 +207,29 @@ export function AnalyticsOverviewPage() {
             </CardHeader>
             <Separator />
             <CardContent className="p-6 flex gap-4">
-              <WorldChoroplethD3 data={locations ? locations.countries : {}} />
+              <WorldChoroplethD3
+                data={locations ? locations.countries : {}}
+                onSelectCountry={setSelectedCountry}
+              />
+              {selectedCountry && locations?.cities && (
+                <div className="w-64 flex-shrink-0">
+                  <div className="rounded-2xl border bg-card p-4">
+                    <div className="mb-2 font-medium">
+                      {t("summary.cities")}
+                    </div>
+                    <ul className="space-y-1">
+                      {Object.entries(locations.cities).map(([city, count]) => (
+                        <li key={city} className="flex justify-between text-sm">
+                          <span>{city}</span>
+                          <span className="font-medium">
+                            {count.toLocaleString(i18n.language)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
