@@ -32,12 +32,12 @@ import {
   Geographies,
   Geography,
 } from "react-simple-maps";
-import { FileJson } from "lucide-react";
+import { FileJson, Users, UserPlus } from "lucide-react";
 const geoUrl =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json";
 
 export function AnalyticsOverviewPage() {
-  const { t } = useTranslation("analytics");
+  const { t, i18n } = useTranslation("analytics");
   const { setBreadcrumb } = useBreadcrumb();
   const hasPermission = useHasPermission();
 
@@ -134,12 +134,28 @@ export function AnalyticsOverviewPage() {
           </CardHeader>
           <Separator />
           <CardContent className="p-6">
-            <div className="flex gap-4 mb-4">
-              <div>
-                {t("summary.activeUsers")}: {summary?.uniqueVisitors ?? "-"}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-muted-foreground">
+                    {t("summary.activeUsers")}
+                  </span>
+                  <span className="mt-0.5 text-base font-semibold leading-none">
+                    {summary?.uniqueVisitors?.toLocaleString(i18n.language) ?? "-"}
+                  </span>
+                </div>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div>
-                {t("summary.newUsers")}: {summary?.newUsers ?? "-"}
+              <div className="rounded-2xl border bg-card p-4 flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-muted-foreground">
+                    {t("summary.newUsers")}
+                  </span>
+                  <span className="mt-0.5 text-base font-semibold leading-none">
+                    {summary?.newUsers?.toLocaleString(i18n.language) ?? "-"}
+                  </span>
+                </div>
+                <UserPlus className="h-4 w-4 text-muted-foreground" />
               </div>
             </div>
             <div className="h-64">
