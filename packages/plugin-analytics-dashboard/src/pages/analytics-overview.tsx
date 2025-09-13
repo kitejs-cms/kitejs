@@ -23,6 +23,7 @@ import {
 import type {
   AnalyticsSummaryResponseModel,
   AnalyticsLocationsResponseModel,
+  AnalyticsSourcesResponseModel,
 } from "@kitejs-cms/plugin-analytics-api";
 import { DatePicker } from "../components/date-picker";
 import {
@@ -33,9 +34,17 @@ import {
   YAxis,
   Tooltip as RechartsTooltip,
   CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import { FileJson, Users, UserPlus, MapPinOff } from "lucide-react";
 import { WorldChoroplethD3 } from "../components/world-choropleth-d3";
+
+const CHART_COLORS = Array.from(
+  { length: 10 },
+  (_, i) => `var(--chart-${i + 1})`
+);
 
 export function AnalyticsOverviewPage() {
   const { t, i18n } = useTranslation("analytics");
@@ -56,6 +65,12 @@ export function AnalyticsOverviewPage() {
     loading: loadingCityLocations,
   } = useApi<AnalyticsLocationsResponseModel>();
 
+  const {
+    data: sourceData,
+    fetchData: fetchSources,
+    loading: loadingSources,
+  } = useApi<AnalyticsSourcesResponseModel>();
+
   const [summary, setSummary] = useState<AnalyticsSummaryResponseModel | null>(
     null
   );
@@ -72,6 +87,8 @@ export function AnalyticsOverviewPage() {
   } | null>(null);
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonData, setJsonData] = useState<object>({});
+
+  const sourceEntries = Object.entries(sourceData?.sources ?? {});
 
   const openJson = (data: object) => {
     setJsonData(data);
@@ -127,6 +144,16 @@ export function AnalyticsOverviewPage() {
     fetchCityLocations(`analytics/events/locations?${params.toString()}`);
   }, [range, fetchCityLocations, selectedCountry, hasPermission]);
 
+  const loadSources = useCallback(() => {
+    if (!range?.from || !range?.to || !hasPermission("analytics:events.read"))
+      return;
+    const params = new URLSearchParams({
+      startDate: range.from.toISOString().slice(0, 10),
+      endDate: range.to.toISOString().slice(0, 10),
+    });
+    fetchSources(`analytics/events/sources?${params.toString()}`);
+  }, [range, fetchSources, hasPermission]);
+
   useEffect(() => {
     loadSummary();
   }, [loadSummary]);
@@ -138,6 +165,10 @@ export function AnalyticsOverviewPage() {
   useEffect(() => {
     loadCities();
   }, [loadCities]);
+
+  useEffect(() => {
+    loadSources();
+  }, [loadSources]);
 
   return (
     <div className="space-y-6 p-4">
@@ -252,6 +283,52 @@ export function AnalyticsOverviewPage() {
 
         {hasPermission("analytics:events.read") && (
           <>
+            <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-3 rounded-2xl overflow-hidden">
+              <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
+                <CardTitle>{t("summary.sources")}</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openJson(sourceData?.sources ?? {})}
+                  aria-label={t("technologies.viewJson")}
+                  className="flex items-center"
+                >
+                  <FileJson className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <Separator />
+              <CardContent className="p-6">
+                {loadingSources ? (
+                  <Skeleton className="h-80 w-full" />
+                ) : sourceEntries.length > 0 ? (
+                  <div className="h-80 flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={sourceEntries.map(([key, count]) => ({ key, count }))}
+                          dataKey="count"
+                          nameKey="key"
+                          outerRadius="80%"
+                        >
+                          {sourceEntries.map((_, index) => (
+                            <Cell
+                              key={index}
+                              fill={CHART_COLORS[index % CHART_COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center text-sm text-muted-foreground h-80">
+                    {t("summary.noSourceData")}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="shadow-neutral-50 gap-0 py-0 md:col-span-2 rounded-2xl overflow-hidden">
               <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
                 <CardTitle>{t("summary.locations")}</CardTitle>
