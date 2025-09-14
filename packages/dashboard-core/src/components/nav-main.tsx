@@ -50,6 +50,7 @@ export function NavMain({
             <Button
               variant="ghost"
               size="icon"
+              className="h-6 w-6"
               onClick={onSettings}
               aria-label="Customize Menu"
             >

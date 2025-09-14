@@ -127,10 +127,14 @@ export function AppSidebar({
 
   const handleDragStart = (index: number) => setDraggedIndex(index);
 
-  const handleDrop = (index: number) => {
-    if (draggedIndex === null || draggedIndex === index) return;
+  const handleDrop = () => {
+    if (draggedIndex === null || dragOverIndex === null) return;
     const newLayout = [...layout];
     const [moved] = newLayout.splice(draggedIndex, 1);
+    let index = dragOverIndex;
+    if (draggedIndex < dragOverIndex) {
+      index -= 1;
+    }
     newLayout.splice(index, 0, moved);
     setLayout(newLayout);
     setDraggedIndex(null);
@@ -199,46 +203,87 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         {editing ? (
-          <div className="p-2 space-y-2">
-            {displayed.map((key, index) => {
-              const item = itemMap.get(key)!;
-              return (
-                <div
-                  key={key}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverIndex(index);
-                  }}
-                  onDrop={() => handleDrop(index)}
-                  className={`flex items-center gap-2 rounded-md border p-2 ${
-                    dragOverIndex === index
-                      ? "border-sidebar-accent"
-                      : "border-transparent"
-                  }`}
-                >
-                  <GripVertical className="h-4 w-4 text-gray-400" />
-                  <span className="flex-1">{t(item.title)}</span>
-                  {key !== "dashboard" && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemove(key)}
+          <div className="p-2">
+            <div className="mb-2 flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCancel}
+                aria-label="Cancel"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSave}
+                aria-label="Save"
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex flex-col gap-2">
+              {layout.map((key, index) => {
+                const item = itemMap.get(key);
+                if (!item) return null;
+                return (
+                  <React.Fragment key={key}>
+                    <div
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOverIndex(index);
+                      }}
+                      onDrop={handleDrop}
+                      className={`h-8 rounded-md border-2 border-dashed ${
+                        dragOverIndex === index
+                          ? "border-sidebar-accent"
+                          : "border-border"
+                      }`}
+                    />
+                    <div
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragEnd={() => {
+                        setDraggedIndex(null);
+                        setDragOverIndex(null);
+                      }}
+                      className="flex items-center gap-2 rounded-md border border-border bg-background p-2"
                     >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
+                      <GripVertical className="h-4 w-4 text-gray-400" />
+                      <span className="flex-1">{t(item.title)}</span>
+                      {key !== "dashboard" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemove(key)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </React.Fragment>
+                );
+              })}
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOverIndex(layout.length);
+                }}
+                onDrop={handleDrop}
+                className={`h-8 rounded-md border-2 border-dashed ${
+                  dragOverIndex === layout.length
+                    ? "border-sidebar-accent"
+                    : "border-border"
+                }`}
+              />
+            </div>
             {available.length > 0 && (
               <div className="pt-2">
                 {available.map((item) => (
                   <Button
                     key={item.key}
                     variant="outline"
-                    className="w-full justify-start mb-2"
+                    className="mb-2 w-full justify-start"
                     onClick={() => handleAdd(item.key!)}
                   >
                     <Plus className="mr-2 h-4 w-4" />
@@ -260,26 +305,6 @@ export function AppSidebar({
         )}
       </SidebarContent>
       <SidebarFooter className="flex flex-col gap-2">
-        {editing && (
-          <div className="flex gap-2 px-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCancel}
-              aria-label="Cancel"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSave}
-              aria-label="Save"
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
         {user && (
           <NavUser
             openSettings={openSettings}
