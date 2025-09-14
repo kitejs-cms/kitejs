@@ -24,6 +24,7 @@ export function NavMain({
 }: {
   title?: string;
   items: {
+    key?: string;
     title: string;
     url: string;
     icon: LucideIcon;
@@ -43,7 +44,7 @@ export function NavMain({
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible
-            key={item.title}
+            key={item.key ?? item.title}
             asChild
             defaultOpen={
               item.isActive ||
