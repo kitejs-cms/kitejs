@@ -130,7 +130,15 @@ export function AppSidebar({
     [defaultItems, layout]
   );
 
-  const handleDragStart = (index: number) => setDraggedIndex(index);
+  const handleDragStart = (
+    event: React.DragEvent<HTMLDivElement>,
+    index: number
+  ) => {
+    event.dataTransfer.effectAllowed = "move";
+    // Firefox requires data to be set for drag to initiate
+    event.dataTransfer.setData("text/plain", "");
+    setDraggedIndex(index);
+  };
 
   const handleDrop = () => {
     if (draggedIndex === null || dragOverIndex === null) return;
@@ -209,7 +217,13 @@ export function AppSidebar({
         {!layoutLoaded ? (
           <div className="space-y-2 p-2">
             {defaultItems.map((_, i) => (
-              <Skeleton key={i} className="h-8 w-full" />
+              <div
+                key={i}
+                className="flex items-center gap-2 rounded-md px-2 py-1.5"
+              >
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
             ))}
           </div>
         ) : editing ? (
@@ -254,7 +268,7 @@ export function AppSidebar({
                     )}
                     <div
                       draggable
-                      onDragStart={() => handleDragStart(index)}
+                      onDragStart={(e) => handleDragStart(e, index)}
                       onDragEnd={() => {
                         setDraggedIndex(null);
                         setDragOverIndex(null);
