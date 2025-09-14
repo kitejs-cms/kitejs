@@ -1,0 +1,71 @@
+{
+  "menu": {
+    "analytics": "Analytics",
+    "overview": "Overview",
+    "events": "Events",
+    "technologies": "Technologies"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "analytics": "Analytics",
+    "events": "Events",
+    "technologies": "Technologies"
+  },
+  "summary": {
+    "title": "Summary",
+    "totalEvents": "Total events",
+    "uniqueVisitors": "Unique visitors",
+    "activeUsers": "Active users",
+    "newUsers": "New users",
+    "locations": "Locations",
+    "cities": "Cities",
+    "city": "City",
+    "visitors": "Visitors",
+    "noCityData": "No data",
+    "world": "World",
+    "sources": "Traffic sources",
+    "noSourceData": "No data"
+  },
+  "events": {
+    "title": "Events",
+    "type": "Type",
+    "identifier": "Identifier",
+    "createdAt": "Date",
+    "duration": "Duration (s)",
+    "typeCardTitle": "Events - {{type}}",
+    "editLabel": "Edit label",
+    "editLabelPrompt": "Enter new label",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "technologies": {
+    "browser": "Browser",
+    "os": "OS",
+    "device": "Device",
+    "count": "Count",
+    "percentage": "Percentage",
+    "dateRange": "Date range",
+    "viewJson": "View JSON",
+    "downloadCsv": "Download CSV",
+    "copyCsv": "Copy CSV",
+    "selectedRange": "Last {{days}} days"
+  },
+  "dashboardWidget": {
+    "title": "Analytics",
+    "last30Days": "Last 30 days",
+    "totalEvents": "Total events",
+    "uniqueVisitors": "Unique visitors",
+    "newUsers": "New users",
+    "viewDetails": "View analytics",
+    "trendChartAriaLabel": "Visitors and new users chart"
+  },
+  "settings": {
+    "description": "Configure analytics settings.",
+    "general": {
+      "apiKey": "API key",
+      "regenerate": "Regenerate",
+      "retentionDays": "Retention days",
+      "noRetention": "Never delete events"
+    }
+  }
+}

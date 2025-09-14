@@ -1,0 +1,71 @@
+{
+  "menu": {
+    "analytics": "Analytics",
+    "overview": "Riepilogo",
+    "events": "Eventi",
+    "technologies": "Tecnologie"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "analytics": "Analytics",
+    "events": "Eventi",
+    "technologies": "Tecnologie"
+  },
+  "summary": {
+    "title": "Riepilogo",
+    "totalEvents": "Eventi totali",
+    "uniqueVisitors": "Visitatori unici",
+    "activeUsers": "Utenti attivi",
+    "newUsers": "Nuovi utenti",
+    "locations": "Provenienza",
+    "cities": "Città",
+    "city": "Città",
+    "visitors": "Visitatori",
+    "noCityData": "Nessun dato",
+    "world": "Mondo",
+    "sources": "Origini traffico",
+    "noSourceData": "Nessun dato"
+  },
+  "events": {
+    "title": "Eventi",
+    "type": "Tipo",
+    "identifier": "Identificatore",
+    "createdAt": "Data",
+    "duration": "Durata (s)",
+    "typeCardTitle": "Eventi - {{type}}",
+    "editLabel": "Modifica etichetta",
+    "editLabelPrompt": "Inserisci nuova etichetta",
+    "cancel": "Annulla",
+    "save": "Salva"
+  },
+  "technologies": {
+    "browser": "Browser",
+    "os": "Sistema operativo",
+    "device": "Dispositivo",
+    "count": "Conteggio",
+    "percentage": "Percentuale",
+    "dateRange": "Intervallo date",
+    "viewJson": "Vedi JSON",
+    "downloadCsv": "Scarica CSV",
+    "copyCsv": "Copia CSV",
+    "selectedRange": "Ultimi {{days}} giorni"
+  },
+  "dashboardWidget": {
+    "title": "Analytics",
+    "last30Days": "Ultimi 30 giorni",
+    "totalEvents": "Eventi totali",
+    "uniqueVisitors": "Visitatori unici",
+    "newUsers": "Nuovi utenti",
+    "viewDetails": "Vai a Analytics",
+    "trendChartAriaLabel": "Grafico visitatori e nuovi utenti"
+  },
+  "settings": {
+    "description": "Configura le impostazioni di analytics.",
+    "general": {
+      "apiKey": "API key",
+      "regenerate": "Rigenera",
+      "retentionDays": "Giorni di conservazione",
+      "noRetention": "Non eliminare gli eventi"
+    }
+  }
+}

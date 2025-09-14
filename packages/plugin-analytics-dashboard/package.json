@@ -1,0 +1,78 @@
+{
+  "name": "@kitejs-cms/plugin-analytics-dashboard",
+  "version": "0.0.1-alpha.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./*": {
+      "import": "./dist/*.js",
+      "require": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
+  },
+  "scripts": {
+    "build:ts": "tsc -b",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css",
+    "build": "pnpm run build:ts && pnpm run build:css",
+    "dev": "pnpm run dev:ts & pnpm run dev:css",
+    "dev:ts": "tsc -b --watch",
+    "dev:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "prepublishOnly": "pnpm run build"
+  },
+  "peerDependencies": {
+    "@kitejs-cms/dashboard-core": "workspace:*",
+    "date-fns": "^4.1.0",
+    "react": "^18.2.0 || ^19.0.0",
+    "react-dom": "^18.2.0 || ^19.0.0",
+    "react-i18next": "^15.4.1",
+    "react-router-dom": "^7.8.2"
+  },
+  "dependencies": {
+    "lucide-react": "^0.475.0",
+    "react-day-picker": "^9.9.0",
+    "recharts": "^2.12.0",
+    "topojson-client": "^3.1.0",
+    "d3-scale-chromatic": "^3.1.0",
+    "d3-array": "3.2.4",
+    "d3-format": "3.1.0",
+    "d3-geo": "3.1.1",
+    "d3-scale": "4.0.2",
+    "d3-selection": "3.0.0",
+    "d3-zoom": "3.0.0"
+  },
+  "devDependencies": {
+    "@kitejs-cms/core": "workspace:*",
+    "@kitejs-cms/eslint-config": "workspace:*",
+    "@kitejs-cms/plugin-analytics-api": "workspace:*",
+    "@kitejs-cms/typescript-config": "workspace:*",
+    "@types/react": "19.0.8",
+    "@types/react-dom": "19.0.3",
+    "eslint": "^9.20.0",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "5.7.3",
+    "@types/geojson": "^7946.0.8",
+    "@types/d3-format": "3.0.4",
+    "@types/d3-scale-chromatic": "3.0.1",
+    "@types/d3-scale": "4.0.9",
+    "@types/d3-array": "3.2.2",
+    "@types/d3-geo": "3.0.8",
+    "@types/topojson-client": "^3.0.1",
+    "@types/d3-selection": "3.0.0",
+    "@types/d3-zoom": "3.0.0"
+  }
+}
