@@ -80,18 +80,21 @@ export function AppSidebar({
 
   React.useEffect(() => {
     (async () => {
-      const stored =
-        await getSetting<{ value: DashboardLayoutSettingsModel }>(
-          "dashboard",
-          "dashboard:layout"
-        );
-      if (stored?.value?.menu?.length) {
-        setLayout(stored.value.menu);
-      } else {
+      try {
+        const stored = await getSetting<{
+          value: DashboardLayoutSettingsModel;
+        }>("dashboard", "dashboard:layout");
+        if (stored?.value?.menu?.length) {
+          setLayout(stored.value.menu);
+        } else {
+          setLayout(defaultItems.map((i) => i.key!));
+        }
+      } catch {
         setLayout(defaultItems.map((i) => i.key!));
       }
     })();
-  }, [getSetting, defaultItems]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   React.useEffect(() => {
     setLayout((prev) => {
