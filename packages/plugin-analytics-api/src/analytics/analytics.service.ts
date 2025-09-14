@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
+import { Cron, CronExpression } from "@nestjs/schedule";
 import { Model } from "mongoose";
 import { TrackEvent } from "./dto/track-event.dto";
 import {
@@ -39,6 +40,10 @@ export class AnalyticsService {
     } else {
       await this.eventModel.create(dto);
     }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async pruneOldEvents() {
     const { value } =
       await this.settingsService.findOne<AnalyticsPluginSettingsModel>(
         ANALYTICS_PLUGIN_NAMESPACE,

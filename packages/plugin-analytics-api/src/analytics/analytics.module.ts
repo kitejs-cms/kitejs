@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
+import { ScheduleModule } from "@nestjs/schedule";
 import { SettingsModule, UsersModule } from "@kitejs-cms/core";
 import { AnalyticsController } from "./analytics.controller";
 import { AnalyticsService } from "./analytics.service";
@@ -16,6 +17,7 @@ import { AnalyticsApiKeyGuard } from "./guards/api-key.guard";
     ]),
     SettingsModule,
     UsersModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AnalyticsController],
   providers: [AnalyticsService, AnalyticsApiKeyGuard],
