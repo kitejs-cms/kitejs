@@ -1,4 +1,4 @@
-import { ChevronRight, LucideIcon } from "lucide-react";
+import { ChevronRight, LucideIcon, Settings } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,12 +17,15 @@ import {
 } from "./ui/collapsible";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
 
 export function NavMain({
   items,
   title,
+  onSettings,
 }: {
   title?: string;
+  onSettings?: () => void;
   items: {
     key?: string;
     title: string;
@@ -40,7 +43,21 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      {title && <SidebarGroupLabel>{title}</SidebarGroupLabel>}
+      {title && (
+        <div className="flex items-center justify-between">
+          <SidebarGroupLabel>{title}</SidebarGroupLabel>
+          {onSettings && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onSettings}
+              aria-label="Customize Menu"
+            >
+              <Settings className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      )}
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible

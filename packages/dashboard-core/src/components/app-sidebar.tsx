@@ -5,7 +5,6 @@ import {
   Command,
   LayoutDashboard,
   GripVertical,
-  Settings,
   X,
   Check,
   Plus,
@@ -80,6 +79,11 @@ export function AppSidebar({
   const [editing, setEditing] = React.useState(false);
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
+
+  const startEditing = React.useCallback(() => {
+    setOriginalLayout(layout);
+    setEditing(true);
+  }, [layout]);
 
   React.useEffect(() => {
     (async () => {
@@ -246,12 +250,17 @@ export function AppSidebar({
           </div>
         ) : (
           menuGroups.map((group, index) => (
-            <NavMain key={index} title={group.title} items={group.items as never} />
+            <NavMain
+              key={index}
+              title={group.title}
+              items={group.items as never}
+              onSettings={startEditing}
+            />
           ))
         )}
       </SidebarContent>
       <SidebarFooter className="flex flex-col gap-2">
-        {editing ? (
+        {editing && (
           <div className="flex gap-2 px-2">
             <Button
               variant="ghost"
@@ -270,18 +279,6 @@ export function AppSidebar({
               <Check className="h-4 w-4" />
             </Button>
           </div>
-        ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              setOriginalLayout(layout);
-              setEditing(true);
-            }}
-            aria-label="Customize Menu"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
         )}
         {user && (
           <NavUser
