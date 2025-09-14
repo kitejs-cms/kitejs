@@ -140,12 +140,16 @@ export function AppSidebar({
     setDraggedIndex(index);
   };
 
-  const handleDrop = () => {
-    if (draggedIndex === null || dragOverIndex === null) return;
+  const handleDrop = (
+    event: React.DragEvent<HTMLDivElement>,
+    dropIndex: number
+  ) => {
+    event.preventDefault();
+    if (draggedIndex === null) return;
     const newLayout = [...layout];
     const [moved] = newLayout.splice(draggedIndex, 1);
-    let index = dragOverIndex;
-    if (draggedIndex < dragOverIndex) {
+    let index = dropIndex;
+    if (draggedIndex < dropIndex) {
       index -= 1;
     }
     newLayout.splice(index, 0, moved);
@@ -258,8 +262,8 @@ export function AppSidebar({
                           e.preventDefault();
                           setDragOverIndex(index);
                         }}
-                        onDrop={handleDrop}
-                        className={`h-2 rounded-md border-2 border-dashed ${
+                        onDrop={(e) => handleDrop(e, index)}
+                        className={`h-6 rounded-md border-2 border-dashed ${
                           dragOverIndex === index
                             ? "border-sidebar-accent"
                             : "border-border"
@@ -296,8 +300,8 @@ export function AppSidebar({
                     e.preventDefault();
                     setDragOverIndex(layout.length);
                   }}
-                  onDrop={handleDrop}
-                  className={`h-2 rounded-md border-2 border-dashed ${
+                  onDrop={(e) => handleDrop(e, layout.length)}
+                  className={`h-6 rounded-md border-2 border-dashed ${
                     dragOverIndex === layout.length
                       ? "border-sidebar-accent"
                       : "border-border"
