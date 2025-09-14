@@ -57,7 +57,10 @@ export function AppSidebar({
     [hasPermission]
   );
 
-  const filteredItems = filterItems(items);
+  const filteredItems = React.useMemo(
+    () => filterItems(items),
+    [filterItems, items]
+  );
 
   const defaultItems = React.useMemo(
     () => [
@@ -97,11 +100,14 @@ export function AppSidebar({
   }, []);
 
   React.useEffect(() => {
+    const keys = defaultItems.map((i) => i.key!);
     setLayout((prev) => {
-      const keys = defaultItems.map((i) => i.key!);
       const existing = prev.filter((k) => keys.includes(k));
       const missing = keys.filter((k) => !existing.includes(k));
-      return [...existing, ...missing];
+      const next = [...existing, ...missing];
+      return next.length === prev.length && next.every((k, i) => k === prev[i])
+        ? prev
+        : next;
     });
   }, [defaultItems]);
 
