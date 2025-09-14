@@ -58,5 +58,14 @@
     "newUsers": "New users",
     "viewDetails": "View analytics",
     "trendChartAriaLabel": "Visitors and new users chart"
+  },
+  "settings": {
+    "description": "Configure analytics settings.",
+    "general": {
+      "title": "General",
+      "apiKey": "API key",
+      "regenerate": "Regenerate",
+      "retentionDays": "Retention days"
+    }
   }
 }
