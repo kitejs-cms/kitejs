@@ -25,6 +25,7 @@ import { useSettingsContext } from "../context/settings-context";
 import { Button } from "../components/ui/button";
 import { useTranslation } from "react-i18next";
 import { DashboardLayoutSettingsModel } from "../models/dashboard-layout-settings.model";
+import { Skeleton } from "../components/ui/skeleton";
 
 export function AppSidebar({
   items = [],
@@ -169,11 +170,6 @@ export function AppSidebar({
     setLayout(originalLayout);
     setEditing(false);
   };
-
-  if (!layoutLoaded) {
-    return null;
-  }
-
   const orderedItems = React.useMemo(
     () => displayed.map((key) => itemMap.get(key)!).filter(Boolean),
     [displayed, itemMap]
@@ -210,7 +206,13 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {editing ? (
+        {!layoutLoaded ? (
+          <div className="space-y-2 p-2">
+            {defaultItems.map((_, i) => (
+              <Skeleton key={i} className="h-8 w-full" />
+            ))}
+          </div>
+        ) : editing ? (
           <div className="p-2">
             <div className="mb-2 flex justify-end gap-2">
               <Button
