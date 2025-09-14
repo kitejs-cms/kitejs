@@ -22,14 +22,7 @@ export const AnalyticsModule: DashboardModule = {
     title: "analytics:menu.analytics",
     icon: <BarChart3 />,
     description: "analytics:settings.description",
-    children: [
-      {
-        key: "analytics-general",
-        title: "analytics:settings.general.title",
-        icon: <BarChart3 />,
-        component: <AnalyticsSettings />,
-      },
-    ],
+    component: <AnalyticsSettings />,
   },
   routes: [
     {

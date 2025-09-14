@@ -45,9 +45,16 @@ export class AnalyticsService {
         ANALYTICS_SETTINGS_KEY
       );
 
-    const retentionDays = value?.retentionDays ?? DEFAULT_RETENTION_DAYS;
-    const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
-    await this.eventModel.deleteMany({ createdAt: { $lt: cutoff } }).exec();
+    const retentionDays =
+      value?.retentionDays === undefined
+        ? DEFAULT_RETENTION_DAYS
+        : value.retentionDays;
+    if (retentionDays !== null) {
+      const cutoff = new Date(
+        Date.now() - retentionDays * 24 * 60 * 60 * 1000
+      );
+      await this.eventModel.deleteMany({ createdAt: { $lt: cutoff } }).exec();
+    }
   }
 
   async countEvents(

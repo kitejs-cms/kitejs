@@ -62,10 +62,10 @@
   "settings": {
     "description": "Configure analytics settings.",
     "general": {
-      "title": "General",
       "apiKey": "API key",
       "regenerate": "Regenerate",
-      "retentionDays": "Retention days"
+      "retentionDays": "Retention days",
+      "noRetention": "Never delete events"
     }
   }
 }
