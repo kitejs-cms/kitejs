@@ -75,6 +75,7 @@ export function AppSidebar({
   );
 
   const [layout, setLayout] = React.useState<string[]>([]);
+  const [layoutLoaded, setLayoutLoaded] = React.useState(false);
   const [originalLayout, setOriginalLayout] = React.useState<string[]>([]);
   const [editing, setEditing] = React.useState(false);
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
@@ -98,12 +99,15 @@ export function AppSidebar({
         }
       } catch {
         setLayout(defaultItems.map((i) => i.key!));
+      } finally {
+        setLayoutLoaded(true);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
+    if (!layoutLoaded) return;
     const keys = defaultItems.map((i) => i.key!);
     setLayout((prev) => {
       const existing = prev.filter((k) => keys.includes(k));
@@ -113,7 +117,7 @@ export function AppSidebar({
         ? prev
         : next;
     });
-  }, [defaultItems]);
+  }, [defaultItems, layoutLoaded]);
 
   const displayed = React.useMemo(
     () => layout.filter((key) => itemMap.has(key)),
@@ -165,6 +169,10 @@ export function AppSidebar({
     setLayout(originalLayout);
     setEditing(false);
   };
+
+  if (!layoutLoaded) {
+    return null;
+  }
 
   const orderedItems = React.useMemo(
     () => displayed.map((key) => itemMap.get(key)!).filter(Boolean),
@@ -228,18 +236,20 @@ export function AppSidebar({
                 if (!item) return null;
                 return (
                   <React.Fragment key={key}>
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        setDragOverIndex(index);
-                      }}
-                      onDrop={handleDrop}
-                      className={`h-8 rounded-md border-2 border-dashed ${
-                        dragOverIndex === index
-                          ? "border-sidebar-accent"
-                          : "border-border"
-                      }`}
-                    />
+                    {draggedIndex !== null && (
+                      <div
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setDragOverIndex(index);
+                        }}
+                        onDrop={handleDrop}
+                        className={`h-2 rounded-md border-2 border-dashed ${
+                          dragOverIndex === index
+                            ? "border-sidebar-accent"
+                            : "border-border"
+                        }`}
+                      />
+                    )}
                     <div
                       draggable
                       onDragStart={() => handleDragStart(index)}
@@ -264,18 +274,20 @@ export function AppSidebar({
                   </React.Fragment>
                 );
               })}
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOverIndex(layout.length);
-                }}
-                onDrop={handleDrop}
-                className={`h-8 rounded-md border-2 border-dashed ${
-                  dragOverIndex === layout.length
-                    ? "border-sidebar-accent"
-                    : "border-border"
-                }`}
-              />
+              {draggedIndex !== null && (
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOverIndex(layout.length);
+                  }}
+                  onDrop={handleDrop}
+                  className={`h-2 rounded-md border-2 border-dashed ${
+                    dragOverIndex === layout.length
+                      ? "border-sidebar-accent"
+                      : "border-border"
+                  }`}
+                />
+              )}
             </div>
             {available.length > 0 && (
               <div className="pt-2">
