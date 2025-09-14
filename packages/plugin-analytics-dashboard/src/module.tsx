@@ -4,6 +4,7 @@ import { AnalyticsOverviewPage } from "./pages/analytics-overview";
 import { AnalyticsEventsPage } from "./pages/analytics-events";
 import { AnalyticsTechnologiesPage } from "./pages/analytics-technologies";
 import { AnalyticsDashboardWidget } from "./components/analytics-dashboard-widget";
+import { AnalyticsSettings } from "./components/analytics-settings";
 
 export const ANALYTICS_PLUGIN_NAMESPACE = "analytics";
 export const ANALYTICS_SETTINGS_KEY = `${ANALYTICS_PLUGIN_NAMESPACE}:config`;
@@ -16,6 +17,13 @@ export const AnalyticsModule: DashboardModule = {
   key: ANALYTICS_PLUGIN_NAMESPACE,
   name: "analytics",
   translations: { it, en },
+  settings: {
+    key: ANALYTICS_PLUGIN_NAMESPACE,
+    title: "analytics:menu.analytics",
+    icon: <BarChart3 />,
+    description: "analytics:settings.description",
+    component: <AnalyticsSettings />,
+  },
   routes: [
     {
       path: "analytics",

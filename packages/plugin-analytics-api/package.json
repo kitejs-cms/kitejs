@@ -39,7 +39,8 @@
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.0.0",
-    "@nestjs/mongoose": "^11.0.0"
+    "@nestjs/mongoose": "^11.0.0",
+    "@nestjs/schedule": "^5.0.0"
   },
   "dependencies": {
     "class-transformer": "^0.5.1",
@@ -59,6 +60,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.0.0",
     "@nestjs/mongoose": "^11.0.0",
+    "@nestjs/schedule": "^5.0.0",
     "typescript": "^5.7.3",
     "@types/geoip-lite": "^1.4.4",
     "@types/ua-parser-js": "^0.7.39",

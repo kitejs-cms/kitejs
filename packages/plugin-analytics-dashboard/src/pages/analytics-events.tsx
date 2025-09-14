@@ -169,7 +169,7 @@ export function AnalyticsEventsPage() {
     const newLabels = { ...typeLabels, [editType]: editLabelValue };
     setTypeLabels(newLabels);
     const newSettings: AnalyticsPluginSettingsModel = {
-      ...(pluginSettings ?? { apiKey: "", retentionDays: 0 }),
+      ...(pluginSettings ?? { apiKey: "", retentionDays: null }),
       eventTypeLabels: newLabels,
     };
     setPluginSettings(newSettings);

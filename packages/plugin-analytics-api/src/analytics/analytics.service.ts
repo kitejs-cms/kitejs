@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
+import { Cron, CronExpression } from "@nestjs/schedule";
 import { Model } from "mongoose";
 import { TrackEvent } from "./dto/track-event.dto";
 import {
@@ -39,15 +40,26 @@ export class AnalyticsService {
     } else {
       await this.eventModel.create(dto);
     }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async pruneOldEvents() {
     const { value } =
       await this.settingsService.findOne<AnalyticsPluginSettingsModel>(
         ANALYTICS_PLUGIN_NAMESPACE,
         ANALYTICS_SETTINGS_KEY
       );
 
-    const retentionDays = value?.retentionDays ?? DEFAULT_RETENTION_DAYS;
-    const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
-    await this.eventModel.deleteMany({ createdAt: { $lt: cutoff } }).exec();
+    const retentionDays =
+      value?.retentionDays === undefined
+        ? DEFAULT_RETENTION_DAYS
+        : value.retentionDays;
+    if (retentionDays !== null) {
+      const cutoff = new Date(
+        Date.now() - retentionDays * 24 * 60 * 60 * 1000
+      );
+      await this.eventModel.deleteMany({ createdAt: { $lt: cutoff } }).exec();
+    }
   }
 
   async countEvents(

@@ -58,5 +58,14 @@
     "newUsers": "Nuovi utenti",
     "viewDetails": "Vai a Analytics",
     "trendChartAriaLabel": "Grafico visitatori e nuovi utenti"
+  },
+  "settings": {
+    "description": "Configura le impostazioni di analytics.",
+    "general": {
+      "apiKey": "API key",
+      "regenerate": "Rigenera",
+      "retentionDays": "Giorni di conservazione",
+      "noRetention": "Non eliminare gli eventi"
+    }
   }
 }
