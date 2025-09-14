@@ -3,8 +3,8 @@ import { DashboardWidgetModel } from "../../../models/dashboard-widget.model";
 import { useSettingsContext } from "../../../context/settings-context";
 import {
   DashboardWidgetLayout,
-  DashboardWidgetsSettingsModel,
-} from "../../../models/dashboard-widgets-settings.model";
+  DashboardLayoutSettingsModel,
+} from "../../../models/dashboard-layout-settings.model";
 import { Button } from "../../../components/ui/button";
 import {
   ArrowLeftRight,
@@ -32,9 +32,9 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
 
   useEffect(() => {
     (async () => {
-      const stored = await getSetting<{ value: DashboardWidgetsSettingsModel }>(
+      const stored = await getSetting<{ value: DashboardLayoutSettingsModel }>(
         "dashboard",
-        "dashboard:widgets"
+        "dashboard:layout"
       );
 
       if (stored?.value?.widgets?.length) {
@@ -134,7 +134,12 @@ export function DashboardPage({ widgets = [] }: DashboardPageProps) {
   };
 
   const handleSave = async () => {
-    await updateSetting("dashboard", "dashboard:widgets", {
+    const existing = await getSetting<{ value: DashboardLayoutSettingsModel }>(
+      "dashboard",
+      "dashboard:layout"
+    );
+    await updateSetting("dashboard", "dashboard:layout", {
+      ...(existing?.value ?? {}),
       widgets: layout,
     });
     setEditing(false);

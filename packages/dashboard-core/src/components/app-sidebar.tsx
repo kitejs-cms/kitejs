@@ -25,7 +25,7 @@ import {
 import { useSettingsContext } from "../context/settings-context";
 import { Button } from "../components/ui/button";
 import { useTranslation } from "react-i18next";
-import { DashboardMenuSettingsModel } from "../models/dashboard-menu-settings.model";
+import { DashboardLayoutSettingsModel } from "../models/dashboard-layout-settings.model";
 
 export function AppSidebar({
   items = [],
@@ -81,12 +81,12 @@ export function AppSidebar({
   React.useEffect(() => {
     (async () => {
       const stored =
-        await getSetting<{ value: DashboardMenuSettingsModel }>(
+        await getSetting<{ value: DashboardLayoutSettingsModel }>(
           "dashboard",
-          "dashboard:menu"
+          "dashboard:layout"
         );
-      if (stored?.value?.order?.length) {
-        setLayout(stored.value.order);
+      if (stored?.value?.menu?.length) {
+        setLayout(stored.value.menu);
       } else {
         setLayout(defaultItems.map((i) => i.key!));
       }
@@ -133,7 +133,14 @@ export function AppSidebar({
   };
 
   const handleSave = async () => {
-    await updateSetting("dashboard", "dashboard:menu", { order: layout });
+    const existing = await getSetting<{ value: DashboardLayoutSettingsModel }>(
+      "dashboard",
+      "dashboard:layout"
+    );
+    await updateSetting("dashboard", "dashboard:layout", {
+      ...(existing?.value ?? {}),
+      menu: layout,
+    });
     setEditing(false);
   };
 

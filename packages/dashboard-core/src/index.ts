@@ -44,8 +44,7 @@ export * from "./models/menu-item.model";
 export * from "./models/settings.model";
 export * from "./models/module.model";
 export * from "./models/dashboard-widget.model";
-export * from "./models/dashboard-widgets-settings.model";
-export * from "./models/dashboard-menu-settings.model";
+export * from "./models/dashboard-layout-settings.model";
 
 /* Hooks */
 export * from "./hooks/use-api";
