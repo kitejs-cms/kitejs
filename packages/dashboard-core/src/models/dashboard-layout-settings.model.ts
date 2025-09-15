@@ -10,6 +10,8 @@ export interface DashboardWidgetLayout {
   height: number;
 }
 
-export interface DashboardWidgetsSettingsModel {
+export interface DashboardLayoutSettingsModel {
   widgets: DashboardWidgetLayout[];
+  menu: string[];
 }
+

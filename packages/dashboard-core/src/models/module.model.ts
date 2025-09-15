@@ -13,6 +13,7 @@ export interface ModuleRouteModel {
 }
 
 export interface SidebarMenuItemModel {
+  key?: string;
   title: string;
   url?: string;
   icon: LucideIcon;

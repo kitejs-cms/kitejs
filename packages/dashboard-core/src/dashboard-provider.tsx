@@ -81,7 +81,9 @@ function DashboardRoutes({ modules }: { modules: DashboardModule[] }) {
 
   const menuItems = useMemo(
     () =>
-      enabledModules.filter((mod) => mod.menuItem).map((mod) => mod.menuItem),
+      enabledModules
+        .filter((mod) => mod.menuItem)
+        .map((mod) => ({ ...mod.menuItem!, key: mod.key })),
     [enabledModules]
   );
 
