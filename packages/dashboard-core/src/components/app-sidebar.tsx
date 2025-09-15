@@ -1,14 +1,7 @@
 import * as React from "react";
 import { SidebarMenuItemModel as ItemModule } from "../models/module.model";
 import { useAuthContext } from "../context/auth-context";
-import {
-  Command,
-  LayoutDashboard,
-  GripVertical,
-  X,
-  Check,
-  Plus,
-} from "lucide-react";
+import { Command, LayoutDashboard, X, Check, Plus } from "lucide-react";
 import { NavMain } from "../components/nav-main";
 import { NavUser } from "../components/nav-user";
 import { useHasPermission } from "../hooks/use-has-permission";
@@ -78,8 +71,6 @@ export function AppSidebar({
   const [layoutLoaded, setLayoutLoaded] = React.useState(false);
   const [originalLayout, setOriginalLayout] = React.useState<string[]>([]);
   const [editing, setEditing] = React.useState(false);
-  const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
 
   const startEditing = React.useCallback(() => {
     setOriginalLayout(layout);
@@ -128,49 +119,6 @@ export function AppSidebar({
     () => defaultItems.filter((item) => !layout.includes(item.key!)),
     [defaultItems, layout]
   );
-
-  // Drag & Drop handlers
-  const handleDragStart = (
-    event: React.DragEvent<HTMLDivElement>,
-    index: number
-  ) => {
-    event.dataTransfer.setData("text/plain", String(index)); // payload NON vuoto
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.dropEffect = "move";
-    setDraggedIndex(index);
-  };
-
-  const handleDragEnter = (
-    event: React.DragEvent<HTMLDivElement>,
-    overIndex: number
-  ) => {
-    event.preventDefault();
-    setDragOverIndex(overIndex);
-  };
-
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault(); // consente il drop
-  };
-
-  const handleDrop = (
-    event: React.DragEvent<HTMLDivElement>,
-    dropIndex: number
-  ) => {
-    event.preventDefault();
-    if (draggedIndex === null) return;
-
-    const newLayout = [...layout];
-    const [moved] = newLayout.splice(draggedIndex, 1);
-
-    let index = dropIndex;
-    if (draggedIndex < dropIndex) index -= 1;
-
-    newLayout.splice(index, 0, moved);
-    setLayout(newLayout);
-
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-  };
 
   const handleRemove = (key: string) => {
     setLayout((prev) => prev.filter((k) => k !== key));
@@ -247,7 +195,7 @@ export function AppSidebar({
             ))}
           </div>
         ) : editing ? (
-          <div className="p-2" onDragOver={handleDragOver}>
+          <div className="p-2">
             <div className="mb-2 flex justify-end gap-2">
               <Button
                 variant="ghost"
@@ -268,62 +216,26 @@ export function AppSidebar({
             </div>
 
             <div className="flex flex-col gap-2">
-              {draggedIndex !== null && (
-                <div
-                  onDragEnter={(e) => handleDragEnter(e, 0)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, 0)}
-                  className={`h-6 rounded-md border-2 border-dashed ${
-                    dragOverIndex === 0
-                      ? "border-sidebar-accent"
-                      : "border-border"
-                  }`}
-                />
-              )}
-
-              {layout.map((key, index) => {
+              {layout.map((key) => {
                 const item = itemMap.get(key);
                 if (!item) return null;
 
                 return (
-                  <React.Fragment key={key}>
-                    <div
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, index)}
-                      onDragEnd={() => {
-                        setDraggedIndex(null);
-                        setDragOverIndex(null);
-                      }}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, index + 1)}
-                      className="flex items-center gap-2 rounded-md border border-border bg-background p-2"
-                    >
-                      <GripVertical className="h-4 w-4 text-gray-400" />
-                      <span className="flex-1">{t(item.title)}</span>
-                      {key !== "dashboard" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemove(key)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-
-                    {draggedIndex !== null && (
-                      <div
-                        onDragEnter={(e) => handleDragEnter(e, index + 1)}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, index + 1)}
-                        className={`h-6 rounded-md border-2 border-dashed ${
-                          dragOverIndex === index + 1
-                            ? "border-sidebar-accent"
-                            : "border-border"
-                        }`}
-                      />
+                  <div
+                    key={key}
+                    className="flex items-center gap-2 rounded-md border border-border bg-background p-2"
+                  >
+                    <span className="flex-1">{t(item.title)}</span>
+                    {key !== "dashboard" && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemove(key)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     )}
-                  </React.Fragment>
+                  </div>
                 );
               })}
             </div>
