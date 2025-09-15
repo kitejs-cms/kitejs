@@ -45,8 +45,7 @@ export function AppSidebar({
       list
         .filter(
           (item) =>
-            !item.requiredPermissions ||
-            hasPermission(item.requiredPermissions)
+            !item.requiredPermissions || hasPermission(item.requiredPermissions)
         )
         .map((item) => ({
           ...item,
@@ -130,14 +129,27 @@ export function AppSidebar({
     [defaultItems, layout]
   );
 
+  // Drag & Drop handlers
   const handleDragStart = (
     event: React.DragEvent<HTMLDivElement>,
     index: number
   ) => {
+    event.dataTransfer.setData("text/plain", String(index)); // payload NON vuoto
     event.dataTransfer.effectAllowed = "move";
-    // Firefox requires data to be set for drag to initiate
-    event.dataTransfer.setData("text/plain", "");
+    event.dataTransfer.dropEffect = "move";
     setDraggedIndex(index);
+  };
+
+  const handleDragEnter = (
+    event: React.DragEvent<HTMLDivElement>,
+    overIndex: number
+  ) => {
+    event.preventDefault();
+    setDragOverIndex(overIndex);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault(); // consente il drop
   };
 
   const handleDrop = (
@@ -146,24 +158,26 @@ export function AppSidebar({
   ) => {
     event.preventDefault();
     if (draggedIndex === null) return;
+
     const newLayout = [...layout];
     const [moved] = newLayout.splice(draggedIndex, 1);
+
     let index = dropIndex;
-    if (draggedIndex < dropIndex) {
-      index -= 1;
-    }
+    if (draggedIndex < dropIndex) index -= 1;
+
     newLayout.splice(index, 0, moved);
     setLayout(newLayout);
+
     setDraggedIndex(null);
     setDragOverIndex(null);
   };
 
   const handleRemove = (key: string) => {
-    setLayout(layout.filter((k) => k !== key));
+    setLayout((prev) => prev.filter((k) => k !== key));
   };
 
   const handleAdd = (key: string) => {
-    setLayout([...layout, key]);
+    setLayout((prev) => [...prev, key]);
   };
 
   const handleSave = async () => {
@@ -182,6 +196,7 @@ export function AppSidebar({
     setLayout(originalLayout);
     setEditing(false);
   };
+
   const orderedItems = React.useMemo(
     () => displayed.map((key) => itemMap.get(key)!).filter(Boolean),
     [displayed, itemMap]
@@ -217,6 +232,7 @@ export function AppSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
         {!layoutLoaded ? (
           <div className="space-y-2 p-2">
@@ -231,7 +247,7 @@ export function AppSidebar({
             ))}
           </div>
         ) : editing ? (
-          <div className="p-2">
+          <div className="p-2" onDragOver={handleDragOver}>
             <div className="mb-2 flex justify-end gap-2">
               <Button
                 variant="ghost"
@@ -250,26 +266,27 @@ export function AppSidebar({
                 <Check className="h-4 w-4" />
               </Button>
             </div>
+
             <div className="flex flex-col gap-2">
+              {draggedIndex !== null && (
+                <div
+                  onDragEnter={(e) => handleDragEnter(e, 0)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, 0)}
+                  className={`h-6 rounded-md border-2 border-dashed ${
+                    dragOverIndex === 0
+                      ? "border-sidebar-accent"
+                      : "border-border"
+                  }`}
+                />
+              )}
+
               {layout.map((key, index) => {
                 const item = itemMap.get(key);
                 if (!item) return null;
+
                 return (
                   <React.Fragment key={key}>
-                    {draggedIndex !== null && (
-                      <div
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          setDragOverIndex(index);
-                        }}
-                        onDrop={(e) => handleDrop(e, index)}
-                        className={`h-6 rounded-md border-2 border-dashed ${
-                          dragOverIndex === index
-                            ? "border-sidebar-accent"
-                            : "border-border"
-                        }`}
-                      />
-                    )}
                     <div
                       draggable
                       onDragStart={(e) => handleDragStart(e, index)}
@@ -277,6 +294,8 @@ export function AppSidebar({
                         setDraggedIndex(null);
                         setDragOverIndex(null);
                       }}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, index + 1)}
                       className="flex items-center gap-2 rounded-md border border-border bg-background p-2"
                     >
                       <GripVertical className="h-4 w-4 text-gray-400" />
@@ -291,24 +310,24 @@ export function AppSidebar({
                         </Button>
                       )}
                     </div>
+
+                    {draggedIndex !== null && (
+                      <div
+                        onDragEnter={(e) => handleDragEnter(e, index + 1)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index + 1)}
+                        className={`h-6 rounded-md border-2 border-dashed ${
+                          dragOverIndex === index + 1
+                            ? "border-sidebar-accent"
+                            : "border-border"
+                        }`}
+                      />
+                    )}
                   </React.Fragment>
                 );
               })}
-              {draggedIndex !== null && (
-                <div
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverIndex(layout.length);
-                  }}
-                  onDrop={(e) => handleDrop(e, layout.length)}
-                  className={`h-6 rounded-md border-2 border-dashed ${
-                    dragOverIndex === layout.length
-                      ? "border-sidebar-accent"
-                      : "border-border"
-                  }`}
-                />
-              )}
             </div>
+
             {available.length > 0 && (
               <div className="pt-2">
                 {available.map((item) => (
@@ -336,6 +355,7 @@ export function AppSidebar({
           ))
         )}
       </SidebarContent>
+
       <SidebarFooter className="flex flex-col gap-2">
         {user && (
           <NavUser
