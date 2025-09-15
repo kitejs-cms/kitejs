@@ -294,8 +294,9 @@ export function AppSidebar({
                         setDraggedIndex(null);
                         setDragOverIndex(null);
                       }}
+                      onDragEnter={(e) => handleDragEnter(e, index)}
                       onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, index + 1)}
+                      onDrop={(e) => handleDrop(e, index)}
                       className="flex items-center gap-2 rounded-md border border-border bg-background p-2"
                     >
                       <GripVertical className="h-4 w-4 text-gray-400" />
