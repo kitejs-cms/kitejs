@@ -7,6 +7,10 @@ import {
 import { GalleryPluginModule } from "./gallery-plugin.module";
 import { IPlugin } from "@kitejs-cms/core";
 import { version } from "../package.json";
+import {
+  galleryIndexesMigration,
+  galleryRenameCollectionMigration,
+} from "./migrations";
 
 const logger = new Logger("GalleryPluginConfig");
 
@@ -18,6 +22,7 @@ export const GalleryPlugin: IPlugin = {
   enabled: true,
   settings: GallerySetting,
   permissions: GalleryPermissions,
+  migrations: [galleryIndexesMigration, galleryRenameCollectionMigration],
   initialize: async () => {
     logger.log("Initializing gallery plugin");
   },

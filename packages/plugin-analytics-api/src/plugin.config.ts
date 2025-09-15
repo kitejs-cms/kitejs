@@ -7,6 +7,7 @@ import {
 import { AnalyticsPluginModule } from "./analytics-plugin.module";
 import { IPlugin } from "@kitejs-cms/core";
 import { version } from "../package.json";
+import { analyticsIndexesMigration } from "./migrations";
 
 const logger = new Logger("AnalyticsPluginConfig");
 
@@ -17,6 +18,7 @@ export const AnalyticsPlugin: IPlugin = {
   description: "Plugin providing basic analytics tracking",
   settings: AnalyticsSetting,
   permissions: AnalyticsPermissions,
+  migrations: [analyticsIndexesMigration],
   initialize: async () => {
     logger.log("Initializing analytics plugin");
   },

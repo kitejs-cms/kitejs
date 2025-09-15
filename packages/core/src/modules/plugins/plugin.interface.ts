@@ -1,6 +1,7 @@
 import { Type } from "@nestjs/common";
 import { SettingModel } from "../settings/models/setting.model";
 import { PermissionModel } from "../users";
+import { PluginMigration } from "./plugin-migration.interface";
 
 export interface IPlugin {
   /**
@@ -40,6 +41,11 @@ export interface IPlugin {
    * These will be inserted in the database if they don't exist.
    */
   permissions?: PermissionModel[];
+
+  /**
+   * Optional migration scripts executed when the plugin version changes.
+   */
+  migrations?: PluginMigration[];
 
   /**
    * Called when the plugin is initialized.
