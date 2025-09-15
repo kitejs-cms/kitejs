@@ -144,12 +144,25 @@ export function AppSidebar({
     event: React.DragEvent<HTMLDivElement>,
     overIndex: number
   ) => {
-    event.preventDefault();
+    allowDrop(event);
     setDragOverIndex(overIndex);
   };
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+  const allowDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault(); // consente il drop
+    event.dataTransfer.dropEffect = "move";
+  };
+
+  const handleItemDragOver = (
+    event: React.DragEvent<HTMLDivElement>,
+    index: number
+  ) => {
+    allowDrop(event);
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const offset = event.clientY - bounds.top;
+    const insertAfter = offset > bounds.height / 2;
+    const targetIndex = insertAfter ? index + 1 : index;
+    setDragOverIndex(targetIndex);
   };
 
   const handleDrop = (
@@ -162,8 +175,11 @@ export function AppSidebar({
     const newLayout = [...layout];
     const [moved] = newLayout.splice(draggedIndex, 1);
 
-    let index = dropIndex;
-    if (draggedIndex < dropIndex) index -= 1;
+    const targetIndex =
+      dragOverIndex !== null ? dragOverIndex : dropIndex;
+
+    let index = targetIndex;
+    if (draggedIndex < targetIndex) index -= 1;
 
     newLayout.splice(index, 0, moved);
     setLayout(newLayout);
@@ -247,7 +263,7 @@ export function AppSidebar({
             ))}
           </div>
         ) : editing ? (
-          <div className="p-2" onDragOver={handleDragOver}>
+          <div className="p-2" onDragOver={allowDrop}>
             <div className="mb-2 flex justify-end gap-2">
               <Button
                 variant="ghost"
@@ -271,7 +287,7 @@ export function AppSidebar({
               {draggedIndex !== null && (
                 <div
                   onDragEnter={(e) => handleDragEnter(e, 0)}
-                  onDragOver={handleDragOver}
+                  onDragOver={allowDrop}
                   onDrop={(e) => handleDrop(e, 0)}
                   className={`h-6 rounded-md border-2 border-dashed ${
                     dragOverIndex === 0
@@ -295,7 +311,7 @@ export function AppSidebar({
                         setDragOverIndex(null);
                       }}
                       onDragEnter={(e) => handleDragEnter(e, index)}
-                      onDragOver={handleDragOver}
+                      onDragOver={(e) => handleItemDragOver(e, index)}
                       onDrop={(e) => handleDrop(e, index)}
                       className="flex items-center gap-2 rounded-md border border-border bg-background p-2"
                     >
@@ -315,7 +331,7 @@ export function AppSidebar({
                     {draggedIndex !== null && (
                       <div
                         onDragEnter={(e) => handleDragEnter(e, index + 1)}
-                        onDragOver={handleDragOver}
+                        onDragOver={allowDrop}
                         onDrop={(e) => handleDrop(e, index + 1)}
                         className={`h-6 rounded-md border-2 border-dashed ${
                           dragOverIndex === index + 1
