@@ -1,11 +1,20 @@
 import { Logger } from "@nestjs/common";
-import { connection } from "mongoose";
+import { connection, Schema, type Model } from "mongoose";
 import { PluginMigration } from "@kitejs-cms/core";
 import { ANALYTICS_PLUGIN_NAMESPACE } from "../constants";
 
 const logger = new Logger("AnalyticsPluginMigration");
 
 const collectionName = `plugin-${ANALYTICS_PLUGIN_NAMESPACE}_events`;
+
+type IndexKeyDefinition = Record<string, 1 | -1>;
+
+type IndexDefinition = {
+  key: IndexKeyDefinition;
+  name: string;
+};
+
+const MIGRATION_MODEL_NAME = "AnalyticsEventMigrationModel";
 
 const indexDefinitions = [
   { key: { createdAt: -1 }, name: "analytics_events_createdAt_desc" },
@@ -18,23 +27,56 @@ const indexDefinitions = [
     key: { fingerprint: 1, createdAt: -1 },
     name: "analytics_events_fingerprint_createdAt",
   },
-] as const;
+] satisfies ReadonlyArray<IndexDefinition>;
+
+type MigrationDocument = Record<string, unknown>;
+
+function getMigrationModel(): Model<MigrationDocument> {
+  const existingModel = connection.models[MIGRATION_MODEL_NAME] as
+    | Model<MigrationDocument>
+    | undefined;
+
+  if (existingModel) {
+    return existingModel;
+  }
+
+  const schema = new Schema<MigrationDocument>({}, {
+    collection: collectionName,
+    strict: false,
+  });
+
+  return connection.model<MigrationDocument>(
+    MIGRATION_MODEL_NAME,
+    schema,
+    collectionName,
+  );
+}
+
+async function ensureConnectionReady() {
+  if (connection.readyState === 1) {
+    return;
+  }
+
+  await connection.asPromise();
+
+  if (connection.readyState !== 1) {
+    throw new Error(
+      "Mongoose connection is not ready while running analytics migration.",
+    );
+  }
+}
+
+async function getCollection() {
+  await ensureConnectionReady();
+  const model = getMigrationModel();
+  return model.collection;
+}
 
 function getMongoErrorCodeName(error: unknown): string | undefined {
   if (typeof error === "object" && error && "codeName" in error) {
     return (error as { codeName?: string }).codeName;
   }
   return undefined;
-}
-
-async function getCollection() {
-  const db = connection.db;
-  if (!db) {
-    throw new Error(
-      "MongoDB connection is not ready while running analytics migration."
-    );
-  }
-  return db.collection(collectionName);
 }
 
 export const analyticsIndexesMigration: PluginMigration = {

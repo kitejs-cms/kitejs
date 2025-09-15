@@ -10,18 +10,29 @@ const logger = new Logger("GalleryRenameCollectionMigration");
 
 const LEGACY_COLLECTION_NAME = "gallery-plugin_galleries";
 
-function getMongoDatabase() {
-  const db = connection.db;
-  if (!db) {
+async function ensureConnectionReady() {
+  if (connection.readyState === 1) {
+    return;
+  }
+
+  await connection.asPromise();
+
+  if (connection.readyState !== 1) {
     throw new Error(
-      "MongoDB connection is not ready while running gallery rename migration."
+      "Mongoose connection is not ready while running gallery rename migration.",
     );
   }
-  return db;
 }
 
 async function collectionExists(name: string) {
-  const db = getMongoDatabase();
+  await ensureConnectionReady();
+  const db = connection.db;
+  if (!db) {
+    throw new Error(
+      "Mongoose connection is not available while checking gallery collections.",
+    );
+  }
+
   const collections = await db.listCollections({ name }).toArray();
   return collections.length > 0;
 }
@@ -29,7 +40,7 @@ async function collectionExists(name: string) {
 export const galleryRenameCollectionMigration: PluginMigration = {
   version: "0.0.1-alpha.7",
   async up() {
-    const db = getMongoDatabase();
+    await ensureConnectionReady();
     const legacyExists = await collectionExists(LEGACY_COLLECTION_NAME);
 
     if (legacyExists) {
@@ -39,7 +50,7 @@ export const galleryRenameCollectionMigration: PluginMigration = {
           `Target collection ${GALLERY_COLLECTION_NAME} already exists. Skipping rename from ${LEGACY_COLLECTION_NAME}.`
         );
       } else {
-        await db
+        await connection
           .collection(LEGACY_COLLECTION_NAME)
           .rename(GALLERY_COLLECTION_NAME, { dropTarget: false });
         logger.log(
@@ -55,7 +66,7 @@ export const galleryRenameCollectionMigration: PluginMigration = {
     await galleryIndexesMigration.up();
   },
   async down() {
-    const db = getMongoDatabase();
+    await ensureConnectionReady();
     const currentExists = await collectionExists(GALLERY_COLLECTION_NAME);
 
     if (!currentExists) {
@@ -73,7 +84,7 @@ export const galleryRenameCollectionMigration: PluginMigration = {
       return;
     }
 
-    await db
+    await connection
       .collection(GALLERY_COLLECTION_NAME)
       .rename(LEGACY_COLLECTION_NAME, { dropTarget: false });
     logger.log(

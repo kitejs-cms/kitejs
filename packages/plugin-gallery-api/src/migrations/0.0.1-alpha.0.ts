@@ -1,6 +1,5 @@
 import { Logger } from "@nestjs/common";
-import { connection } from "mongoose";
-import type { CreateIndexesOptions, IndexSpecification } from "mongodb";
+import { connection, Schema, type Model } from "mongoose";
 import { PluginMigration } from "@kitejs-cms/core";
 import { GALLERY_COLLECTION_NAME } from "../constants";
 
@@ -8,11 +7,61 @@ const logger = new Logger("GalleryPluginMigration");
 
 export const collectionName = GALLERY_COLLECTION_NAME;
 
+type IndexKeyDefinition = Record<string, 1 | -1>;
+
 type GalleryIndexDefinition = {
-  key: IndexSpecification;
+  key: IndexKeyDefinition;
   name: string;
-  options?: CreateIndexesOptions;
+  options?: {
+    sparse?: boolean;
+    unique?: boolean;
+  };
 };
+
+type MigrationDocument = Record<string, unknown>;
+
+const MIGRATION_MODEL_NAME = "GalleryMigrationModel";
+
+function getMigrationModel(): Model<MigrationDocument> {
+  const existingModel = connection.models[MIGRATION_MODEL_NAME] as
+    | Model<MigrationDocument>
+    | undefined;
+
+  if (existingModel) {
+    return existingModel;
+  }
+
+  const schema = new Schema<MigrationDocument>({}, {
+    collection: collectionName,
+    strict: false,
+  });
+
+  return connection.model<MigrationDocument>(
+    MIGRATION_MODEL_NAME,
+    schema,
+    collectionName,
+  );
+}
+
+async function ensureConnectionReady() {
+  if (connection.readyState === 1) {
+    return;
+  }
+
+  await connection.asPromise();
+
+  if (connection.readyState !== 1) {
+    throw new Error(
+      "Mongoose connection is not ready while running gallery migration.",
+    );
+  }
+}
+
+async function getCollection() {
+  await ensureConnectionReady();
+  const model = getMigrationModel();
+  return model.collection;
+}
 
 const indexDefinitions: GalleryIndexDefinition[] = [
   { key: { status: 1, updatedAt: -1 }, name: "gallery_status_updatedAt" },
@@ -29,16 +78,6 @@ function getMongoErrorCodeName(error: unknown): string | undefined {
     return (error as { codeName?: string }).codeName;
   }
   return undefined;
-}
-
-async function getCollection() {
-  const db = connection.db;
-  if (!db) {
-    throw new Error(
-      "MongoDB connection is not ready while running gallery migration."
-    );
-  }
-  return db.collection(collectionName);
 }
 
 export const galleryIndexesMigration: PluginMigration = {
