@@ -1,5 +1,10 @@
 import { Logger } from "@nestjs/common";
-import { connection, Schema, type Model } from "mongoose";
+import {
+  connection,
+  ConnectionStates,
+  Schema,
+  type Model,
+} from "mongoose";
 import { PluginMigration } from "@kitejs-cms/core";
 import { ANALYTICS_PLUGIN_NAMESPACE } from "../constants";
 
@@ -15,6 +20,8 @@ type IndexDefinition = {
 };
 
 const MIGRATION_MODEL_NAME = "AnalyticsEventMigrationModel";
+
+const CONNECTED_STATE = ConnectionStates.connected;
 
 const indexDefinitions = [
   { key: { createdAt: -1 }, name: "analytics_events_createdAt_desc" },
@@ -53,13 +60,13 @@ function getMigrationModel(): Model<MigrationDocument> {
 }
 
 async function ensureConnectionReady() {
-  if (connection.readyState === 1) {
+  if (connection.readyState === CONNECTED_STATE) {
     return;
   }
 
   await connection.asPromise();
 
-  if (connection.readyState !== 1) {
+  if (connection.readyState !== CONNECTED_STATE) {
     throw new Error(
       "Mongoose connection is not ready while running analytics migration.",
     );

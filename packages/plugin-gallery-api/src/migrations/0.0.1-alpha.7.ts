@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common";
-import { connection } from "mongoose";
+import { connection, ConnectionStates } from "mongoose";
 
 import { PluginMigration } from "@kitejs-cms/core";
 
@@ -10,14 +10,16 @@ const logger = new Logger("GalleryRenameCollectionMigration");
 
 const LEGACY_COLLECTION_NAME = "gallery-plugin_galleries";
 
+const CONNECTED_STATE = ConnectionStates.connected;
+
 async function ensureConnectionReady() {
-  if (connection.readyState === 1) {
+  if (connection.readyState === CONNECTED_STATE) {
     return;
   }
 
   await connection.asPromise();
 
-  if (connection.readyState !== 1) {
+  if (connection.readyState !== CONNECTED_STATE) {
     throw new Error(
       "Mongoose connection is not ready while running gallery rename migration.",
     );

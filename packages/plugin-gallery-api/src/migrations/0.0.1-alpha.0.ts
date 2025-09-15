@@ -1,5 +1,10 @@
 import { Logger } from "@nestjs/common";
-import { connection, Schema, type Model } from "mongoose";
+import {
+  connection,
+  ConnectionStates,
+  Schema,
+  type Model,
+} from "mongoose";
 import { PluginMigration } from "@kitejs-cms/core";
 import { GALLERY_COLLECTION_NAME } from "../constants";
 
@@ -21,6 +26,8 @@ type GalleryIndexDefinition = {
 type MigrationDocument = Record<string, unknown>;
 
 const MIGRATION_MODEL_NAME = "GalleryMigrationModel";
+
+const CONNECTED_STATE = ConnectionStates.connected;
 
 function getMigrationModel(): Model<MigrationDocument> {
   const existingModel = connection.models[MIGRATION_MODEL_NAME] as
@@ -44,13 +51,13 @@ function getMigrationModel(): Model<MigrationDocument> {
 }
 
 async function ensureConnectionReady() {
-  if (connection.readyState === 1) {
+  if (connection.readyState === CONNECTED_STATE) {
     return;
   }
 
   await connection.asPromise();
 
-  if (connection.readyState !== 1) {
+  if (connection.readyState !== CONNECTED_STATE) {
     throw new Error(
       "Mongoose connection is not ready while running gallery migration.",
     );
