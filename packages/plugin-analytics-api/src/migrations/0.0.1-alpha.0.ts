@@ -1,10 +1,5 @@
 import { Logger } from "@nestjs/common";
-import {
-  connection,
-  ConnectionStates,
-  Schema,
-  type Model,
-} from "mongoose";
+import { connection, ConnectionStates, Schema, type Model } from "mongoose";
 import { PluginMigration } from "@kitejs-cms/core";
 import { ANALYTICS_PLUGIN_NAMESPACE } from "../constants";
 
@@ -47,15 +42,18 @@ function getMigrationModel(): Model<MigrationDocument> {
     return existingModel;
   }
 
-  const schema = new Schema<MigrationDocument>({}, {
-    collection: collectionName,
-    strict: false,
-  });
+  const schema = new Schema<MigrationDocument>(
+    {},
+    {
+      collection: collectionName,
+      strict: false,
+    }
+  );
 
   return connection.model<MigrationDocument>(
     MIGRATION_MODEL_NAME,
     schema,
-    collectionName,
+    collectionName
   );
 }
 
@@ -65,12 +63,6 @@ async function ensureConnectionReady() {
   }
 
   await connection.asPromise();
-
-  if (connection.readyState !== CONNECTED_STATE) {
-    throw new Error(
-      "Mongoose connection is not ready while running analytics migration.",
-    );
-  }
 }
 
 async function getCollection() {
@@ -102,7 +94,10 @@ export const analyticsIndexesMigration: PluginMigration = {
           );
           return;
         }
-        if (codeName === "IndexOptionsConflict" || codeName === "IndexKeySpecsConflict") {
+        if (
+          codeName === "IndexOptionsConflict" ||
+          codeName === "IndexKeySpecsConflict"
+        ) {
           logger.warn(`Rebuilding index ${name} on ${collectionName}`);
           try {
             await collection.dropIndex(name);
@@ -132,7 +127,9 @@ export const analyticsIndexesMigration: PluginMigration = {
       } catch (error) {
         const codeName = getMongoErrorCodeName(error);
         if (codeName === "IndexNotFound" || codeName === "NamespaceNotFound") {
-          logger.warn(`Index ${name} not present on ${collectionName}, skipping.`);
+          logger.warn(
+            `Index ${name} not present on ${collectionName}, skipping.`
+          );
           continue;
         }
         throw error;
