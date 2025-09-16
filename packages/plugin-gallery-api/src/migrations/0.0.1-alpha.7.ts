@@ -18,12 +18,6 @@ async function ensureConnectionReady() {
   }
 
   await connection.asPromise();
-
-  if (connection.readyState !== CONNECTED_STATE) {
-    throw new Error(
-      "Mongoose connection is not ready while running gallery rename migration.",
-    );
-  }
 }
 
 async function collectionExists(name: string) {
@@ -31,7 +25,7 @@ async function collectionExists(name: string) {
   const db = connection.db;
   if (!db) {
     throw new Error(
-      "Mongoose connection is not available while checking gallery collections.",
+      "Mongoose connection is not available while checking gallery collections."
     );
   }
 
