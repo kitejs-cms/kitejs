@@ -5,6 +5,7 @@ export * from "./dto/collection-response.dto";
 
 /* Models */
 export * from "./models/collection-status.enum";
+export * from "./models/collection.models";
 
 /* Schemas */
 export * from "./schemas/product-collection.schema";

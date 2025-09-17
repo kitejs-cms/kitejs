@@ -1,14 +1,24 @@
-export interface ProductTranslationEntry {
-  [key: string]: unknown;
-}
+import { ApiProperty } from "@nestjs/swagger";
+import { ProductResponseModel } from "../models/product.models";
 
-export interface ProductTranslationsMap {
-  [language: string]: ProductTranslationEntry;
-}
+export class ProductResponseDto extends ProductResponseModel {
+  @ApiProperty()
+  declare id: string;
 
-export interface ProductResponse {
-  id: string;
-  slugs: Record<string, string>;
-  translations: ProductTranslationsMap;
-  [key: string]: unknown;
+  @ApiProperty({ type: Object })
+  declare slugs: Record<string, string>;
+
+  @ApiProperty({ type: Object })
+  declare translations: Record<string, Record<string, unknown>>;
+
+  @ApiProperty()
+  declare createdAt: Date;
+
+  @ApiProperty()
+  declare updatedAt: Date;
+
+  constructor(partial: ProductResponseModel) {
+    super();
+    Object.assign(this, partial);
+  }
 }

@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsBoolean,
   IsMongoId,
@@ -7,82 +7,83 @@ import {
   Length,
   MaxLength,
 } from "class-validator";
+import { CustomerAddressBaseModel } from "../models/customer-address.model";
 
-export class CreateCustomerAddressDto {
+export class CreateCustomerAddressDto extends CustomerAddressBaseModel {
   @ApiProperty({ description: "Identifier of the customer (core user)" })
   @IsMongoId()
-  userId!: string;
+  declare userId: string;
 
-  @ApiProperty({ required: false, description: "Label for the address" })
+  @ApiPropertyOptional({ description: "Label for the address" })
   @IsOptional()
   @IsString()
   @MaxLength(120)
-  label?: string;
+  declare label?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(120)
-  firstName?: string;
+  declare firstName?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(120)
-  lastName?: string;
+  declare lastName?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(160)
-  company?: string;
+  declare company?: string;
 
   @ApiProperty({ description: "Primary address line" })
   @IsString()
   @Length(1, 255)
-  address1!: string;
+  declare address1: string;
 
-  @ApiProperty({ required: false, description: "Secondary address line" })
+  @ApiPropertyOptional({ description: "Secondary address line" })
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  address2?: string;
+  declare address2?: string;
 
   @ApiProperty({ description: "City" })
   @IsString()
   @Length(1, 120)
-  city!: string;
+  declare city: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(20)
-  postalCode?: string;
+  declare postalCode?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(120)
-  province?: string;
+  declare province?: string;
 
   @ApiProperty({ description: "ISO country code" })
   @IsString()
   @Length(2, 2)
-  countryCode!: string;
+  declare countryCode: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(40)
-  phone?: string;
+  declare phone?: string;
 
-  @ApiProperty({ required: false, default: false })
+  @ApiPropertyOptional({ default: false })
   @IsOptional()
   @IsBoolean()
-  isDefaultShipping?: boolean;
+  declare isDefaultShipping?: boolean;
 
-  @ApiProperty({ required: false, default: false })
+  @ApiPropertyOptional({ default: false })
   @IsOptional()
   @IsBoolean()
-  isDefaultBilling?: boolean;
+  declare isDefaultBilling?: boolean;
 }

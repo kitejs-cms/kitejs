@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -11,140 +12,176 @@ import {
   ValidateNested,
 } from "class-validator";
 import { ProductStatus } from "../models/product-status.enum";
+import {
+  ProductBaseModel,
+  ProductPriceModel,
+  ProductSeoModel,
+  ProductVariantModel,
+} from "../models/product.models";
 
-export class ProductSeoDto {
+export class ProductSeoDto extends ProductSeoModel {
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  metaTitle?: string;
+  declare metaTitle?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  metaDescription?: string;
+  declare metaDescription?: string;
 
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  metaKeywords?: string[];
+  declare metaKeywords?: string[];
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  canonicalUrl?: string;
+  declare canonicalUrl?: string;
 }
 
-export class ProductPriceDto {
+export class ProductPriceDto extends ProductPriceModel {
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  currencyCode!: string;
+  declare currencyCode: string;
 
+  @ApiProperty()
   @Type(() => Number)
   @IsNumber()
-  amount!: number;
+  declare amount: number;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  compareAtAmount?: number;
+  declare compareAtAmount?: number;
 }
 
-export class ProductVariantDto {
+export class ProductVariantDto extends ProductVariantModel {
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  id?: string;
+  declare id?: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  title!: string;
+  declare title: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  sku!: string;
+  declare sku: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  barcode?: string;
+  declare barcode?: string;
 
+  @ApiPropertyOptional({ type: () => [ProductPriceDto] })
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => ProductPriceDto)
-  prices?: ProductPriceDto[];
+  declare prices?: ProductPriceDto[];
 
+  @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  inventoryQuantity?: number;
+  declare inventoryQuantity?: number;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
-  allowBackorder?: boolean;
-
+  declare allowBackorder?: boolean;
 }
 
-export class CreateProductDto {
+export class CreateProductDto extends ProductBaseModel {
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  slug!: string;
+  declare slug: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  language!: string;
+  declare language: string;
 
+  @ApiProperty({ enum: ProductStatus })
   @IsEnum(ProductStatus)
-  status!: ProductStatus;
+  declare status: ProductStatus;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  title!: string;
+  declare title: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  subtitle?: string;
+  declare subtitle?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  summary?: string;
+  declare summary?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  description?: string;
+  declare description?: string;
 
+  @ApiPropertyOptional({ type: () => ProductSeoDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => ProductSeoDto)
-  seo?: ProductSeoDto;
+  declare seo?: ProductSeoDto;
 
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  tags?: string[];
+  declare tags?: string[];
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  publishAt?: string;
+  declare publishAt?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  expireAt?: string;
+  declare expireAt?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  thumbnail?: string;
+  declare thumbnail?: string;
 
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  gallery?: string[];
+  declare gallery?: string[];
 
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  collectionIds?: string[];
+  declare collectionIds?: string[];
 
+  @ApiPropertyOptional({ type: () => [ProductVariantDto] })
   @IsOptional()
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProductVariantDto)
-  variants?: ProductVariantDto[];
+  declare variants?: ProductVariantDto[];
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  defaultCurrency?: string;
+  declare defaultCurrency?: string;
 }

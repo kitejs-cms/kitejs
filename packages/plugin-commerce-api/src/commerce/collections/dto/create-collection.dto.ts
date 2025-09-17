@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -10,74 +11,94 @@ import {
   ValidateNested,
 } from "class-validator";
 import { CollectionStatus } from "../models/collection-status.enum";
+import {
+  CollectionBaseModel,
+  CollectionSeoModel,
+} from "../models/collection.models";
 
-export class CollectionSeoDto {
+export class CollectionSeoDto extends CollectionSeoModel {
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  metaTitle?: string;
+  declare metaTitle?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  metaDescription?: string;
+  declare metaDescription?: string;
 
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  metaKeywords?: string[];
+  declare metaKeywords?: string[];
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  canonicalUrl?: string;
+  declare canonicalUrl?: string;
 }
 
-export class CreateCollectionDto {
+export class CreateCollectionDto extends CollectionBaseModel {
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  slug!: string;
+  declare slug: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  language!: string;
+  declare language: string;
 
+  @ApiProperty({ enum: CollectionStatus })
   @IsEnum(CollectionStatus)
-  status!: CollectionStatus;
+  declare status: CollectionStatus;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  title!: string;
+  declare title: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  description?: string;
+  declare description?: string;
 
+  @ApiPropertyOptional({ type: () => CollectionSeoDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => CollectionSeoDto)
-  seo?: CollectionSeoDto;
+  declare seo?: CollectionSeoDto;
 
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  tags?: string[];
+  declare tags?: string[];
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  publishAt?: string;
+  declare publishAt?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  expireAt?: string;
+  declare expireAt?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  coverImage?: string;
+  declare coverImage?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  parentId?: string;
+  declare parentId?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  sortOrder?: number;
+  declare sortOrder?: number;
 }

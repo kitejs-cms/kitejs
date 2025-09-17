@@ -14,7 +14,7 @@ import { UpdateCollectionDto } from "./dto/update-collection.dto";
 import { COMMERCE_COLLECTION_SLUG_NAMESPACE } from "../../constants";
 import { SlugRegistryService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
-import { CollectionResponse } from "./dto/collection-response.dto";
+import { CollectionResponseDto } from "./dto/collection-response.dto";
 
 @Injectable()
 export class CollectionsService {
@@ -46,7 +46,7 @@ export class CollectionsService {
 
   private async buildResponse(
     collection: ProductCollection
-  ): Promise<CollectionResponse> {
+  ): Promise<CollectionResponseDto> {
     const slugs = await this.slugService.findSlugsByEntity(
       collection._id as Types.ObjectId
     );
@@ -68,19 +68,21 @@ export class CollectionsService {
       };
     }
 
-    return {
+    return new CollectionResponseDto({
       ...json,
       id: collection._id.toString(),
       translations: translationsWithSlug,
       slugs: slugMap,
-    };
+      createdAt: collection.createdAt,
+      updatedAt: collection.updatedAt,
+    });
   }
 
   private async upsertCollection(
     id: string | undefined,
     dto: CreateCollectionDto | UpdateCollectionDto,
     user: JwtPayloadModel
-  ): Promise<CollectionResponse> {
+  ): Promise<CollectionResponseDto> {
     const {
       slug,
       language,
@@ -186,7 +188,7 @@ export class CollectionsService {
     return this.upsertCollection(undefined, dto, user);
   }
 
-  async findAll(): Promise<CollectionResponse[]> {
+  async findAll(): Promise<CollectionResponseDto[]> {
     const collections = await this.collectionModel
       .find()
       .sort({ sortOrder: 1, updatedAt: -1 })
@@ -197,7 +199,7 @@ export class CollectionsService {
     );
   }
 
-  async findOne(id: string): Promise<CollectionResponse> {
+  async findOne(id: string): Promise<CollectionResponseDto> {
     const collection = await this.collectionModel.findById(id).exec();
     if (!collection) {
       throw new NotFoundException(`Collection with ID ${id} not found`);
@@ -210,7 +212,7 @@ export class CollectionsService {
     id: string,
     dto: UpdateCollectionDto,
     user: JwtPayloadModel
-  ): Promise<CollectionResponse> {
+  ): Promise<CollectionResponseDto> {
     return this.upsertCollection(id, dto, user);
   }
 

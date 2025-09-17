@@ -1,5 +1,6 @@
 /* Models */
 export * from "./models/product-status.enum";
+export * from "./models/product.models";
 
 /* DTO */
 export * from "./dto/create-product.dto";

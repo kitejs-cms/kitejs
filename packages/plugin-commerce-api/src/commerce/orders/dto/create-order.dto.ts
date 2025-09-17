@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -12,152 +13,194 @@ import {
 import { OrderStatus } from "../models/order-status.enum";
 import { PaymentStatus } from "../models/payment-status.enum";
 import { FulfillmentStatus } from "../models/fulfillment-status.enum";
+import {
+  OrderAddressModel,
+  OrderBaseModel,
+  OrderItemModel,
+} from "../models/order.models";
 
-export class OrderAddressDto {
+export class OrderAddressDto extends OrderAddressModel {
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  firstName?: string;
+  declare firstName?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  lastName?: string;
+  declare lastName?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  company?: string;
+  declare company?: string;
 
+  @ApiProperty()
   @IsString()
-  address1!: string;
+  declare address1: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  address2?: string;
+  declare address2?: string;
 
+  @ApiProperty()
   @IsString()
-  city!: string;
+  declare city: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  postalCode?: string;
+  declare postalCode?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  province?: string;
+  declare province?: string;
 
+  @ApiProperty()
   @IsString()
-  countryCode!: string;
+  declare countryCode: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  phone?: string;
+  declare phone?: string;
 }
 
-export class OrderItemDto {
+export class OrderItemDto extends OrderItemModel {
+  @ApiProperty()
   @IsString()
-  title!: string;
+  declare title: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  variantTitle?: string;
+  declare variantTitle?: string;
 
+  @ApiProperty()
   @Type(() => Number)
   @IsNumber()
-  quantity!: number;
+  declare quantity: number;
 
+  @ApiProperty()
   @Type(() => Number)
   @IsNumber()
-  unitPrice!: number;
+  declare unitPrice: number;
 
+  @ApiProperty()
   @IsString()
-  currencyCode!: string;
+  declare currencyCode: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  productId?: string;
+  declare productId?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  variantId?: string;
+  declare variantId?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  sku?: string;
+  declare sku?: string;
 }
 
-export class CreateOrderDto {
+export class CreateOrderDto extends OrderBaseModel {
+  @ApiProperty()
   @IsString()
-  orderNumber!: string;
+  declare orderNumber: string;
 
+  @ApiPropertyOptional({ enum: OrderStatus })
   @IsOptional()
   @IsEnum(OrderStatus)
-  status?: OrderStatus;
+  declare status?: OrderStatus;
 
+  @ApiPropertyOptional({ enum: PaymentStatus })
   @IsOptional()
   @IsEnum(PaymentStatus)
-  paymentStatus?: PaymentStatus;
+  declare paymentStatus?: PaymentStatus;
 
+  @ApiPropertyOptional({ enum: FulfillmentStatus })
   @IsOptional()
   @IsEnum(FulfillmentStatus)
-  fulfillmentStatus?: FulfillmentStatus;
+  declare fulfillmentStatus?: FulfillmentStatus;
 
+  @ApiProperty()
   @IsString()
-  currencyCode!: string;
+  declare currencyCode: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  customerId?: string;
+  declare customerId?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsEmail()
-  email?: string;
+  declare email?: string;
 
+  @ApiPropertyOptional({ type: () => OrderAddressDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => OrderAddressDto)
-  billingAddress?: OrderAddressDto;
+  declare billingAddress?: OrderAddressDto;
 
+  @ApiPropertyOptional({ type: () => OrderAddressDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => OrderAddressDto)
-  shippingAddress?: OrderAddressDto;
+  declare shippingAddress?: OrderAddressDto;
 
+  @ApiProperty({ type: () => [OrderItemDto] })
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
-  items!: OrderItemDto[];
+  declare items: OrderItemDto[];
 
+  @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  shippingTotal?: number;
+  declare shippingTotal?: number;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  taxTotal?: number;
+  declare taxTotal?: number;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  discountTotal?: number;
+  declare discountTotal?: number;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  notes?: string;
+  declare notes?: string;
 
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  tags?: string[];
+  declare tags?: string[];
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  paidAt?: string;
+  declare paidAt?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  fulfilledAt?: string;
+  declare fulfilledAt?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  cancelledAt?: string;
+  declare cancelledAt?: string;
 }

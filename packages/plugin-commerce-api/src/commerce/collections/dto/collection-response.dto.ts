@@ -1,14 +1,24 @@
-export interface CollectionTranslationEntry {
-  [key: string]: unknown;
-}
+import { ApiProperty } from "@nestjs/swagger";
+import { CollectionResponseModel } from "../models/collection.models";
 
-export interface CollectionTranslationsMap {
-  [language: string]: CollectionTranslationEntry;
-}
+export class CollectionResponseDto extends CollectionResponseModel {
+  @ApiProperty()
+  declare id: string;
 
-export interface CollectionResponse {
-  id: string;
-  slugs: Record<string, string>;
-  translations: CollectionTranslationsMap;
-  [key: string]: unknown;
+  @ApiProperty({ type: Object })
+  declare slugs: Record<string, string>;
+
+  @ApiProperty({ type: Object })
+  declare translations: Record<string, Record<string, unknown>>;
+
+  @ApiProperty()
+  declare createdAt: Date;
+
+  @ApiProperty()
+  declare updatedAt: Date;
+
+  constructor(partial: CollectionResponseModel) {
+    super();
+    Object.assign(this, partial);
+  }
 }

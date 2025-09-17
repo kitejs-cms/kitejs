@@ -1,75 +1,79 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { CustomerAddress } from "../schemas/customer-address.schema";
+import { CustomerAddressResponseModel } from "../models/customer-address.model";
 
-export class CustomerAddressResponseDto {
+export class CustomerAddressResponseDto extends CustomerAddressResponseModel {
   @ApiProperty()
-  id!: string;
+  declare id: string;
 
   @ApiProperty({ description: "Identifier of the customer (core user)" })
-  userId!: string;
+  declare userId: string;
 
   @ApiProperty({ required: false })
-  label?: string;
+  declare label?: string;
 
   @ApiProperty({ required: false })
-  firstName?: string;
+  declare firstName?: string;
 
   @ApiProperty({ required: false })
-  lastName?: string;
+  declare lastName?: string;
 
   @ApiProperty({ required: false })
-  company?: string;
+  declare company?: string;
 
   @ApiProperty()
-  address1!: string;
+  declare address1: string;
 
   @ApiProperty({ required: false })
-  address2?: string;
+  declare address2?: string;
 
   @ApiProperty()
-  city!: string;
+  declare city: string;
 
   @ApiProperty({ required: false })
-  postalCode?: string;
+  declare postalCode?: string;
 
   @ApiProperty({ required: false })
-  province?: string;
+  declare province?: string;
 
   @ApiProperty()
-  countryCode!: string;
+  declare countryCode: string;
 
   @ApiProperty({ required: false })
-  phone?: string;
+  declare phone?: string;
 
   @ApiProperty()
-  isDefaultShipping!: boolean;
+  declare isDefaultShipping: boolean;
 
   @ApiProperty()
-  isDefaultBilling!: boolean;
+  declare isDefaultBilling: boolean;
 
   @ApiProperty()
-  createdAt!: Date;
+  declare createdAt: Date;
 
   @ApiProperty()
-  updatedAt!: Date;
+  declare updatedAt: Date;
 
   constructor(entity: CustomerAddress) {
-    this.id = entity._id.toString();
-    this.userId = entity.userId.toString();
-    this.label = entity.label;
-    this.firstName = entity.firstName;
-    this.lastName = entity.lastName;
-    this.company = entity.company;
-    this.address1 = entity.address1;
-    this.address2 = entity.address2;
-    this.city = entity.city;
-    this.postalCode = entity.postalCode;
-    this.province = entity.province;
-    this.countryCode = entity.countryCode;
-    this.phone = entity.phone;
-    this.isDefaultShipping = entity.isDefaultShipping;
-    this.isDefaultBilling = entity.isDefaultBilling;
-    this.createdAt = entity.createdAt;
-    this.updatedAt = entity.updatedAt;
+    super();
+    Object.assign(this, {
+      id: entity._id.toString(),
+      userId: entity.userId.toString(),
+      label: entity.label,
+      firstName: entity.firstName,
+      lastName: entity.lastName,
+      company: entity.company,
+      address1: entity.address1,
+      address2: entity.address2,
+      city: entity.city,
+      postalCode: entity.postalCode,
+      province: entity.province,
+      countryCode: entity.countryCode,
+      phone: entity.phone,
+      isDefaultShipping: entity.isDefaultShipping,
+      isDefaultBilling: entity.isDefaultBilling,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    });
   }
 }
