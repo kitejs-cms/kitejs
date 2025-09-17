@@ -5,8 +5,8 @@ import {
   CustomerAddress,
   CustomerAddressSchema,
 } from "./schemas/customer-address.schema";
-import { CustomersService } from "./services/customers.service";
-import { CustomersController } from "./controllers/customers.controller";
+import { CustomersService } from "./customers.service";
+import { CustomersController } from "./customers.controller";
 
 @Module({
   imports: [

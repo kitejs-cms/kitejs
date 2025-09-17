@@ -9,13 +9,13 @@ import { UpdateUserModel, UserResponseModel, UserService } from "@kitejs-cms/cor
 import {
   CustomerAddress,
   CustomerAddressDocument,
-} from "../schemas/customer-address.schema";
+} from "./schemas/customer-address.schema";
 import {
   CreateCustomerDto,
   CustomerAddressDto,
-} from "../dto/create-customer.dto";
-import { UpdateCustomerDto } from "../dto/update-customer.dto";
-import { CustomerResponseDto } from "../dto/customer-response.dto";
+} from "./dto/create-customer.dto";
+import { UpdateCustomerDto } from "./dto/update-customer.dto";
+import { CustomerResponseDto } from "./dto/customer-response.dto";
 
 interface SanitizedAddress
   extends Omit<

@@ -12,10 +12,10 @@ export * from "./schemas/collection-translation.schema";
 export * from "./schemas/collection-seo.schema";
 
 /* Services */
-export * from "./services/collections.service";
+export * from "./collections.service";
 
 /* Module */
 export * from "./collections.module";
 
 /* Controller */
-export * from "./controllers/collections.controller";
+export * from "./collections.controller";

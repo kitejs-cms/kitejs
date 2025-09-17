@@ -20,10 +20,10 @@ import {
   Permissions,
   ValidateObjectIdPipe,
 } from "@kitejs-cms/core";
-import { CollectionsService } from "../services/collections.service";
-import { CreateCollectionDto } from "../dto/create-collection.dto";
-import { UpdateCollectionDto } from "../dto/update-collection.dto";
-import { COMMERCE_PLUGIN_NAMESPACE } from "../../../constants";
+import { CollectionsService } from "./collections.service";
+import { CreateCollectionDto } from "./dto/create-collection.dto";
+import { UpdateCollectionDto } from "./dto/update-collection.dto";
+import { COMMERCE_PLUGIN_NAMESPACE } from "../../constants";
 import { GetAuthUser, JwtPayloadModel } from "@kitejs-cms/core";
 
 @ApiTags("Commerce - Collections")

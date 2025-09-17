@@ -20,11 +20,11 @@ import {
   Permissions,
   ValidateObjectIdPipe,
 } from "@kitejs-cms/core";
-import { CustomersService } from "../services/customers.service";
-import { CreateCustomerDto } from "../dto/create-customer.dto";
-import { UpdateCustomerDto } from "../dto/update-customer.dto";
-import { CustomerResponseDto } from "../dto/customer-response.dto";
-import { COMMERCE_PLUGIN_NAMESPACE } from "../../../constants";
+import { CustomersService } from "./customers.service";
+import { CreateCustomerDto } from "./dto/create-customer.dto";
+import { UpdateCustomerDto } from "./dto/update-customer.dto";
+import { CustomerResponseDto } from "./dto/customer-response.dto";
+import { COMMERCE_PLUGIN_NAMESPACE } from "../../constants";
 
 @ApiTags("Commerce - Customers")
 @ApiBearerAuth()

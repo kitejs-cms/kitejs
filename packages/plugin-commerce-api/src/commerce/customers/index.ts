@@ -7,10 +7,10 @@ export * from "./dto/customer-response.dto";
 export * from "./schemas/customer-address.schema";
 
 /* Services */
-export * from "./services/customers.service";
+export * from "./customers.service";
 
 /* Module */
 export * from "./customers.module";
 
 /* Controller */
-export * from "./controllers/customers.controller";
+export * from "./customers.controller";

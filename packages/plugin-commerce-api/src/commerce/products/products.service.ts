@@ -5,19 +5,19 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { Product, ProductDocument } from "../schemas/product.schema";
+import { Product, ProductDocument } from "./schemas/product.schema";
 import {
   CreateProductDto,
   ProductVariantDto,
   ProductPriceDto,
-} from "../dto/create-product.dto";
-import { UpdateProductDto } from "../dto/update-product.dto";
-import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../../constants";
+} from "./dto/create-product.dto";
+import { UpdateProductDto } from "./dto/update-product.dto";
+import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
 import {
   JwtPayloadModel,
   SlugRegistryService,
 } from "@kitejs-cms/core";
-import { ProductResponse } from "../dto/product-response.dto";
+import { ProductResponse } from "./dto/product-response.dto";
 
 @Injectable()
 export class ProductsService {

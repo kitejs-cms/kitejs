@@ -20,10 +20,10 @@ import {
   Permissions,
   ValidateObjectIdPipe,
 } from "@kitejs-cms/core";
-import { OrdersService } from "../services/orders.service";
-import { CreateOrderDto } from "../dto/create-order.dto";
-import { UpdateOrderDto } from "../dto/update-order.dto";
-import { COMMERCE_PLUGIN_NAMESPACE } from "../../../constants";
+import { OrdersService } from "./orders.service";
+import { CreateOrderDto } from "./dto/create-order.dto";
+import { UpdateOrderDto } from "./dto/update-order.dto";
+import { COMMERCE_PLUGIN_NAMESPACE } from "../../constants";
 
 @ApiTags("Commerce - Orders")
 @ApiBearerAuth()

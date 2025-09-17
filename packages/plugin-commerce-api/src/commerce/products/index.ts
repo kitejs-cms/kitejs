@@ -14,10 +14,10 @@ export * from "./schemas/product-translation.schema";
 export * from "./schemas/product-seo.schema";
 
 /* Services */
-export * from "./services/products.service";
+export * from "./products.service";
 
 /* Module */
 export * from "./products.module";
 
 /* Controller */
-export * from "./controllers/products.controller";
+export * from "./products.controller";

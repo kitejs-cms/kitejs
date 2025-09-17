@@ -4,8 +4,8 @@ import {
   ProductCollection,
   ProductCollectionSchema,
 } from "./schemas/product-collection.schema";
-import { CollectionsService } from "./services/collections.service";
-import { CollectionsController } from "./controllers/collections.controller";
+import { CollectionsService } from "./collections.service";
+import { CollectionsController } from "./collections.controller";
 import { SlugRegistryModule } from "@kitejs-cms/core";
 
 @Module({

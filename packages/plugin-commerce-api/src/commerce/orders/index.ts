@@ -13,10 +13,10 @@ export * from "./schemas/order-address.schema";
 export * from "./schemas/order-item.schema";
 
 /* Services */
-export * from "./services/orders.service";
+export * from "./orders.service";
 
 /* Module */
 export * from "./orders.module";
 
 /* Controller */
-export * from "./controllers/orders.controller";
+export * from "./orders.controller";
