@@ -1,12 +1,9 @@
-/* Models */
-export * from "./models/customer-lifecycle-stage.enum";
-
 /* DTO */
 export * from "./dto/create-customer.dto";
 export * from "./dto/update-customer.dto";
+export * from "./dto/customer-response.dto";
 
 /* Schemas */
-export * from "./schemas/customer.schema";
 export * from "./schemas/customer-address.schema";
 
 /* Services */

@@ -1,7 +1,17 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document, Schema as SchemaDb, Types } from "mongoose";
+import { User } from "@kitejs-cms/core";
+import { COMMERCE_PLUGIN_NAMESPACE } from "../../../constants";
 
-@Schema({ _id: true })
-export class CustomerAddress {
+@Schema({
+  collection: `${COMMERCE_PLUGIN_NAMESPACE}_customer_addresses`,
+  timestamps: true,
+  toJSON: { getters: true },
+})
+export class CustomerAddress extends Document {
+  @Prop({ type: SchemaDb.ObjectId, ref: User.name, required: true, index: true })
+  userId!: Types.ObjectId;
+
   @Prop({ type: String, required: false })
   label?: string;
 
@@ -44,3 +54,8 @@ export class CustomerAddress {
 
 export const CustomerAddressSchema =
   SchemaFactory.createForClass(CustomerAddress);
+
+CustomerAddressSchema.index({ userId: 1, isDefaultShipping: 1 });
+CustomerAddressSchema.index({ userId: 1, isDefaultBilling: 1 });
+
+export type CustomerAddressDocument = CustomerAddress & Document;

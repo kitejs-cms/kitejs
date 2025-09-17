@@ -3,6 +3,7 @@ import { Document, Schema as SchemaDb, Types } from "mongoose";
 import { OrderStatus } from "../models/order-status.enum";
 import { PaymentStatus } from "../models/payment-status.enum";
 import { FulfillmentStatus } from "../models/fulfillment-status.enum";
+import { User } from "@kitejs-cms/core";
 import { COMMERCE_PLUGIN_NAMESPACE } from "../../../constants";
 import { OrderAddress, OrderAddressSchema } from "./order-address.schema";
 import { OrderItem, OrderItemSchema } from "./order-item.schema";
@@ -32,7 +33,7 @@ export class Order extends Document {
   @Prop({ type: String, required: true })
   currencyCode!: string;
 
-  @Prop({ type: SchemaDb.ObjectId, ref: "Customer", required: false })
+  @Prop({ type: SchemaDb.ObjectId, ref: User.name, required: false })
   customer?: Types.ObjectId;
 
   @Prop({ type: String, required: false })

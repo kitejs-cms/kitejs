@@ -1,14 +1,15 @@
 import { Type } from "class-transformer";
 import {
-  IsArray,
   IsBoolean,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  MinLength,
   ValidateNested,
 } from "class-validator";
-import { CustomerLifecycleStage } from "../models/customer-lifecycle-stage.enum";
+import { UserStatus } from "@kitejs-cms/core";
 
 export class CustomerAddressDto {
   @IsOptional()
@@ -32,6 +33,7 @@ export class CustomerAddressDto {
   company?: string;
 
   @IsString()
+  @IsNotEmpty()
   address1!: string;
 
   @IsOptional()
@@ -39,6 +41,7 @@ export class CustomerAddressDto {
   address2?: string;
 
   @IsString()
+  @IsNotEmpty()
   city!: string;
 
   @IsOptional()
@@ -50,6 +53,7 @@ export class CustomerAddressDto {
   province?: string;
 
   @IsString()
+  @IsNotEmpty()
   countryCode!: string;
 
   @IsOptional()
@@ -67,32 +71,25 @@ export class CustomerAddressDto {
 
 export class CreateCustomerDto {
   @IsEmail()
+  @IsNotEmpty()
   email!: string;
 
-  @IsOptional()
   @IsString()
-  firstName?: string;
+  @MinLength(6)
+  @IsNotEmpty()
+  password!: string;
 
-  @IsOptional()
   @IsString()
-  lastName?: string;
+  @IsNotEmpty()
+  firstName!: string;
 
-  @IsOptional()
   @IsString()
-  phone?: string;
+  @IsNotEmpty()
+  lastName!: string;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tags?: string[];
-
-  @IsOptional()
-  @IsString()
-  notes?: string;
-
-  @IsOptional()
-  @IsEnum(CustomerLifecycleStage)
-  lifecycleStage?: CustomerLifecycleStage;
+  @IsEnum(UserStatus)
+  status?: UserStatus;
 
   @IsOptional()
   @ValidateNested({ each: true })
