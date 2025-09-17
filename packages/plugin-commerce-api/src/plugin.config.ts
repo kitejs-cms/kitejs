@@ -15,7 +15,7 @@ export const CommercePlugin: IPlugin = {
   name: "Commerce Plugin",
   version,
   description:
-    "Plugin that provides foundational commerce APIs for products, orders and customers.",
+    "Plugin that provides foundational commerce APIs for products, orders and customer addresses.",
   enabled: true,
   settings: CommerceSetting,
   permissions: CommercePermissions,

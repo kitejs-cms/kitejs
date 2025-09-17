@@ -50,23 +50,23 @@ export const CommercePermissions: PermissionModel[] = [
     role: ["admin"],
   },
   {
-    name: `${COMMERCE_PLUGIN_NAMESPACE}:customers.read`,
-    description: "Permission to view customers",
+    name: `${COMMERCE_PLUGIN_NAMESPACE}:customer-addresses.read`,
+    description: "Permission to view customer addresses",
     role: ["admin", "editor", "viewer"],
   },
   {
-    name: `${COMMERCE_PLUGIN_NAMESPACE}:customers.create`,
-    description: "Permission to create customers",
+    name: `${COMMERCE_PLUGIN_NAMESPACE}:customer-addresses.create`,
+    description: "Permission to create customer addresses",
     role: ["admin", "editor"],
   },
   {
-    name: `${COMMERCE_PLUGIN_NAMESPACE}:customers.update`,
-    description: "Permission to update customers",
+    name: `${COMMERCE_PLUGIN_NAMESPACE}:customer-addresses.update`,
+    description: "Permission to update customer addresses",
     role: ["admin", "editor"],
   },
   {
-    name: `${COMMERCE_PLUGIN_NAMESPACE}:customers.delete`,
-    description: "Permission to delete customers",
+    name: `${COMMERCE_PLUGIN_NAMESPACE}:customer-addresses.delete`,
+    description: "Permission to delete customer addresses",
     role: ["admin"],
   },
   {
@@ -98,7 +98,7 @@ export type CommercePluginSettingsModel = {
   allowGuestCheckout: boolean;
   taxInclusivePricing: boolean;
   customProductFields?: FieldDefinition[];
-  customCustomerFields?: FieldDefinition[];
+  customCustomerAddressFields?: FieldDefinition[];
 };
 
 export const CommerceSetting: SettingModel<CommercePluginSettingsModel>[] = [
@@ -109,7 +109,7 @@ export const CommerceSetting: SettingModel<CommercePluginSettingsModel>[] = [
       allowGuestCheckout: true,
       taxInclusivePricing: false,
       customProductFields: [],
-      customCustomerFields: [],
+      customCustomerAddressFields: [],
     },
   },
 ];
