@@ -31,27 +31,6 @@ export class ProductSeoDto {
   canonicalUrl?: string;
 }
 
-export class ProductOptionDto {
-  @IsNotEmpty()
-  @IsString()
-  name!: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  values?: string[];
-}
-
-export class ProductVariantOptionDto {
-  @IsNotEmpty()
-  @IsString()
-  name!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  value!: string;
-}
-
 export class ProductPriceDto {
   @IsNotEmpty()
   @IsString()
@@ -98,10 +77,6 @@ export class ProductVariantDto {
   @IsBoolean()
   allowBackorder?: boolean;
 
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => ProductVariantOptionDto)
-  options?: ProductVariantOptionDto[];
 }
 
 export class CreateProductDto {
@@ -163,11 +138,6 @@ export class CreateProductDto {
   @IsArray()
   @IsString({ each: true })
   collectionIds?: string[];
-
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => ProductOptionDto)
-  options?: ProductOptionDto[];
 
   @IsOptional()
   @ValidateNested({ each: true })

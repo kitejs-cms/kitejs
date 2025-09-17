@@ -1,8 +1,4 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import {
-  ProductVariantOption,
-  ProductVariantOptionSchema,
-} from "./product-variant-option.schema";
 import { ProductPrice, ProductPriceSchema } from "./product-price.schema";
 
 @Schema({ _id: true })
@@ -25,8 +21,6 @@ export class ProductVariant {
   @Prop({ type: Boolean, default: false })
   allowBackorder: boolean;
 
-  @Prop({ type: [ProductVariantOptionSchema], default: [] })
-  options: ProductVariantOption[];
 }
 
 export const ProductVariantSchema = SchemaFactory.createForClass(ProductVariant);

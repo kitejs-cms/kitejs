@@ -8,9 +8,7 @@ import { Model, Types } from "mongoose";
 import { Product, ProductDocument } from "../schemas/product.schema";
 import {
   CreateProductDto,
-  ProductOptionDto,
   ProductVariantDto,
-  ProductVariantOptionDto,
   ProductPriceDto,
 } from "../dto/create-product.dto";
 import { UpdateProductDto } from "../dto/update-product.dto";
@@ -53,21 +51,6 @@ export class ProductsService {
     return collectionIds.filter(Boolean).map((id) => this.toObjectId(id));
   }
 
-  private mapOptions(options?: ProductOptionDto[]) {
-    if (options === undefined) return undefined;
-    return options.map((option) => ({
-      name: option.name,
-      values: option.values ?? [],
-    }));
-  }
-
-  private mapVariantOptions(options?: ProductVariantOptionDto[]) {
-    return (options ?? []).map((option) => ({
-      name: option.name,
-      value: option.value,
-    }));
-  }
-
   private mapVariantPrices(prices?: ProductPriceDto[]) {
     return (prices ?? []).map((price) => ({
       currencyCode: price.currencyCode,
@@ -86,7 +69,6 @@ export class ProductsService {
       inventoryQuantity: variant.inventoryQuantity ?? 0,
       allowBackorder: variant.allowBackorder ?? false,
       prices: this.mapVariantPrices(variant.prices),
-      options: this.mapVariantOptions(variant.options),
     }));
   }
 
@@ -140,7 +122,6 @@ export class ProductsService {
       thumbnail,
       gallery,
       collectionIds,
-      options,
       variants,
       defaultCurrency,
     } = dto;
@@ -194,13 +175,6 @@ export class ProductsService {
       baseData.collections = mappedCollections;
     } else if (!id) {
       baseData.collections = [];
-    }
-
-    const mappedOptions = this.mapOptions(options);
-    if (mappedOptions !== undefined) {
-      baseData.options = mappedOptions;
-    } else if (!id) {
-      baseData.options = [];
     }
 
     const mappedVariants = this.mapVariants(variants);

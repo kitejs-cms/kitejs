@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaDb, Types } from "mongoose";
 import { ProductStatus } from "../models/product-status.enum";
 import { COMMERCE_PLUGIN_NAMESPACE } from "../../../constants";
-import { ProductOption, ProductOptionSchema } from "./product-option.schema";
 import { ProductVariant, ProductVariantSchema } from "./product-variant.schema";
 import {
   ProductTranslation,
@@ -48,9 +47,6 @@ export class Product extends Document {
     default: [],
   })
   collections: Types.ObjectId[];
-
-  @Prop({ type: [ProductOptionSchema], default: [] })
-  options: ProductOption[];
 
   @Prop({ type: [ProductVariantSchema], default: [] })
   variants: ProductVariant[];
