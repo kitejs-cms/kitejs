@@ -12,10 +12,8 @@ import {
 import { CreateCollectionDto } from "./dto/create-collection.dto";
 import { UpdateCollectionDto } from "./dto/update-collection.dto";
 import { COMMERCE_COLLECTION_SLUG_NAMESPACE } from "../../constants";
-import {
-  JwtPayloadModel,
-  SlugRegistryService,
-} from "@kitejs-cms/core";
+import { SlugRegistryService } from "@kitejs-cms/core";
+import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { CollectionResponse } from "./dto/collection-response.dto";
 
 @Injectable()

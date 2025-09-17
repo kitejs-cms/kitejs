@@ -13,10 +13,8 @@ import {
 } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
-import {
-  JwtPayloadModel,
-  SlugRegistryService,
-} from "@kitejs-cms/core";
+import { SlugRegistryService } from "@kitejs-cms/core";
+import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { ProductResponse } from "./dto/product-response.dto";
 
 @Injectable()
