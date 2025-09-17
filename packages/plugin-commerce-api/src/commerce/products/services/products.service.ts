@@ -17,11 +17,7 @@ import {
   JwtPayloadModel,
   SlugRegistryService,
 } from "@kitejs-cms/core";
-
-interface ProductResponse {
-  id: string;
-  [key: string]: unknown;
-}
+import { ProductResponse } from "../dto/product-response.dto";
 
 @Injectable()
 export class ProductsService {

@@ -1,6 +1,7 @@
 /* DTO */
 export * from "./dto/create-collection.dto";
 export * from "./dto/update-collection.dto";
+export * from "./dto/collection-response.dto";
 
 /* Models */
 export * from "./models/collection-status.enum";

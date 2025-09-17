@@ -4,6 +4,7 @@ export * from "./models/product-status.enum";
 /* DTO */
 export * from "./dto/create-product.dto";
 export * from "./dto/update-product.dto";
+export * from "./dto/product-response.dto";
 
 /* Schemas */
 export * from "./schemas/product.schema";
