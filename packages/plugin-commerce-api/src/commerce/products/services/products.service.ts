@@ -1,0 +1,304 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, Types } from "mongoose";
+import { Product, ProductDocument } from "../schemas/product.schema";
+import {
+  CreateProductDto,
+  ProductOptionDto,
+  ProductVariantDto,
+  ProductVariantOptionDto,
+  ProductPriceDto,
+} from "../dto/create-product.dto";
+import { UpdateProductDto } from "../dto/update-product.dto";
+import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../../constants";
+import {
+  JwtPayloadModel,
+  SlugRegistryService,
+} from "@kitejs-cms/core";
+
+interface ProductResponse {
+  id: string;
+  [key: string]: unknown;
+}
+
+@Injectable()
+export class ProductsService {
+  private readonly slugNamespace = COMMERCE_PRODUCT_SLUG_NAMESPACE;
+
+  constructor(
+    @InjectModel(Product.name)
+    private readonly productModel: Model<ProductDocument>,
+    private readonly slugService: SlugRegistryService
+  ) {}
+
+  private toObjectId(id: string): Types.ObjectId {
+    try {
+      return new Types.ObjectId(id);
+    } catch (error) {
+      throw new BadRequestException(`Invalid identifier provided: ${id}`);
+    }
+  }
+
+  private parseDate(value?: string): Date | null {
+    if (value === null) return null;
+    return value ? new Date(value) : null;
+  }
+
+  private mapCollectionIds(collectionIds?: string[]): Types.ObjectId[] | undefined {
+    if (collectionIds === undefined) return undefined;
+    return collectionIds.filter(Boolean).map((id) => this.toObjectId(id));
+  }
+
+  private mapOptions(options?: ProductOptionDto[]) {
+    if (options === undefined) return undefined;
+    return options.map((option) => ({
+      name: option.name,
+      values: option.values ?? [],
+    }));
+  }
+
+  private mapVariantOptions(options?: ProductVariantOptionDto[]) {
+    return (options ?? []).map((option) => ({
+      name: option.name,
+      value: option.value,
+    }));
+  }
+
+  private mapVariantPrices(prices?: ProductPriceDto[]) {
+    return (prices ?? []).map((price) => ({
+      currencyCode: price.currencyCode,
+      amount: price.amount,
+      compareAtAmount: price.compareAtAmount,
+    }));
+  }
+
+  private mapVariants(variants?: ProductVariantDto[]) {
+    if (variants === undefined) return undefined;
+    return variants.map((variant) => ({
+      ...(variant.id ? { _id: this.toObjectId(variant.id) } : {}),
+      title: variant.title,
+      sku: variant.sku,
+      barcode: variant.barcode,
+      inventoryQuantity: variant.inventoryQuantity ?? 0,
+      allowBackorder: variant.allowBackorder ?? false,
+      prices: this.mapVariantPrices(variant.prices),
+      options: this.mapVariantOptions(variant.options),
+    }));
+  }
+
+  private async buildResponse(product: Product): Promise<ProductResponse> {
+    const slugs = await this.slugService.findSlugsByEntity(
+      product._id as Types.ObjectId
+    );
+
+    const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
+      const languageKey = cur.language ?? "default";
+      acc[languageKey] = cur.slug;
+      return acc;
+    }, {});
+
+    const json = product.toJSON();
+    const translations = json.translations as Record<string, any>;
+    const translationsWithSlug: Record<string, any> = {};
+
+    for (const [language, translation] of Object.entries(translations ?? {})) {
+      translationsWithSlug[language] = {
+        ...(translation as Record<string, unknown>),
+        slug: slugMap[language] ?? slugMap.default ?? "",
+      };
+    }
+
+    return {
+      ...json,
+      id: product._id.toString(),
+      translations: translationsWithSlug,
+      slugs: slugMap,
+    };
+  }
+
+  private async upsertProduct(
+    id: string | undefined,
+    dto: CreateProductDto | UpdateProductDto,
+    user: JwtPayloadModel
+  ): Promise<ProductResponse> {
+    const {
+      slug,
+      language,
+      title,
+      subtitle,
+      summary,
+      description,
+      seo,
+      status,
+      tags,
+      publishAt,
+      expireAt,
+      thumbnail,
+      gallery,
+      collectionIds,
+      options,
+      variants,
+      defaultCurrency,
+    } = dto;
+
+    const translationData = {
+      title,
+      subtitle,
+      summary,
+      description,
+      seo,
+    };
+
+    const baseData: Record<string, unknown> = {
+      updatedBy: this.toObjectId(user.sub),
+    };
+
+    if (status !== undefined) {
+      baseData.status = status;
+    }
+
+    if (tags !== undefined) {
+      baseData.tags = tags;
+    } else if (!id) {
+      baseData.tags = [];
+    }
+
+    if (publishAt !== undefined) {
+      baseData.publishAt = this.parseDate(publishAt);
+    } else if (!id) {
+      baseData.publishAt = null;
+    }
+
+    if (expireAt !== undefined) {
+      baseData.expireAt = this.parseDate(expireAt);
+    } else if (!id) {
+      baseData.expireAt = null;
+    }
+
+    if (thumbnail !== undefined) {
+      baseData.thumbnail = thumbnail ?? null;
+    }
+
+    if (gallery !== undefined) {
+      baseData.gallery = gallery ?? [];
+    } else if (!id) {
+      baseData.gallery = [];
+    }
+
+    const mappedCollections = this.mapCollectionIds(collectionIds);
+    if (mappedCollections !== undefined) {
+      baseData.collections = mappedCollections;
+    } else if (!id) {
+      baseData.collections = [];
+    }
+
+    const mappedOptions = this.mapOptions(options);
+    if (mappedOptions !== undefined) {
+      baseData.options = mappedOptions;
+    } else if (!id) {
+      baseData.options = [];
+    }
+
+    const mappedVariants = this.mapVariants(variants);
+    if (mappedVariants !== undefined) {
+      baseData.variants = mappedVariants;
+    } else if (!id) {
+      baseData.variants = [];
+    }
+
+    if (defaultCurrency !== undefined) {
+      baseData.defaultCurrency = defaultCurrency;
+    } else if (!id) {
+      baseData.defaultCurrency = "EUR";
+    }
+
+    let product: Product;
+
+    if (id) {
+      const updateDoc: Record<string, unknown> = {
+        ...baseData,
+        $set: { [`translations.${language}`]: translationData },
+      };
+
+      product = await this.productModel
+        .findByIdAndUpdate(id, updateDoc, { new: true })
+        .exec();
+
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${id} not found`);
+      }
+    } else {
+      const createDoc: Record<string, unknown> = {
+        ...baseData,
+        createdBy: this.toObjectId(user.sub),
+        translations: {
+          [language]: translationData,
+        },
+      };
+
+      product = await this.productModel.create(createDoc);
+    }
+
+    await this.slugService.registerSlug(
+      slug,
+      this.slugNamespace,
+      product._id as Types.ObjectId,
+      language
+    );
+
+    return this.buildResponse(product);
+  }
+
+  async create(dto: CreateProductDto, user: JwtPayloadModel) {
+    return this.upsertProduct(undefined, dto, user);
+  }
+
+  async update(id: string, dto: UpdateProductDto, user: JwtPayloadModel) {
+    return this.upsertProduct(id, dto, user);
+  }
+
+  async findAll(): Promise<ProductResponse[]> {
+    const products = await this.productModel
+      .find()
+      .sort({ updatedAt: -1 })
+      .exec();
+
+    return Promise.all(products.map((product) => this.buildResponse(product)));
+  }
+
+  async findOne(id: string): Promise<ProductResponse> {
+    const product = await this.productModel.findById(id).exec();
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    return this.buildResponse(product);
+  }
+
+  async remove(id: string): Promise<void> {
+    const product = await this.productModel.findByIdAndDelete(id).exec();
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    const slugs = await this.slugService.findSlugsByEntity(
+      product._id as Types.ObjectId
+    );
+
+    await Promise.all(
+      slugs.map((entry) =>
+        this.slugService.deleteSlug(
+          entry.slug,
+          this.slugNamespace,
+          entry.language ?? undefined
+        )
+      )
+    );
+  }
+}
