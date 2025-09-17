@@ -6,6 +6,8 @@ import {
 
 export const GALLERY_PLUGIN_NAMESPACE = "gallery-plugin";
 
+export const GALLERY_COLLECTION_NAME = "plugin-gallery_galleries";
+
 export const GALLERY_SLUG_NAMESPACE = `${GALLERY_PLUGIN_NAMESPACE}:galleries`;
 
 export const GalleryPermissions: PermissionModel[] = [

@@ -10,14 +10,14 @@ import {
   GalleryTranslation,
   GalleryTranslationSchema,
 } from "./gallery-translation.schema";
-import { GALLERY_PLUGIN_NAMESPACE } from "../../constants";
+import { GALLERY_COLLECTION_NAME } from "../../constants";
 
 /**
  * Documento principale della gallery
  * segue lo stile del tuo Page (type, createdBy/updatedBy, status, tags, publish/expire, translations Map)
  */
 @Schema({
-  collection: `${GALLERY_PLUGIN_NAMESPACE}_galleries`,
+  collection: GALLERY_COLLECTION_NAME,
   timestamps: true,
   toJSON: { getters: true },
 })

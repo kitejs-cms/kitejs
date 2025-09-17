@@ -57,6 +57,7 @@ export class PluginsLoaderService {
             namespace: pluginInstance.namespace,
             status: PluginStatus.PENDING,
             enabled: pluginInstance.enabled ?? true,
+            version: pluginInstance.version,
           });
 
           this.logger.log(
@@ -76,6 +77,38 @@ export class PluginsLoaderService {
         if (isPending) {
           // Initialize the plugin
           await pluginInstance.initialize();
+        }
+
+        // Run migrations when the plugin version changes
+        if (
+          pluginInstance.migrations &&
+          this.compareVersions(plugin.version, pluginInstance.version) < 0
+        ) {
+          const pendingMigrations = pluginInstance.migrations
+            .filter(
+              (m) =>
+                this.compareVersions(m.version, plugin.version) > 0 &&
+                this.compareVersions(m.version, pluginInstance.version) <= 0
+            )
+            .sort((a, b) => this.compareVersions(a.version, b.version));
+
+          for (const migration of pendingMigrations) {
+            await migration.up();
+          }
+
+          await this.pluginModel.updateOne(
+            { namespace: pluginInstance.namespace },
+            { version: pluginInstance.version, updatedAt: new Date() }
+          );
+          plugin.version = pluginInstance.version;
+        } else if (
+          this.compareVersions(plugin.version, pluginInstance.version) !== 0
+        ) {
+          await this.pluginModel.updateOne(
+            { namespace: pluginInstance.namespace },
+            { version: pluginInstance.version, updatedAt: new Date() }
+          );
+          plugin.version = pluginInstance.version;
         }
 
         // Insert default settings idempotently for new or existing plugins
@@ -183,5 +216,15 @@ export class PluginsLoaderService {
         }
       }
     }
+  }
+
+  private compareVersions(a: string, b: string): number {
+    const pa = a.split(".").map(Number);
+    const pb = b.split(".").map(Number);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const diff = (pa[i] || 0) - (pb[i] || 0);
+      if (diff !== 0) return diff;
+    }
+    return 0;
   }
 }
