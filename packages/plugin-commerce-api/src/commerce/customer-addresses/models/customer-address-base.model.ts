@@ -14,9 +14,3 @@ export type CustomerAddressBaseModel = {
   isDefaultShipping?: boolean;
   isDefaultBilling?: boolean;
 };
-
-export type CustomerAddressResponseModel = CustomerAddressBaseModel & {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-};

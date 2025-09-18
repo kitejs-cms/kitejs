@@ -2,7 +2,9 @@
 export * from "./models/order-status.enum";
 export * from "./models/payment-status.enum";
 export * from "./models/fulfillment-status.enum";
-export * from "./models/order.models";
+export * from "./models/order-address.model";
+export * from "./models/order-item.model";
+export * from "./models/order-base.model";
 
 /* DTO */
 export * from "./dto/create-order.dto";

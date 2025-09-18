@@ -1,6 +1,6 @@
 import { ApiPropertyOptional, ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
-import { OrderAddressModel } from "../models/order.models";
+import type { OrderAddressModel } from "../models/order-address.model";
 
 export class OrderAddressDto implements OrderAddressModel {
   @ApiPropertyOptional()

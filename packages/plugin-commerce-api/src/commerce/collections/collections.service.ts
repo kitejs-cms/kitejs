@@ -15,7 +15,7 @@ import { COMMERCE_COLLECTION_SLUG_NAMESPACE } from "../../constants";
 import { SlugRegistryService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { CollectionResponseDto } from "./dto/collection-response.dto";
-import { CollectionResponseModel } from "./models/collection.models";
+import type { CollectionResponseModel } from "./models/collection-response.model";
 
 @Injectable()
 export class CollectionsService {

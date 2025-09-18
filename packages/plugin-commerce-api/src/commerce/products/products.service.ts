@@ -6,17 +6,15 @@ import {
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Product, ProductDocument } from "./schemas/product.schema";
-import {
-  CreateProductDto,
-  ProductVariantDto,
-  ProductPriceDto,
-} from "./dto/create-product.dto";
+import { CreateProductDto } from "./dto/create-product.dto";
+import { ProductVariantDto } from "./dto/product-variant.dto";
+import { ProductPriceDto } from "./dto/product-price.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
 import { SlugRegistryService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { ProductResponseDto } from "./dto/product-response.dto";
-import { ProductResponseModel } from "./models/product.models";
+import type { ProductResponseModel } from "./models/product-response.model";
 
 @Injectable()
 export class ProductsService {
