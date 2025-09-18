@@ -11,12 +11,12 @@ import {
   ValidateNested,
 } from "class-validator";
 import { CollectionStatus } from "../models/collection-status.enum";
-import {
+import type {
   CollectionBaseModel,
   CollectionSeoModel,
 } from "../models/collection.models";
 
-export class CollectionSeoDto extends CollectionSeoModel {
+export class CollectionSeoDto implements CollectionSeoModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -39,7 +39,7 @@ export class CollectionSeoDto extends CollectionSeoModel {
   declare canonicalUrl?: string;
 }
 
-export class CreateCollectionDto extends CollectionBaseModel {
+export class CreateCollectionDto implements CollectionBaseModel {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()

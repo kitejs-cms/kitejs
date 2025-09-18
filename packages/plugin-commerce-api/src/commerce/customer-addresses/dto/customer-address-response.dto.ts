@@ -1,8 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { CustomerAddress } from "../schemas/customer-address.schema";
-import { CustomerAddressResponseModel } from "../models/customer-address.model";
+import type { CustomerAddressResponseModel } from "../models/customer-address.model";
 
-export class CustomerAddressResponseDto extends CustomerAddressResponseModel {
+export class CustomerAddressResponseDto implements CustomerAddressResponseModel {
   @ApiProperty()
   declare id: string;
 
@@ -55,7 +55,6 @@ export class CustomerAddressResponseDto extends CustomerAddressResponseModel {
   declare updatedAt: Date;
 
   constructor(entity: CustomerAddress) {
-    super();
     Object.assign(this, {
       id: entity._id.toString(),
       userId: entity.userId.toString(),

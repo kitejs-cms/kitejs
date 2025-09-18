@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { CollectionResponseModel } from "../models/collection.models";
+import type { CollectionResponseModel } from "../models/collection.models";
 
-export class CollectionResponseDto extends CollectionResponseModel {
+export class CollectionResponseDto implements CollectionResponseModel {
   @ApiProperty()
   declare id: string;
 
@@ -18,7 +18,6 @@ export class CollectionResponseDto extends CollectionResponseModel {
   declare updatedAt: Date;
 
   constructor(partial: CollectionResponseModel) {
-    super();
     Object.assign(this, partial);
   }
 }

@@ -12,14 +12,14 @@ import {
   ValidateNested,
 } from "class-validator";
 import { ProductStatus } from "../models/product-status.enum";
-import {
+import type {
   ProductBaseModel,
   ProductPriceModel,
   ProductSeoModel,
   ProductVariantModel,
 } from "../models/product.models";
 
-export class ProductSeoDto extends ProductSeoModel {
+export class ProductSeoDto implements ProductSeoModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -42,7 +42,7 @@ export class ProductSeoDto extends ProductSeoModel {
   declare canonicalUrl?: string;
 }
 
-export class ProductPriceDto extends ProductPriceModel {
+export class ProductPriceDto implements ProductPriceModel {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
@@ -60,7 +60,7 @@ export class ProductPriceDto extends ProductPriceModel {
   declare compareAtAmount?: number;
 }
 
-export class ProductVariantDto extends ProductVariantModel {
+export class ProductVariantDto implements ProductVariantModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -99,7 +99,7 @@ export class ProductVariantDto extends ProductVariantModel {
   declare allowBackorder?: boolean;
 }
 
-export class CreateProductDto extends ProductBaseModel {
+export class CreateProductDto implements ProductBaseModel {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()

@@ -1,33 +1,33 @@
 import { ProductStatus } from "./product-status.enum";
 
-export class ProductSeoModel {
+export type ProductSeoModel = {
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string[];
   canonicalUrl?: string;
-}
+};
 
-export class ProductPriceModel {
-  currencyCode!: string;
-  amount!: number;
+export type ProductPriceModel = {
+  currencyCode: string;
+  amount: number;
   compareAtAmount?: number;
-}
+};
 
-export class ProductVariantModel {
+export type ProductVariantModel = {
   id?: string;
-  title!: string;
-  sku!: string;
+  title: string;
+  sku: string;
   barcode?: string;
   prices?: ProductPriceModel[];
   inventoryQuantity?: number;
   allowBackorder?: boolean;
-}
+};
 
-export class ProductBaseModel {
-  slug!: string;
-  language!: string;
-  status!: ProductStatus;
-  title!: string;
+export type ProductBaseModel = {
+  slug: string;
+  language: string;
+  status: ProductStatus;
+  title: string;
   subtitle?: string;
   summary?: string;
   description?: string;
@@ -40,12 +40,12 @@ export class ProductBaseModel {
   collectionIds?: string[];
   variants?: ProductVariantModel[];
   defaultCurrency?: string;
-}
+};
 
-export class ProductResponseModel {
-  id!: string;
-  slugs!: Record<string, string>;
-  translations!: Record<string, Record<string, unknown>>;
-  createdAt!: Date;
-  updatedAt!: Date;
-}
+export type ProductResponseModel = {
+  id: string;
+  slugs: Record<string, string>;
+  translations: Record<string, Record<string, unknown>>;
+  createdAt: Date;
+  updatedAt: Date;
+};

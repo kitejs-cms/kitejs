@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ProductResponseModel } from "../models/product.models";
+import type { ProductResponseModel } from "../models/product.models";
 
-export class ProductResponseDto extends ProductResponseModel {
+export class ProductResponseDto implements ProductResponseModel {
   @ApiProperty()
   declare id: string;
 
@@ -18,7 +18,6 @@ export class ProductResponseDto extends ProductResponseModel {
   declare updatedAt: Date;
 
   constructor(partial: ProductResponseModel) {
-    super();
     Object.assign(this, partial);
   }
 }

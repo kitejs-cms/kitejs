@@ -7,9 +7,9 @@ import {
   Length,
   MaxLength,
 } from "class-validator";
-import { CustomerAddressBaseModel } from "../models/customer-address.model";
+import type { CustomerAddressBaseModel } from "../models/customer-address.model";
 
-export class CreateCustomerAddressDto extends CustomerAddressBaseModel {
+export class CreateCustomerAddressDto implements CustomerAddressBaseModel {
   @ApiProperty({ description: "Identifier of the customer (core user)" })
   @IsMongoId()
   declare userId: string;

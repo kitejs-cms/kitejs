@@ -13,13 +13,13 @@ import {
 import { OrderStatus } from "../models/order-status.enum";
 import { PaymentStatus } from "../models/payment-status.enum";
 import { FulfillmentStatus } from "../models/fulfillment-status.enum";
-import {
+import type {
   OrderAddressModel,
   OrderBaseModel,
   OrderItemModel,
 } from "../models/order.models";
 
-export class OrderAddressDto extends OrderAddressModel {
+export class OrderAddressDto implements OrderAddressModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -68,7 +68,7 @@ export class OrderAddressDto extends OrderAddressModel {
   declare phone?: string;
 }
 
-export class OrderItemDto extends OrderItemModel {
+export class OrderItemDto implements OrderItemModel {
   @ApiProperty()
   @IsString()
   declare title: string;
@@ -108,7 +108,7 @@ export class OrderItemDto extends OrderItemModel {
   declare sku?: string;
 }
 
-export class CreateOrderDto extends OrderBaseModel {
+export class CreateOrderDto implements OrderBaseModel {
   @ApiProperty()
   @IsString()
   declare orderNumber: string;
