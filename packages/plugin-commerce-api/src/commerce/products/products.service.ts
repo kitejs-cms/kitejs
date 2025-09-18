@@ -16,6 +16,7 @@ import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
 import { SlugRegistryService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { ProductResponseDto } from "./dto/product-response.dto";
+import { ProductResponseModel } from "./models/product.models";
 
 @Injectable()
 export class ProductsService {
@@ -40,7 +41,9 @@ export class ProductsService {
     return value ? new Date(value) : null;
   }
 
-  private mapCollectionIds(collectionIds?: string[]): Types.ObjectId[] | undefined {
+  private mapCollectionIds(
+    collectionIds?: string[]
+  ): Types.ObjectId[] | undefined {
     if (collectionIds === undefined) return undefined;
     return collectionIds.filter(Boolean).map((id) => this.toObjectId(id));
   }
@@ -66,7 +69,7 @@ export class ProductsService {
     }));
   }
 
-  private async buildResponse(product: Product): Promise<ProductResponseDto> {
+  private async buildResponse(product: Product): Promise<ProductResponseModel> {
     const slugs = await this.slugService.findSlugsByEntity(
       product._id as Types.ObjectId
     );
@@ -88,14 +91,12 @@ export class ProductsService {
       };
     }
 
-    return new ProductResponseDto({
+    return {
       ...json,
       id: product._id.toString(),
       translations: translationsWithSlug,
       slugs: slugMap,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
-    });
+    } as ProductResponseModel;
   }
 
   private async upsertProduct(

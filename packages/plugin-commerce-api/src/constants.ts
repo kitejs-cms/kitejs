@@ -4,7 +4,7 @@ import {
   SettingModel,
 } from "@kitejs-cms/core";
 
-export const COMMERCE_PLUGIN_NAMESPACE = "commerce-plugin";
+export const COMMERCE_PLUGIN_NAMESPACE = "plugin-commerce";
 export const COMMERCE_PRODUCT_SLUG_NAMESPACE = `${COMMERCE_PLUGIN_NAMESPACE}:products`;
 export const COMMERCE_COLLECTION_SLUG_NAMESPACE = `${COMMERCE_PLUGIN_NAMESPACE}:collections`;
 

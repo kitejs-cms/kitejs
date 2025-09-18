@@ -23,165 +23,165 @@ export class ProductSeoDto implements ProductSeoModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare metaTitle?: string;
+  metaTitle?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare metaDescription?: string;
+  metaDescription?: string;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  declare metaKeywords?: string[];
+  metaKeywords?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare canonicalUrl?: string;
+  canonicalUrl?: string;
 }
 
 export class ProductPriceDto implements ProductPriceModel {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  declare currencyCode: string;
+  currencyCode: string;
 
   @ApiProperty()
   @Type(() => Number)
   @IsNumber()
-  declare amount: number;
+  amount: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  declare compareAtAmount?: number;
+  compareAtAmount?: number;
 }
 
 export class ProductVariantDto implements ProductVariantModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare id?: string;
+  id?: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  declare title: string;
+  title: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  declare sku: string;
+  sku: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare barcode?: string;
+  barcode?: string;
 
   @ApiPropertyOptional({ type: () => [ProductPriceDto] })
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => ProductPriceDto)
-  declare prices?: ProductPriceDto[];
+  prices?: ProductPriceDto[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  declare inventoryQuantity?: number;
+  inventoryQuantity?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
-  declare allowBackorder?: boolean;
+  allowBackorder?: boolean;
 }
 
 export class CreateProductDto implements ProductBaseModel {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  declare slug: string;
+  slug: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  declare language: string;
+  language: string;
 
   @ApiProperty({ enum: ProductStatus })
   @IsEnum(ProductStatus)
-  declare status: ProductStatus;
+  status: ProductStatus;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  declare title: string;
+  title: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare subtitle?: string;
+  subtitle?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare summary?: string;
+  summary?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare description?: string;
+  description?: string;
 
   @ApiPropertyOptional({ type: () => ProductSeoDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => ProductSeoDto)
-  declare seo?: ProductSeoDto;
+  seo?: ProductSeoDto;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  declare tags?: string[];
+  tags?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  declare publishAt?: string;
+  publishAt?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  declare expireAt?: string;
+  expireAt?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare thumbnail?: string;
+  thumbnail?: string;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  declare gallery?: string[];
+  gallery?: string[];
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  declare collectionIds?: string[];
+  collectionIds?: string[];
 
   @ApiPropertyOptional({ type: () => [ProductVariantDto] })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProductVariantDto)
-  declare variants?: ProductVariantDto[];
+  variants?: ProductVariantDto[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare defaultCurrency?: string;
+  defaultCurrency?: string;
 }

@@ -6,13 +6,14 @@ import {
 } from "./schemas/product-collection.schema";
 import { CollectionsService } from "./collections.service";
 import { CollectionsController } from "./collections.controller";
-import { SlugRegistryModule } from "@kitejs-cms/core";
+import { SlugRegistryModule, UsersModule } from "@kitejs-cms/core";
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ProductCollection.name, schema: ProductCollectionSchema },
     ]),
+    UsersModule,
     SlugRegistryModule,
   ],
   controllers: [CollectionsController],

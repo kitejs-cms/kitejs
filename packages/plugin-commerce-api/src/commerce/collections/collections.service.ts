@@ -15,6 +15,7 @@ import { COMMERCE_COLLECTION_SLUG_NAMESPACE } from "../../constants";
 import { SlugRegistryService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { CollectionResponseDto } from "./dto/collection-response.dto";
+import { CollectionResponseModel } from "./models/collection.models";
 
 @Injectable()
 export class CollectionsService {
@@ -46,7 +47,7 @@ export class CollectionsService {
 
   private async buildResponse(
     collection: ProductCollection
-  ): Promise<CollectionResponseDto> {
+  ): Promise<CollectionResponseModel> {
     const slugs = await this.slugService.findSlugsByEntity(
       collection._id as Types.ObjectId
     );
@@ -68,14 +69,12 @@ export class CollectionsService {
       };
     }
 
-    return new CollectionResponseDto({
+    return {
       ...json,
       id: collection._id.toString(),
       translations: translationsWithSlug,
       slugs: slugMap,
-      createdAt: collection.createdAt,
-      updatedAt: collection.updatedAt,
-    });
+    } as CollectionResponseModel;
   }
 
   private async upsertCollection(

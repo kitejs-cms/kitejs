@@ -2,11 +2,13 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Order, OrderDocument } from "./schemas/order.schema";
-import { CreateOrderDto, OrderAddressDto, OrderItemDto } from "./dto/create-order.dto";
+import { CreateOrderDto } from "./dto/create-order.dto";
 import { UpdateOrderDto } from "./dto/update-order.dto";
 import { OrderStatus } from "./models/order-status.enum";
 import { PaymentStatus } from "./models/payment-status.enum";
 import { FulfillmentStatus } from "./models/fulfillment-status.enum";
+import { OrderAddressDto } from "./dto/order-address.dto";
+import { OrderItemDto } from "./dto/order-item.dto";
 
 interface SanitizedItem extends Omit<OrderItemDto, "productId" | "variantId"> {
   productId?: Types.ObjectId;
@@ -129,7 +131,11 @@ export class OrdersService {
   }
 
   async findAll(): Promise<OrderDocument[]> {
-    return this.orderModel.find().sort({ createdAt: -1 }).populate("customer").exec();
+    return this.orderModel
+      .find()
+      .sort({ createdAt: -1 })
+      .populate("customer")
+      .exec();
   }
 
   async findOne(id: string): Promise<OrderDocument> {
@@ -162,9 +168,7 @@ export class OrdersService {
     };
 
     if (customerId !== undefined) {
-      updateData.customer = customerId
-        ? new Types.ObjectId(customerId)
-        : null;
+      updateData.customer = customerId ? new Types.ObjectId(customerId) : null;
     }
 
     if (billingAddress !== undefined) {
@@ -213,17 +217,17 @@ export class OrdersService {
       const baseSubtotal =
         subtotalFromItems !== undefined
           ? subtotalFromItems
-          : existing?.subtotal ?? 0;
+          : (existing?.subtotal ?? 0);
       const shippingTotal =
         dto.shippingTotal !== undefined
           ? dto.shippingTotal
-          : existing?.shippingTotal ?? 0;
+          : (existing?.shippingTotal ?? 0);
       const taxTotal =
-        dto.taxTotal !== undefined ? dto.taxTotal : existing?.taxTotal ?? 0;
+        dto.taxTotal !== undefined ? dto.taxTotal : (existing?.taxTotal ?? 0);
       const discountTotal =
         dto.discountTotal !== undefined
           ? dto.discountTotal
-          : existing?.discountTotal ?? 0;
+          : (existing?.discountTotal ?? 0);
 
       const totals = this.calculateTotals(
         baseSubtotal,

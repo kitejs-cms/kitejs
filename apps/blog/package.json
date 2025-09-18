@@ -12,6 +12,7 @@
     "@kitejs-cms/core": "workspace:*",
     "@kitejs-cms/plugin-gallery-api": "workspace:*",
     "@kitejs-cms/plugin-analytics-api": "workspace:*",
+    "@kitejs-cms/plugin-commerce-api": "workspace:*",
     "@nestjs/common": "^11.0.10",
     "@nestjs/cache-manager": "^3.0.0",
     "@nestjs/config": "^4.0.0",

@@ -4,7 +4,7 @@ import {
   SettingModel,
 } from "@kitejs-cms/core";
 
-export const GALLERY_PLUGIN_NAMESPACE = "gallery-plugin";
+export const GALLERY_PLUGIN_NAMESPACE = "plugin-gallery";
 
 export const GALLERY_SLUG_NAMESPACE = `${GALLERY_PLUGIN_NAMESPACE}:galleries`;
 

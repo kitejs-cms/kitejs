@@ -3,19 +3,19 @@ import type { ProductResponseModel } from "../models/product.models";
 
 export class ProductResponseDto implements ProductResponseModel {
   @ApiProperty()
-  declare id: string;
+  id: string;
 
   @ApiProperty({ type: Object })
-  declare slugs: Record<string, string>;
+  slugs: Record<string, string>;
 
   @ApiProperty({ type: Object })
-  declare translations: Record<string, Record<string, unknown>>;
+  translations: Record<string, Record<string, unknown>>;
 
   @ApiProperty()
-  declare createdAt: Date;
+  createdAt: Date;
 
   @ApiProperty()
-  declare updatedAt: Date;
+  updatedAt: Date;
 
   constructor(partial: ProductResponseModel) {
     Object.assign(this, partial);
