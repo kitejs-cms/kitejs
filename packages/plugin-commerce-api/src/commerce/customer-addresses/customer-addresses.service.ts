@@ -4,7 +4,7 @@ import { Model, Types } from "mongoose";
 import { CustomerAddress, CustomerAddressDocument } from "./schemas/customer-address.schema";
 import { CreateCustomerAddressDto } from "./dto/create-customer-address.dto";
 import { UpdateCustomerAddressDto } from "./dto/update-customer-address.dto";
-import { CustomerAddressResponseDto } from "./dto/customer-address-response.dto";
+import type { CustomerAddressResponseModel } from "./models/customer-address-response.model";
 
 @Injectable()
 export class CustomerAddressesService {
@@ -13,8 +13,39 @@ export class CustomerAddressesService {
     private readonly addressModel: Model<CustomerAddressDocument>
   ) {}
 
-  private toResponse(address: CustomerAddressDocument): CustomerAddressResponseDto {
-    return new CustomerAddressResponseDto(address);
+  private toModel(
+    address: CustomerAddressDocument
+  ): CustomerAddressResponseModel {
+    const json = address.toJSON() as Record<string, unknown>;
+
+    const asString = (value: unknown): string | undefined =>
+      typeof value === "string" ? value : undefined;
+
+    const requiredString = (value: unknown, fallback: string): string =>
+      typeof value === "string" ? value : fallback;
+
+    const asBoolean = (value: unknown, fallback: boolean): boolean =>
+      typeof value === "boolean" ? value : fallback;
+
+    return {
+      id: address._id.toString(),
+      userId: address.userId.toString(),
+      label: asString(json.label) ?? address.label,
+      firstName: asString(json.firstName) ?? address.firstName,
+      lastName: asString(json.lastName) ?? address.lastName,
+      company: asString(json.company) ?? address.company,
+      address1: requiredString(json.address1, address.address1),
+      address2: asString(json.address2) ?? address.address2,
+      city: requiredString(json.city, address.city),
+      postalCode: asString(json.postalCode) ?? address.postalCode,
+      province: asString(json.province) ?? address.province,
+      countryCode: requiredString(json.countryCode, address.countryCode),
+      phone: asString(json.phone) ?? address.phone,
+      isDefaultShipping: asBoolean(json.isDefaultShipping, address.isDefaultShipping),
+      isDefaultBilling: asBoolean(json.isDefaultBilling, address.isDefaultBilling),
+      createdAt: address.createdAt,
+      updatedAt: address.updatedAt,
+    };
   }
 
   private async ensureDefaultUniqueness(address: CustomerAddressDocument) {
@@ -44,7 +75,9 @@ export class CustomerAddressesService {
     }
   }
 
-  async create(dto: CreateCustomerAddressDto): Promise<CustomerAddressResponseDto> {
+  async create(
+    dto: CreateCustomerAddressDto
+  ): Promise<CustomerAddressResponseModel> {
     const userId = new Types.ObjectId(dto.userId);
     const created = await this.addressModel.create({
       ...dto,
@@ -55,32 +88,34 @@ export class CustomerAddressesService {
 
     await this.ensureDefaultUniqueness(created);
 
-    return this.toResponse(created);
+    return this.toModel(created);
   }
 
-  async findForUser(userId: string): Promise<CustomerAddressResponseDto[]> {
+  async findForUser(
+    userId: string
+  ): Promise<CustomerAddressResponseModel[]> {
     const addresses = await this.addressModel
       .find({ userId: new Types.ObjectId(userId) })
       .sort({ createdAt: 1 })
       .exec();
 
-    return addresses.map((address) => this.toResponse(address));
+    return addresses.map((address) => this.toModel(address));
   }
 
-  async findOne(id: string): Promise<CustomerAddressResponseDto> {
+  async findOne(id: string): Promise<CustomerAddressResponseModel> {
     const address = await this.addressModel.findById(id).exec();
 
     if (!address) {
       throw new NotFoundException(`Customer address with ID ${id} not found`);
     }
 
-    return this.toResponse(address);
+    return this.toModel(address);
   }
 
   async update(
     id: string,
     dto: UpdateCustomerAddressDto
-  ): Promise<CustomerAddressResponseDto> {
+  ): Promise<CustomerAddressResponseModel> {
     const address = await this.addressModel.findById(id).exec();
 
     if (!address) {
@@ -146,7 +181,7 @@ export class CustomerAddressesService {
     await address.save();
     await this.ensureDefaultUniqueness(address);
 
-    return this.toResponse(address);
+    return this.toModel(address);
   }
 
   async remove(id: string): Promise<void> {

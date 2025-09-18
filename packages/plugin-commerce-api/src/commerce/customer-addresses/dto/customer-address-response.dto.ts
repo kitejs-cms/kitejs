@@ -8,7 +8,6 @@ import {
   IsString,
 } from "class-validator";
 
-import { CustomerAddress } from "../schemas/customer-address.schema";
 import type { CustomerAddressResponseModel } from "../models/customer-address-response.model";
 
 export class CustomerAddressResponseDto
@@ -92,7 +91,7 @@ export class CustomerAddressResponseDto
   @IsDate()
   updatedAt: Date;
 
-  constructor(partial: CustomerAddress) {
+  constructor(partial: CustomerAddressResponseModel) {
     Object.assign(this, partial);
   }
 }

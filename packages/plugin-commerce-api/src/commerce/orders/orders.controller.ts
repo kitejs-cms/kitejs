@@ -24,6 +24,7 @@ import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { UpdateOrderDto } from "./dto/update-order.dto";
 import { COMMERCE_PLUGIN_NAMESPACE } from "../../constants";
+import { OrderResponseDto } from "./dto/order-response.dto";
 
 @ApiTags("Commerce - Orders")
 @ApiBearerAuth()
@@ -35,36 +36,56 @@ export class OrdersController {
   @Post()
   @Permissions(`${COMMERCE_PLUGIN_NAMESPACE}:orders.create`)
   @ApiOperation({ summary: "Create a new order" })
-  @ApiResponse({ status: 201, description: "Order created" })
-  create(@Body() dto: CreateOrderDto) {
-    return this.ordersService.create(dto);
+  @ApiResponse({
+    status: 201,
+    description: "Order created",
+    type: OrderResponseDto,
+  })
+  async create(@Body() dto: CreateOrderDto) {
+    const order = await this.ordersService.create(dto);
+    return new OrderResponseDto(order);
   }
 
   @Get()
   @Permissions(`${COMMERCE_PLUGIN_NAMESPACE}:orders.read`)
   @ApiOperation({ summary: "List orders" })
-  @ApiResponse({ status: 200, description: "List of orders" })
-  findAll() {
-    return this.ordersService.findAll();
+  @ApiResponse({
+    status: 200,
+    description: "List of orders",
+    type: [OrderResponseDto],
+  })
+  async findAll() {
+    const orders = await this.ordersService.findAll();
+    return orders.map((order) => new OrderResponseDto(order));
   }
 
   @Get(":id")
   @Permissions(`${COMMERCE_PLUGIN_NAMESPACE}:orders.read`)
   @ApiOperation({ summary: "Retrieve an order" })
-  @ApiResponse({ status: 200, description: "Order detail" })
-  findOne(@Param("id", ValidateObjectIdPipe) id: string) {
-    return this.ordersService.findOne(id);
+  @ApiResponse({
+    status: 200,
+    description: "Order detail",
+    type: OrderResponseDto,
+  })
+  async findOne(@Param("id", ValidateObjectIdPipe) id: string) {
+    const order = await this.ordersService.findOne(id);
+    return new OrderResponseDto(order);
   }
 
   @Patch(":id")
   @Permissions(`${COMMERCE_PLUGIN_NAMESPACE}:orders.update`)
   @ApiOperation({ summary: "Update an order" })
-  @ApiResponse({ status: 200, description: "Order updated" })
-  update(
+  @ApiResponse({
+    status: 200,
+    description: "Order updated",
+    type: OrderResponseDto,
+  })
+  async update(
     @Param("id", ValidateObjectIdPipe) id: string,
     @Body() dto: UpdateOrderDto
   ) {
-    return this.ordersService.update(id, dto);
+    const order = await this.ordersService.update(id, dto);
+    return new OrderResponseDto(order);
   }
 
   @Delete(":id")

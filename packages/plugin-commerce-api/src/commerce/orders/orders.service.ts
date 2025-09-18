@@ -9,6 +9,9 @@ import { PaymentStatus } from "./models/payment-status.enum";
 import { FulfillmentStatus } from "./models/fulfillment-status.enum";
 import { OrderAddressDto } from "./dto/order-address.dto";
 import { OrderItemDto } from "./dto/order-item.dto";
+import type { OrderAddressModel } from "./models/order-address.model";
+import type { OrderItemResponseModel } from "./models/order-item-response.model";
+import type { OrderResponseModel } from "./models/order-response.model";
 
 interface SanitizedItem extends Omit<OrderItemDto, "productId" | "variantId"> {
   productId?: Types.ObjectId;
@@ -88,7 +91,137 @@ export class OrdersService {
     return value ? new Date(value) : undefined;
   }
 
-  async create(dto: CreateOrderDto): Promise<OrderDocument> {
+  private toAddressModel(
+    address?: Record<string, unknown>
+  ): OrderAddressModel | undefined {
+    if (!address) return undefined;
+
+    return {
+      firstName: (address.firstName as string | undefined) ?? undefined,
+      lastName: (address.lastName as string | undefined) ?? undefined,
+      company: (address.company as string | undefined) ?? undefined,
+      address1: address.address1 as string,
+      address2: (address.address2 as string | undefined) ?? undefined,
+      city: address.city as string,
+      postalCode: (address.postalCode as string | undefined) ?? undefined,
+      province: (address.province as string | undefined) ?? undefined,
+      countryCode: address.countryCode as string,
+      phone: (address.phone as string | undefined) ?? undefined,
+    };
+  }
+
+  private toItemModel(item: Record<string, unknown>): OrderItemResponseModel {
+    const idValue = item._id ?? item.id;
+    const productId = item.productId as Types.ObjectId | string | undefined;
+    const variantId = item.variantId as Types.ObjectId | string | undefined;
+
+    return {
+      id:
+        typeof idValue === "string"
+          ? idValue
+          : idValue instanceof Types.ObjectId
+            ? idValue.toString()
+            : undefined,
+      title: item.title as string,
+      variantTitle: (item.variantTitle as string | undefined) ?? undefined,
+      quantity: Number(item.quantity ?? 0),
+      unitPrice: Number(item.unitPrice ?? 0),
+      currencyCode: item.currencyCode as string,
+      productId:
+        typeof productId === "string"
+          ? productId
+          : productId instanceof Types.ObjectId
+            ? productId.toString()
+            : undefined,
+      variantId:
+        typeof variantId === "string"
+          ? variantId
+          : variantId instanceof Types.ObjectId
+            ? variantId.toString()
+            : undefined,
+      sku: (item.sku as string | undefined) ?? undefined,
+      total: Number(item.total ?? 0),
+    };
+  }
+
+  private toResponse(order: OrderDocument): OrderResponseModel {
+    const json = order.toJSON() as Record<string, unknown>;
+    const tags = (json.tags as string[] | undefined) ?? order.tags ?? [];
+
+    const customer = json.customer;
+    let customerId: string | undefined;
+    let customerData: Record<string, unknown> | undefined;
+
+    if (typeof customer === "string") {
+      customerId = customer;
+    } else if (customer && typeof customer === "object") {
+      const objectCustomer = customer as Record<string, unknown>;
+      const idValue = objectCustomer._id ?? objectCustomer.id;
+
+      if (typeof idValue === "string") {
+        customerId = idValue;
+      } else if (idValue instanceof Types.ObjectId) {
+        customerId = idValue.toString();
+      }
+
+      customerData = objectCustomer;
+    }
+
+    const persistedItems = order.items ?? [];
+
+    const items = Array.isArray(json.items)
+      ? (json.items as Record<string, unknown>[]).map((item) =>
+          this.toItemModel(item)
+        )
+      : persistedItems.map((item) =>
+          this.toItemModel(
+            typeof item.toJSON === "function"
+              ? (item.toJSON() as Record<string, unknown>)
+              : (item as unknown as Record<string, unknown>)
+          )
+        );
+
+    const billingAddressJson =
+      (json.billingAddress as Record<string, unknown> | undefined) ??
+      (order.billingAddress && typeof order.billingAddress.toJSON === "function"
+        ? (order.billingAddress.toJSON() as Record<string, unknown>)
+        : ((order.billingAddress as unknown) as Record<string, unknown> | undefined));
+
+    const shippingAddressJson =
+      (json.shippingAddress as Record<string, unknown> | undefined) ??
+      (order.shippingAddress && typeof order.shippingAddress.toJSON === "function"
+        ? (order.shippingAddress.toJSON() as Record<string, unknown>)
+        : ((order.shippingAddress as unknown) as Record<string, unknown> | undefined));
+
+    return {
+      id: order._id.toString(),
+      orderNumber: order.orderNumber,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      fulfillmentStatus: order.fulfillmentStatus,
+      currencyCode: order.currencyCode,
+      customerId,
+      customer: customerData,
+      email: order.email,
+      billingAddress: this.toAddressModel(billingAddressJson),
+      shippingAddress: this.toAddressModel(shippingAddressJson),
+      items,
+      subtotal: order.subtotal,
+      shippingTotal: order.shippingTotal,
+      taxTotal: order.taxTotal,
+      discountTotal: order.discountTotal,
+      total: order.total,
+      notes: order.notes,
+      tags,
+      paidAt: order.paidAt ?? undefined,
+      fulfilledAt: order.fulfilledAt ?? undefined,
+      cancelledAt: order.cancelledAt ?? undefined,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+    };
+  }
+
+  async create(dto: CreateOrderDto): Promise<OrderResponseModel> {
     const {
       customerId,
       billingAddress,
@@ -108,7 +241,7 @@ export class OrdersService {
       dto.discountTotal
     );
 
-    return this.orderModel.create({
+    const created = await this.orderModel.create({
       ...rest,
       status: rest.status ?? OrderStatus.Pending,
       paymentStatus: rest.paymentStatus ?? PaymentStatus.Awaiting,
@@ -128,17 +261,23 @@ export class OrdersService {
       fulfilledAt: this.toDate(fulfilledAt),
       cancelledAt: this.toDate(cancelledAt),
     });
+
+    await created.populate("customer");
+
+    return this.toResponse(created);
   }
 
-  async findAll(): Promise<OrderDocument[]> {
-    return this.orderModel
+  async findAll(): Promise<OrderResponseModel[]> {
+    const orders = await this.orderModel
       .find()
       .sort({ createdAt: -1 })
       .populate("customer")
       .exec();
+
+    return orders.map((order) => this.toResponse(order));
   }
 
-  async findOne(id: string): Promise<OrderDocument> {
+  async findOne(id: string): Promise<OrderResponseModel> {
     const order = await this.orderModel
       .findById(id)
       .populate("customer")
@@ -148,10 +287,10 @@ export class OrdersService {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    return order;
+    return this.toResponse(order);
   }
 
-  async update(id: string, dto: UpdateOrderDto): Promise<OrderDocument> {
+  async update(id: string, dto: UpdateOrderDto): Promise<OrderResponseModel> {
     const {
       customerId,
       billingAddress,
@@ -252,7 +391,7 @@ export class OrdersService {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    return order;
+    return this.toResponse(order);
   }
 
   async remove(id: string): Promise<void> {

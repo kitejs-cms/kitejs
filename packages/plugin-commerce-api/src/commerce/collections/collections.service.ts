@@ -14,7 +14,6 @@ import { UpdateCollectionDto } from "./dto/update-collection.dto";
 import { COMMERCE_COLLECTION_SLUG_NAMESPACE } from "../../constants";
 import { SlugRegistryService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
-import { CollectionResponseDto } from "./dto/collection-response.dto";
 import type { CollectionResponseModel } from "./models/collection-response.model";
 
 @Injectable()
@@ -81,7 +80,7 @@ export class CollectionsService {
     id: string | undefined,
     dto: CreateCollectionDto | UpdateCollectionDto,
     user: JwtPayloadModel
-  ): Promise<CollectionResponseDto> {
+  ): Promise<CollectionResponseModel> {
     const {
       slug,
       language,
@@ -187,7 +186,7 @@ export class CollectionsService {
     return this.upsertCollection(undefined, dto, user);
   }
 
-  async findAll(): Promise<CollectionResponseDto[]> {
+  async findAll(): Promise<CollectionResponseModel[]> {
     const collections = await this.collectionModel
       .find()
       .sort({ sortOrder: 1, updatedAt: -1 })
@@ -198,7 +197,7 @@ export class CollectionsService {
     );
   }
 
-  async findOne(id: string): Promise<CollectionResponseDto> {
+  async findOne(id: string): Promise<CollectionResponseModel> {
     const collection = await this.collectionModel.findById(id).exec();
     if (!collection) {
       throw new NotFoundException(`Collection with ID ${id} not found`);
@@ -211,7 +210,7 @@ export class CollectionsService {
     id: string,
     dto: UpdateCollectionDto,
     user: JwtPayloadModel
-  ): Promise<CollectionResponseDto> {
+  ): Promise<CollectionResponseModel> {
     return this.upsertCollection(id, dto, user);
   }
 

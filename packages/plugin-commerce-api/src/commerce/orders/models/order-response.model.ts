@@ -1,0 +1,32 @@
+import type { FulfillmentStatus } from "./fulfillment-status.enum";
+import type { OrderAddressModel } from "./order-address.model";
+import type { OrderItemResponseModel } from "./order-item-response.model";
+import type { OrderStatus } from "./order-status.enum";
+import type { PaymentStatus } from "./payment-status.enum";
+
+export type OrderResponseModel = {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  fulfillmentStatus: FulfillmentStatus;
+  currencyCode: string;
+  customerId?: string;
+  customer?: Record<string, unknown>;
+  email?: string;
+  billingAddress?: OrderAddressModel;
+  shippingAddress?: OrderAddressModel;
+  items: OrderItemResponseModel[];
+  subtotal: number;
+  shippingTotal: number;
+  taxTotal: number;
+  discountTotal: number;
+  total: number;
+  notes?: string;
+  tags: string[];
+  paidAt?: Date;
+  fulfilledAt?: Date;
+  cancelledAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+};

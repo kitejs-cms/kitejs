@@ -13,7 +13,6 @@ import { UpdateProductDto } from "./dto/update-product.dto";
 import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
 import { SlugRegistryService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
-import { ProductResponseDto } from "./dto/product-response.dto";
 import type { ProductResponseModel } from "./models/product-response.model";
 
 @Injectable()
@@ -101,7 +100,7 @@ export class ProductsService {
     id: string | undefined,
     dto: CreateProductDto | UpdateProductDto,
     user: JwtPayloadModel
-  ): Promise<ProductResponseDto> {
+  ): Promise<ProductResponseModel> {
     const {
       slug,
       language,
@@ -230,7 +229,7 @@ export class ProductsService {
     return this.upsertProduct(id, dto, user);
   }
 
-  async findAll(): Promise<ProductResponseDto[]> {
+  async findAll(): Promise<ProductResponseModel[]> {
     const products = await this.productModel
       .find()
       .sort({ updatedAt: -1 })
@@ -239,7 +238,7 @@ export class ProductsService {
     return Promise.all(products.map((product) => this.buildResponse(product)));
   }
 
-  async findOne(id: string): Promise<ProductResponseDto> {
+  async findOne(id: string): Promise<ProductResponseModel> {
     const product = await this.productModel.findById(id).exec();
 
     if (!product) {

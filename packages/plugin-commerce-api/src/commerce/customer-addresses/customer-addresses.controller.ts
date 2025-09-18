@@ -43,10 +43,11 @@ export class CustomerAddressesController {
     description: "Customer address created",
     type: CustomerAddressResponseDto,
   })
-  create(
+  async create(
     @Body() dto: CreateCustomerAddressDto
   ): Promise<CustomerAddressResponseDto> {
-    return this.customerAddressesService.create(dto);
+    const address = await this.customerAddressesService.create(dto);
+    return new CustomerAddressResponseDto(address);
   }
 
   @Get("user/:userId")
@@ -57,10 +58,11 @@ export class CustomerAddressesController {
     description: "Customer addresses",
     type: [CustomerAddressResponseDto],
   })
-  findForUser(
+  async findForUser(
     @Param("userId", ValidateObjectIdPipe) userId: string
   ): Promise<CustomerAddressResponseDto[]> {
-    return this.customerAddressesService.findForUser(userId);
+    const addresses = await this.customerAddressesService.findForUser(userId);
+    return addresses.map((address) => new CustomerAddressResponseDto(address));
   }
 
   @Get(":id")
@@ -71,10 +73,11 @@ export class CustomerAddressesController {
     description: "Customer address detail",
     type: CustomerAddressResponseDto,
   })
-  findOne(
+  async findOne(
     @Param("id", ValidateObjectIdPipe) id: string
   ): Promise<CustomerAddressResponseDto> {
-    return this.customerAddressesService.findOne(id);
+    const address = await this.customerAddressesService.findOne(id);
+    return new CustomerAddressResponseDto(address);
   }
 
   @Patch(":id")
@@ -85,11 +88,12 @@ export class CustomerAddressesController {
     description: "Customer address updated",
     type: CustomerAddressResponseDto,
   })
-  update(
+  async update(
     @Param("id", ValidateObjectIdPipe) id: string,
     @Body() dto: UpdateCustomerAddressDto
   ): Promise<CustomerAddressResponseDto> {
-    return this.customerAddressesService.update(id, dto);
+    const address = await this.customerAddressesService.update(id, dto);
+    return new CustomerAddressResponseDto(address);
   }
 
   @Delete(":id")
