@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { CustomerAddress } from "../schemas/customer-address.schema";
 import type { CustomerAddressResponseModel } from "../models/customer-address-response.model";
 
@@ -11,37 +11,37 @@ export class CustomerAddressResponseDto
   @ApiProperty({ description: "Identifier of the customer (core user)" })
   userId: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   label?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   firstName?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   lastName?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   company?: string;
 
   @ApiProperty()
   address1: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   address2?: string;
 
   @ApiProperty()
   city: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   postalCode?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   province?: string;
 
   @ApiProperty()
   countryCode: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   phone?: string;
 
   @ApiProperty()
