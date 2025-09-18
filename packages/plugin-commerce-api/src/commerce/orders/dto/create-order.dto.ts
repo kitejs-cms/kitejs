@@ -3,7 +3,7 @@ import { Type } from "class-transformer";
 import { OrderStatus } from "../models/order-status.enum";
 import { PaymentStatus } from "../models/payment-status.enum";
 import { FulfillmentStatus } from "../models/fulfillment-status.enum";
-import type { OrderBaseModel } from "../models/order.models";
+import type { OrderBaseModel } from "../models/order-base.model";
 import { OrderItemDto } from "./order-item.dto";
 import { OrderAddressDto } from "./order-address.dto";
 import {

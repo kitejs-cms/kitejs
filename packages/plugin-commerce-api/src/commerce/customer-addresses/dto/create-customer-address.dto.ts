@@ -1,4 +1,4 @@
-import type { CustomerAddressBaseModel } from "../models/customer-address.model";
+import type { CustomerAddressBaseModel } from "../models/customer-address-base.model";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsBoolean,

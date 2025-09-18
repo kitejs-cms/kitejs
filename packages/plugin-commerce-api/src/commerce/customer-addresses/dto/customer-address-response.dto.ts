@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { CustomerAddress } from "../schemas/customer-address.schema";
-import type { CustomerAddressResponseModel } from "../models/customer-address.model";
+import type { CustomerAddressResponseModel } from "../models/customer-address-response.model";
 
 export class CustomerAddressResponseDto
   implements CustomerAddressResponseModel

@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import type { CollectionResponseModel } from "../models/collection.models";
+
+import type { CollectionResponseModel } from "../models/collection-response.model";
 
 export class CollectionResponseDto implements CollectionResponseModel {
   @ApiProperty()

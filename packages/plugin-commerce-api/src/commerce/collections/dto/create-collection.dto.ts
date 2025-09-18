@@ -10,34 +10,10 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
+
 import { CollectionStatus } from "../models/collection-status.enum";
-import type {
-  CollectionBaseModel,
-  CollectionSeoModel,
-} from "../models/collection.models";
-
-export class CollectionSeoDto implements CollectionSeoModel {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  declare metaTitle?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  declare metaDescription?: string;
-
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  declare metaKeywords?: string[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  declare canonicalUrl?: string;
-}
+import type { CollectionBaseModel } from "../models/collection-base.model";
+import { CollectionSeoDto } from "./collection-seo.dto";
 
 export class CreateCollectionDto implements CollectionBaseModel {
   @ApiProperty()
