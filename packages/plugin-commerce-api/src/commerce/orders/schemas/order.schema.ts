@@ -77,6 +77,10 @@ export class Order extends Document {
 
   @Prop({ type: Date, required: false })
   cancelledAt?: Date;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

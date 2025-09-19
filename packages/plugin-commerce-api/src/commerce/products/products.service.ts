@@ -1,22 +1,25 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { FilterQuery, Model, Types } from "mongoose";
 import { Product, ProductDocument } from "./schemas/product.schema";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { ProductVariantDto } from "./dto/product-variant.dto";
 import { ProductPriceDto } from "./dto/product-price.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
+import { ProductStatus } from "./models/product-status.enum";
 import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
-import { SlugRegistryService } from "@kitejs-cms/core";
+import { SlugRegistryService, ObjectIdUtils } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
 import type { ProductResponseModel } from "./models/product-response.model";
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
   private readonly slugNamespace = COMMERCE_PRODUCT_SLUG_NAMESPACE;
 
   constructor(
@@ -25,24 +28,72 @@ export class ProductsService {
     private readonly slugService: SlugRegistryService
   ) {}
 
-  private toObjectId(id: string): Types.ObjectId {
-    try {
-      return new Types.ObjectId(id);
-    } catch (error) {
-      throw new BadRequestException(`Invalid identifier provided: ${id}`);
+  private buildProductQuery(
+    filters?: Record<string, string>,
+    language = "en"
+  ): FilterQuery<ProductDocument> {
+    if (!filters) {
+      return {};
     }
-  }
 
-  private parseDate(value?: string): Date | null {
-    if (value === null) return null;
-    return value ? new Date(value) : null;
+    const { status, collectionId, tags, search } = filters;
+
+    const tagValues = tags
+      ?.split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+
+    const trimmedSearch = search?.trim();
+
+    return {
+      ...(status ? { status: status as ProductStatus } : {}),
+      ...(collectionId
+        ? { collections: ObjectIdUtils.toObjectId(collectionId) }
+        : {}),
+      ...(tagValues?.length
+        ? ({ tags: { $in: tagValues } } as FilterQuery<ProductDocument>)
+        : {}),
+      ...(trimmedSearch
+        ? {
+            $or: [
+              { tags: { $regex: trimmedSearch, $options: "i" } },
+              {
+                [`translations.${language}.title`]: {
+                  $regex: trimmedSearch,
+                  $options: "i",
+                },
+              },
+              {
+                [`translations.${language}.subtitle`]: {
+                  $regex: trimmedSearch,
+                  $options: "i",
+                },
+              },
+              {
+                [`translations.${language}.summary`]: {
+                  $regex: trimmedSearch,
+                  $options: "i",
+                },
+              },
+              {
+                [`translations.${language}.description`]: {
+                  $regex: trimmedSearch,
+                  $options: "i",
+                },
+              },
+            ],
+          }
+        : {}),
+    };
   }
 
   private mapCollectionIds(
     collectionIds?: string[]
   ): Types.ObjectId[] | undefined {
     if (collectionIds === undefined) return undefined;
-    return collectionIds.filter(Boolean).map((id) => this.toObjectId(id));
+    return collectionIds
+      .filter(Boolean)
+      .map((id) => ObjectIdUtils.toObjectId(id));
   }
 
   private mapVariantPrices(prices?: ProductPriceDto[]) {
@@ -56,7 +107,7 @@ export class ProductsService {
   private mapVariants(variants?: ProductVariantDto[]) {
     if (variants === undefined) return undefined;
     return variants.map((variant) => ({
-      ...(variant.id ? { _id: this.toObjectId(variant.id) } : {}),
+      ...(variant.id ? { _id: ObjectIdUtils.toObjectId(variant.id) } : {}),
       title: variant.title,
       sku: variant.sku,
       barcode: variant.barcode,
@@ -128,61 +179,45 @@ export class ProductsService {
       seo,
     };
 
-    const baseData: Record<string, unknown> = {
-      updatedBy: this.toObjectId(user.sub),
-    };
-
-    if (status !== undefined) {
-      baseData.status = status;
-    }
-
-    if (tags !== undefined) {
-      baseData.tags = tags;
-    } else if (!id) {
-      baseData.tags = [];
-    }
-
-    if (publishAt !== undefined) {
-      baseData.publishAt = this.parseDate(publishAt);
-    } else if (!id) {
-      baseData.publishAt = null;
-    }
-
-    if (expireAt !== undefined) {
-      baseData.expireAt = this.parseDate(expireAt);
-    } else if (!id) {
-      baseData.expireAt = null;
-    }
-
-    if (thumbnail !== undefined) {
-      baseData.thumbnail = thumbnail ?? null;
-    }
-
-    if (gallery !== undefined) {
-      baseData.gallery = gallery ?? [];
-    } else if (!id) {
-      baseData.gallery = [];
-    }
-
     const mappedCollections = this.mapCollectionIds(collectionIds);
-    if (mappedCollections !== undefined) {
-      baseData.collections = mappedCollections;
-    } else if (!id) {
-      baseData.collections = [];
-    }
-
     const mappedVariants = this.mapVariants(variants);
-    if (mappedVariants !== undefined) {
-      baseData.variants = mappedVariants;
-    } else if (!id) {
-      baseData.variants = [];
-    }
 
-    if (defaultCurrency !== undefined) {
-      baseData.defaultCurrency = defaultCurrency;
-    } else if (!id) {
-      baseData.defaultCurrency = "EUR";
-    }
+    const baseData: Record<string, unknown> = {
+      updatedBy: ObjectIdUtils.toObjectId(user.sub),
+      ...(status !== undefined ? { status } : {}),
+      ...(tags !== undefined ? { tags } : !id ? { tags: [] } : {}),
+      ...(publishAt !== undefined
+        ? { publishAt: publishAt ? new Date(publishAt) : null }
+        : !id
+          ? { publishAt: null }
+          : {}),
+      ...(expireAt !== undefined
+        ? { expireAt: expireAt ? new Date(expireAt) : null }
+        : !id
+          ? { expireAt: null }
+          : {}),
+      ...(thumbnail !== undefined ? { thumbnail: thumbnail ?? null } : {}),
+      ...(gallery !== undefined
+        ? { gallery: gallery ?? [] }
+        : !id
+          ? { gallery: [] }
+          : {}),
+      ...(mappedCollections !== undefined
+        ? { collections: mappedCollections }
+        : !id
+          ? { collections: [] }
+          : {}),
+      ...(mappedVariants !== undefined
+        ? { variants: mappedVariants }
+        : !id
+          ? { variants: [] }
+          : {}),
+      ...(defaultCurrency !== undefined
+        ? { defaultCurrency }
+        : !id
+          ? { defaultCurrency: "EUR" }
+          : {}),
+    };
 
     let product: Product;
 
@@ -202,7 +237,7 @@ export class ProductsService {
     } else {
       const createDoc: Record<string, unknown> = {
         ...baseData,
-        createdBy: this.toObjectId(user.sub),
+        createdBy: ObjectIdUtils.toObjectId(user.sub),
         translations: {
           [language]: translationData,
         },
@@ -229,23 +264,72 @@ export class ProductsService {
     return this.upsertProduct(id, dto, user);
   }
 
-  async findAll(): Promise<ProductResponseModel[]> {
-    const products = await this.productModel
-      .find()
-      .sort({ updatedAt: -1 })
-      .exec();
+  async countProducts(
+    filters?: Record<string, string>,
+    language = "en"
+  ): Promise<number> {
+    try {
+      const query = this.buildProductQuery(filters, language);
+      return await this.productModel.countDocuments(query).exec();
+    } catch (error) {
+      this.logger.error(error);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to count products. ${message}`);
+    }
+  }
 
-    return Promise.all(products.map((product) => this.buildResponse(product)));
+  async findProducts(
+    skip = 0,
+    take?: number,
+    sort?: Record<string, 1 | -1>,
+    filters?: Record<string, string>,
+    language = "en"
+  ): Promise<ProductResponseModel[]> {
+    try {
+      const query = this.buildProductQuery(filters, language);
+      const mongooseQuery = this.productModel
+        .find(query)
+        .sort(sort ?? { updatedAt: -1 })
+        .skip(skip);
+
+      if (typeof take === "number" && take > 0) {
+        mongooseQuery.limit(take);
+      }
+
+      const products = await mongooseQuery.exec();
+
+      return Promise.all(
+        products.map((product) => this.buildResponse(product))
+      );
+    } catch (error) {
+      this.logger.error(error);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to fetch products. ${message}`);
+    }
+  }
+
+  async findAll(): Promise<ProductResponseModel[]> {
+    return this.findProducts(0, undefined, { updatedAt: -1 });
   }
 
   async findOne(id: string): Promise<ProductResponseModel> {
-    const product = await this.productModel.findById(id).exec();
+    try {
+      const product = await this.productModel.findById(id).exec();
 
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${id} not found`);
+      }
+
+      return this.buildResponse(product);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      this.logger.error(error);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to fetch product. ${message}`);
     }
-
-    return this.buildResponse(product);
   }
 
   async remove(id: string): Promise<void> {
