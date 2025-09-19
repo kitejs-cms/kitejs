@@ -1,12 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, Types } from "mongoose";
-
+import { FilterQuery, Model } from "mongoose";
+import { ObjectIdUtils } from "@kitejs-cms/core";
 import { Order, OrderDocument } from "./schemas/order.schema";
 import { OrderItem } from "./schemas/order-item.schema";
 import { OrderAddress } from "./schemas/order-address.schema";
@@ -17,6 +11,12 @@ import { PaymentStatus } from "./models/payment-status.enum";
 import { FulfillmentStatus } from "./models/fulfillment-status.enum";
 import { OrderItemDto } from "./dto/order-item.dto";
 import { OrderAddressDto } from "./dto/order-address.dto";
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 
 import type { OrderResponseModel } from "./models/order-response.model";
 import type { OrderItemResponseModel } from "./models/order-item-response.model";
@@ -29,14 +29,6 @@ export class OrdersService {
   constructor(
     @InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>
   ) {}
-
-  private toObjectId(id: string): Types.ObjectId {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`Invalid identifier provided: ${id}`);
-    }
-
-    return new Types.ObjectId(id);
-  }
 
   private mapAddress(address?: OrderAddressDto): OrderAddress | undefined {
     if (!address) {
@@ -59,13 +51,18 @@ export class OrdersService {
 
   private mapOrderItems(items: OrderItemDto[]): OrderItem[] {
     return items.map((item) => ({
+      id: item.id,
       title: item.title,
       variantTitle: item.variantTitle,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
       currencyCode: item.currencyCode,
-      productId: item.productId ? this.toObjectId(item.productId) : undefined,
-      variantId: item.variantId ? this.toObjectId(item.variantId) : undefined,
+      productId: item.productId
+        ? ObjectIdUtils.toObjectId(item.productId)
+        : undefined,
+      variantId: item.variantId
+        ? ObjectIdUtils.toObjectId(item.variantId)
+        : undefined,
       sku: item.sku,
       total: item.quantity * item.unitPrice,
     }));
@@ -96,8 +93,14 @@ export class OrdersService {
       return {};
     }
 
-    const { search, status, paymentStatus, fulfillmentStatus, customerId, tags } =
-      filters;
+    const {
+      search,
+      status,
+      paymentStatus,
+      fulfillmentStatus,
+      customerId,
+      tags,
+    } = filters;
 
     const tagValues = tags
       ?.split(",")
@@ -114,7 +117,7 @@ export class OrdersService {
       ...(fulfillmentStatus
         ? { fulfillmentStatus: fulfillmentStatus as FulfillmentStatus }
         : {}),
-      ...(customerId ? { customer: this.toObjectId(customerId) } : {}),
+      ...(customerId ? { customer: ObjectIdUtils.toObjectId(customerId) } : {}),
       ...(tagValues?.length
         ? ({ tags: { $in: tagValues } } as FilterQuery<OrderDocument>)
         : {}),
@@ -130,48 +133,37 @@ export class OrdersService {
     };
   }
 
-  private buildResponse(order: OrderDocument): OrderResponseModel {
-    const rawCustomer = order.customer as Types.ObjectId | User | undefined;
-    let customerId: string | undefined;
-    let customerData: Record<string, unknown> | undefined;
-
-    if (rawCustomer instanceof Types.ObjectId) {
-      customerId = rawCustomer.toString();
-    } else if (rawCustomer) {
-      customerId = rawCustomer._id?.toString();
-      customerData =
-        typeof (rawCustomer as User).toJSON === "function"
-          ? ((rawCustomer as User).toJSON() as Record<string, unknown>)
-          : ({ ...(rawCustomer as Record<string, unknown>) } as Record<
-              string,
-              unknown
-            >);
-    }
-
+  private buildResponse(
+    order: OrderDocument & { customer?: User }
+  ): OrderResponseModel {
     const json = order.toJSON();
 
-    const items: OrderItemResponseModel[] = order.items.map((item) => ({
-      id: item._id?.toString(),
-      title: item.title,
-      variantTitle: item.variantTitle,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      currencyCode: item.currencyCode,
-      productId: item.productId ? item.productId.toString() : undefined,
-      variantId: item.variantId ? item.variantId.toString() : undefined,
-      sku: item.sku,
-      total: item.total,
-    }));
+    const items: OrderItemResponseModel[] = order.items.map(
+      (item: OrderItem) => ({
+        id: item.id,
+        title: item.title,
+        variantTitle: item.variantTitle,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        currencyCode: item.currencyCode,
+        productId: item.productId ? item.productId.toString() : undefined,
+        variantId: item.variantId ? item.variantId.toString() : undefined,
+        sku: item.sku,
+        total: item.total,
+      })
+    );
 
     return {
-      id: order._id.toString(),
+      id: order.id,
       orderNumber: order.orderNumber,
       status: order.status,
       paymentStatus: order.paymentStatus,
       fulfillmentStatus: order.fulfillmentStatus,
       currencyCode: order.currencyCode,
-      customerId,
-      customer: customerData,
+      customerId: order.customer ? order.customer.id : null,
+      customer: order.customer
+        ? `${order.customer.firstName} ${order.customer.lastName}`
+        : null,
       email: order.email,
       billingAddress: json.billingAddress,
       shippingAddress: json.shippingAddress,
@@ -204,24 +196,21 @@ export class OrdersService {
 
   async findOrders(
     skip = 0,
-    take?: number,
+    limit = 10,
     sort?: Record<string, 1 | -1>,
     filters?: Record<string, string>
   ): Promise<OrderResponseModel[]> {
     try {
       const query = this.buildOrderQuery(filters);
-      const mongooseQuery = this.orderModel
-        .find(query)
+      const orders = await this.orderModel
+        .find<Order & { customer: User }>(query)
         .populate<{ customer?: User }>("customer")
         .sort(sort ?? { createdAt: -1 })
-        .skip(skip);
+        .skip(skip)
+        .limit(limit)
+        .exec();
 
-      if (typeof take === "number" && take > 0) {
-        mongooseQuery.limit(take);
-      }
-
-      const orders = await mongooseQuery.exec();
-      return orders.map((order) => this.buildResponse(order));
+      return orders.map((order) => this.buildResponse(order as never));
     } catch (error) {
       this.logger.error(error);
       const message = error instanceof Error ? error.message : String(error);
@@ -240,7 +229,7 @@ export class OrdersService {
         throw new NotFoundException(`Order with ID ${id} not found`);
       }
 
-      return this.buildResponse(order);
+      return this.buildResponse(order as never);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -273,7 +262,7 @@ export class OrdersService {
           dto.fulfillmentStatus ?? FulfillmentStatus.Unfulfilled,
         currencyCode: dto.currencyCode,
         customer: dto.customerId
-          ? this.toObjectId(dto.customerId)
+          ? ObjectIdUtils.toObjectId(dto.customerId)
           : undefined,
         email: dto.email,
         billingAddress: this.mapAddress(dto.billingAddress),
@@ -291,7 +280,7 @@ export class OrdersService {
         cancelledAt: dto.cancelledAt ? new Date(dto.cancelledAt) : undefined,
       });
 
-      return this.findOrderById(order._id.toString());
+      return this.findOrderById(order.id);
     } catch (error) {
       this.logger.error(error);
       const message = error instanceof Error ? error.message : String(error);
@@ -299,10 +288,7 @@ export class OrdersService {
     }
   }
 
-  async update(
-    id: string,
-    dto: UpdateOrderDto
-  ): Promise<OrderResponseModel> {
+  async update(id: string, dto: UpdateOrderDto): Promise<OrderResponseModel> {
     try {
       const order = await this.orderModel.findById(id).exec();
 
@@ -310,9 +296,7 @@ export class OrdersService {
         throw new NotFoundException(`Order with ID ${id} not found`);
       }
 
-      const items = dto.items
-        ? this.mapOrderItems(dto.items)
-        : order.items;
+      const items = dto.items ? this.mapOrderItems(dto.items) : order.items;
       const shippingTotal = dto.shippingTotal ?? order.shippingTotal;
       const taxTotal = dto.taxTotal ?? order.taxTotal;
       const discountTotal = dto.discountTotal ?? order.discountTotal;
@@ -325,7 +309,9 @@ export class OrdersService {
       );
 
       const updatePayload: Partial<Order> = {
-        ...(dto.orderNumber !== undefined ? { orderNumber: dto.orderNumber } : {}),
+        ...(dto.orderNumber !== undefined
+          ? { orderNumber: dto.orderNumber }
+          : {}),
         ...(dto.status !== undefined ? { status: dto.status } : {}),
         ...(dto.paymentStatus !== undefined
           ? { paymentStatus: dto.paymentStatus }
@@ -339,7 +325,7 @@ export class OrdersService {
         ...(dto.customerId !== undefined
           ? {
               customer: dto.customerId
-                ? this.toObjectId(dto.customerId)
+                ? ObjectIdUtils.toObjectId(dto.customerId)
                 : undefined,
             }
           : {}),
@@ -362,7 +348,11 @@ export class OrdersService {
           ? { paidAt: dto.paidAt ? new Date(dto.paidAt) : undefined }
           : {}),
         ...(dto.fulfilledAt !== undefined
-          ? { fulfilledAt: dto.fulfilledAt ? new Date(dto.fulfilledAt) : undefined }
+          ? {
+              fulfilledAt: dto.fulfilledAt
+                ? new Date(dto.fulfilledAt)
+                : undefined,
+            }
           : {}),
         ...(dto.cancelledAt !== undefined
           ? {
@@ -377,7 +367,7 @@ export class OrdersService {
 
       await order.save();
 
-      return this.findOrderById(order._id.toString());
+      return this.findOrderById(order.id);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

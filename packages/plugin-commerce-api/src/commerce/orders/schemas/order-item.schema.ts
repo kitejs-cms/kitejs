@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Schema as SchemaDb, Types } from "mongoose";
 
-@Schema({ _id: true })
+@Schema({ _id: true, toJSON: { getters: true } })
 export class OrderItem {
+  id: string;
+
   @Prop({ type: String, required: true })
   title!: string;
 

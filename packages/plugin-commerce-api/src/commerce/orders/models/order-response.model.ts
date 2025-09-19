@@ -12,7 +12,7 @@ export type OrderResponseModel = {
   fulfillmentStatus: FulfillmentStatus;
   currencyCode: string;
   customerId?: string;
-  customer?: Record<string, unknown>;
+  customer?: string;
   email?: string;
   billingAddress?: OrderAddressModel;
   shippingAddress?: OrderAddressModel;

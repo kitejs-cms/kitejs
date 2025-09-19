@@ -14,9 +14,9 @@ import {
 import { OrderAddressDto } from "./order-address.dto";
 import { OrderItemResponseDto } from "./order-item-response.dto";
 import { FulfillmentStatus } from "../models/fulfillment-status.enum";
-import type { OrderResponseModel } from "../models/order-response.model";
 import { OrderStatus } from "../models/order-status.enum";
 import { PaymentStatus } from "../models/payment-status.enum";
+import type { OrderResponseModel } from "../models/order-response.model";
 
 export class OrderResponseDto implements OrderResponseModel {
   @ApiProperty()
@@ -51,7 +51,7 @@ export class OrderResponseDto implements OrderResponseModel {
   @ApiPropertyOptional({ type: Object })
   @IsOptional()
   @IsObject()
-  customer?: Record<string, unknown>;
+  customer?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -137,33 +137,6 @@ export class OrderResponseDto implements OrderResponseModel {
   updatedAt: Date;
 
   constructor(model: OrderResponseModel) {
-    this.id = model.id;
-    this.orderNumber = model.orderNumber;
-    this.status = model.status;
-    this.paymentStatus = model.paymentStatus;
-    this.fulfillmentStatus = model.fulfillmentStatus;
-    this.currencyCode = model.currencyCode;
-    this.customerId = model.customerId;
-    this.customer = model.customer;
-    this.email = model.email;
-    this.billingAddress = model.billingAddress
-      ? new OrderAddressDto(model.billingAddress)
-      : undefined;
-    this.shippingAddress = model.shippingAddress
-      ? new OrderAddressDto(model.shippingAddress)
-      : undefined;
-    this.items = model.items.map((item) => new OrderItemResponseDto(item));
-    this.subtotal = model.subtotal;
-    this.shippingTotal = model.shippingTotal;
-    this.taxTotal = model.taxTotal;
-    this.discountTotal = model.discountTotal;
-    this.total = model.total;
-    this.notes = model.notes;
-    this.tags = model.tags;
-    this.paidAt = model.paidAt;
-    this.fulfilledAt = model.fulfilledAt;
-    this.cancelledAt = model.cancelledAt;
-    this.createdAt = model.createdAt;
-    this.updatedAt = model.updatedAt;
+    Object.assign(this, model);
   }
 }

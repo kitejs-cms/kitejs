@@ -13,7 +13,7 @@ import { ProductPriceDto } from "./dto/product-price.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { ProductStatus } from "./models/product-status.enum";
 import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
-import { SlugRegistryService } from "@kitejs-cms/core";
+import { SlugRegistryService, ObjectIdUtils } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
 import type { ProductResponseModel } from "./models/product-response.model";
 
@@ -47,7 +47,9 @@ export class ProductsService {
 
     return {
       ...(status ? { status: status as ProductStatus } : {}),
-      ...(collectionId ? { collections: this.toObjectId(collectionId) } : {}),
+      ...(collectionId
+        ? { collections: ObjectIdUtils.toObjectId(collectionId) }
+        : {}),
       ...(tagValues?.length
         ? ({ tags: { $in: tagValues } } as FilterQuery<ProductDocument>)
         : {}),
@@ -85,19 +87,13 @@ export class ProductsService {
     };
   }
 
-  private toObjectId(id: string): Types.ObjectId {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`Invalid identifier provided: ${id}`);
-    }
-
-    return new Types.ObjectId(id);
-  }
-
   private mapCollectionIds(
     collectionIds?: string[]
   ): Types.ObjectId[] | undefined {
     if (collectionIds === undefined) return undefined;
-    return collectionIds.filter(Boolean).map((id) => this.toObjectId(id));
+    return collectionIds
+      .filter(Boolean)
+      .map((id) => ObjectIdUtils.toObjectId(id));
   }
 
   private mapVariantPrices(prices?: ProductPriceDto[]) {
@@ -111,7 +107,7 @@ export class ProductsService {
   private mapVariants(variants?: ProductVariantDto[]) {
     if (variants === undefined) return undefined;
     return variants.map((variant) => ({
-      ...(variant.id ? { _id: this.toObjectId(variant.id) } : {}),
+      ...(variant.id ? { _id: ObjectIdUtils.toObjectId(variant.id) } : {}),
       title: variant.title,
       sku: variant.sku,
       barcode: variant.barcode,
@@ -187,40 +183,40 @@ export class ProductsService {
     const mappedVariants = this.mapVariants(variants);
 
     const baseData: Record<string, unknown> = {
-      updatedBy: this.toObjectId(user.sub),
+      updatedBy: ObjectIdUtils.toObjectId(user.sub),
       ...(status !== undefined ? { status } : {}),
       ...(tags !== undefined ? { tags } : !id ? { tags: [] } : {}),
       ...(publishAt !== undefined
         ? { publishAt: publishAt ? new Date(publishAt) : null }
         : !id
-        ? { publishAt: null }
-        : {}),
+          ? { publishAt: null }
+          : {}),
       ...(expireAt !== undefined
         ? { expireAt: expireAt ? new Date(expireAt) : null }
         : !id
-        ? { expireAt: null }
-        : {}),
+          ? { expireAt: null }
+          : {}),
       ...(thumbnail !== undefined ? { thumbnail: thumbnail ?? null } : {}),
       ...(gallery !== undefined
         ? { gallery: gallery ?? [] }
         : !id
-        ? { gallery: [] }
-        : {}),
+          ? { gallery: [] }
+          : {}),
       ...(mappedCollections !== undefined
         ? { collections: mappedCollections }
         : !id
-        ? { collections: [] }
-        : {}),
+          ? { collections: [] }
+          : {}),
       ...(mappedVariants !== undefined
         ? { variants: mappedVariants }
         : !id
-        ? { variants: [] }
-        : {}),
+          ? { variants: [] }
+          : {}),
       ...(defaultCurrency !== undefined
         ? { defaultCurrency }
         : !id
-        ? { defaultCurrency: "EUR" }
-        : {}),
+          ? { defaultCurrency: "EUR" }
+          : {}),
     };
 
     let product: Product;
@@ -241,7 +237,7 @@ export class ProductsService {
     } else {
       const createDoc: Record<string, unknown> = {
         ...baseData,
-        createdBy: this.toObjectId(user.sub),
+        createdBy: ObjectIdUtils.toObjectId(user.sub),
         translations: {
           [language]: translationData,
         },
@@ -302,7 +298,9 @@ export class ProductsService {
 
       const products = await mongooseQuery.exec();
 
-      return Promise.all(products.map((product) => this.buildResponse(product)));
+      return Promise.all(
+        products.map((product) => this.buildResponse(product))
+      );
     } catch (error) {
       this.logger.error(error);
       const message = error instanceof Error ? error.message : String(error);

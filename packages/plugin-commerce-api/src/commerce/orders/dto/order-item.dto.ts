@@ -1,9 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsString, IsOptional, IsNumber } from "class-validator";
+import { IsString, IsOptional, IsNumber, IsMongoId } from "class-validator";
 import type { OrderItemModel } from "../models/order-item.model";
 
 export class OrderItemDto implements OrderItemModel {
+  @IsMongoId()
+  @ApiProperty()
+  id: string;
+
   @ApiProperty()
   @IsString()
   title: string;
