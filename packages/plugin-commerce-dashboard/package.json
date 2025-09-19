@@ -1,0 +1,58 @@
+{
+  "name": "@kitejs-cms/plugin-commerce-dashboard",
+  "version": "0.0.1-alpha.6",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./*": {
+      "import": "./dist/*.js",
+      "require": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
+  },
+  "scripts": {
+    "build:ts": "tsc -b",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css",
+    "build": "pnpm run build:ts && pnpm run build:css",
+    "dev": "pnpm run dev:ts & pnpm run dev:css",
+    "dev:ts": "tsc -b --watch",
+    "dev:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "prepublishOnly": "pnpm run build"
+  },
+  "peerDependencies": {
+    "@kitejs-cms/dashboard-core": "workspace:*",
+    "react": "^18.2.0 || ^19.0.0",
+    "react-dom": "^18.2.0 || ^19.0.0",
+    "react-i18next": "^15.4.1",
+    "react-router-dom": "^7.2.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.475.0"
+  },
+  "devDependencies": {
+    "@kitejs-cms/plugin-commerce-api": "workspace:*",
+    "@kitejs-cms/core": "workspace:*",
+    "@kitejs-cms/eslint-config": "workspace:*",
+    "@kitejs-cms/typescript-config": "workspace:*",
+    "@types/react": "19.0.8",
+    "@types/react-dom": "19.0.3",
+    "eslint": "^9.20.0",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "5.7.3"
+  }
+}

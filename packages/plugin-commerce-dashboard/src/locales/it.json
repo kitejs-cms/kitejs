@@ -1,0 +1,168 @@
+{
+  "common": {
+    "back": "Indietro"
+  },
+  "menu": {
+    "commerce": "E-commerce",
+    "products": "Prodotti",
+    "orders": "Ordini"
+  },
+  "breadcrumb": {
+    "home": "Bacheca",
+    "products": "Prodotti",
+    "orders": "Ordini"
+  },
+  "settings": {
+    "description": "Configura il comportamento del plugin commerce e personalizza il modello dati.",
+    "general": "Impostazioni commerce",
+    "actions": {
+      "save": "Salva modifiche"
+    },
+    "sections": {
+      "general": {
+        "title": "Preferenze negozio",
+        "description": "Valuta predefinita e opzioni di checkout utilizzate nell'interfaccia."
+      },
+      "productFields": {
+        "title": "Campi personalizzati prodotto",
+        "description": "Estendi lo schema base del prodotto con attributi aggiuntivi."
+      },
+      "addressFields": {
+        "title": "Campi indirizzi cliente",
+        "description": "Raccogli informazioni extra per fatturazione e spedizione."
+      }
+    },
+    "fields": {
+      "defaultCurrency": {
+        "label": "Valuta predefinita",
+        "description": "Utilizzata come valuta proposta durante la creazione di nuovi prodotti."
+      },
+      "allowGuestCheckout": {
+        "label": "Checkout ospite",
+        "title": "Consenti checkout ospite",
+        "description": "Permetti ai clienti di completare l'ordine senza creare un account."
+      },
+      "taxInclusivePricing": {
+        "label": "Prezzi IVA inclusa",
+        "title": "Prezzi comprensivi di tasse",
+        "description": "Mostra i prezzi dei prodotti includendo le imposte per impostazione predefinita."
+      }
+    }
+  },
+  "products": {
+    "pageTitle": "Prodotti",
+    "pageDescription": "Gestisci catalogo, prezzi e disponibilità.",
+    "actions": {
+      "refresh": "Aggiorna",
+      "create": "Nuovo prodotto"
+    },
+    "emptyState": {
+      "title": "Nessun prodotto",
+      "description": "Inizia a costruire il catalogo creando il primo prodotto."
+    },
+    "table": {
+      "columns": {
+        "name": "Nome",
+        "status": "Stato",
+        "currency": "Valuta",
+        "updatedAt": "Ultimo aggiornamento"
+      },
+      "untitled": "Prodotto senza titolo"
+    },
+    "status": {
+      "draft": "Bozza",
+      "active": "Attivo",
+      "archived": "Archiviato"
+    },
+    "details": {
+      "title": "Dettagli prodotto",
+      "description": "Consulta configurazione e localizzazioni del prodotto.",
+      "breadcrumb": "Dettagli prodotto",
+      "generalInformation": "Informazioni generali",
+      "status": "Stato",
+      "currency": "Valuta predefinita",
+      "publishAt": "Pubblicazione programmata",
+      "expireAt": "Scadenza programmata",
+      "contentSection": "Contenuti",
+      "noSummary": "Nessun riassunto disponibile per questa lingua.",
+      "slug": "Slug",
+      "additionalInformation": "Informazioni aggiuntive",
+      "tags": "Tag",
+      "media": "Media",
+      "galleryCount": "{{count}} elementi in galleria",
+      "updatedAt": "Ultimo aggiornamento"
+    },
+    "create": {
+      "title": "Crea prodotto",
+      "description": "L'editor visuale per i prodotti sarà disponibile a breve.",
+      "helper": "Nel frattempo puoi creare prodotti tramite API oppure integrare un editor personalizzato.",
+      "breadcrumb": "Crea prodotto"
+    }
+  },
+  "orders": {
+    "pageTitle": "Ordini",
+    "pageDescription": "Monitora evasioni, pagamenti e informazioni cliente.",
+    "actions": {
+      "refresh": "Aggiorna"
+    },
+    "emptyState": {
+      "title": "Nessun ordine",
+      "description": "Gli ordini appariranno qui non appena i clienti inizieranno ad acquistare."
+    },
+    "table": {
+      "columns": {
+        "number": "Ordine",
+        "status": "Stato",
+        "payment": "Pagamento",
+        "total": "Totale",
+        "updatedAt": "Ultimo aggiornamento"
+      }
+    },
+    "status": {
+      "pending": "In attesa",
+      "processing": "In elaborazione",
+      "completed": "Completato",
+      "cancelled": "Annullato"
+    },
+    "paymentStatus": {
+      "awaiting": "In attesa di pagamento",
+      "authorized": "Autorizzato",
+      "paid": "Pagato",
+      "partially_refunded": "Parzialmente rimborsato",
+      "refunded": "Rimborsato"
+    },
+    "fulfillmentStatus": {
+      "unfulfilled": "Da evadere",
+      "partially_fulfilled": "Parzialmente evaso",
+      "fulfilled": "Evaso",
+      "returned": "Reso",
+      "cancelled": "Annullato"
+    },
+    "details": {
+      "title": "Ordine {{number}}",
+      "description": "Panoramica su tempistiche e totali dell'ordine.",
+      "breadcrumb": "Dettagli ordine",
+      "status": "Stato ordine",
+      "paymentStatus": "Stato pagamento",
+      "fulfillmentStatus": "Stato evasione",
+      "lastUpdate": "Ultimo aggiornamento",
+      "subtotal": "Subtotale",
+      "shipping": "Spedizione",
+      "tax": "Imposte",
+      "discount": "Sconto",
+      "total": "Totale",
+      "billingAddress": "Indirizzo di fatturazione",
+      "shippingAddress": "Indirizzo di spedizione",
+      "items": "Articoli ordine",
+      "notes": "Note interne"
+    },
+    "items": {
+      "columns": {
+        "title": "Articolo",
+        "variant": "Variante",
+        "quantity": "Qt",
+        "total": "Totale"
+      }
+    }
+  }
+}

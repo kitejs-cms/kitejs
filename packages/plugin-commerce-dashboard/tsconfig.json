@@ -1,0 +1,29 @@
+{
+  "extends": "@kitejs-cms/typescript-config/react-library.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "strictPropertyInitialization": false,
+    "isolatedModules": false,
+    "skipLibCheck": true,
+    "module": "ES2022",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "paths": {
+      "@kitejs-cms/dashboard-core": ["../dashboard-core/src"],
+      "@kitejs-cms/dashboard-core/*": ["../dashboard-core/src/*"],
+      "@kitejs-cms/plugin-commerce-api": ["../plugin-commerce-api/src"],
+      "@kitejs-cms/plugin-commerce-api/*": ["../plugin-commerce-api/src/*"],
+      "@kitejs-cms/core": ["../core/src"],
+      "@kitejs-cms/core/*": ["../core/src/*"],
+      "@kitejs-cms/dashboard-core/components/*": [
+        "../dashboard-core/src/components/*"
+      ]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
