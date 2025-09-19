@@ -75,6 +75,7 @@
     "sections": {
       "details": "Details",
       "settings": "Settings",
+      "seo": "SEO",
       "meta": "Metadata"
     },
     "buttons": {
@@ -106,6 +107,12 @@
     "meta": {
       "created": "Created",
       "updated": "Last updated"
+    },
+    "seo": {
+      "metaTitle": "Meta title",
+      "metaDescription": "Meta description",
+      "metaKeywords": "Meta keywords",
+      "canonicalUrl": "Canonical URL"
     },
     "details": {
       "title": "Collection details",

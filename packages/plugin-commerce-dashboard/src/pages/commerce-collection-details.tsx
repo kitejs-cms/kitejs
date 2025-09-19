@@ -26,10 +26,18 @@ import {
 import { FileJson, Save } from "lucide-react";
 import { CollectionLanguageTabs } from "../components/collection-language-tabs";
 
+interface CollectionSeo {
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
+  canonicalUrl?: string;
+}
+
 interface CollectionTranslation {
   title?: string;
   description?: string;
   slug?: string;
+  seo?: CollectionSeo;
 }
 
 type CollectionStatus = "Draft" | "Published" | "Archived";
@@ -70,6 +78,24 @@ function toIsoString(value: string) {
   return date.toISOString();
 }
 
+function createEmptySeo(): CollectionSeo {
+  return {
+    metaTitle: "",
+    metaDescription: "",
+    metaKeywords: [],
+    canonicalUrl: "",
+  };
+}
+
+function createEmptyTranslation(): CollectionTranslation {
+  return {
+    title: "",
+    slug: "",
+    description: "",
+    seo: createEmptySeo(),
+  };
+}
+
 export function CommerceCollectionDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
@@ -107,11 +133,8 @@ export function CommerceCollectionDetailsPage() {
 
   const languages = useMemo(() => Object.keys(translations), [translations]);
 
-  const currentTranslation = translations[activeLanguage] ?? {
-    title: "",
-    slug: "",
-    description: "",
-  };
+  const currentTranslation = translations[activeLanguage] ?? createEmptyTranslation();
+  const currentSeo = currentTranslation.seo ?? createEmptySeo();
 
   const resolveTitle = useMemo(() => {
     const fallbackTitle = t("collections.details.breadcrumb");
@@ -154,11 +177,24 @@ export function CommerceCollectionDetailsPage() {
       setExpireAt(toDateInputValue(data.expireAt));
 
       const normalized: Record<string, CollectionTranslation> = {};
-      Object.entries(data.translations ?? {}).forEach(([language, value]) => {
+      const translationEntries = Object.entries(
+        data.translations ?? {}
+      ) as Array<[string, CollectionTranslation]>;
+      translationEntries.forEach(([language, value]) => {
+        const seo = value?.seo ?? {};
+        const keywords = Array.isArray(seo?.metaKeywords)
+          ? seo.metaKeywords.filter((keyword): keyword is string => Boolean(keyword))
+          : [];
         normalized[language] = {
           title: value?.title ?? "",
           description: value?.description ?? "",
           slug: value?.slug ?? data.slugs?.[language] ?? "",
+          seo: {
+            metaTitle: seo?.metaTitle ?? "",
+            metaDescription: seo?.metaDescription ?? "",
+            metaKeywords: keywords,
+            canonicalUrl: seo?.canonicalUrl ?? "",
+          },
         };
       });
       setTranslations(normalized);
@@ -177,7 +213,7 @@ export function CommerceCollectionDetailsPage() {
     if (isCreating && languages.length === 0) {
       const defaultLanguage = cmsSettings?.defaultLanguage ?? "en";
       setTranslations({
-        [defaultLanguage]: { title: "", slug: "", description: "" },
+        [defaultLanguage]: createEmptyTranslation(),
       });
       setActiveLanguage(defaultLanguage);
       setStatus("Draft");
@@ -191,7 +227,7 @@ export function CommerceCollectionDetailsPage() {
   const handleAddLanguage = (language: string) => {
     setTranslations((prev) => ({
       ...prev,
-      [language]: { title: "", slug: "", description: "" },
+      [language]: createEmptyTranslation(),
     }));
     setActiveLanguage(language);
     setDirty(true);
@@ -199,7 +235,7 @@ export function CommerceCollectionDetailsPage() {
 
   const handleTitleChange = (value: string) => {
     setTranslations((prev) => {
-      const current = prev[activeLanguage] ?? { title: "", slug: "", description: "" };
+      const current = prev[activeLanguage] ?? createEmptyTranslation();
       const nextSlug = current.slug?.trim() ? current.slug : generateSlug(value);
       return {
         ...prev,
@@ -213,17 +249,56 @@ export function CommerceCollectionDetailsPage() {
     setDirty(true);
   };
 
-  const handleTranslationChange = <K extends keyof CollectionTranslation>(
+  const handleTranslationChange = <
+    K extends "title" | "slug" | "description"
+  >(
     field: K,
     value: CollectionTranslation[K]
   ) => {
-    setTranslations((prev) => ({
-      ...prev,
-      [activeLanguage]: {
-        ...(prev[activeLanguage] ?? { title: "", slug: "", description: "" }),
-        [field]: value ?? "",
-      },
-    }));
+    setTranslations((prev) => {
+      const current = prev[activeLanguage] ?? createEmptyTranslation();
+      const nextValue =
+        typeof value === "string" ? (value as CollectionTranslation[K]) : ("" as CollectionTranslation[K]);
+      return {
+        ...prev,
+        [activeLanguage]: {
+          ...current,
+          [field]: nextValue,
+        },
+      };
+    });
+    setDirty(true);
+  };
+
+  const handleSeoChange = <K extends keyof CollectionSeo>(
+    field: K,
+    value: CollectionSeo[K]
+  ) => {
+    setTranslations((prev) => {
+      const current = prev[activeLanguage] ?? createEmptyTranslation();
+      const currentSeo = current.seo ?? createEmptySeo();
+      let nextValue: CollectionSeo[K];
+      if (Array.isArray(value)) {
+        nextValue = [...value] as CollectionSeo[K];
+      } else if (typeof value === "string") {
+        nextValue = value as CollectionSeo[K];
+      } else {
+        nextValue = (field === "metaKeywords"
+          ? ([] as unknown as CollectionSeo[K])
+          : ("" as CollectionSeo[K]));
+      }
+
+      return {
+        ...prev,
+        [activeLanguage]: {
+          ...current,
+          seo: {
+            ...currentSeo,
+            [field]: nextValue,
+          },
+        },
+      };
+    });
     setDirty(true);
   };
 
@@ -238,6 +313,11 @@ export function CommerceCollectionDetailsPage() {
       return;
     }
 
+    const seo = translation.seo ?? createEmptySeo();
+    const sanitizedKeywords = (seo.metaKeywords ?? [])
+      .map((keyword) => keyword.trim())
+      .filter((keyword) => keyword.length > 0);
+
     const payload = {
       id: collection?.id,
       language: activeLanguage,
@@ -248,6 +328,12 @@ export function CommerceCollectionDetailsPage() {
       tags,
       publishAt: toIsoString(publishAt),
       expireAt: toIsoString(expireAt),
+      seo: {
+        metaTitle: seo.metaTitle?.trim() || undefined,
+        metaDescription: seo.metaDescription?.trim() || undefined,
+        metaKeywords: sanitizedKeywords.length > 0 ? sanitizedKeywords : undefined,
+        canonicalUrl: seo.canonicalUrl?.trim() || undefined,
+      },
     };
 
     const { data: savedCollection, error: saveError } = await upsertCollection(
@@ -267,11 +353,24 @@ export function CommerceCollectionDetailsPage() {
     setExpireAt(toDateInputValue(savedCollection.expireAt));
 
     const normalized: Record<string, CollectionTranslation> = {};
-    Object.entries(savedCollection.translations ?? {}).forEach(([language, value]) => {
+    const savedEntries = Object.entries(
+      savedCollection.translations ?? {}
+    ) as Array<[string, CollectionTranslation]>;
+    savedEntries.forEach(([language, value]) => {
+      const seoValue = value?.seo ?? {};
+      const keywords = Array.isArray(seoValue?.metaKeywords)
+        ? seoValue.metaKeywords.filter((keyword): keyword is string => Boolean(keyword))
+        : [];
       normalized[language] = {
         title: value?.title ?? "",
         description: value?.description ?? "",
         slug: value?.slug ?? savedCollection.slugs?.[language] ?? "",
+        seo: {
+          metaTitle: seoValue?.metaTitle ?? "",
+          metaDescription: seoValue?.metaDescription ?? "",
+          metaKeywords: keywords,
+          canonicalUrl: seoValue?.canonicalUrl ?? "",
+        },
       };
     });
     setTranslations(normalized);
@@ -385,6 +484,63 @@ export function CommerceCollectionDetailsPage() {
                     key={tags.join(",")}
                     initialTags={tags}
                     onChange={handleTagsChange}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="w-full gap-0 py-0 shadow-neutral-50">
+              <CardHeader className="rounded-t-xl bg-secondary py-4 md:py-6 text-primary">
+                <CardTitle>{t("collections.sections.seo")}</CardTitle>
+              </CardHeader>
+              <Separator />
+              <CardContent className="space-y-4 p-4 md:p-6">
+                <div>
+                  <Label className="mb-2 block" htmlFor="collection-seo-title">
+                    {t("collections.seo.metaTitle")}
+                  </Label>
+                  <Input
+                    id="collection-seo-title"
+                    value={currentSeo.metaTitle ?? ""}
+                    onChange={(event) =>
+                      handleSeoChange("metaTitle", event.target.value)
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block" htmlFor="collection-seo-description">
+                    {t("collections.seo.metaDescription")}
+                  </Label>
+                  <Textarea
+                    id="collection-seo-description"
+                    value={currentSeo.metaDescription ?? ""}
+                    onChange={(event) =>
+                      handleSeoChange("metaDescription", event.target.value)
+                    }
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block">{t("collections.seo.metaKeywords")}</Label>
+                  <TagsInput
+                    key={(currentSeo.metaKeywords ?? []).join(",")}
+                    initialTags={currentSeo.metaKeywords ?? []}
+                    onChange={(updated) => handleSeoChange("metaKeywords", updated)}
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block" htmlFor="collection-seo-canonical">
+                    {t("collections.seo.canonicalUrl")}
+                  </Label>
+                  <Input
+                    id="collection-seo-canonical"
+                    value={currentSeo.canonicalUrl ?? ""}
+                    onChange={(event) =>
+                      handleSeoChange("canonicalUrl", event.target.value)
+                    }
                   />
                 </div>
               </CardContent>
