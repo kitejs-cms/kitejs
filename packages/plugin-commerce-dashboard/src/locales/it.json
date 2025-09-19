@@ -54,16 +54,38 @@
   "collections": {
     "pageTitle": "Collezioni",
     "pageDescription": "Organizza i prodotti in gruppi tematici per campagne e pagine dedicate.",
-    "actions": {
-      "refresh": "Aggiorna",
-      "create": "Nuova collezione",
-      "search": "Cerca collezioni",
-      "open": "Apri dettagli",
-      "delete": "Elimina"
+    "title": {
+      "manage": "Gestisci collezioni"
     },
-    "emptyState": {
-      "title": "Nessuna collezione",
-      "description": "Crea la prima collezione per organizzare i prodotti nelle campagne e nella navigazione."
+    "search": {
+      "placeholder": "Cerca collezioni..."
+    },
+    "fields": {
+      "title": "Titolo",
+      "languages": "Lingue",
+      "tags": "Tag",
+      "status": "Stato",
+      "publishAt": "Pubblica il",
+      "updatedAt": "Ultimo aggiornamento",
+      "actions": "Azioni",
+      "slug": "Slug",
+      "description": "Descrizione",
+      "expireAt": "Nascondi il"
+    },
+    "sections": {
+      "details": "Dettagli",
+      "settings": "Impostazioni",
+      "meta": "Metadati"
+    },
+    "buttons": {
+      "add": "Aggiungi collezione",
+      "copy": "Copia",
+      "download": "Scarica",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "viewJson": "Mostra JSON",
+      "cancel": "Annulla",
+      "save": "Salva"
     },
     "table": {
       "columns": {
@@ -80,6 +102,10 @@
       "Draft": "Bozza",
       "Published": "Pubblicata",
       "Archived": "Archiviata"
+    },
+    "meta": {
+      "created": "Creato il",
+      "updated": "Aggiornato il"
     },
     "details": {
       "title": "Dettagli collezione",

@@ -1,15 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-  Badge,
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   Input,
+  JsonModal,
   Label,
   Select,
   SelectContent,
@@ -17,13 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
   Separator,
-  Skeleton,
+  SkeletonPage,
+  TagsInput,
   Textarea,
   useApi,
   useBreadcrumb,
   useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
-import { Plus, Save, X } from "lucide-react";
+import { FileJson, Save } from "lucide-react";
 import { CollectionLanguageTabs } from "../components/collection-language-tabs";
 
 interface CollectionTranslation {
@@ -74,6 +74,7 @@ export function CommerceCollectionDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation("commerce");
   const { setBreadcrumb } = useBreadcrumb();
   const { cmsSettings } = useSettingsContext();
@@ -88,31 +89,31 @@ export function CommerceCollectionDetailsPage() {
 
   const [collection, setCollection] = useState<CollectionDetail | null>(null);
   const [translations, setTranslations] = useState<Record<string, CollectionTranslation>>({});
-  const [activeLanguage, setActiveLanguage] = useState<string>(cmsSettings?.defaultLanguage ?? "en");
+  const [activeLanguage, setActiveLanguage] = useState<string>(
+    cmsSettings?.defaultLanguage ?? "en"
+  );
   const [status, setStatus] = useState<CollectionStatus>("Draft");
   const [publishAt, setPublishAt] = useState<string>("");
   const [expireAt, setExpireAt] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState<string>("");
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [jsonView, setJsonView] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   const isCreating = !id || location.pathname.endsWith("/new");
 
-  const availableLanguages = useMemo(() => Object.keys(translations), [translations]);
+  useEffect(() => {
+    if (searchParams.get("view") === "json") setJsonView(true);
+  }, [searchParams]);
 
-  const currentTranslation = useMemo(() => {
-    if (!activeLanguage) return { title: "", slug: "", description: "" };
-    return (
-      translations[activeLanguage] ?? {
-        title: "",
-        slug: "",
-        description: "",
-      }
-    );
-  }, [translations, activeLanguage]);
+  const languages = useMemo(() => Object.keys(translations), [translations]);
 
-  const resolveTitle = useCallback(() => {
+  const currentTranslation = translations[activeLanguage] ?? {
+    title: "",
+    slug: "",
+    description: "",
+  };
+
+  const resolveTitle = useMemo(() => {
     const fallbackTitle = t("collections.details.breadcrumb");
     const translation =
       translations[activeLanguage]?.title?.trim() ||
@@ -133,15 +134,9 @@ export function CommerceCollectionDetailsPage() {
       { label: t("breadcrumb.collections"), path: "/commerce/collections" },
       isCreating
         ? { label: t("collections.create.breadcrumb"), path: location.pathname }
-        : { label: resolveTitle(), path: location.pathname },
+        : { label: resolveTitle, path: location.pathname },
     ]);
-  }, [
-    setBreadcrumb,
-    t,
-    location.pathname,
-    isCreating,
-    resolveTitle,
-  ]);
+  }, [setBreadcrumb, t, location.pathname, isCreating, resolveTitle]);
 
   useEffect(() => {
     if (!isCreating && id) {
@@ -163,8 +158,7 @@ export function CommerceCollectionDetailsPage() {
         normalized[language] = {
           title: value?.title ?? "",
           description: value?.description ?? "",
-          slug:
-            value?.slug ?? data.slugs?.[language] ?? "",
+          slug: value?.slug ?? data.slugs?.[language] ?? "",
         };
       });
       setTranslations(normalized);
@@ -175,11 +169,12 @@ export function CommerceCollectionDetailsPage() {
           ? cmsSettings.defaultLanguage
           : Object.keys(normalized)[0] ?? cmsSettings?.defaultLanguage ?? "en";
       setActiveLanguage(preferredLanguage);
+      setDirty(false);
     }
   }, [fetchedCollection, cmsSettings?.defaultLanguage, i18n.language]);
 
   useEffect(() => {
-    if (isCreating && Object.keys(translations).length === 0) {
+    if (isCreating && languages.length === 0) {
       const defaultLanguage = cmsSettings?.defaultLanguage ?? "en";
       setTranslations({
         [defaultLanguage]: { title: "", slug: "", description: "" },
@@ -189,8 +184,9 @@ export function CommerceCollectionDetailsPage() {
       setTags([]);
       setPublishAt("");
       setExpireAt("");
+      setDirty(false);
     }
-  }, [isCreating, cmsSettings?.defaultLanguage, translations]);
+  }, [isCreating, cmsSettings?.defaultLanguage, languages.length]);
 
   const handleAddLanguage = (language: string) => {
     setTranslations((prev) => ({
@@ -198,6 +194,7 @@ export function CommerceCollectionDetailsPage() {
       [language]: { title: "", slug: "", description: "" },
     }));
     setActiveLanguage(language);
+    setDirty(true);
   };
 
   const handleTitleChange = (value: string) => {
@@ -213,6 +210,7 @@ export function CommerceCollectionDetailsPage() {
         },
       };
     });
+    setDirty(true);
   };
 
   const handleTranslationChange = <K extends keyof CollectionTranslation>(
@@ -226,30 +224,17 @@ export function CommerceCollectionDetailsPage() {
         [field]: value ?? "",
       },
     }));
+    setDirty(true);
   };
 
-  const handleAddTag = () => {
-    const next = tagInput.trim();
-    if (!next) return;
-    if (tags.includes(next)) {
-      setTagInput("");
-      return;
-    }
-    setTags((prev) => [...prev, next]);
-    setTagInput("");
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    setTags((prev) => prev.filter((value) => value !== tag));
+  const handleTagsChange = (updated: string[]) => {
+    setTags(updated);
+    setDirty(true);
   };
 
   const handleSave = async () => {
-    setErrorMessage(null);
-    setSuccessMessage(null);
-
     const translation = translations[activeLanguage];
     if (!translation || !translation.title?.trim() || !translation.slug?.trim()) {
-      setErrorMessage(t("collections.details.notifications.validationError"));
       return;
     }
 
@@ -272,7 +257,6 @@ export function CommerceCollectionDetailsPage() {
     );
 
     if (saveError || !savedCollection) {
-      setErrorMessage(t("collections.details.notifications.error"));
       return;
     }
 
@@ -287,8 +271,7 @@ export function CommerceCollectionDetailsPage() {
       normalized[language] = {
         title: value?.title ?? "",
         description: value?.description ?? "",
-        slug:
-          value?.slug ?? savedCollection.slugs?.[language] ?? "",
+        slug: value?.slug ?? savedCollection.slugs?.[language] ?? "",
       };
     });
     setTranslations(normalized);
@@ -299,11 +282,7 @@ export function CommerceCollectionDetailsPage() {
         ? cmsSettings.defaultLanguage
         : Object.keys(normalized)[0] ?? activeLanguage;
     setActiveLanguage(preferredLanguage);
-
-    const message = collection
-      ? t("collections.details.notifications.saved")
-      : t("collections.details.notifications.created");
-    setSuccessMessage(message);
+    setDirty(false);
 
     if (!collection && savedCollection.id) {
       navigate(`/commerce/collections/${savedCollection.id}`, { replace: true });
@@ -316,244 +295,212 @@ export function CommerceCollectionDetailsPage() {
     if (Number.isNaN(date.getTime())) return "-";
     try {
       return new Intl.DateTimeFormat(i18n.language, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+        dateStyle: "medium",
+        timeStyle: "short",
       }).format(date);
     } catch {
       return date.toISOString();
     }
   };
 
-  if (loadingCollection && !collection && !isCreating) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
+  const ready = languages.length > 0;
+
+  if ((loadingCollection && !collection && !isCreating) || !ready) {
+    return <SkeletonPage />;
   }
 
-  const languagesForTabs = availableLanguages.length > 0 ? availableLanguages : [activeLanguage];
+  const jsonData = collection ?? {
+    status,
+    tags,
+    publishAt,
+    expireAt,
+    translations,
+  };
 
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="px-0">
-        {t("common.back")}
-      </Button>
+    <div className="flex flex-col min-h-[calc(100vh-64px)]">
+      <div className="flex-1 p-4 md:p-6">
+        <JsonModal isOpen={jsonView} onClose={() => setJsonView(false)} data={jsonData} />
 
-      <Card>
-        <CardHeader className="space-y-1">
-          <CardTitle>
-            {isCreating
-              ? t("collections.create.title")
-              : t("collections.details.title")}
-          </CardTitle>
-          <CardDescription>
-            {isCreating
-              ? t("collections.create.description")
-              : t("collections.details.description")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {successMessage ? (
-            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-              {successMessage}
-            </div>
-          ) : null}
-          {errorMessage ? (
-            <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {errorMessage}
-            </div>
-          ) : null}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <CollectionLanguageTabs
+            languages={languages}
+            activeLanguage={activeLanguage}
+            onLanguageChange={setActiveLanguage}
+            onAddLanguage={handleAddLanguage}
+          />
+        </div>
 
-          <section className="space-y-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <Label className="text-sm font-medium text-muted-foreground">
-                {t("collections.details.language")}
-              </Label>
-              <CollectionLanguageTabs
-                languages={languagesForTabs}
-                activeLanguage={activeLanguage}
-                onLanguageChange={setActiveLanguage}
-                onAddLanguage={handleAddLanguage}
-              />
-            </div>
+        <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
+          <div className="space-y-4 md:space-y-6 lg:col-span-2">
+            <Card className="w-full gap-0 py-0 shadow-neutral-50">
+              <CardHeader className="rounded-t-xl bg-secondary py-4 md:py-6 text-primary">
+                <div className="flex items-center justify-between">
+                  <CardTitle>{t("collections.sections.details")}</CardTitle>
+                </div>
+              </CardHeader>
+              <Separator />
+              <CardContent className="space-y-4 p-4 md:p-6">
+                <div>
+                  <Label className="mb-2 block" htmlFor="collection-title">
+                    {t("collections.fields.title")}
+                  </Label>
+                  <Input
+                    id="collection-title"
+                    value={currentTranslation.title ?? ""}
+                    onChange={(event) => handleTitleChange(event.target.value)}
+                  />
+                </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="collection-title">{t("collections.details.name")}</Label>
-                <Input
-                  id="collection-title"
-                  value={currentTranslation.title ?? ""}
-                  onChange={(event) => handleTitleChange(event.target.value)}
-                  placeholder={t("collections.details.namePlaceholder")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="collection-slug">{t("collections.details.slug")}</Label>
-                <Input
-                  id="collection-slug"
-                  value={currentTranslation.slug ?? ""}
-                  onChange={(event) =>
-                    handleTranslationChange("slug", event.target.value)
-                  }
-                  placeholder={t("collections.details.slugPlaceholder")}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="collection-description">
-                {t("collections.details.description")}
-              </Label>
-              <Textarea
-                id="collection-description"
-                value={currentTranslation.description ?? ""}
-                onChange={(event) =>
-                  handleTranslationChange("description", event.target.value)
-                }
-                placeholder={t("collections.details.descriptionPlaceholder")}
-                rows={5}
-              />
-            </div>
-          </section>
-
-          <Separator />
-
-          <section className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{t("collections.details.status")}</Label>
-              <Select value={status} onValueChange={(value) => setStatus(value as CollectionStatus)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("collections.details.status") ?? undefined} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Draft">
-                    {t("collections.status.Draft", { defaultValue: "Draft" })}
-                  </SelectItem>
-                  <SelectItem value="Published">
-                    {t("collections.status.Published", { defaultValue: "Published" })}
-                  </SelectItem>
-                  <SelectItem value="Archived">
-                    {t("collections.status.Archived", { defaultValue: "Archived" })}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t("collections.details.tags")}</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={tagInput}
-                  onChange={(event) => setTagInput(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      handleAddTag();
+                <div>
+                  <Label className="mb-2 block" htmlFor="collection-slug">
+                    {t("collections.fields.slug")}
+                  </Label>
+                  <Input
+                    id="collection-slug"
+                    value={currentTranslation.slug ?? ""}
+                    onChange={(event) =>
+                      handleTranslationChange("slug", event.target.value)
                     }
-                  }}
-                  placeholder={t("collections.details.tagPlaceholder")}
-                />
-                <Button type="button" variant="secondary" onClick={handleAddTag} disabled={!tagInput.trim()}>
-                  <Plus className="mr-1 h-4 w-4" />
-                  {t("collections.details.addTag")}
-                </Button>
-              </div>
-              {tags.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="flex items-center gap-1 font-normal">
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag)}
-                        className="rounded-full focus:outline-none"
-                        aria-label={t("collections.details.removeTag", { tag })}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
+                  />
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  {t("collections.details.noTags")}
-                </p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="collection-publishAt">
-                {t("collections.details.publishAt")}
-              </Label>
-              <Input
-                id="collection-publishAt"
-                type="datetime-local"
-                value={publishAt}
-                onChange={(event) => setPublishAt(event.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="collection-expireAt">
-                {t("collections.details.expireAt")}
-              </Label>
-              <Input
-                id="collection-expireAt"
-                type="datetime-local"
-                value={expireAt}
-                onChange={(event) => setExpireAt(event.target.value)}
-              />
-            </div>
-          </section>
-
-          {collection ? (
-            <section className="rounded-md border bg-muted/30 p-4">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                {t("collections.details.meta.title")}
-              </h3>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase">
-                    {t("collections.details.meta.created")}
-                  </p>
-                  <p className="text-sm font-medium">
-                    {formatDateTime(collection.createdAt)}
-                  </p>
+                  <Label className="mb-2 block" htmlFor="collection-description">
+                    {t("collections.fields.description")}
+                  </Label>
+                  <Textarea
+                    id="collection-description"
+                    value={currentTranslation.description ?? ""}
+                    onChange={(event) =>
+                      handleTranslationChange("description", event.target.value)
+                    }
+                    rows={5}
+                  />
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase">
-                    {t("collections.details.meta.updated")}
-                  </p>
-                  <p className="text-sm font-medium">
-                    {formatDateTime(collection.updatedAt)}
-                  </p>
-                </div>
-              </div>
-            </section>
-          ) : null}
 
-          <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate("/commerce/collections")}
-            >
-              {t("collections.details.actions.cancel")}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSave}
-              disabled={savingCollection}
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {t("collections.details.actions.save")}
-            </Button>
+                <div>
+                  <Label className="mb-2 block">{t("collections.fields.tags")}</Label>
+                  <TagsInput
+                    key={tags.join(",")}
+                    initialTags={tags}
+                    onChange={handleTagsChange}
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="space-y-4 md:space-y-6">
+            <Card className="w-full gap-0 py-0 shadow-neutral-50">
+              <CardHeader className="rounded-t-xl bg-secondary py-4 text-primary">
+                <div className="flex items-center justify-between">
+                  <CardTitle>{t("collections.sections.settings")}</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setJsonView(true)}
+                    className="flex items-center"
+                    aria-label={t("collections.buttons.viewJson")}
+                  >
+                    <FileJson className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <Separator />
+              <CardContent className="space-y-4 p-4 md:p-6">
+                <div>
+                  <Label className="mb-2 block">{t("collections.fields.status")}</Label>
+                  <Select value={status} onValueChange={(value) => {
+                    setStatus(value as CollectionStatus);
+                    setDirty(true);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Draft">
+                        {t("collections.status.Draft", { defaultValue: "Draft" })}
+                      </SelectItem>
+                      <SelectItem value="Published">
+                        {t("collections.status.Published", { defaultValue: "Published" })}
+                      </SelectItem>
+                      <SelectItem value="Archived">
+                        {t("collections.status.Archived", { defaultValue: "Archived" })}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="mb-2 block" htmlFor="collection-publishAt">
+                    {t("collections.fields.publishAt")}
+                  </Label>
+                  <Input
+                    id="collection-publishAt"
+                    type="datetime-local"
+                    value={publishAt}
+                    onChange={(event) => {
+                      setPublishAt(event.target.value);
+                      setDirty(true);
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block" htmlFor="collection-expireAt">
+                    {t("collections.fields.expireAt")}
+                  </Label>
+                  <Input
+                    id="collection-expireAt"
+                    type="datetime-local"
+                    value={expireAt}
+                    onChange={(event) => {
+                      setExpireAt(event.target.value);
+                      setDirty(true);
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {collection && (
+              <Card className="w-full gap-0 py-0 shadow-neutral-50">
+                <CardHeader className="rounded-t-xl bg-secondary py-4 text-primary">
+                  <CardTitle>{t("collections.sections.meta")}</CardTitle>
+                </CardHeader>
+                <Separator />
+                <CardContent className="space-y-4 p-4 md:p-6 text-sm">
+                  <div>
+                    <p className="text-xs uppercase text-muted-foreground">
+                      {t("collections.meta.created")}
+                    </p>
+                    <p>{formatDateTime(collection.createdAt)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase text-muted-foreground">
+                      {t("collections.meta.updated")}
+                    </p>
+                    <p>{formatDateTime(collection.updatedAt)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="sticky bottom-0 border-t bg-background py-4 px-4 md:px-6">
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" onClick={() => navigate("/commerce/collections")}>
+            {t("collections.buttons.cancel")}
+          </Button>
+          <Button onClick={handleSave} disabled={savingCollection || !dirty}>
+            <Save className="mr-2 h-4 w-4" />
+            {t("collections.buttons.save")}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

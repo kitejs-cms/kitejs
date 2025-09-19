@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +14,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   DataTable,
@@ -23,12 +22,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Input,
+  Separator,
   useApi,
   useBreadcrumb,
-  useDebounce,
+  useClipboardTable,
   useHasPermission,
 } from "@kitejs-cms/dashboard-core";
-import { MoreVertical, PenSquare, Plus, Search, Trash2 } from "lucide-react";
+import {
+  Clipboard,
+  Download,
+  Edit,
+  MoreVertical,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 
 interface CollectionTranslation {
   title?: string;
@@ -50,21 +58,44 @@ interface CollectionListItem {
 
 const ITEMS_PER_PAGE = 10;
 
+function LanguagesBadge(translations: Record<string, unknown>) {
+  const langs = Object.keys(translations);
+  return (
+    <div className="flex items-center gap-1">
+      {langs.map((lang) => (
+        <Badge
+          key={lang}
+          variant="outline"
+          className="border-gray-200 bg-gray-50 font-normal"
+        >
+          {lang.toUpperCase()}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
 export function CommerceCollectionsPage() {
   const { t, i18n } = useTranslation("commerce");
   const navigate = useNavigate();
   const { setBreadcrumb } = useBreadcrumb();
-  const { data, loading, error, fetchData, pagination } = useApi<CollectionListItem[]>();
+  const { copyTable } = useClipboardTable<CollectionListItem>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data, loading, error, fetchData, pagination } =
+    useApi<CollectionListItem[]>();
   const deleteApi = useApi<unknown>();
   const hasPermission = useHasPermission();
 
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [collectionToDelete, setCollectionToDelete] = useState<CollectionListItem | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [collectionToDelete, setCollectionToDelete] =
+    useState<CollectionListItem | null>(null);
 
-  const debouncedSearch = useDebounce(search, 400);
+  const itemsPerPage = ITEMS_PER_PAGE;
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const searchQuery = searchParams.get("search") || "";
 
   const canCreate = hasPermission("plugin-commerce:collections.create");
+  const canUpdate = hasPermission("plugin-commerce:collections.update");
   const canDelete = hasPermission("plugin-commerce:collections.delete");
 
   useEffect(() => {
@@ -74,260 +105,249 @@ export function CommerceCollectionsPage() {
     ]);
   }, [setBreadcrumb, t]);
 
-  const buildApiUrl = useCallback((pageNumber: number, searchTerm: string) => {
-    const params = new URLSearchParams();
-    params.set("page[number]", pageNumber.toString());
-    params.set("page[size]", ITEMS_PER_PAGE.toString());
-    if (searchTerm.trim().length >= 2) {
-      params.set("search", searchTerm.trim());
-    }
-    return `commerce/collections?${params.toString()}`;
-  }, []);
-
   useEffect(() => {
-    const effectiveSearch = debouncedSearch.trim();
-    void fetchData(buildApiUrl(page, effectiveSearch));
-  }, [fetchData, page, debouncedSearch, buildApiUrl]);
+    const params = new URLSearchParams();
+    params.set("page", currentPage.toString());
+    if (searchQuery) params.set("search", searchQuery);
+    setSearchParams(params, { replace: true });
+
+    const apiParams = new URLSearchParams();
+    apiParams.set("page[number]", currentPage.toString());
+    apiParams.set("page[size]", itemsPerPage.toString());
+    if (searchQuery.trim()) {
+      apiParams.set("search", searchQuery.trim());
+    }
+
+    void fetchData(`commerce/collections?${apiParams.toString()}`);
+  }, [fetchData, currentPage, searchQuery, itemsPerPage, setSearchParams]);
 
   const collections = data ?? [];
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    setPage(1);
+  const handleCopy = () => {
+    if (!collections.length) return;
+    const dataset = collections.map((row) => ({
+      ...row,
+      titleForClipboard: getCollectionTitle(row),
+      languagesForClipboard: Object.keys(row.translations).join(", "),
+      tagsForClipboard: row.tags?.length ? row.tags.join(", ") : "-",
+      statusForClipboard: row.status ?? "-",
+      publishAtForClipboard: row.publishAt
+        ? new Date(row.publishAt).toISOString()
+        : "-",
+    }));
+
+    copyTable(dataset, [
+      { key: "titleForClipboard", label: t("collections.fields.title") },
+      { key: "languagesForClipboard", label: t("collections.fields.languages") },
+      { key: "tagsForClipboard", label: t("collections.fields.tags") },
+      { key: "statusForClipboard", label: t("collections.fields.status") },
+      { key: "publishAtForClipboard", label: t("collections.fields.publishAt") },
+    ]);
   };
 
-  const handlePageChange = (nextPage: number) => {
-    setPage(nextPage);
-  };
-
-  const handleRefresh = () => {
-    const effectiveSearch = debouncedSearch.trim();
-    void fetchData(buildApiUrl(page, effectiveSearch));
-  };
-
-  const handleDelete = async () => {
-    if (!collectionToDelete) return;
-    const { error: deleteError } = await deleteApi.fetchData(
-      `commerce/collections/${collectionToDelete.id}`,
-      "DELETE"
-    );
-    if (!deleteError) {
-      setCollectionToDelete(null);
-      const effectiveSearch = debouncedSearch.trim();
-      void fetchData(buildApiUrl(page, effectiveSearch));
+  const getCollectionTitle = (collection: CollectionListItem) => {
+    const translation =
+      collection.translations?.[i18n.language] ?? collection.translations?.en;
+    if (translation?.title && translation.title.trim().length > 0) {
+      return translation.title;
     }
+    return t("collections.table.untitled");
   };
 
-  const formatDate = useCallback(
-    (value?: string) => {
-      if (!value) return "-";
-      try {
-        return new Intl.DateTimeFormat(i18n.language, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        }).format(new Date(value));
-      } catch {
-        return value;
-      }
-    },
+  const renderTags = (tags: string[] | undefined) => {
+    if (!tags || tags.length === 0) {
+      return <span className="text-muted-foreground">-</span>;
+    }
+
+    const maxShow = 2;
+    const visible = tags.slice(0, maxShow);
+    const extra = tags.length - maxShow;
+
+    return (
+      <div className="flex items-center gap-1">
+        {visible.map((tag) => (
+          <Badge
+            key={tag}
+            variant="outline"
+            className="border-gray-200 bg-gray-50 font-normal"
+          >
+            {tag}
+          </Badge>
+        ))}
+        {extra > 0 && (
+          <Badge
+            variant="outline"
+            className="border-gray-200 bg-gray-50 font-normal"
+          >
+            +{extra}
+          </Badge>
+        )}
+      </div>
+    );
+  };
+
+  const formatDate = useMemo(
+    () =>
+      (value?: string) => {
+        if (!value) return "-";
+        try {
+          return new Intl.DateTimeFormat(i18n.language, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(new Date(value));
+        } catch {
+          return value;
+        }
+      },
     [i18n.language]
   );
 
-  const getCollectionTitle = useCallback(
-    (collection: CollectionListItem) => {
-      const translation =
-        collection.translations?.[i18n.language] ?? collection.translations?.en;
-      if (translation?.title && translation.title.trim().length > 0) {
-        return translation.title;
-      }
-      return t("collections.table.untitled");
-    },
-    [i18n.language, t]
-  );
-
-  const columns = useMemo(
-    () => [
-      {
-        key: "translations" as const,
-        label: t("collections.table.columns.name"),
-        render: (_value: unknown, row: CollectionListItem) => (
-          <div className="flex flex-col">
-            <span className="font-medium text-sm text-foreground">
-              {getCollectionTitle(row)}
-            </span>
-            {row.translations?.[i18n.language]?.slug && (
-              <span className="text-xs text-muted-foreground">
-                {row.translations[i18n.language]?.slug}
-              </span>
-            )}
-          </div>
-        ),
-      },
-      {
-        key: "status" as const,
-        label: t("collections.table.columns.status"),
-        render: (value) => {
-          const status = value as CollectionStatus | undefined;
-          return status ? (
-            <Badge variant="secondary">
-              {t(`collections.status.${status}`, { defaultValue: status })}
-            </Badge>
-          ) : (
-            <span className="text-muted-foreground">-</span>
-          );
-        },
-      },
-      {
-        key: "tags" as const,
-        label: t("collections.table.columns.tags"),
-        render: (value) => {
-          const tags = value as string[] | undefined;
-          return tags && tags.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {tags.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="outline" className="font-normal">
-                  {tag}
-                </Badge>
-              ))}
-              {tags.length > 3 ? (
-                <span className="text-xs text-muted-foreground">
-                  +{tags.length - 3}
-                </span>
-              ) : null}
-            </div>
-          ) : (
-            <span className="text-muted-foreground">-</span>
-          );
-        },
-      },
-      {
-        key: "updatedAt" as const,
-        label: t("collections.table.columns.updatedAt"),
-        render: (value) => (
-          <span className="text-sm text-muted-foreground">
-            {formatDate(value as string | undefined)}
-          </span>
-        ),
-      },
-      {
-        key: "id" as const,
-        label: "",
-        render: (_value, row: CollectionListItem) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(event) => {
-                  event.stopPropagation();
-                  navigate(`/commerce/collections/${row.id}`);
-                }}
-              >
-                <PenSquare className="mr-2 h-4 w-4" />
-                {t("collections.actions.open")}
-              </DropdownMenuItem>
-              {canDelete ? (
-                <DropdownMenuItem
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setCollectionToDelete(row);
-                  }}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t("collections.actions.delete")}
-                </DropdownMenuItem>
-              ) : null}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
-      },
-    ],
-    [
-      t,
-      i18n.language,
-      getCollectionTitle,
-      formatDate,
-      navigate,
-      canDelete,
-    ]
-  );
-
   return (
-    <div className="space-y-6">
-      <Card className="gap-0 overflow-hidden rounded-2xl border py-0 shadow-neutral-50">
-        <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary py-6 text-primary">
-          <div className="flex flex-col gap-2">
-            <CardTitle className="text-lg font-semibold md:text-xl">
-              {t("collections.pageTitle")}
-            </CardTitle>
-            <CardDescription className="text-primary/80">
-              {t("collections.pageDescription")}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6 py-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:gap-4">
-              <div className="relative md:w-80">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder={t("collections.actions.search")}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <div className="flex flex-col items-center justify-center p-4">
+      <Card className="w-full gap-0 py-0 shadow-neutral-50">
+        <CardHeader className="rounded-t-xl bg-secondary py-4 text-primary">
+          <div className="flex items-center justify-between">
+            <CardTitle>{t("collections.title.manage")}</CardTitle>
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="w-full sm:w-auto"
+                size="icon"
+                className="cursor-pointer bg-neutral-100 shadow-none"
+                onClick={() => setShowSearch(!showSearch)}
               >
-                {t("collections.actions.refresh")}
+                <Search className="h-4 w-4 text-neutral-500" />
               </Button>
-              {canCreate ? (
-                <Button
-                  onClick={() => navigate("/commerce/collections/new")}
-                  className="w-full sm:w-auto"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t("collections.actions.create")}
-                </Button>
-              ) : null}
+              {showSearch && (
+                <div className="origin-right transform transition-all duration-500 ease-in-out">
+                  <Input
+                    type="text"
+                    placeholder={t("collections.search.placeholder")}
+                    className="w-[200px] animate-in fade-in slide-in-from-right-1 duration-300 bg-white shadow-muted"
+                    value={searchQuery}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      const params = new URLSearchParams(searchParams);
+                      if (value) params.set("search", value);
+                      else params.delete("search");
+                      params.set("page", "1");
+                      setSearchParams(params);
+                    }}
+                  />
+                </div>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {canCreate && (
+                    <DropdownMenuItem
+                      onClick={() => navigate("/commerce/collections/new")}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t("collections.buttons.add")}
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleCopy}>
+                    <Clipboard className="mr-2 h-4 w-4" />
+                    {t("collections.buttons.copy")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => console.log(t("collections.buttons.download"))}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    {t("collections.buttons.download")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
-
-          {error ? (
-            <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        </CardHeader>
+        <Separator />
+        <CardContent className="p-0 text-sm">
+          {error && (
+            <div className="px-4 py-3 text-sm text-destructive">
               {t("collections.table.error")}
             </div>
-          ) : null}
-
+          )}
           <DataTable<CollectionListItem>
             data={collections}
-            columns={columns}
             isLoading={loading}
+            columns={[
+              {
+                key: "translations" as never,
+                label: t("collections.fields.title"),
+                render: (_, row) => getCollectionTitle(row),
+              },
+              {
+                key: "translations" as never,
+                label: t("collections.fields.languages"),
+                render: (_, row) => LanguagesBadge(row.translations),
+              },
+              {
+                key: "tags" as never,
+                label: t("collections.fields.tags"),
+                render: (_, row) => renderTags(row.tags),
+              },
+              {
+                key: "updatedAt" as never,
+                label: t("collections.fields.updatedAt"),
+                render: (value) => formatDate(value as string | undefined),
+              },
+              {
+                key: "id" as never,
+                label: t("collections.fields.actions"),
+                render: (_, row) => {
+                  if (!canUpdate && !canDelete) return null;
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="shadow-none">
+                          <MoreVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {canUpdate && (
+                          <DropdownMenuItem
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate(`/commerce/collections/${row.id}`);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            {t("collections.buttons.edit")}
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                          <DropdownMenuItem
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setCollectionToDelete(row);
+                            }}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            {t("collections.buttons.delete")}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                },
+              },
+            ]}
+            pagination={{
+              currentPage: pagination?.currentPage,
+              totalPages: pagination?.totalPages,
+              onPageChange: (page) => {
+                const params = new URLSearchParams(searchParams);
+                params.set("page", page.toString());
+                setSearchParams(params);
+              },
+            }}
             onRowClick={(row) => navigate(`/commerce/collections/${row.id}`)}
-            pagination=
-              {pagination
-                ? {
-                    currentPage: pagination.currentPage,
-                    totalPages: Math.max(pagination.totalPages, 1),
-                    onPageChange: handlePageChange,
-                  }
-                : undefined}
             emptyMessage={t("collections.table.empty")}
           />
         </CardContent>
@@ -347,7 +367,23 @@ export function CommerceCollectionsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>{t("collections.delete.cancel")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={async () => {
+                if (!collectionToDelete) return;
+                const { error: deleteError } = await deleteApi.fetchData(
+                  `commerce/collections/${collectionToDelete.id}`,
+                  "DELETE"
+                );
+                if (!deleteError) {
+                  setCollectionToDelete(null);
+                  const params = new URLSearchParams();
+                  params.set("page[number]", currentPage.toString());
+                  params.set("page[size]", itemsPerPage.toString());
+                  if (searchQuery.trim()) {
+                    params.set("search", searchQuery.trim());
+                  }
+                  void fetchData(`commerce/collections?${params.toString()}`);
+                }
+              }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={deleteApi.loading}
             >

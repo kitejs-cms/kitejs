@@ -54,16 +54,38 @@
   "collections": {
     "pageTitle": "Collections",
     "pageDescription": "Group products into curated selections to power landing pages and campaigns.",
-    "actions": {
-      "refresh": "Refresh",
-      "create": "New collection",
-      "search": "Search collections",
-      "open": "Open details",
-      "delete": "Delete"
+    "title": {
+      "manage": "Manage collections"
     },
-    "emptyState": {
-      "title": "No collections yet",
-      "description": "Create your first collection to organise products for campaigns and navigation."
+    "search": {
+      "placeholder": "Search collections..."
+    },
+    "fields": {
+      "title": "Title",
+      "languages": "Languages",
+      "tags": "Tags",
+      "status": "Status",
+      "publishAt": "Publish at",
+      "updatedAt": "Last updated",
+      "actions": "Actions",
+      "slug": "Slug",
+      "description": "Description",
+      "expireAt": "Unpublish at"
+    },
+    "sections": {
+      "details": "Details",
+      "settings": "Settings",
+      "meta": "Metadata"
+    },
+    "buttons": {
+      "add": "Add collection",
+      "copy": "Copy",
+      "download": "Download",
+      "edit": "Edit",
+      "delete": "Delete",
+      "viewJson": "View JSON",
+      "cancel": "Cancel",
+      "save": "Save"
     },
     "table": {
       "columns": {
@@ -80,6 +102,10 @@
       "Draft": "Draft",
       "Published": "Published",
       "Archived": "Archived"
+    },
+    "meta": {
+      "created": "Created",
+      "updated": "Last updated"
     },
     "details": {
       "title": "Collection details",
