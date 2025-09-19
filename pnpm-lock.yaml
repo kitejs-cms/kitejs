@@ -142,6 +142,9 @@ importers:
       '@kitejs-cms/plugin-analytics-dashboard':
         specifier: workspace:*
         version: link:../../packages/plugin-analytics-dashboard
+      '@kitejs-cms/plugin-commerce-dashboard':
+        specifier: workspace:*
+        version: link:../../packages/plugin-commerce-dashboard
       '@kitejs-cms/plugin-gallery-dashboard':
         specifier: workspace:*
         version: link:../../packages/plugin-gallery-dashboard
@@ -672,13 +675,13 @@ importers:
         specifier: ^0.475.0
         version: 0.475.0(react@19.1.1)
       react:
-        specifier: ^18.2.0 || ^19.0.0
+        specifier: ^19.0.0
         version: 19.1.1
       react-day-picker:
         specifier: ^9.9.0
         version: 9.9.0(react@19.1.1)
       react-dom:
-        specifier: ^18.2.0 || ^19.0.0
+        specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-i18next:
         specifier: ^15.4.1
@@ -809,6 +812,55 @@ importers:
         specifier: ^5.7.3
         version: 5.7.3
 
+  packages/plugin-commerce-dashboard:
+    dependencies:
+      '@kitejs-cms/dashboard-core':
+        specifier: workspace:*
+        version: link:../dashboard-core
+      lucide-react:
+        specifier: ^0.475.0
+        version: 0.475.0(react@19.1.1)
+      react:
+        specifier: ^19.0.0
+        version: 19.1.1
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.1.1(react@19.1.1)
+      react-i18next:
+        specifier: ^15.4.1
+        version: 15.7.3(i18next@24.2.3(typescript@5.7.3))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+      react-router-dom:
+        specifier: ^7.2.0
+        version: 7.8.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+    devDependencies:
+      '@kitejs-cms/core':
+        specifier: workspace:*
+        version: link:../core
+      '@kitejs-cms/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@kitejs-cms/plugin-commerce-api':
+        specifier: workspace:*
+        version: link:../plugin-commerce-api
+      '@kitejs-cms/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/react':
+        specifier: 19.0.8
+        version: 19.0.8
+      '@types/react-dom':
+        specifier: 19.0.3
+        version: 19.0.3(@types/react@19.0.8)
+      eslint:
+        specifier: ^9.20.0
+        version: 9.35.0(jiti@2.5.1)
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@4.1.13)
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+
   packages/plugin-gallery-api:
     dependencies:
       '@kitejs-cms/core':
@@ -879,10 +931,10 @@ importers:
         specifier: ^0.475.0
         version: 0.475.0(react@19.1.1)
       react:
-        specifier: ^18.2.0 || ^19.0.0
+        specifier: ^19.0.0
         version: 19.1.1
       react-dom:
-        specifier: ^18.2.0 || ^19.0.0
+        specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-i18next:
         specifier: ^15.4.1

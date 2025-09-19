@@ -11,18 +11,7 @@
     "skipLibCheck": true,
     "module": "ES2022",
     "esModuleInterop": true,
-    "moduleResolution": "bundler",
-    "paths": {
-      "@kitejs-cms/dashboard-core": ["../dashboard-core/src"],
-      "@kitejs-cms/dashboard-core/*": ["../dashboard-core/src/*"],
-      "@kitejs-cms/plugin-commerce-api": ["../plugin-commerce-api/src"],
-      "@kitejs-cms/plugin-commerce-api/*": ["../plugin-commerce-api/src/*"],
-      "@kitejs-cms/core": ["../core/src"],
-      "@kitejs-cms/core/*": ["../core/src/*"],
-      "@kitejs-cms/dashboard-core/components/*": [
-        "../dashboard-core/src/components/*"
-      ]
-    }
+    "moduleResolution": "bundler"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
