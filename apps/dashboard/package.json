@@ -12,6 +12,7 @@
     "@kitejs-cms/dashboard-core": "workspace:*",
     "@kitejs-cms/plugin-gallery-dashboard": "workspace:*",
     "@kitejs-cms/plugin-analytics-dashboard": "workspace:*",
+    "@kitejs-cms/plugin-commerce-dashboard": "workspace:*",
     "@tailwindcss/vite": "^4.0.8",
     "install": "^0.13.0",
     "react": "^19.0.0",
