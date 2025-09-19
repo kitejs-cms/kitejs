@@ -11,6 +11,8 @@ export * from "./models/order-response.model";
 /* DTO */
 export * from "./dto/create-order.dto";
 export * from "./dto/update-order.dto";
+export * from "./dto/order-address.dto";
+export * from "./dto/order-item.dto";
 export * from "./dto/order-item-response.dto";
 export * from "./dto/order-response.dto";
 

@@ -1,15 +1,17 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { FilterQuery, Model, Types } from "mongoose";
 import { Product, ProductDocument } from "./schemas/product.schema";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { ProductVariantDto } from "./dto/product-variant.dto";
 import { ProductPriceDto } from "./dto/product-price.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
+import { ProductStatus } from "./models/product-status.enum";
 import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
 import { SlugRegistryService } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
@@ -17,6 +19,7 @@ import type { ProductResponseModel } from "./models/product-response.model";
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
   private readonly slugNamespace = COMMERCE_PRODUCT_SLUG_NAMESPACE;
 
   constructor(
@@ -25,12 +28,78 @@ export class ProductsService {
     private readonly slugService: SlugRegistryService
   ) {}
 
+  private buildProductQuery(
+    filters?: Record<string, string>,
+    language = "en"
+  ): FilterQuery<ProductDocument> {
+    const query: FilterQuery<ProductDocument> = {};
+
+    if (!filters) {
+      return query;
+    }
+
+    if (filters.status) {
+      query.status = filters.status as ProductStatus;
+    }
+
+    if (filters.collectionId) {
+      query.collections = this.toObjectId(filters.collectionId);
+    }
+
+    if (filters.tags) {
+      const tags = filters.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+
+      if (tags.length > 0) {
+        query.tags = { $in: tags } as FilterQuery<ProductDocument>["tags"];
+      }
+    }
+
+    if (filters.search) {
+      const searchTerm = filters.search.trim();
+
+      if (searchTerm) {
+        query.$or = [
+          { tags: { $regex: searchTerm, $options: "i" } },
+          {
+            [`translations.${language}.title`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.subtitle`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.summary`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.description`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+        ];
+      }
+    }
+
+    return query;
+  }
+
   private toObjectId(id: string): Types.ObjectId {
-    try {
-      return new Types.ObjectId(id);
-    } catch (error) {
+    if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`Invalid identifier provided: ${id}`);
     }
+
+    return new Types.ObjectId(id);
   }
 
   private parseDate(value?: string): Date | null {
@@ -229,23 +298,70 @@ export class ProductsService {
     return this.upsertProduct(id, dto, user);
   }
 
-  async findAll(): Promise<ProductResponseModel[]> {
-    const products = await this.productModel
-      .find()
-      .sort({ updatedAt: -1 })
-      .exec();
+  async countProducts(
+    filters?: Record<string, string>,
+    language = "en"
+  ): Promise<number> {
+    try {
+      const query = this.buildProductQuery(filters, language);
+      return await this.productModel.countDocuments(query).exec();
+    } catch (error) {
+      this.logger.error(error);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to count products. ${message}`);
+    }
+  }
 
-    return Promise.all(products.map((product) => this.buildResponse(product)));
+  async findProducts(
+    skip = 0,
+    take?: number,
+    sort?: Record<string, 1 | -1>,
+    filters?: Record<string, string>,
+    language = "en"
+  ): Promise<ProductResponseModel[]> {
+    try {
+      const query = this.buildProductQuery(filters, language);
+      const mongooseQuery = this.productModel
+        .find(query)
+        .sort(sort ?? { updatedAt: -1 })
+        .skip(skip);
+
+      if (typeof take === "number" && take > 0) {
+        mongooseQuery.limit(take);
+      }
+
+      const products = await mongooseQuery.exec();
+
+      return Promise.all(products.map((product) => this.buildResponse(product)));
+    } catch (error) {
+      this.logger.error(error);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to fetch products. ${message}`);
+    }
+  }
+
+  async findAll(): Promise<ProductResponseModel[]> {
+    return this.findProducts(0, undefined, { updatedAt: -1 });
   }
 
   async findOne(id: string): Promise<ProductResponseModel> {
-    const product = await this.productModel.findById(id).exec();
+    try {
+      const product = await this.productModel.findById(id).exec();
 
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${id} not found`);
+      }
+
+      return this.buildResponse(product);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      this.logger.error(error);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to fetch product. ${message}`);
     }
-
-    return this.buildResponse(product);
   }
 
   async remove(id: string): Promise<void> {

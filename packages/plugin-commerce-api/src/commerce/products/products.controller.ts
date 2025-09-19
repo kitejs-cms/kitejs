@@ -3,14 +3,17 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -20,6 +23,11 @@ import {
   PermissionsGuard,
   Permissions,
   ValidateObjectIdPipe,
+  ApiPagination,
+  ApiSort,
+  Language,
+  parseQuery,
+  createMetaModel,
 } from "@kitejs-cms/core";
 import type { JwtPayloadModel } from "@kitejs-cms/core";
 import { ProductsService } from "./products.service";
@@ -36,9 +44,14 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @HttpCode(201)
   @Permissions(`${COMMERCE_PLUGIN_NAMESPACE}:products.create`)
   @ApiOperation({ summary: "Create a new product" })
-  @ApiResponse({ status: 201, description: "Product created", type: ProductResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: "Product created",
+    type: ProductResponseDto,
+  })
   async create(
     @Body() dto: CreateProductDto,
     @GetAuthUser() user: JwtPayloadModel
@@ -50,14 +63,35 @@ export class ProductsController {
   @Get()
   @Permissions(`${COMMERCE_PLUGIN_NAMESPACE}:products.read`)
   @ApiOperation({ summary: "List products" })
-  @ApiResponse({
-    status: 200,
-    description: "List of products",
-    type: [ProductResponseDto],
+  @ApiPagination()
+  @ApiSort(["createdAt"])
+  @ApiQuery({
+    name: "search",
+    required: false,
+    description: "Search by title, subtitle, summary or tags",
+    type: String,
   })
-  async findAll() {
-    const products = await this.productsService.findAll();
-    return products.map((product) => new ProductResponseDto(product));
+  async findAll(
+    @Language() language: string,
+    @Query() query: Record<string, string>
+  ) {
+    const { filter, sort, skip, take } = parseQuery(query);
+    const totalItems = await this.productsService.countProducts(
+      filter,
+      language
+    );
+    const products = await this.productsService.findProducts(
+      skip,
+      take,
+      sort,
+      filter,
+      language
+    );
+
+    return {
+      meta: createMetaModel({ filter, sort, skip, take }, totalItems),
+      data: products.map((product) => new ProductResponseDto(product)),
+    };
   }
 
   @Get(":id")
