@@ -73,7 +73,8 @@
         "updatedAt": "Last updated"
       },
       "untitled": "Untitled collection",
-      "error": "Unable to load collections. Please retry."
+      "error": "Unable to load collections. Please retry.",
+      "empty": "No collections match the current filters."
     },
     "status": {
       "Draft": "Draft",

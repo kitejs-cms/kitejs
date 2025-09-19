@@ -23,7 +23,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Input,
-  Skeleton,
   useApi,
   useBreadcrumb,
   useDebounce,
@@ -265,78 +264,72 @@ export function CommerceCollectionsPage() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <CardTitle>{t("collections.pageTitle")}</CardTitle>
-            <CardDescription>{t("collections.pageDescription")}</CardDescription>
+      <Card className="gap-0 overflow-hidden rounded-2xl border py-0 shadow-neutral-50">
+        <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary py-6 text-primary">
+          <div className="flex flex-col gap-2">
+            <CardTitle className="text-lg font-semibold md:text-xl">
+              {t("collections.pageTitle")}
+            </CardTitle>
+            <CardDescription className="text-primary/80">
+              {t("collections.pageDescription")}
+            </CardDescription>
           </div>
-          <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-            <div className="relative md:w-64">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(event) => handleSearchChange(event.target.value)}
-                placeholder={t("collections.actions.search")}
-                className="pl-9"
-              />
+        </CardHeader>
+        <CardContent className="space-y-6 py-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:gap-4">
+              <div className="relative md:w-80">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(event) => handleSearchChange(event.target.value)}
+                  placeholder={t("collections.actions.search")}
+                  className="pl-9"
+                />
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={loading}
+                className="w-full sm:w-auto"
+              >
                 {t("collections.actions.refresh")}
               </Button>
               {canCreate ? (
-                <Button onClick={() => navigate("/commerce/collections/new")}> 
+                <Button
+                  onClick={() => navigate("/commerce/collections/new")}
+                  className="w-full sm:w-auto"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   {t("collections.actions.create")}
                 </Button>
               ) : null}
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
+
           {error ? (
-            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {t("collections.table.error")}
             </div>
           ) : null}
 
-          {loading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : collections.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-              <h3 className="text-lg font-semibold">
-                {t("collections.emptyState.title")}
-              </h3>
-              <p className="max-w-md text-sm text-muted-foreground">
-                {t("collections.emptyState.description")}
-              </p>
-              {canCreate ? (
-                <Button onClick={() => navigate("/commerce/collections/new")}> 
-                  {t("collections.actions.create")}
-                </Button>
-              ) : null}
-            </div>
-          ) : (
-            <DataTable<CollectionListItem>
-              data={collections}
-              columns={columns}
-              isLoading={loading}
-              onRowClick={(row) => navigate(`/commerce/collections/${row.id}`)}
-              pagination=
-                {pagination
-                  ? {
-                      currentPage: pagination.currentPage,
-                      totalPages: Math.max(pagination.totalPages, 1),
-                      onPageChange: handlePageChange,
-                    }
-                  : undefined}
-            />
-          )}
+          <DataTable<CollectionListItem>
+            data={collections}
+            columns={columns}
+            isLoading={loading}
+            onRowClick={(row) => navigate(`/commerce/collections/${row.id}`)}
+            pagination=
+              {pagination
+                ? {
+                    currentPage: pagination.currentPage,
+                    totalPages: Math.max(pagination.totalPages, 1),
+                    onPageChange: handlePageChange,
+                  }
+                : undefined}
+            emptyMessage={t("collections.table.empty")}
+          />
         </CardContent>
       </Card>
 
