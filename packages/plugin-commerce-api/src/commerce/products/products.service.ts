@@ -32,66 +32,57 @@ export class ProductsService {
     filters?: Record<string, string>,
     language = "en"
   ): FilterQuery<ProductDocument> {
-    const query: FilterQuery<ProductDocument> = {};
-
     if (!filters) {
-      return query;
+      return {};
     }
 
-    if (filters.status) {
-      query.status = filters.status as ProductStatus;
-    }
+    const { status, collectionId, tags, search } = filters;
 
-    if (filters.collectionId) {
-      query.collections = this.toObjectId(filters.collectionId);
-    }
+    const tagValues = tags
+      ?.split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
 
-    if (filters.tags) {
-      const tags = filters.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean);
+    const trimmedSearch = search?.trim();
 
-      if (tags.length > 0) {
-        query.tags = { $in: tags } as FilterQuery<ProductDocument>["tags"];
-      }
-    }
-
-    if (filters.search) {
-      const searchTerm = filters.search.trim();
-
-      if (searchTerm) {
-        query.$or = [
-          { tags: { $regex: searchTerm, $options: "i" } },
-          {
-            [`translations.${language}.title`]: {
-              $regex: searchTerm,
-              $options: "i",
-            },
-          },
-          {
-            [`translations.${language}.subtitle`]: {
-              $regex: searchTerm,
-              $options: "i",
-            },
-          },
-          {
-            [`translations.${language}.summary`]: {
-              $regex: searchTerm,
-              $options: "i",
-            },
-          },
-          {
-            [`translations.${language}.description`]: {
-              $regex: searchTerm,
-              $options: "i",
-            },
-          },
-        ];
-      }
-    }
-
-    return query;
+    return {
+      ...(status ? { status: status as ProductStatus } : {}),
+      ...(collectionId ? { collections: this.toObjectId(collectionId) } : {}),
+      ...(tagValues?.length
+        ? ({ tags: { $in: tagValues } } as FilterQuery<ProductDocument>)
+        : {}),
+      ...(trimmedSearch
+        ? {
+            $or: [
+              { tags: { $regex: trimmedSearch, $options: "i" } },
+              {
+                [`translations.${language}.title`]: {
+                  $regex: trimmedSearch,
+                  $options: "i",
+                },
+              },
+              {
+                [`translations.${language}.subtitle`]: {
+                  $regex: trimmedSearch,
+                  $options: "i",
+                },
+              },
+              {
+                [`translations.${language}.summary`]: {
+                  $regex: trimmedSearch,
+                  $options: "i",
+                },
+              },
+              {
+                [`translations.${language}.description`]: {
+                  $regex: trimmedSearch,
+                  $options: "i",
+                },
+              },
+            ],
+          }
+        : {}),
+    };
   }
 
   private toObjectId(id: string): Types.ObjectId {
@@ -100,11 +91,6 @@ export class ProductsService {
     }
 
     return new Types.ObjectId(id);
-  }
-
-  private parseDate(value?: string): Date | null {
-    if (value === null) return null;
-    return value ? new Date(value) : null;
   }
 
   private mapCollectionIds(
@@ -197,61 +183,45 @@ export class ProductsService {
       seo,
     };
 
+    const mappedCollections = this.mapCollectionIds(collectionIds);
+    const mappedVariants = this.mapVariants(variants);
+
     const baseData: Record<string, unknown> = {
       updatedBy: this.toObjectId(user.sub),
+      ...(status !== undefined ? { status } : {}),
+      ...(tags !== undefined ? { tags } : !id ? { tags: [] } : {}),
+      ...(publishAt !== undefined
+        ? { publishAt: publishAt ? new Date(publishAt) : null }
+        : !id
+        ? { publishAt: null }
+        : {}),
+      ...(expireAt !== undefined
+        ? { expireAt: expireAt ? new Date(expireAt) : null }
+        : !id
+        ? { expireAt: null }
+        : {}),
+      ...(thumbnail !== undefined ? { thumbnail: thumbnail ?? null } : {}),
+      ...(gallery !== undefined
+        ? { gallery: gallery ?? [] }
+        : !id
+        ? { gallery: [] }
+        : {}),
+      ...(mappedCollections !== undefined
+        ? { collections: mappedCollections }
+        : !id
+        ? { collections: [] }
+        : {}),
+      ...(mappedVariants !== undefined
+        ? { variants: mappedVariants }
+        : !id
+        ? { variants: [] }
+        : {}),
+      ...(defaultCurrency !== undefined
+        ? { defaultCurrency }
+        : !id
+        ? { defaultCurrency: "EUR" }
+        : {}),
     };
-
-    if (status !== undefined) {
-      baseData.status = status;
-    }
-
-    if (tags !== undefined) {
-      baseData.tags = tags;
-    } else if (!id) {
-      baseData.tags = [];
-    }
-
-    if (publishAt !== undefined) {
-      baseData.publishAt = this.parseDate(publishAt);
-    } else if (!id) {
-      baseData.publishAt = null;
-    }
-
-    if (expireAt !== undefined) {
-      baseData.expireAt = this.parseDate(expireAt);
-    } else if (!id) {
-      baseData.expireAt = null;
-    }
-
-    if (thumbnail !== undefined) {
-      baseData.thumbnail = thumbnail ?? null;
-    }
-
-    if (gallery !== undefined) {
-      baseData.gallery = gallery ?? [];
-    } else if (!id) {
-      baseData.gallery = [];
-    }
-
-    const mappedCollections = this.mapCollectionIds(collectionIds);
-    if (mappedCollections !== undefined) {
-      baseData.collections = mappedCollections;
-    } else if (!id) {
-      baseData.collections = [];
-    }
-
-    const mappedVariants = this.mapVariants(variants);
-    if (mappedVariants !== undefined) {
-      baseData.variants = mappedVariants;
-    } else if (!id) {
-      baseData.variants = [];
-    }
-
-    if (defaultCurrency !== undefined) {
-      baseData.defaultCurrency = defaultCurrency;
-    } else if (!id) {
-      baseData.defaultCurrency = "EUR";
-    }
 
     let product: Product;
 

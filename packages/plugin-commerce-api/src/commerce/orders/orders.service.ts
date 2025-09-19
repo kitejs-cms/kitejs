@@ -38,19 +38,6 @@ export class OrdersService {
     return new Types.ObjectId(id);
   }
 
-  private parseDate(value?: string): Date | undefined {
-    if (!value) {
-      return undefined;
-    }
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      throw new BadRequestException(`Invalid date provided: ${value}`);
-    }
-
-    return date;
-  }
-
   private mapAddress(address?: OrderAddressDto): OrderAddress | undefined {
     if (!address) {
       return undefined;
@@ -105,52 +92,42 @@ export class OrdersService {
   private buildOrderQuery(
     filters?: Record<string, string>
   ): FilterQuery<OrderDocument> {
-    const query: FilterQuery<OrderDocument> = {};
-
     if (!filters) {
-      return query;
+      return {};
     }
 
-    if (filters.status) {
-      query.status = filters.status as OrderStatus;
-    }
+    const { search, status, paymentStatus, fulfillmentStatus, customerId, tags } =
+      filters;
 
-    if (filters.paymentStatus) {
-      query.paymentStatus = filters.paymentStatus as PaymentStatus;
-    }
+    const tagValues = tags
+      ?.split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
 
-    if (filters.fulfillmentStatus) {
-      query.fulfillmentStatus = filters.fulfillmentStatus as FulfillmentStatus;
-    }
+    const trimmedSearch = search?.trim();
 
-    if (filters.customerId) {
-      query.customer = this.toObjectId(filters.customerId);
-    }
-
-    if (filters.tags) {
-      const tags = filters.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean);
-
-      if (tags.length > 0) {
-        query.tags = { $in: tags } as FilterQuery<OrderDocument>["tags"];
-      }
-    }
-
-    if (filters.search) {
-      const searchTerm = filters.search.trim();
-
-      if (searchTerm) {
-        query.$or = [
-          { orderNumber: { $regex: searchTerm, $options: "i" } },
-          { email: { $regex: searchTerm, $options: "i" } },
-          { notes: { $regex: searchTerm, $options: "i" } },
-        ];
-      }
-    }
-
-    return query;
+    return {
+      ...(status ? { status: status as OrderStatus } : {}),
+      ...(paymentStatus
+        ? { paymentStatus: paymentStatus as PaymentStatus }
+        : {}),
+      ...(fulfillmentStatus
+        ? { fulfillmentStatus: fulfillmentStatus as FulfillmentStatus }
+        : {}),
+      ...(customerId ? { customer: this.toObjectId(customerId) } : {}),
+      ...(tagValues?.length
+        ? ({ tags: { $in: tagValues } } as FilterQuery<OrderDocument>)
+        : {}),
+      ...(trimmedSearch
+        ? {
+            $or: [
+              { orderNumber: { $regex: trimmedSearch, $options: "i" } },
+              { email: { $regex: trimmedSearch, $options: "i" } },
+              { notes: { $regex: trimmedSearch, $options: "i" } },
+            ],
+          }
+        : {}),
+    };
   }
 
   private buildResponse(order: OrderDocument): OrderResponseModel {
@@ -303,15 +280,15 @@ export class OrdersService {
         shippingAddress: this.mapAddress(dto.shippingAddress),
         items,
         subtotal: totals.subtotal,
-        shippingTotal: totals.shippingTotal,
-        taxTotal: totals.taxTotal,
-        discountTotal: totals.discountTotal,
+        shippingTotal,
+        taxTotal,
+        discountTotal,
         total: totals.total,
         notes: dto.notes,
         tags: dto.tags ?? [],
-        paidAt: this.parseDate(dto.paidAt),
-        fulfilledAt: this.parseDate(dto.fulfilledAt),
-        cancelledAt: this.parseDate(dto.cancelledAt),
+        paidAt: dto.paidAt ? new Date(dto.paidAt) : undefined,
+        fulfilledAt: dto.fulfilledAt ? new Date(dto.fulfilledAt) : undefined,
+        cancelledAt: dto.cancelledAt ? new Date(dto.cancelledAt) : undefined,
       });
 
       return this.findOrderById(order._id.toString());
@@ -333,89 +310,70 @@ export class OrdersService {
         throw new NotFoundException(`Order with ID ${id} not found`);
       }
 
-      if (dto.orderNumber !== undefined) {
-        order.orderNumber = dto.orderNumber;
-      }
-
-      if (dto.status !== undefined) {
-        order.status = dto.status;
-      }
-
-      if (dto.paymentStatus !== undefined) {
-        order.paymentStatus = dto.paymentStatus;
-      }
-
-      if (dto.fulfillmentStatus !== undefined) {
-        order.fulfillmentStatus = dto.fulfillmentStatus;
-      }
-
-      if (dto.currencyCode !== undefined) {
-        order.currencyCode = dto.currencyCode;
-      }
-
-      if (dto.customerId !== undefined) {
-        order.customer = dto.customerId
-          ? this.toObjectId(dto.customerId)
-          : undefined;
-      }
-
-      if (dto.email !== undefined) {
-        order.email = dto.email;
-      }
-
-      if (dto.billingAddress !== undefined) {
-        order.billingAddress = this.mapAddress(dto.billingAddress);
-      }
-
-      if (dto.shippingAddress !== undefined) {
-        order.shippingAddress = this.mapAddress(dto.shippingAddress);
-      }
-
-      if (dto.items !== undefined) {
-        order.items = this.mapOrderItems(dto.items);
-      }
-
-      if (dto.shippingTotal !== undefined) {
-        order.shippingTotal = dto.shippingTotal ?? 0;
-      }
-
-      if (dto.taxTotal !== undefined) {
-        order.taxTotal = dto.taxTotal ?? 0;
-      }
-
-      if (dto.discountTotal !== undefined) {
-        order.discountTotal = dto.discountTotal ?? 0;
-      }
-
-      if (dto.notes !== undefined) {
-        order.notes = dto.notes;
-      }
-
-      if (dto.tags !== undefined) {
-        order.tags = dto.tags ?? [];
-      }
-
-      if (dto.paidAt !== undefined) {
-        order.paidAt = this.parseDate(dto.paidAt);
-      }
-
-      if (dto.fulfilledAt !== undefined) {
-        order.fulfilledAt = this.parseDate(dto.fulfilledAt);
-      }
-
-      if (dto.cancelledAt !== undefined) {
-        order.cancelledAt = this.parseDate(dto.cancelledAt);
-      }
+      const items = dto.items
+        ? this.mapOrderItems(dto.items)
+        : order.items;
+      const shippingTotal = dto.shippingTotal ?? order.shippingTotal;
+      const taxTotal = dto.taxTotal ?? order.taxTotal;
+      const discountTotal = dto.discountTotal ?? order.discountTotal;
 
       const totals = this.calculateOrderTotals(
-        order.items,
-        order.shippingTotal,
-        order.taxTotal,
-        order.discountTotal
+        items,
+        shippingTotal,
+        taxTotal,
+        discountTotal
       );
 
-      order.subtotal = totals.subtotal;
-      order.total = totals.total;
+      const updatePayload: Partial<Order> = {
+        ...(dto.orderNumber !== undefined ? { orderNumber: dto.orderNumber } : {}),
+        ...(dto.status !== undefined ? { status: dto.status } : {}),
+        ...(dto.paymentStatus !== undefined
+          ? { paymentStatus: dto.paymentStatus }
+          : {}),
+        ...(dto.fulfillmentStatus !== undefined
+          ? { fulfillmentStatus: dto.fulfillmentStatus }
+          : {}),
+        ...(dto.currencyCode !== undefined
+          ? { currencyCode: dto.currencyCode }
+          : {}),
+        ...(dto.customerId !== undefined
+          ? {
+              customer: dto.customerId
+                ? this.toObjectId(dto.customerId)
+                : undefined,
+            }
+          : {}),
+        ...(dto.email !== undefined ? { email: dto.email } : {}),
+        ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+        ...(dto.tags !== undefined ? { tags: dto.tags ?? [] } : {}),
+        ...(dto.billingAddress !== undefined
+          ? { billingAddress: this.mapAddress(dto.billingAddress) }
+          : {}),
+        ...(dto.shippingAddress !== undefined
+          ? { shippingAddress: this.mapAddress(dto.shippingAddress) }
+          : {}),
+        ...(dto.items !== undefined ? { items } : {}),
+        shippingTotal,
+        taxTotal,
+        discountTotal,
+        subtotal: totals.subtotal,
+        total: totals.total,
+        ...(dto.paidAt !== undefined
+          ? { paidAt: dto.paidAt ? new Date(dto.paidAt) : undefined }
+          : {}),
+        ...(dto.fulfilledAt !== undefined
+          ? { fulfilledAt: dto.fulfilledAt ? new Date(dto.fulfilledAt) : undefined }
+          : {}),
+        ...(dto.cancelledAt !== undefined
+          ? {
+              cancelledAt: dto.cancelledAt
+                ? new Date(dto.cancelledAt)
+                : undefined,
+            }
+          : {}),
+      };
+
+      Object.assign(order, updatePayload);
 
       await order.save();
 
