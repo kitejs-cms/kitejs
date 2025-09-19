@@ -22,7 +22,11 @@ export class ProductCollection extends Document {
   @Prop({ type: SchemaDb.ObjectId, ref: "User", required: true })
   updatedBy: Types.ObjectId;
 
-  @Prop({ type: String, enum: CollectionStatus, default: CollectionStatus.Draft })
+  @Prop({
+    type: String,
+    enum: CollectionStatus,
+    default: CollectionStatus.Draft,
+  })
   status: CollectionStatus;
 
   @Prop({ type: [String], default: [] })
@@ -39,9 +43,6 @@ export class ProductCollection extends Document {
 
   @Prop({ type: SchemaDb.ObjectId, ref: ProductCollection.name, default: null })
   parent?: Types.ObjectId;
-
-  @Prop({ type: Number, default: 0 })
-  sortOrder: number;
 
   @Prop({
     type: Map,

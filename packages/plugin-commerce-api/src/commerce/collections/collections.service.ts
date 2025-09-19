@@ -1,241 +1,426 @@
+import { COMMERCE_COLLECTION_SLUG_NAMESPACE } from "../../constants";
+import { ObjectIdUtils, SlugRegistryService } from "@kitejs-cms/core";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, Types } from "mongoose";
+import { ProductCollection } from "./schemas/product-collection.schema";
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
-import {
-  ProductCollection,
-  ProductCollectionDocument,
-} from "./schemas/product-collection.schema";
-import { CreateCollectionDto } from "./dto/create-collection.dto";
-import { UpdateCollectionDto } from "./dto/update-collection.dto";
-import { COMMERCE_COLLECTION_SLUG_NAMESPACE } from "../../constants";
-import { SlugRegistryService } from "@kitejs-cms/core";
-import type { JwtPayloadModel } from "@kitejs-cms/core";
+
+import type { CollectionResponseDetailslModel } from "./models/collection-response-details.model";
+import type { CollectionTranslationModel } from "./models/collection-translation.model";
 import type { CollectionResponseModel } from "./models/collection-response.model";
+import type { JwtPayloadModel, User } from "@kitejs-cms/core";
+import type { CollectionUpsertModel } from "./models/collection-upsert.model";
 
 @Injectable()
 export class CollectionsService {
+  private readonly logger = new Logger(CollectionsService.name);
   private readonly slugNamespace = COMMERCE_COLLECTION_SLUG_NAMESPACE;
 
   constructor(
     @InjectModel(ProductCollection.name)
-    private readonly collectionModel: Model<ProductCollectionDocument>,
+    private readonly collectionModel: Model<ProductCollection>,
     private readonly slugService: SlugRegistryService
   ) {}
 
-  private toObjectId(id: string): Types.ObjectId {
+  /**
+   * Builds the MongoDB query object based on filters and language for collections
+   * @param filters Optional filters for isActive, parent, and search
+   * @param language Language code for translations search
+   * @returns Record<string, any> MongoDB query object
+   */
+  private buildCollectionQuery(
+    filters?: Record<string, string>,
+    language = "en"
+  ): Record<string, any> {
+    const query: any = { ...filters, deletedAt: null };
+
+    // Handle search filter
+    if (filters.search) {
+      const searchTerm = filters.search.trim();
+
+      if (searchTerm) {
+        const searchConditions = [
+          { tags: { $regex: searchTerm, $options: "i" } },
+          { description: { $regex: searchTerm, $options: "i" } },
+          {
+            [`translations.${language}.title`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.description`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+        ];
+
+        query.$or = searchConditions;
+      }
+      delete query.search;
+    }
+
+    return query;
+  }
+
+  /**
+   * Counts the total number of collections (optional: you can pass filters in the future).
+   * @returns Total number of collections.
+   * @throws BadRequestException if an error occurs.
+   */
+  async countCollections(
+    filters?: Record<string, string>,
+    language = "en"
+  ): Promise<number> {
     try {
-      return new Types.ObjectId(id);
+      const query = this.buildCollectionQuery(filters, language);
+
+      return await this.collectionModel.countDocuments(query).exec();
     } catch (error) {
-      throw new BadRequestException(`Invalid identifier provided: ${id}`);
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to count collections. ${errorMessage}`
+      );
     }
   }
 
-  private parseDate(value?: string): Date | null {
-    if (value === null) return null;
-    return value ? new Date(value) : null;
-  }
-
-  private mapParent(parentId?: string) {
-    if (!parentId) return undefined;
-    return this.toObjectId(parentId);
-  }
-
-  private async buildResponse(
-    collection: ProductCollection
-  ): Promise<CollectionResponseModel> {
-    const slugs = await this.slugService.findSlugsByEntity(
-      collection._id as Types.ObjectId
-    );
-
-    const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
-      const languageKey = cur.language ?? "default";
-      acc[languageKey] = cur.slug;
-      return acc;
-    }, {});
-
-    const json = collection.toJSON();
-    const translations = json.translations as Record<string, any>;
-    const translationsWithSlug: Record<string, any> = {};
-
-    for (const [language, translation] of Object.entries(translations ?? {})) {
-      translationsWithSlug[language] = {
-        ...(translation as Record<string, unknown>),
-        slug: slugMap[language] ?? slugMap.default ?? "",
-      };
-    }
-
-    return {
-      ...json,
-      id: collection._id.toString(),
-      translations: translationsWithSlug,
-      slugs: slugMap,
-    } as CollectionResponseModel;
-  }
-
-  private async upsertCollection(
-    id: string | undefined,
-    dto: CreateCollectionDto | UpdateCollectionDto,
+  /**
+   * Creates or updates a collection.
+   * @param collectionData Data for the new or existing collection.
+   * @param user Authenticated user details.
+   * @returns The created or updated collection details.
+   * @throws BadRequestException if the collection cannot be created or updated.
+   */
+  async upsertCollection(
+    collectionData: CollectionUpsertModel,
     user: JwtPayloadModel
-  ): Promise<CollectionResponseModel> {
-    const {
-      slug,
-      language,
-      title,
-      description,
-      seo,
-      status,
-      tags,
-      publishAt,
-      expireAt,
-      coverImage,
-      parentId,
-      sortOrder,
-    } = dto;
-
-    const translationData = {
-      title,
-      description,
-      seo,
-    };
-
-    const baseData: Record<string, unknown> = {
-      updatedBy: this.toObjectId(user.sub),
-    };
-
-    if (status !== undefined) {
-      baseData.status = status;
-    }
-
-    if (tags !== undefined) {
-      baseData.tags = tags;
-    } else if (!id) {
-      baseData.tags = [];
-    }
-
-    if (publishAt !== undefined) {
-      baseData.publishAt = this.parseDate(publishAt);
-    } else if (!id) {
-      baseData.publishAt = null;
-    }
-
-    if (expireAt !== undefined) {
-      baseData.expireAt = this.parseDate(expireAt);
-    } else if (!id) {
-      baseData.expireAt = null;
-    }
-
-    if (coverImage !== undefined) {
-      baseData.coverImage = coverImage ?? null;
-    }
-
-    const parentObjectId = this.mapParent(parentId);
-    if (parentId !== undefined) {
-      baseData.parent = parentObjectId ?? null;
-    } else if (!id) {
-      baseData.parent = null;
-    }
-
-    if (sortOrder !== undefined) {
-      baseData.sortOrder = sortOrder;
-    } else if (!id) {
-      baseData.sortOrder = 0;
-    }
-
-    let collection: ProductCollection;
-
-    if (id) {
-      const updateDoc: Record<string, unknown> = {
-        ...baseData,
-        $set: { [`translations.${language}`]: translationData },
+  ): Promise<CollectionResponseDetailslModel> {
+    try {
+      const { id, language, ...restData } = collectionData;
+      const collectionBaseData = {
+        tags: restData.tags,
+        updatedBy: user.sub,
       };
 
-      collection = await this.collectionModel
-        .findByIdAndUpdate(id, updateDoc, { new: true })
+      const translationData = {
+        title: restData.title,
+        description: restData.description,
+        slug: restData.slug,
+      };
+
+      let collection: ProductCollection;
+
+      if (id) {
+        collection = await this.collectionModel.findByIdAndUpdate(
+          id,
+          {
+            ...collectionBaseData,
+            $set: { [`translations.${language}`]: translationData },
+          },
+          { new: true, upsert: false }
+        );
+
+        if (!collection) {
+          throw new NotFoundException(`Collection with ID ${id} not found`);
+        }
+
+        await this.slugService.registerSlug(
+          restData.slug,
+          this.slugNamespace,
+          ObjectIdUtils.toObjectId(collection.id),
+          language
+        );
+      } else {
+        collection = await this.collectionModel.create({
+          ...collectionBaseData,
+          createdBy: user.sub,
+          translations: {
+            [language]: translationData,
+          },
+        });
+
+        await this.slugService.registerSlug(
+          restData.slug,
+          this.slugNamespace,
+          ObjectIdUtils.toObjectId(collection.id),
+          language
+        );
+      }
+
+      return this.findCollectionById(collection._id.toString());
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to upsert collection: ${errorMessage}`
+      );
+    }
+  }
+
+  /**
+   * Retrieves a full collection document by its unique identifier (slug or _id).
+   * This method handles cases where slugs are managed externally.
+   *
+   * @param identify The unique identifier (slug or _id).
+   * @returns The full collection document, or null if not found.
+   * @throws BadRequestException if the query fails.
+   */
+  async findCollection(identify: string): Promise<ProductCollection | null> {
+    try {
+      let collection: ProductCollection | null;
+
+      if (Types.ObjectId.isValid(identify)) {
+        collection = await this.collectionModel.findById(identify).exec();
+      } else {
+        const slugEntry = await this.slugService.findEntityBySlug(
+          identify,
+          this.slugNamespace
+        );
+
+        if (!slugEntry) {
+          throw new NotFoundException(
+            `No collection found for slug: ${identify}`
+          );
+        }
+
+        collection = await this.collectionModel.findById(slugEntry).exec();
+      }
+
+      return collection;
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to fetch collection. ${errorMessage}`
+      );
+    }
+  }
+
+  /**
+   * Retrieves a collection for frontend consumption with a single translation.
+   * It returns the collection with only the translation corresponding to the requested language.
+   *
+   * If the requested language is not available, an optional fallback language is used.
+   * The response excludes the full translations map.
+   *
+   * @param identify The unique identifier (slug or _id).
+   * @param language The desired language code (e.g., 'en', 'it').
+   * @param fallbackLanguage Optional fallback language if the requested language is missing.
+   * @returns A CollectionResponseDto containing collection core properties and the selected translation.
+   * @throws NotFoundException if the collection or translation is not found.
+   */
+  async findCollectionForWeb(
+    identify: string,
+    language: string,
+    fallbackLanguage?: string
+  ): Promise<CollectionResponseModel> {
+    const collection = await this.findCollection(identify);
+    if (!collection) {
+      throw new NotFoundException(
+        `Collection not found for identifier: ${identify}`
+      );
+    }
+
+    const collectionData = collection.toJSON();
+
+    const translations = collectionData.translations as Record<
+      string,
+      CollectionTranslationModel
+    >;
+
+    let selectedTranslation = translations[language];
+
+    if (!selectedTranslation && fallbackLanguage) {
+      selectedTranslation = translations[fallbackLanguage];
+    }
+
+    if (!selectedTranslation) {
+      throw new NotFoundException(
+        `Translation not found for language: ${language}` +
+          (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
+      );
+    }
+
+    const response: CollectionResponseModel = {
+      slug: selectedTranslation.slug,
+      tags: collectionData.tags,
+      title: selectedTranslation.title,
+      description: selectedTranslation.description,
+      language: language,
+      status: collectionData.status,
+      id: collectionData.id,
+    };
+
+    return response;
+  }
+
+  /**
+   * Retrieves a single collection with detailed response model.
+   * @param id The collection ID.
+   * @returns The collection with response details.
+   * @throws NotFoundException if not found.
+   * @throws BadRequestException on errors.
+   */
+  async findCollectionById(
+    id: string
+  ): Promise<CollectionResponseDetailslModel> {
+    try {
+      const collection = await this.collectionModel
+        .findById(id)
+        .populate<{ createdBy: User }>("createdBy")
+        .populate<{ updatedBy: User }>("updatedBy")
+        .populate<{ parent?: ProductCollection }>("parent")
         .exec();
 
       if (!collection) {
-        throw new NotFoundException(`Collection with ID ${id} not found`);
+        throw new NotFoundException(`Collection with ID "${id}" not found.`);
       }
-    } else {
-      const createDoc: Record<string, unknown> = {
-        ...baseData,
-        createdBy: this.toObjectId(user.sub),
-        translations: {
-          [language]: translationData,
-        },
-      };
 
-      collection = await this.collectionModel.create(createDoc);
+      const slugs = await this.slugService.findSlugsByEntity(
+        new Types.ObjectId(id)
+      );
+
+      const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
+        acc[cur.language] = cur.slug;
+        return acc;
+      }, {});
+
+      const json = collection.toJSON();
+      const translationsWithSlug: Record<string, CollectionTranslationModel> =
+        {};
+      for (const [lang, trans] of Object.entries(json.translations)) {
+        translationsWithSlug[lang] = {
+          ...(trans as unknown as CollectionTranslationModel),
+          slug: slugMap[lang] ?? "",
+        };
+      }
+
+      return {
+        ...json,
+        createdBy: `${collection.createdBy.firstName} ${collection.createdBy.lastName}`,
+        updatedBy: `${collection.updatedBy.firstName} ${collection.updatedBy.lastName}`,
+        translations: translationsWithSlug,
+      } as unknown as CollectionResponseDetailslModel;
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to fetch collection by ID. ${errorMessage}`
+      );
     }
-
-    await this.slugService.registerSlug(
-      slug,
-      this.slugNamespace,
-      collection._id as Types.ObjectId,
-      language
-    );
-
-    return this.buildResponse(collection);
   }
 
-  async create(dto: CreateCollectionDto, user: JwtPayloadModel) {
-    return this.upsertCollection(undefined, dto, user);
+  /**
+   * Retrieves a paginated list of collection.
+   * @param pageNumber Collection number (default: 1).
+   * @param itemsPerPage Number of items per page (default: 10).
+   * @returns An array of collections.
+   * @throws BadRequestException if the query fails.
+   */
+  async findCollections(
+    skip = 0,
+    take = 10,
+    sort?: Record<string, any>,
+    filters?: Record<string, string>,
+    language = "en"
+  ): Promise<CollectionResponseDetailslModel[]> {
+    try {
+      const query = await this.buildCollectionQuery(filters, language);
+
+      const collections = await this.collectionModel
+        .find(query)
+        .skip(skip)
+        .limit(take)
+        .populate<{ createdBy: User }>("createdBy")
+        .populate<{ updatedBy: User }>("updatedBy")
+        .sort(sort ?? { createdAt: -1 })
+        .exec();
+
+      const collectionsRes: CollectionResponseDetailslModel[] = [];
+
+      for (const item of collections) {
+        const slugs = await this.slugService.findSlugsByEntity(item.id);
+
+        const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
+          acc[cur.language] = cur.slug;
+          return acc;
+        }, {});
+
+        const json = item.toJSON();
+        const translationsWithSlug: Record<string, CollectionTranslationModel> =
+          {};
+        for (const [lang, trans] of Object.entries(json.translations)) {
+          translationsWithSlug[lang] = {
+            ...(trans as unknown as CollectionTranslationModel),
+            slug: slugMap[lang] ?? "",
+          };
+        }
+
+        collectionsRes.push({
+          ...json,
+          translations: translationsWithSlug,
+          createdBy: `${item.createdBy.firstName} ${item.createdBy.lastName}`,
+          updatedBy: `${item.updatedBy.firstName} ${item.updatedBy.lastName}`,
+        } as unknown as CollectionResponseDetailslModel);
+      }
+
+      return collectionsRes;
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to fetch collections. ${errorMessage}`
+      );
+    }
   }
 
-  async findAll(): Promise<CollectionResponseModel[]> {
-    const collections = await this.collectionModel
-      .find()
-      .sort({ sortOrder: 1, updatedAt: -1 })
-      .exec();
+  /**
+   * Deletes a collection by its ID.
+   * @param id The ID of the collection.
+   * @returns True if deleted successfully, false otherwise.
+   * @throws BadRequestException if deletion fails.
+   */
+  async deleteCollection(id: string): Promise<boolean> {
+    const result = await this.collectionModel.findByIdAndDelete(id).exec();
 
-    return Promise.all(
-      collections.map((collection) => this.buildResponse(collection))
-    );
-  }
-
-  async findOne(id: string): Promise<CollectionResponseModel> {
-    const collection = await this.collectionModel.findById(id).exec();
-    if (!collection) {
+    if (!result)
       throw new NotFoundException(`Collection with ID ${id} not found`);
-    }
 
-    return this.buildResponse(collection);
-  }
+    try {
+      const slugs = await this.slugService.findSlugsByEntity(
+        result._id as Types.ObjectId
+      );
 
-  async update(
-    id: string,
-    dto: UpdateCollectionDto,
-    user: JwtPayloadModel
-  ): Promise<CollectionResponseModel> {
-    return this.upsertCollection(id, dto, user);
-  }
-
-  async remove(id: string): Promise<void> {
-    const collection = await this.collectionModel.findByIdAndDelete(id).exec();
-    if (!collection) {
-      throw new NotFoundException(`Collection with ID ${id} not found`);
-    }
-
-    const slugs = await this.slugService.findSlugsByEntity(
-      collection._id as Types.ObjectId
-    );
-
-    await Promise.all(
-      slugs.map((entry) =>
-        this.slugService.deleteSlug(
-          entry.slug,
-          this.slugNamespace,
-          entry.language ?? undefined
+      await Promise.all(
+        slugs.map((entry) =>
+          this.slugService.deleteSlug(
+            entry.slug,
+            this.slugNamespace,
+            entry.language ?? undefined
+          )
         )
-      )
-    );
+      );
 
-    await this.collectionModel
-      .updateMany({ parent: collection._id }, { $unset: { parent: 1 } })
-      .exec();
+      return result !== null;
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to delete collection. ${errorMessage}`
+      );
+    }
   }
 }
