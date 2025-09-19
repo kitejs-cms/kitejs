@@ -4,77 +4,81 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsMongoId,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
 
+import type { CollectionResponseModel } from "../models/collection-response.model";
+import type { CollectionUpsertModel } from "../models/collection-upsert.model";
 import { CollectionStatus } from "../models/collection-status.enum";
-import type { CollectionBaseModel } from "../models/collection-base.model";
 import { CollectionSeoDto } from "./collection-seo.dto";
 
-export class CreateCollectionDto implements CollectionBaseModel {
+export class CollectionUpsertDto implements CollectionUpsertModel {
   @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  declare slug: string;
+  @IsOptional()
+  @IsMongoId()
+  id?: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  declare language: string;
+  slug: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  language: string;
 
   @ApiProperty({ enum: CollectionStatus })
   @IsEnum(CollectionStatus)
-  declare status: CollectionStatus;
+  status: CollectionStatus;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  declare title: string;
+  title: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare description?: string;
+  description?: string;
 
   @ApiPropertyOptional({ type: () => CollectionSeoDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => CollectionSeoDto)
-  declare seo?: CollectionSeoDto;
+  seo: CollectionSeoDto;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  declare tags?: string[];
+  tags?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  declare publishAt?: string;
+  publishAt?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
-  declare expireAt?: string;
+  expireAt?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare coverImage?: string;
+  coverImage?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare parentId?: string;
+  parentId?: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  declare sortOrder?: number;
+  constructor(partial: CollectionResponseModel) {
+    Object.assign(this, partial);
+  }
 }

@@ -7,21 +7,25 @@ export class CollectionSeoDto implements CollectionSeoModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare metaTitle?: string;
+  metaTitle?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare metaDescription?: string;
+  metaDescription?: string;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  declare metaKeywords?: string[];
+  metaKeywords?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  declare canonicalUrl?: string;
+  canonicalUrl?: string;
+
+  constructor(partial: CollectionSeoModel) {
+    Object.assign(this, partial);
+  }
 }

@@ -16,7 +16,6 @@ import {
   createMetaModel,
   GetAuthUser,
   Language,
-  PaginationModel,
   parseQuery,
   ValidateObjectIdPipe,
 } from "../../common";

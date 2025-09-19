@@ -5,10 +5,14 @@ export * from "./models/fulfillment-status.enum";
 export * from "./models/order-address.model";
 export * from "./models/order-item.model";
 export * from "./models/order-base.model";
+export * from "./models/order-item-response.model";
+export * from "./models/order-response.model";
 
 /* DTO */
 export * from "./dto/create-order.dto";
 export * from "./dto/update-order.dto";
+export * from "./dto/order-item-response.dto";
+export * from "./dto/order-response.dto";
 
 /* Schemas */
 export * from "./schemas/order.schema";

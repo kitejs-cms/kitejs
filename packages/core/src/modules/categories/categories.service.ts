@@ -79,7 +79,7 @@ export class CategoriesService {
     language = "en"
   ): Promise<number> {
     try {
-      const query = await this.buildCategoryQuery(filters, language);
+      const query = this.buildCategoryQuery(filters, language);
 
       return await this.categoryModel.countDocuments(query).exec();
     } catch (error) {
@@ -390,8 +390,26 @@ export class CategoriesService {
    * @throws BadRequestException if deletion fails.
    */
   async deleteCategory(id: string): Promise<boolean> {
+    const result = await this.categoryModel.findByIdAndDelete(id).exec();
+
+    if (!result)
+      throw new NotFoundException(`Category with ID ${id} not found`);
+
     try {
-      const result = await this.categoryModel.findByIdAndDelete(id).exec();
+      const slugs = await this.slugService.findSlugsByEntity(
+        result._id as Types.ObjectId
+      );
+
+      await Promise.all(
+        slugs.map((entry) =>
+          this.slugService.deleteSlug(
+            entry.slug,
+            this.slugNamespace,
+            entry.language ?? undefined
+          )
+        )
+      );
+
       return result !== null;
     } catch (error) {
       this.logger.error(error);

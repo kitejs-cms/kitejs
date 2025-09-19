@@ -1,14 +1,14 @@
-import type { CollectionStatus } from "./collection-status.enum";
-import type { CollectionSeoModel } from "./collection-seo.model";
+import { CollectionSeoModel } from "./collection-seo.model";
+import { CollectionStatus } from "./collection-status.enum";
 
-export type CollectionResponseModel = {
-  id: string;
+export type CollectionUpsertModel = {
+  id?: string;
   slug: string;
   language: string;
   status: CollectionStatus;
   title: string;
   description?: string;
-  seo?: CollectionSeoModel;
+  seo: CollectionSeoModel;
   tags?: string[];
   publishAt?: string;
   expireAt?: string;
