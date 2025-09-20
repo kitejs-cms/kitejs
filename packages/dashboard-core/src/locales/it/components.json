@@ -12,6 +12,9 @@
     "morePages": "Altre pagine",
     "pageInfo": "Pagina {{current}} di {{total}}"
   },
+  "data-table": {
+    "empty": "Nessun elemento presente"
+  },
   "nav-user": {
     "account": "Account",
     "settings": "Impostazioni",

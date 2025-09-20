@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button, SkeletonPage } from "@kitejs-cms/dashboard-core";
+import { Button, LanguageTabs, SkeletonPage } from "@kitejs-cms/dashboard-core";
 import { CustomFieldForm } from "@kitejs-cms/dashboard-core/components/custom-field-form";
 import { JsonModal } from "@kitejs-cms/dashboard-core/components/json-modal";
-import { LanguageTabs } from "../components/language-tabs";
 import { ContentSection } from "../components/content-section";
 import { SeoSection } from "../components/seo-section";
 import { SettingsSection } from "../components/settings-section";
@@ -72,7 +71,7 @@ export function GalleryDetailsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <LanguageTabs
           translations={translations}
-          activeLang={activeLang}
+          activeLanguage={activeLang}
           onLanguageChange={setActiveLang}
           onAddLanguage={onAddLanguage}
         />

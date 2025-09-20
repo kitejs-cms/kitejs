@@ -12,6 +12,9 @@
     "morePages": "More pages",
     "pageInfo": "Page {{current}} of {{total}}"
   },
+  "data-table": {
+    "empty": "No entries found"
+  },
   "nav-user": {
     "account": "Account",
     "settings": "Settings",

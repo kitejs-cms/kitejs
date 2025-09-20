@@ -39,6 +39,7 @@ interface TableProps<T> {
   isLoading?: boolean;
   pagination?: PaginationProps;
   onRowClick?: (row: T) => void;
+  emptyMessage?: React.ReactNode;
 }
 
 const alignClass = {
@@ -53,7 +54,12 @@ export function DataTable<T>({
   isLoading,
   pagination,
   onRowClick,
+  emptyMessage,
 }: TableProps<T>) {
+  const { t } = useTranslation("components");
+
+  const noDataContent = emptyMessage ?? t("data-table.empty", { defaultValue: "No entries found" });
+
   return (
     <Table>
       <TableHeader>
@@ -71,16 +77,16 @@ export function DataTable<T>({
       <TableBody>
         {isLoading ? (
           <TableRow>
-            <TableCell colSpan={columns.length} className="text-center py-6">
-              <Loader2 className="animate-spin h-6 w-6 text-primary mx-auto scale-110" />
+            <TableCell colSpan={columns.length} className="py-6 text-center">
+              <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
             </TableCell>
           </TableRow>
-        ) : (
-          (data || []).map((row, rowIndex) => (
+        ) : data && data.length > 0 ? (
+          data.map((row, rowIndex) => (
             <TableRow
               key={rowIndex}
               onClick={() => onRowClick?.(row)}
-              className="cursor-pointer hover:bg-gray-100"
+              className={onRowClick ? "cursor-pointer hover:bg-muted/50" : undefined}
             >
               {columns.map((col) => (
                 <TableCell
@@ -94,6 +100,15 @@ export function DataTable<T>({
               ))}
             </TableRow>
           ))
+        ) : (
+          <TableRow className="hover:bg-transparent">
+            <TableCell
+              colSpan={columns.length}
+              className="py-6 text-center text-sm text-muted-foreground"
+            >
+              {noDataContent}
+            </TableCell>
+          </TableRow>
         )}
       </TableBody>
       {pagination && (

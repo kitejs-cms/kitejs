@@ -4,11 +4,13 @@
   },
   "menu": {
     "commerce": "Commerce",
+    "collections": "Collections",
     "products": "Products",
     "orders": "Orders"
   },
   "breadcrumb": {
     "home": "Dashboard",
+    "collections": "Collections",
     "products": "Products",
     "orders": "Orders"
   },
@@ -47,6 +49,128 @@
         "title": "Prices include taxes",
         "description": "Display product prices including taxes by default."
       }
+    }
+  },
+  "collections": {
+    "pageTitle": "Collections",
+    "pageDescription": "Group products into curated selections to power landing pages and campaigns.",
+    "title": {
+      "manage": "Manage collections"
+    },
+    "search": {
+      "placeholder": "Search collections...",
+      "minLength": "Enter at least 3 characters to search."
+    },
+    "fields": {
+      "title": "Title",
+      "languages": "Languages",
+      "tags": "Tags",
+      "status": "Status",
+      "publishAt": "Publish at",
+      "updatedAt": "Last updated",
+      "createdAt": "Created at",
+      "actions": "Actions",
+      "slug": "Slug",
+      "description": "Description",
+      "expireAt": "Unpublish at"
+    },
+    "sections": {
+      "details": "Details",
+      "settings": "Settings",
+      "seo": "SEO",
+      "meta": "Metadata"
+    },
+    "buttons": {
+      "add": "Add collection",
+      "copy": "Copy",
+      "download": "Download",
+      "edit": "Edit",
+      "delete": "Delete",
+      "viewJson": "View JSON",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "table": {
+      "columns": {
+        "name": "Name",
+        "status": "Status",
+        "tags": "Tags",
+        "updatedAt": "Last updated"
+      },
+      "untitled": "Untitled collection",
+      "error": "Unable to load collections. Please retry.",
+      "empty": "No collections match the current filters."
+    },
+    "filters": {
+      "active": "{{count}} active filters",
+      "clear": "Clear filters",
+      "fields": {
+        "status": "Status",
+        "tags": "Tags",
+        "publishAt": "Publish at",
+        "expireAt": "Unpublish at",
+        "createdAt": "Created at"
+      }
+    },
+    "status": {
+      "Draft": "Draft",
+      "Published": "Published",
+      "Archived": "Archived"
+    },
+    "meta": {
+      "created": "Created",
+      "updated": "Last updated"
+    },
+    "seo": {
+      "metaTitle": "Meta title",
+      "metaDescription": "Meta description",
+      "metaKeywords": "Meta keywords",
+      "canonicalUrl": "Canonical URL"
+    },
+    "details": {
+      "title": "Collection details",
+      "description": "Define the content and publication rules for this collection.",
+      "breadcrumb": "Collection details",
+      "language": "Language",
+      "name": "Title",
+      "namePlaceholder": "Collection name",
+      "slug": "Slug",
+      "slugPlaceholder": "collection-slug",
+      "descriptionPlaceholder": "Describe the purpose of this collection.",
+      "status": "Status",
+      "tags": "Tags",
+      "tagPlaceholder": "Add a tag and press enter",
+      "addTag": "Add tag",
+      "removeTag": "Remove tag \"{{tag}}\"",
+      "noTags": "No tags added yet.",
+      "publishAt": "Publish at",
+      "expireAt": "Unpublish at",
+      "meta": {
+        "title": "Metadata",
+        "created": "Created",
+        "updated": "Last updated"
+      },
+      "actions": {
+        "save": "Save collection",
+        "cancel": "Cancel"
+      },
+      "notifications": {
+        "saved": "Collection updated successfully.",
+        "created": "Collection created successfully.",
+        "validationError": "Please provide a title and slug for the selected language.",
+        "error": "Unable to save the collection. Please try again."
+      }
+    },
+    "create": {
+      "title": "Create collection",
+      "description": "Set up the first translation and availability for the new collection.",
+      "breadcrumb": "Create collection"
+    },
+    "delete": {
+      "title": "Delete collection",
+      "description": "This action cannot be undone. Are you sure you want to delete the collection?",
+      "confirm": "Delete",
+      "cancel": "Cancel"
     }
   },
   "products": {
