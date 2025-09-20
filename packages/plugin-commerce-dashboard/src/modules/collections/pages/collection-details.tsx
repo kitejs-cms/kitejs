@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
   Input,
+  LanguageTabs,
   JsonModal,
   Label,
   Select,
@@ -24,7 +25,6 @@ import {
   useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
 import { FileJson, Save } from "lucide-react";
-import { CollectionLanguageTabs } from "../components/collection-language-tabs";
 
 interface CollectionSeo {
   metaTitle?: string;
@@ -465,11 +465,12 @@ export function CommerceCollectionDetailsPage() {
         <JsonModal isOpen={jsonView} onClose={() => setJsonView(false)} data={jsonData} />
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CollectionLanguageTabs
-            languages={languages}
+          <LanguageTabs
+            translations={translations}
             activeLanguage={activeLanguage}
             onLanguageChange={setActiveLanguage}
             onAddLanguage={handleAddLanguage}
+            tabsListClassName="gap-2"
           />
         </div>
 

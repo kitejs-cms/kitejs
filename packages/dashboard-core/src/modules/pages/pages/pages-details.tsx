@@ -6,7 +6,7 @@ import { Button } from "../../../components/ui/button";
 import { SettingsSection } from "../components/settings-section";
 import { ContentSection } from "../components/content-section";
 import { SeoSection } from "../components/seo-section";
-import { LanguageTabs } from "../components/language-tabs";
+import { LanguageTabs } from "../../../components/language-tabs";
 import { UnsavedChangesDialog } from "../components/unsaved-changes-dialog";
 import { usePageDetails } from "../hooks/use-page-details";
 import { PageEditor } from "../components/page-editor";
@@ -71,8 +71,8 @@ export function PageDetailsPage({ pageType = "Page" }: Props) {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <LanguageTabs
-          translations={data?.translations}
-          activeLang={activeLang}
+          translations={data?.translations ?? {}}
+          activeLanguage={activeLang}
           onLanguageChange={setActiveLang}
           onAddLanguage={onAddLanguage}
         />

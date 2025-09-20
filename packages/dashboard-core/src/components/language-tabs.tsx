@@ -1,35 +1,42 @@
 import { useEffect, useMemo } from "react";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  Button,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@kitejs-cms/dashboard-core";
-import { useSettingsContext } from "@kitejs-cms/dashboard-core";
 import { Plus } from "lucide-react";
 
-interface CollectionLanguageTabsProps {
-  languages: string[];
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
+import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { useSettingsContext } from "../context/settings-context";
+import { cn } from "../lib/utils";
+
+export interface LanguageTabsProps<T = unknown> {
+  translations: Record<string, T>;
   activeLanguage: string;
   onLanguageChange: (language: string) => void;
   onAddLanguage: (language: string) => void;
+  tabsListClassName?: string;
 }
 
-export function CollectionLanguageTabs({
-  languages,
+export function LanguageTabs<T>({
+  translations,
   activeLanguage,
   onLanguageChange,
   onAddLanguage,
-}: CollectionLanguageTabsProps) {
+  tabsListClassName,
+}: LanguageTabsProps<T>) {
   const { cmsSettings } = useSettingsContext();
 
   const supportedLanguages = useMemo(
     () => cmsSettings?.supportedLanguages ?? [],
     [cmsSettings?.supportedLanguages]
+  );
+
+  const languages = useMemo(
+    () => Object.keys(translations ?? {}),
+    [translations]
   );
 
   const sortedLanguages = useMemo(() => {
@@ -48,7 +55,11 @@ export function CollectionLanguageTabs({
   useEffect(() => {
     if (!languages.includes(activeLanguage)) {
       const fallback =
-        sortedLanguages[0] ?? supportedLanguages[0] ?? cmsSettings?.defaultLanguage ?? "en";
+        sortedLanguages[0] ??
+        supportedLanguages[0] ??
+        cmsSettings?.defaultLanguage ??
+        "";
+
       if (fallback) {
         onLanguageChange(fallback);
       }
@@ -64,7 +75,7 @@ export function CollectionLanguageTabs({
 
   return (
     <Tabs value={activeLanguage} onValueChange={onLanguageChange}>
-      <TabsList className="flex-wrap h-auto gap-2">
+      <TabsList className={cn("flex-wrap h-auto", tabsListClassName)}>
         {sortedLanguages.map((language) => (
           <TabsTrigger key={language} value={language} className="text-sm">
             {language.toUpperCase()}
@@ -83,7 +94,10 @@ export function CollectionLanguageTabs({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {missingLanguages.map((language) => (
-                <DropdownMenuItem key={language} onClick={() => onAddLanguage(language)}>
+                <DropdownMenuItem
+                  key={language}
+                  onClick={() => onAddLanguage(language)}
+                >
                   {language.toUpperCase()}
                 </DropdownMenuItem>
               ))}
