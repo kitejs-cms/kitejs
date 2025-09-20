@@ -18,6 +18,7 @@ import {
   CardTitle,
   DataTable,
   LanguagesBadge,
+  FilterModal,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -28,6 +29,7 @@ import {
   useBreadcrumb,
   useClipboardTable,
   useHasPermission,
+  useDebounce,
 } from "@kitejs-cms/dashboard-core";
 import {
   Clipboard,
@@ -37,7 +39,12 @@ import {
   Plus,
   Search,
   Trash2,
+  ListFilter,
+  Trash,
 } from "lucide-react";
+import type { FilterCondition } from "@kitejs-cms/core";
+import type { FilterConfig } from "@kitejs-cms/dashboard-core/components/filter-modal";
+import { buildFilterQuery } from "@kitejs-cms/dashboard-core/lib/query-builder";
 
 interface CollectionTranslation {
   title?: string;
@@ -59,6 +66,18 @@ interface CollectionListItem {
 
 const ITEMS_PER_PAGE = 10;
 
+const STATUS_BADGE_STYLES: Record<CollectionStatus, string> = {
+  Draft: "border-yellow-300 bg-yellow-50 text-yellow-800",
+  Published: "border-emerald-300 bg-emerald-50 text-emerald-800",
+  Archived: "border-slate-300 bg-slate-50 text-slate-800",
+};
+
+const isFilterValueEmpty = (value: unknown) => {
+  if (value === null || value === undefined || value === "") return true;
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+};
+
 export function CommerceCollectionsPage() {
   const { t, i18n } = useTranslation("commerce");
   const navigate = useNavigate();
@@ -73,14 +92,57 @@ export function CommerceCollectionsPage() {
   const [showSearch, setShowSearch] = useState(false);
   const [collectionToDelete, setCollectionToDelete] =
     useState<CollectionListItem | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<FilterCondition[]>([]);
+  const [searchInput, setSearchInput] = useState("");
 
   const itemsPerPage = ITEMS_PER_PAGE;
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchQuery = searchParams.get("search") || "";
+  const debouncedSearch = useDebounce(searchInput, 500);
+  const searchParamsString = searchParams.toString();
 
   const canCreate = hasPermission("plugin-commerce:collections.create");
   const canUpdate = hasPermission("plugin-commerce:collections.update");
   const canDelete = hasPermission("plugin-commerce:collections.delete");
+
+  const filterConfig = useMemo<FilterConfig>(
+    () => ({
+      fields: [
+        {
+          key: "status",
+          label: t("collections.filters.fields.status"),
+          type: "select",
+          options: [
+            { value: "Draft", label: t("collections.status.Draft") },
+            { value: "Published", label: t("collections.status.Published") },
+            { value: "Archived", label: t("collections.status.Archived") },
+          ],
+        },
+        {
+          key: "tags",
+          label: t("collections.filters.fields.tags"),
+          type: "array",
+        },
+        {
+          key: "publishAt",
+          label: t("collections.filters.fields.publishAt"),
+          type: "date",
+        },
+        {
+          key: "expireAt",
+          label: t("collections.filters.fields.expireAt"),
+          type: "date",
+        },
+        {
+          key: "createdAt",
+          label: t("collections.filters.fields.createdAt"),
+          type: "date",
+        },
+      ],
+    }),
+    [t]
+  );
 
   useEffect(() => {
     setBreadcrumb([
@@ -90,20 +152,56 @@ export function CommerceCollectionsPage() {
   }, [setBreadcrumb, t]);
 
   useEffect(() => {
+    setSearchInput(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
     const params = new URLSearchParams();
     params.set("page", currentPage.toString());
-    if (searchQuery) params.set("search", searchQuery);
-    setSearchParams(params, { replace: true });
+    const trimmedSearch = debouncedSearch.trim();
+    const effectiveSearch = trimmedSearch.length >= 3 ? trimmedSearch : "";
+    if (effectiveSearch) params.set("search", effectiveSearch);
+
+    const currentParams = searchParamsString;
+    const newParams = params.toString();
+    if (currentParams !== newParams) {
+      setSearchParams(params, { replace: true });
+    }
 
     const apiParams = new URLSearchParams();
     apiParams.set("page[number]", currentPage.toString());
     apiParams.set("page[size]", itemsPerPage.toString());
-    if (searchQuery.trim()) {
-      apiParams.set("search", searchQuery.trim());
+    if (effectiveSearch) {
+      apiParams.set("search", effectiveSearch);
+    }
+    if (activeFilters.length > 0) {
+      const filterQuery = buildFilterQuery(activeFilters);
+      Object.entries(filterQuery).forEach(([key, value]) => {
+        if (value === undefined || value === null) {
+          return;
+        }
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            apiParams.set(key, value.join(","));
+          }
+        } else if (typeof value === "boolean") {
+          apiParams.set(key, value ? "true" : "false");
+        } else {
+          apiParams.set(key, String(value));
+        }
+      });
     }
 
     void fetchData(`commerce/collections?${apiParams.toString()}`);
-  }, [fetchData, currentPage, searchQuery, itemsPerPage, setSearchParams]);
+  }, [
+    activeFilters,
+    currentPage,
+    debouncedSearch,
+    fetchData,
+    itemsPerPage,
+    searchParamsString,
+    setSearchParams,
+  ]);
 
   const collections = data ?? [];
 
@@ -114,7 +212,7 @@ export function CommerceCollectionsPage() {
       titleForClipboard: getCollectionTitle(row),
       languagesForClipboard: Object.keys(row.translations).join(", "),
       tagsForClipboard: row.tags?.length ? row.tags.join(", ") : "-",
-      statusForClipboard: row.status ?? "-",
+      statusForClipboard: getStatusLabel(row.status),
       publishAtForClipboard: row.publishAt
         ? new Date(row.publishAt).toISOString()
         : "-",
@@ -136,6 +234,11 @@ export function CommerceCollectionsPage() {
       return translation.title;
     }
     return t("collections.table.untitled");
+  };
+
+  const getStatusLabel = (status?: CollectionStatus) => {
+    if (!status) return "-";
+    return t(`collections.status.${status}` as const);
   };
 
   const renderTags = (tags: string[] | undefined) => {
@@ -170,6 +273,21 @@ export function CommerceCollectionsPage() {
     );
   };
 
+  const renderStatus = (status?: CollectionStatus) => {
+    if (!status) {
+      return <span className="text-muted-foreground">-</span>;
+    }
+
+    return (
+      <Badge
+        variant="outline"
+        className={`${STATUS_BADGE_STYLES[status]} font-normal`}
+      >
+        {getStatusLabel(status)}
+      </Badge>
+    );
+  };
+
   const formatDate = useMemo(
     () =>
       (value?: string) => {
@@ -186,13 +304,65 @@ export function CommerceCollectionsPage() {
     [i18n.language]
   );
 
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (currentPage !== 1) {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      setSearchParams(params);
+    }
+  };
+
+  const handleApplyFilters = (filters: FilterCondition[]) => {
+    setActiveFilters(filters);
+    setShowFilter(false);
+
+    if (currentPage !== 1) {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      setSearchParams(params);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setActiveFilters([]);
+    const params = new URLSearchParams(searchParams);
+    params.set("page", "1");
+    setSearchParams(params);
+  };
+
+  const activeFilterCount = activeFilters.filter(
+    (filter) => !isFilterValueEmpty(filter.value)
+  ).length;
+  const hasActiveFilters = activeFilterCount > 0;
+
   return (
     <div className="flex flex-col items-center justify-center p-4">
       <Card className="w-full gap-0 py-0 shadow-neutral-50">
         <CardHeader className="rounded-t-xl bg-secondary py-4 text-primary">
           <div className="flex items-center justify-between">
-            <CardTitle>{t("collections.title.manage")}</CardTitle>
+            <div className="flex flex-col gap-2">
+              <CardTitle>{t("collections.title.manage")}</CardTitle>
+              {hasActiveFilters && (
+                <Badge
+                  variant="secondary"
+                  className="w-fit bg-blue-100 text-blue-800"
+                >
+                  {t("collections.filters.active", {
+                    count: activeFilterCount,
+                  })}
+                </Badge>
+              )}
+            </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant={hasActiveFilters ? "default" : "outline"}
+                size="icon"
+                className="cursor-pointer shadow-none"
+                onClick={() => setShowFilter(true)}
+              >
+                <ListFilter className="h-4 w-4" />
+              </Button>
               <Button
                 variant="outline"
                 size="icon"
@@ -207,16 +377,14 @@ export function CommerceCollectionsPage() {
                     type="text"
                     placeholder={t("collections.search.placeholder")}
                     className="w-[200px] animate-in fade-in slide-in-from-right-1 duration-300 bg-white shadow-muted"
-                    value={searchQuery}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      const params = new URLSearchParams(searchParams);
-                      if (value) params.set("search", value);
-                      else params.delete("search");
-                      params.set("page", "1");
-                      setSearchParams(params);
-                    }}
+                    value={searchInput}
+                    onChange={(event) => handleSearchChange(event.target.value)}
                   />
+                  {searchInput.length > 0 && searchInput.trim().length < 3 && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("collections.search.minLength")}
+                    </p>
+                  )}
                 </div>
               )}
               <DropdownMenu>
@@ -244,6 +412,12 @@ export function CommerceCollectionsPage() {
                     <Download className="mr-2 h-4 w-4" />
                     {t("collections.buttons.download")}
                   </DropdownMenuItem>
+                  {hasActiveFilters && (
+                    <DropdownMenuItem onClick={handleClearFilters}>
+                      <Trash className="mr-2 h-4 w-4" />
+                      {t("collections.filters.clear")}
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -266,6 +440,11 @@ export function CommerceCollectionsPage() {
                 render: (_, row) => getCollectionTitle(row),
               },
               {
+                key: "status" as never,
+                label: t("collections.fields.status"),
+                render: (_, row) => renderStatus(row.status),
+              },
+              {
                 key: "translations" as never,
                 label: t("collections.fields.languages"),
                 render: (_, row) => LanguagesBadge(row.translations),
@@ -274,6 +453,11 @@ export function CommerceCollectionsPage() {
                 key: "tags" as never,
                 label: t("collections.fields.tags"),
                 render: (_, row) => renderTags(row.tags),
+              },
+              {
+                key: "publishAt" as never,
+                label: t("collections.fields.publishAt"),
+                render: (value) => formatDate(value as string | undefined),
               },
               {
                 key: "updatedAt" as never,
@@ -362,8 +546,28 @@ export function CommerceCollectionsPage() {
                   const params = new URLSearchParams();
                   params.set("page[number]", currentPage.toString());
                   params.set("page[size]", itemsPerPage.toString());
-                  if (searchQuery.trim()) {
-                    params.set("search", searchQuery.trim());
+                  const trimmedSearch = debouncedSearch.trim();
+                  const effectiveSearch =
+                    trimmedSearch.length >= 3 ? trimmedSearch : "";
+                  if (effectiveSearch) {
+                    params.set("search", effectiveSearch);
+                  }
+                  if (activeFilters.length > 0) {
+                    const filterQuery = buildFilterQuery(activeFilters);
+                    Object.entries(filterQuery).forEach(([key, value]) => {
+                      if (value === undefined || value === null) {
+                        return;
+                      }
+                      if (Array.isArray(value)) {
+                        if (value.length > 0) {
+                          params.set(key, value.join(","));
+                        }
+                      } else if (typeof value === "boolean") {
+                        params.set(key, value ? "true" : "false");
+                      } else {
+                        params.set(key, String(value));
+                      }
+                    });
                   }
                   void fetchData(`commerce/collections?${params.toString()}`);
                 }
@@ -376,6 +580,14 @@ export function CommerceCollectionsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FilterModal
+        isOpen={showFilter}
+        onClose={() => setShowFilter(false)}
+        config={filterConfig}
+        initialConditions={activeFilters}
+        onApplyFilters={handleApplyFilters}
+      />
     </div>
   );
 }

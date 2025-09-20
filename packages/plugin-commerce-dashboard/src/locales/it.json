@@ -58,7 +58,8 @@
       "manage": "Gestisci collezioni"
     },
     "search": {
-      "placeholder": "Cerca collezioni..."
+      "placeholder": "Cerca collezioni...",
+      "minLength": "Inserisci almeno 3 caratteri per cercare."
     },
     "fields": {
       "title": "Titolo",
@@ -67,6 +68,7 @@
       "status": "Stato",
       "publishAt": "Pubblica il",
       "updatedAt": "Ultimo aggiornamento",
+      "createdAt": "Creato il",
       "actions": "Azioni",
       "slug": "Slug",
       "description": "Descrizione",
@@ -98,6 +100,17 @@
       "untitled": "Collezione senza titolo",
       "error": "Impossibile caricare le collezioni. Riprova.",
       "empty": "Nessuna collezione corrisponde ai filtri attuali."
+    },
+    "filters": {
+      "active": "{{count}} filtri attivi",
+      "clear": "Rimuovi filtri",
+      "fields": {
+        "status": "Stato",
+        "tags": "Tag",
+        "publishAt": "Pubblica il",
+        "expireAt": "Nascondi il",
+        "createdAt": "Creato il"
+      }
     },
     "status": {
       "Draft": "Bozza",

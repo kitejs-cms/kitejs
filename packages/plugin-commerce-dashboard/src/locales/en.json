@@ -58,7 +58,8 @@
       "manage": "Manage collections"
     },
     "search": {
-      "placeholder": "Search collections..."
+      "placeholder": "Search collections...",
+      "minLength": "Enter at least 3 characters to search."
     },
     "fields": {
       "title": "Title",
@@ -67,6 +68,7 @@
       "status": "Status",
       "publishAt": "Publish at",
       "updatedAt": "Last updated",
+      "createdAt": "Created at",
       "actions": "Actions",
       "slug": "Slug",
       "description": "Description",
@@ -98,6 +100,17 @@
       "untitled": "Untitled collection",
       "error": "Unable to load collections. Please retry.",
       "empty": "No collections match the current filters."
+    },
+    "filters": {
+      "active": "{{count}} active filters",
+      "clear": "Clear filters",
+      "fields": {
+        "status": "Status",
+        "tags": "Tags",
+        "publishAt": "Publish at",
+        "expireAt": "Unpublish at",
+        "createdAt": "Created at"
+      }
     },
     "status": {
       "Draft": "Draft",
