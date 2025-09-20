@@ -15,7 +15,7 @@ import type { CommercePluginSettingsModel } from "@kitejs-cms/plugin-commerce-ap
 import {
   COMMERCE_PLUGIN_NAMESPACE,
   COMMERCE_SETTINGS_KEY,
-} from "../constants";
+} from "../../../constants";
 
 const DEFAULT_SETTINGS: CommercePluginSettingsModel = {
   defaultCurrency: "EUR",
