@@ -57,11 +57,14 @@ interface CollectionDetail {
 
 function generateSlug(value: string) {
   return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function toDateInputValue(value?: string | Date | null) {
@@ -122,6 +125,7 @@ export function CommerceCollectionDetailsPage() {
   const [publishAt, setPublishAt] = useState<string>("");
   const [expireAt, setExpireAt] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
+  const [slugTouched, setSlugTouched] = useState<Record<string, boolean>>({});
   const [jsonView, setJsonView] = useState(false);
   const [dirty, setDirty] = useState(false);
 
@@ -180,15 +184,17 @@ export function CommerceCollectionDetailsPage() {
       const translationEntries = Object.entries(
         data.translations ?? {}
       ) as Array<[string, CollectionTranslation]>;
+      const touchedMap: Record<string, boolean> = {};
       translationEntries.forEach(([language, value]) => {
         const seo = value?.seo ?? {};
         const keywords = Array.isArray(seo?.metaKeywords)
           ? seo.metaKeywords.filter((keyword): keyword is string => Boolean(keyword))
           : [];
+        const resolvedSlug = value?.slug ?? data.slugs?.[language] ?? "";
         normalized[language] = {
           title: value?.title ?? "",
           description: value?.description ?? "",
-          slug: value?.slug ?? data.slugs?.[language] ?? "",
+          slug: resolvedSlug,
           seo: {
             metaTitle: seo?.metaTitle ?? "",
             metaDescription: seo?.metaDescription ?? "",
@@ -196,8 +202,10 @@ export function CommerceCollectionDetailsPage() {
             canonicalUrl: seo?.canonicalUrl ?? "",
           },
         };
+        touchedMap[language] = Boolean(resolvedSlug?.trim());
       });
       setTranslations(normalized);
+      setSlugTouched(touchedMap);
 
       const preferredLanguage = normalized[i18n.language]
         ? i18n.language
@@ -212,9 +220,11 @@ export function CommerceCollectionDetailsPage() {
   useEffect(() => {
     if (isCreating && languages.length === 0) {
       const defaultLanguage = cmsSettings?.defaultLanguage ?? "en";
-      setTranslations({
+      const initialTranslations = {
         [defaultLanguage]: createEmptyTranslation(),
-      });
+      };
+      setTranslations(initialTranslations);
+      setSlugTouched({ [defaultLanguage]: false });
       setActiveLanguage(defaultLanguage);
       setStatus("Draft");
       setTags([]);
@@ -229,6 +239,10 @@ export function CommerceCollectionDetailsPage() {
       ...prev,
       [language]: createEmptyTranslation(),
     }));
+    setSlugTouched((prev) => ({
+      ...prev,
+      [language]: false,
+    }));
     setActiveLanguage(language);
     setDirty(true);
   };
@@ -236,14 +250,19 @@ export function CommerceCollectionDetailsPage() {
   const handleTitleChange = (value: string) => {
     setTranslations((prev) => {
       const current = prev[activeLanguage] ?? createEmptyTranslation();
-      const nextSlug = current.slug?.trim() ? current.slug : generateSlug(value);
+      const updatedTranslation: CollectionTranslation = {
+        ...current,
+        title: value,
+      };
+
+      if (!slugTouched[activeLanguage]) {
+        const generated = generateSlug(value);
+        updatedTranslation.slug = generated;
+      }
+
       return {
         ...prev,
-        [activeLanguage]: {
-          ...current,
-          title: value,
-          slug: nextSlug,
-        },
+        [activeLanguage]: updatedTranslation,
       };
     });
     setDirty(true);
@@ -307,6 +326,26 @@ export function CommerceCollectionDetailsPage() {
     setDirty(true);
   };
 
+  const handleSlugChange = (value: string) => {
+    const trimmed = value.trim();
+    setSlugTouched((prev) => ({
+      ...prev,
+      [activeLanguage]: trimmed.length > 0,
+    }));
+
+    setTranslations((prev) => {
+      const current = prev[activeLanguage] ?? createEmptyTranslation();
+      return {
+        ...prev,
+        [activeLanguage]: {
+          ...current,
+          slug: value,
+        },
+      };
+    });
+    setDirty(true);
+  };
+
   const handleSave = async () => {
     const translation = translations[activeLanguage];
     if (!translation || !translation.title?.trim() || !translation.slug?.trim()) {
@@ -356,15 +395,17 @@ export function CommerceCollectionDetailsPage() {
     const savedEntries = Object.entries(
       savedCollection.translations ?? {}
     ) as Array<[string, CollectionTranslation]>;
+    const touchedMap: Record<string, boolean> = {};
     savedEntries.forEach(([language, value]) => {
       const seoValue = value?.seo ?? {};
       const keywords = Array.isArray(seoValue?.metaKeywords)
         ? seoValue.metaKeywords.filter((keyword): keyword is string => Boolean(keyword))
         : [];
+      const resolvedSlug = value?.slug ?? savedCollection.slugs?.[language] ?? "";
       normalized[language] = {
         title: value?.title ?? "",
         description: value?.description ?? "",
-        slug: value?.slug ?? savedCollection.slugs?.[language] ?? "",
+        slug: resolvedSlug,
         seo: {
           metaTitle: seoValue?.metaTitle ?? "",
           metaDescription: seoValue?.metaDescription ?? "",
@@ -372,8 +413,10 @@ export function CommerceCollectionDetailsPage() {
           canonicalUrl: seoValue?.canonicalUrl ?? "",
         },
       };
+      touchedMap[language] = Boolean(resolvedSlug?.trim());
     });
     setTranslations(normalized);
+    setSlugTouched(touchedMap);
 
     const preferredLanguage = normalized[activeLanguage]
       ? activeLanguage
@@ -458,9 +501,7 @@ export function CommerceCollectionDetailsPage() {
                   <Input
                     id="collection-slug"
                     value={currentTranslation.slug ?? ""}
-                    onChange={(event) =>
-                      handleTranslationChange("slug", event.target.value)
-                    }
+                    onChange={(event) => handleSlugChange(event.target.value)}
                   />
                 </div>
 
@@ -478,14 +519,6 @@ export function CommerceCollectionDetailsPage() {
                   />
                 </div>
 
-                <div>
-                  <Label className="mb-2 block">{t("collections.fields.tags")}</Label>
-                  <TagsInput
-                    key={tags.join(",")}
-                    initialTags={tags}
-                    onChange={handleTagsChange}
-                  />
-                </div>
               </CardContent>
             </Card>
 
@@ -565,6 +598,15 @@ export function CommerceCollectionDetailsPage() {
               </CardHeader>
               <Separator />
               <CardContent className="space-y-4 p-4 md:p-6">
+                <div>
+                  <Label className="mb-2 block">{t("collections.fields.tags")}</Label>
+                  <TagsInput
+                    key={tags.join(",")}
+                    initialTags={tags}
+                    onChange={handleTagsChange}
+                  />
+                </div>
+
                 <div>
                   <Label className="mb-2 block">{t("collections.fields.status")}</Label>
                   <Select value={status} onValueChange={(value) => {
