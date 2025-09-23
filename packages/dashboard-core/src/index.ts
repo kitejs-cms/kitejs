@@ -30,7 +30,7 @@ export * from "./components/file-uploader";
 export * from "./components/filter-modal";
 export * from "./components/data-table";
 export * from "./components/json-modal";
-export * from "./modules/pages/components/languages-badge";
+export * from "./components/languages-badge";
 export * from "./components/language-tabs";
 
 /* Provider */

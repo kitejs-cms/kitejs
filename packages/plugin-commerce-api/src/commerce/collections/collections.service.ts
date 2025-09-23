@@ -104,16 +104,19 @@ export class CollectionsService {
     user: JwtPayloadModel
   ): Promise<CollectionResponseDetailslModel> {
     try {
-      const { id, language, ...restData } = collectionData;
+      const { id, language, parent, status, ...restData } = collectionData;
       const collectionBaseData = {
         tags: restData.tags,
         updatedBy: user.sub,
+        parent,
+        status,
       };
 
       const translationData = {
         title: restData.title,
         description: restData.description,
         slug: restData.slug,
+        seo: restData.seo,
       };
 
       let collection: ProductCollection;
@@ -279,7 +282,6 @@ export class CollectionsService {
         .findById(id)
         .populate<{ createdBy: User }>("createdBy")
         .populate<{ updatedBy: User }>("updatedBy")
-        .populate<{ parent?: ProductCollection }>("parent")
         .exec();
 
       if (!collection) {
@@ -307,6 +309,7 @@ export class CollectionsService {
 
       return {
         ...json,
+        parent: json.parent ? json.parent.toString() : undefined,
         createdBy: `${collection.createdBy.firstName} ${collection.createdBy.lastName}`,
         updatedBy: `${collection.updatedBy.firstName} ${collection.updatedBy.lastName}`,
         translations: translationsWithSlug,

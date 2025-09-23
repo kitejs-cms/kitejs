@@ -1,15 +1,18 @@
-import { useSettingsContext } from "../../../context/settings-context";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useApi } from "../../../hooks/use-api";
 import { toast } from "sonner";
-import type {
-  CategoryResponseDetailsModel,
-  CategoryTranslationModel,
-  CategoryUpsertModel,
-} from "@kitejs-cms/core/index";
-import { useBreadcrumb } from "../../../context/breadcrumb-context";
+import {
+  CollectionSeoModel,
+  type CollectionResponseDetailslModel,
+  type CollectionTranslationModel,
+  type CollectionUpsertModel,
+} from "@kitejs-cms/plugin-commerce-api";
+import {
+  useApi,
+  useBreadcrumb,
+  useSettingsContext,
+} from "@kitejs-cms/dashboard-core";
 
 export interface FormErrors {
   title?: string;
@@ -18,39 +21,39 @@ export interface FormErrors {
   [key: string]: string | undefined;
 }
 
-export function useCategoryDetails() {
+export function useCollectionDetails() {
   const { t } = useTranslation("posts");
   const navigate = useNavigate();
   const { cmsSettings } = useSettingsContext();
   const { setBreadcrumb } = useBreadcrumb();
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [navigateTo, setNavigateTo] = useState("");
 
   const defaultLang = useMemo(
     () => cmsSettings?.defaultLanguage || "",
     [cmsSettings]
   );
 
-  const { loading, fetchData } = useApi<CategoryResponseDetailsModel>();
+  const { loading, fetchData } = useApi<CollectionResponseDetailslModel>();
   const { id } = useParams<{ id: string }>();
 
   const [localData, setLocalData] =
-    useState<CategoryResponseDetailsModel | null>(null);
+    useState<CollectionResponseDetailslModel | null>(null);
 
   const [activeLang, setActiveLang] = useState(defaultLang);
   const [hasChanges, setHasChanges] = useState(false);
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
-  const [, setNavigateTo] = useState("");
 
   useEffect(() => {
     const items = [
       { label: t("breadcrumb.home"), path: "/" },
-      { label: t("breadcrumb.categories"), path: "/categories" },
+      { label: t("breadcrumb.collections"), path: "/collections" },
     ];
 
     if (id && localData && localData?.translations[activeLang]?.slug)
       items.push({
         label: localData.translations[activeLang].slug,
-        path: `/categories/${localData.id}`,
+        path: `/commerce/collections/${localData.id}`,
       });
 
     setBreadcrumb(items);
@@ -60,10 +63,8 @@ export function useCategoryDetails() {
     if (!defaultLang) return;
 
     if (id === "create") {
-      const newCategory: CategoryResponseDetailsModel = {
+      const newCollection: CollectionResponseDetailslModel = {
         id: "",
-        isActive: true,
-        tags: [],
         translations: {
           [defaultLang]: {
             title: "",
@@ -73,18 +74,21 @@ export function useCategoryDetails() {
         },
         createdBy: "",
         updatedBy: "",
-        createdAt: "",
-        updatedAt: "",
+        createdAt: undefined,
+        updatedAt: undefined,
+        parent: undefined,
+        tags: [],
+        status: "Draft" as never,
       };
 
-      setLocalData(newCategory);
+      setLocalData(newCollection);
       setActiveLang(defaultLang);
       return;
     }
 
     if (id) {
       (async () => {
-        const result = await fetchData(`categories/${id}`);
+        const result = await fetchData(`commerce/collections/${id}`);
         if (result?.data) {
           setLocalData(result.data);
           setHasChanges(false);
@@ -115,6 +119,16 @@ export function useCategoryDetails() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [hasChanges, t]);
 
+  const closeUnsavedAlert = useCallback(() => {
+    setShowUnsavedAlert(false);
+  }, []);
+
+  const confirmDiscard = useCallback(() => {
+    setShowUnsavedAlert(false);
+    setHasChanges(false);
+    navigate(navigateTo);
+  }, [navigate, navigateTo]);
+
   const onAddLanguage = useCallback((lang: string) => {
     setLocalData((prev) => {
       if (!prev) return prev;
@@ -122,7 +136,7 @@ export function useCategoryDetails() {
         setActiveLang(lang);
         return prev;
       }
-      const empty: CategoryTranslationModel = {
+      const empty: CollectionTranslationModel = {
         title: "",
         description: "",
         slug: "",
@@ -160,9 +174,26 @@ export function useCategoryDetails() {
     [hasChanges, navigate]
   );
 
+  const onSettingsChange = useCallback(
+    (
+      field: "status" | "publishAt" | "expireAt" | "tags" | "parent",
+      value: string | string[]
+    ) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        if (field === "tags") {
+          return { ...prev, tags: value as string[] };
+        }
+        return { ...prev, [field]: value as string };
+      });
+      setHasChanges(true);
+    },
+    []
+  );
+
   const onChange = useCallback(
     (
-      field: keyof CategoryTranslationModel | "tags" | "isActive",
+      field: keyof CollectionTranslationModel,
       value: string | number | boolean | string[]
     ) => {
       setLocalData((prev) => {
@@ -245,15 +276,18 @@ export function useCategoryDetails() {
         return;
       }
 
-      const body: CategoryUpsertModel = {
+      const body: CollectionUpsertModel = {
         id: id && id !== "create" ? localData.id : undefined,
-        tags: localData.tags,
-        isActive: localData.isActive,
         language: activeLang,
-        ...localData.translations[activeLang],
+        status: localData.status,
+        slug: localData.translations[activeLang].slug,
+        title: localData.translations[activeLang].title,
+        tags: localData.tags,
+        seo: localData.translations[activeLang].seo,
+        parent: localData.parent ?? null,
       };
 
-      const result = await fetchData("categories", "POST", body);
+      const result = await fetchData("commerce/collections", "POST", body);
 
       if (result?.data) {
         toast.success(
@@ -269,7 +303,7 @@ export function useCategoryDetails() {
         setFormErrors({});
 
         if (id === "create") {
-          navigate(`/categories/${result.data.id}`);
+          navigate(`/collections/${result.data.id}`);
         }
       } else {
         toast.error("Errore nel salvataggio", {
@@ -294,16 +328,48 @@ export function useCategoryDetails() {
       });
     }
   }, [localData, activeLang, id, fetchData, navigate, t, validateForm]);
+
+  const onSeoChange = useCallback(
+    <K extends keyof CollectionSeoModel>(
+      lang: string,
+      field: K,
+      value: CollectionSeoModel[K]
+    ) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          translations: {
+            ...prev.translations,
+            [lang]: {
+              ...prev.translations[lang],
+              seo: {
+                ...prev.translations[lang].seo,
+                [field]: value,
+              },
+            },
+          },
+        };
+      });
+      setHasChanges(true);
+    },
+    []
+  );
+
   return {
     data: localData,
     loading,
     activeLang,
     setActiveLang: onChangeActiveLang,
     onAddLanguage,
+    onSettingsChange,
+    confirmDiscard,
     hasChanges,
     handleNavigation,
     handleSave,
     onChange,
+    onSeoChange,
+    closeUnsavedAlert,
     showUnsavedAlert,
     formErrors,
   };

@@ -1,42 +1,35 @@
+import { useSettingsContext } from "../context/settings-context";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { useEffect, useMemo } from "react";
 import { Plus } from "lucide-react";
-
-import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
+import { cn } from "../lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { useSettingsContext } from "../context/settings-context";
-import { cn } from "../lib/utils";
-
-export interface LanguageTabsProps<T = unknown> {
-  translations: Record<string, T>;
+export interface LanguageTabsProps {
+  languages: string[];
   activeLanguage: string;
   onLanguageChange: (language: string) => void;
   onAddLanguage: (language: string) => void;
   tabsListClassName?: string;
 }
 
-export function LanguageTabs<T>({
-  translations,
+export function LanguageTabs({
+  languages,
   activeLanguage,
   onLanguageChange,
   onAddLanguage,
   tabsListClassName,
-}: LanguageTabsProps<T>) {
+}: LanguageTabsProps) {
   const { cmsSettings } = useSettingsContext();
 
   const supportedLanguages = useMemo(
     () => cmsSettings?.supportedLanguages ?? [],
     [cmsSettings?.supportedLanguages]
-  );
-
-  const languages = useMemo(
-    () => Object.keys(translations ?? {}),
-    [translations]
   );
 
   const sortedLanguages = useMemo(() => {
@@ -48,7 +41,8 @@ export function LanguageTabs<T>({
   }, [languages, cmsSettings?.defaultLanguage]);
 
   const missingLanguages = useMemo(
-    () => supportedLanguages.filter((language) => !languages.includes(language)),
+    () =>
+      supportedLanguages.filter((language) => !languages.includes(language)),
     [languages, supportedLanguages]
   );
 
@@ -80,7 +74,9 @@ export function LanguageTabs<T>({
           <TabsTrigger key={language} value={language} className="text-sm">
             {language.toUpperCase()}
             {language === cmsSettings?.defaultLanguage && (
-              <span className="ml-1 text-xs text-muted-foreground">(default)</span>
+              <span className="ml-1 text-xs text-muted-foreground">
+                (default)
+              </span>
             )}
           </TabsTrigger>
         ))}

@@ -832,6 +832,9 @@ importers:
       react-router-dom:
         specifier: ^7.2.0
         version: 7.8.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      sonner:
+        specifier: ^2.0.3
+        version: 2.0.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     devDependencies:
       '@kitejs-cms/core':
         specifier: workspace:*

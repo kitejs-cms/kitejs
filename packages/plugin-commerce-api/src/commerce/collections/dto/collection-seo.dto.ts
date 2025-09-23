@@ -23,7 +23,7 @@ export class CollectionSeoDto implements CollectionSeoModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  canonicalUrl?: string;
+  canonical?: string;
 
   constructor(partial: CollectionSeoModel) {
     Object.assign(this, partial);

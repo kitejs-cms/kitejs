@@ -71,7 +71,7 @@ export function PageDetailsPage({ pageType = "Page" }: Props) {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <LanguageTabs
-          translations={data?.translations ?? {}}
+          languages={Object.keys(data.translations)}
           activeLanguage={activeLang}
           onLanguageChange={setActiveLang}
           onAddLanguage={onAddLanguage}

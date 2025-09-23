@@ -75,7 +75,7 @@ export class CollectionResponseDto implements CollectionResponseModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  parentId?: string;
+  parent?: string;
 
   constructor(partial: CollectionResponseModel) {
     Object.assign(this, partial);

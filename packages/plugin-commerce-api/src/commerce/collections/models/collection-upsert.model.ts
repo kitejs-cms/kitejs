@@ -13,5 +13,5 @@ export type CollectionUpsertModel = {
   publishAt?: string;
   expireAt?: string;
   coverImage?: string;
-  parentId?: string;
+  parent?: string;
 };

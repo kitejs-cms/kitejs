@@ -11,6 +11,7 @@ import { DataTable } from "../../../components/data-table";
 import { useApi } from "../../../hooks/use-api";
 import { useHasPermission } from "../../../hooks/use-has-permission";
 import type { CategoryResponseDetailsModel } from "@kitejs-cms/core/index";
+import { LanguagesBadge } from "../../../components/languages-badge";
 import {
   Card,
   CardContent,
@@ -32,7 +33,6 @@ import {
   Search,
   Plus,
 } from "lucide-react";
-import { LanguagesBadge } from "../../pages/components/languages-badge";
 
 export function CategoriesManagePage() {
   const { setBreadcrumb } = useBreadcrumb();
