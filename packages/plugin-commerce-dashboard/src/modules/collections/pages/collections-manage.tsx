@@ -30,6 +30,7 @@ import {
   useClipboardTable,
   useHasPermission,
   useDebounce,
+  useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
 import {
   Clipboard,
@@ -45,6 +46,11 @@ import {
 import type { FilterCondition, FilterView } from "@kitejs-cms/core";
 import type { FilterConfig } from "@kitejs-cms/dashboard-core/components/filter-modal";
 import { buildFilterQuery } from "@kitejs-cms/dashboard-core/lib/query-builder";
+import { toast } from "sonner";
+import {
+  COMMERCE_PLUGIN_NAMESPACE,
+  COLLECTION_SETTINGS_KEY,
+} from "../../../constants";
 
 interface CollectionTranslation {
   title?: string;
@@ -78,6 +84,10 @@ const isFilterValueEmpty = (value: unknown) => {
   return false;
 };
 
+interface CollectionFilterSettings {
+  views?: FilterView[];
+}
+
 export function CommerceCollectionsPage() {
   const { t, i18n } = useTranslation("commerce");
   const navigate = useNavigate();
@@ -88,6 +98,7 @@ export function CommerceCollectionsPage() {
     useApi<CollectionListItem[]>();
   const deleteApi = useApi<unknown>();
   const hasPermission = useHasPermission();
+  const { getSetting, updateSetting } = useSettingsContext();
 
   const [showSearch, setShowSearch] = useState(false);
   const [collectionToDelete, setCollectionToDelete] =
@@ -96,6 +107,7 @@ export function CommerceCollectionsPage() {
   const [activeFilters, setActiveFilters] = useState<FilterCondition[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const [activeView, setActiveView] = useState<FilterView | null>(null);
+  const [savedViews, setSavedViews] = useState<FilterView[]>([]);
 
   const itemsPerPage = ITEMS_PER_PAGE;
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
@@ -138,12 +150,37 @@ export function CommerceCollectionsPage() {
     });
   }, [t]);
 
+  const lockedViewIds = useMemo(
+    () => statusFilterViews.map((view) => view.id),
+    [statusFilterViews]
+  );
+
+  useEffect(() => {
+    const loadSavedViews = async () => {
+      try {
+        const settings = await getSetting<{
+          value?: CollectionFilterSettings;
+        }>(COMMERCE_PLUGIN_NAMESPACE, COLLECTION_SETTINGS_KEY);
+        setSavedViews(settings?.value?.views ?? []);
+      } catch (error) {
+        console.error("Failed to load collection filter views", error);
+      }
+    };
+
+    void loadSavedViews();
+  }, [getSetting]);
+
+  const combinedViews = useMemo(
+    () => [...statusFilterViews, ...savedViews],
+    [statusFilterViews, savedViews]
+  );
+
   useEffect(() => {
     if (!activeView) {
       return;
     }
 
-    const updatedView = statusFilterViews.find((view) => view.id === activeView.id);
+    const updatedView = combinedViews.find((view) => view.id === activeView.id);
     if (
       updatedView &&
       (updatedView.name !== activeView.name ||
@@ -151,7 +188,7 @@ export function CommerceCollectionsPage() {
     ) {
       setActiveView(updatedView);
     }
-  }, [activeView, statusFilterViews]);
+  }, [activeView, combinedViews]);
 
   const filterConfig = useMemo<FilterConfig>(
     () => ({
@@ -187,9 +224,11 @@ export function CommerceCollectionsPage() {
           type: "date",
         },
       ],
-      views: statusFilterViews,
+      views: combinedViews,
+      allowSaveViews: true,
+      lockedViewIds,
     }),
-    [statusFilterViews, t]
+    [combinedViews, lockedViewIds, t]
   );
 
   useEffect(() => {
@@ -388,6 +427,55 @@ export function CommerceCollectionsPage() {
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
     setSearchParams(params);
+  };
+
+  const handleSaveView = async (view: FilterView) => {
+    const nextViews = [...savedViews, view];
+
+    try {
+      await updateSetting(COMMERCE_PLUGIN_NAMESPACE, COLLECTION_SETTINGS_KEY, {
+        views: nextViews,
+      });
+      setSavedViews(nextViews);
+      toast.success(t("collections.filters.toasts.viewSaved.title"), {
+        description: t("collections.filters.toasts.viewSaved.description", {
+          name: view.name,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to save collection filter view", error);
+      toast.error(t("collections.filters.toasts.viewSaveError"));
+    }
+  };
+
+  const handleDeleteView = async (viewId: string) => {
+    const viewToDelete = savedViews.find((view) => view.id === viewId);
+    if (!viewToDelete) {
+      return;
+    }
+
+    const nextViews = savedViews.filter((view) => view.id !== viewId);
+
+    try {
+      await updateSetting(COMMERCE_PLUGIN_NAMESPACE, COLLECTION_SETTINGS_KEY, {
+        views: nextViews,
+      });
+      setSavedViews(nextViews);
+
+      if (activeView?.id === viewId) {
+        setActiveView(null);
+        setActiveFilters([]);
+      }
+
+      toast.success(t("collections.filters.toasts.viewDeleted.title"), {
+        description: t("collections.filters.toasts.viewDeleted.description", {
+          name: viewToDelete.name,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to delete collection filter view", error);
+      toast.error(t("collections.filters.toasts.viewDeleteError"));
+    }
   };
 
   const handleClearFilters = () => {
@@ -669,6 +757,8 @@ export function CommerceCollectionsPage() {
         initialConditions={activeFilters}
         onApplyFilters={handleApplyFilters}
         onLoadView={handleLoadView}
+        onSaveView={handleSaveView}
+        onDeleteView={handleDeleteView}
       />
     </div>
   );

@@ -22,5 +22,17 @@
       "name": "Archived collections",
       "description": "Show collections that are archived"
     }
+  },
+  "toasts": {
+    "viewSaved": {
+      "title": "View saved",
+      "description": "Saved \"{{name}}\" for quick reuse."
+    },
+    "viewDeleted": {
+      "title": "View deleted",
+      "description": "Removed \"{{name}}\" from your saved filters."
+    },
+    "viewSaveError": "Unable to save view. Please try again.",
+    "viewDeleteError": "Unable to delete view. Please try again."
   }
 }

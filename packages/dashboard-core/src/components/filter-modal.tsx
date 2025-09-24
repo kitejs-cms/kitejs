@@ -80,6 +80,7 @@ export interface FilterConfig {
   fields: FilterFieldConfig[];
   views?: FilterView[];
   allowSaveViews?: boolean;
+  lockedViewIds?: string[];
 }
 
 interface FilterModalProps {
@@ -124,6 +125,10 @@ export function FilterModal({
   const [selectedView, setSelectedView] = useState<string>("");
   const [viewToDelete, setViewToDelete] = useState<FilterView | null>(null);
   const { t } = useTranslation("components");
+  const lockedViewIds = useMemo(
+    () => new Set(config.lockedViewIds ?? []),
+    [config.lockedViewIds]
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -441,7 +446,7 @@ export function FilterModal({
   );
 
   const handleDeleteView = useCallback(() => {
-    if (viewToDelete && onDeleteView) {
+    if (viewToDelete && onDeleteView && !lockedViewIds.has(viewToDelete.id)) {
       onDeleteView(viewToDelete.id);
       setViewToDelete(null);
       setModalState("filters");
@@ -449,7 +454,7 @@ export function FilterModal({
         setSelectedView("");
       }
     }
-  }, [viewToDelete, onDeleteView, selectedView]);
+  }, [viewToDelete, onDeleteView, selectedView, lockedViewIds]);
 
   const handleReset = useCallback(() => {
     setConditions([]);
@@ -638,7 +643,9 @@ export function FilterModal({
                     </Button>
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    {config.views.map((view) => (
+                    {config.views.map((view) => {
+                      const isLocked = lockedViewIds.has(view.id);
+                      return (
                       <Button
                         key={view.id}
                         variant={
@@ -647,7 +654,7 @@ export function FilterModal({
                         size="sm"
                         onClick={(e) => {
                           const target = e.target as HTMLElement;
-                          if (target.closest("[data-delete-view]")) {
+                          if (target.closest("[data-delete-view]") && !isLocked) {
                             e.stopPropagation();
                             setViewToDelete(view);
                             setModalState("delete-view");
@@ -659,7 +666,7 @@ export function FilterModal({
                       >
                         <BookmarkIcon className="w-3 h-3" />
                         {view.name}
-                        {onDeleteView && selectedView !== view.id && (
+                        {onDeleteView && !isLocked && selectedView !== view.id && (
                           <span
                             data-delete-view
                             className="ml-2 text-red-500 hover:text-red-700 opacity-60 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-red-100 rounded p-1"
@@ -668,7 +675,8 @@ export function FilterModal({
                           </span>
                         )}
                       </Button>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </>

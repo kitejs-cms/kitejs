@@ -22,5 +22,17 @@
       "name": "Archiviate",
       "description": "Mostra le collection archiviate"
     }
+  },
+  "toasts": {
+    "viewSaved": {
+      "title": "Vista salvata",
+      "description": "La vista \"{{name}}\" è stata salvata tra i filtri rapidi."
+    },
+    "viewDeleted": {
+      "title": "Vista eliminata",
+      "description": "La vista \"{{name}}\" è stata rimossa dai filtri salvati."
+    },
+    "viewSaveError": "Impossibile salvare la vista. Riprova.",
+    "viewDeleteError": "Impossibile eliminare la vista. Riprova."
   }
 }
