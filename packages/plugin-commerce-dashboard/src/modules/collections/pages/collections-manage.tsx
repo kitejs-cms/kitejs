@@ -127,7 +127,7 @@ export function CommerceCollectionsPage() {
     ];
 
     return statuses.map(({ key, value }) => {
-      const name = t(`collections.filters.views.${key}.name`);
+      const name = key.toUpperCase();
       const descriptionKey = `collections.filters.views.${key}.description` as const;
       const descriptionTranslation = t(descriptionKey);
 
