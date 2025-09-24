@@ -1,0 +1,68 @@
+{
+  "orders": {
+    "pageTitle": "Orders",
+    "pageDescription": "Track fulfilment, payments and customer information.",
+    "actions": {
+      "refresh": "Refresh"
+    },
+    "emptyState": {
+      "title": "No orders yet",
+      "description": "Orders will appear here as soon as customers start buying."
+    },
+    "table": {
+      "columns": {
+        "number": "Order",
+        "status": "Status",
+        "payment": "Payment",
+        "total": "Total",
+        "updatedAt": "Last updated"
+      }
+    },
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "paymentStatus": {
+      "awaiting": "Awaiting payment",
+      "authorized": "Authorized",
+      "paid": "Paid",
+      "partially_refunded": "Partially refunded",
+      "refunded": "Refunded"
+    },
+    "fulfillmentStatus": {
+      "unfulfilled": "Unfulfilled",
+      "partially_fulfilled": "Partially fulfilled",
+      "fulfilled": "Fulfilled",
+      "returned": "Returned",
+      "cancelled": "Cancelled"
+    },
+    "details": {
+      "title": "Order {{number}}",
+      "description": "Overview of the order timeline and totals.",
+      "breadcrumb": "Order details",
+      "status": "Order status",
+      "paymentStatus": "Payment status",
+      "fulfillmentStatus": "Fulfilment status",
+      "lastUpdate": "Last update",
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "tax": "Tax",
+      "discount": "Discount",
+      "total": "Total",
+      "billingAddress": "Billing address",
+      "shippingAddress": "Shipping address",
+      "items": "Order items",
+      "notes": "Internal notes"
+    },
+    "items": {
+      "columns": {
+        "title": "Item",
+        "variant": "Variant",
+        "quantity": "Qty",
+        "total": "Total"
+      }
+    }
+  }
+}

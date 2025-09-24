@@ -1,0 +1,68 @@
+{
+  "orders": {
+    "pageTitle": "Ordini",
+    "pageDescription": "Monitora spedizioni, pagamenti e informazioni clienti.",
+    "actions": {
+      "refresh": "Aggiorna"
+    },
+    "emptyState": {
+      "title": "Nessun ordine",
+      "description": "Gli ordini appariranno qui non appena inizieranno gli acquisti."
+    },
+    "table": {
+      "columns": {
+        "number": "Ordine",
+        "status": "Stato",
+        "payment": "Pagamento",
+        "total": "Totale",
+        "updatedAt": "Ultimo aggiornamento"
+      }
+    },
+    "status": {
+      "pending": "In attesa",
+      "processing": "In lavorazione",
+      "completed": "Completato",
+      "cancelled": "Annullato"
+    },
+    "paymentStatus": {
+      "awaiting": "In attesa di pagamento",
+      "authorized": "Autorizzato",
+      "paid": "Pagato",
+      "partially_refunded": "Parzialmente rimborsato",
+      "refunded": "Rimborsato"
+    },
+    "fulfillmentStatus": {
+      "unfulfilled": "Non evaso",
+      "partially_fulfilled": "Parzialmente evaso",
+      "fulfilled": "Evaso",
+      "returned": "Reso",
+      "cancelled": "Annullato"
+    },
+    "details": {
+      "title": "Ordine {{number}}",
+      "description": "Panoramica della timeline e dei totali dell'ordine.",
+      "breadcrumb": "Dettagli ordine",
+      "status": "Stato ordine",
+      "paymentStatus": "Stato pagamento",
+      "fulfillmentStatus": "Stato evasione",
+      "lastUpdate": "Ultimo aggiornamento",
+      "subtotal": "Subtotale",
+      "shipping": "Spedizione",
+      "tax": "Tasse",
+      "discount": "Sconto",
+      "total": "Totale",
+      "billingAddress": "Indirizzo di fatturazione",
+      "shippingAddress": "Indirizzo di spedizione",
+      "items": "Articoli ordine",
+      "notes": "Note interne"
+    },
+    "items": {
+      "columns": {
+        "title": "Articolo",
+        "variant": "Variante",
+        "quantity": "Qt",
+        "total": "Totale"
+      }
+    }
+  }
+}

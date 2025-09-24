@@ -2,3 +2,4 @@ export const COMMERCE_PLUGIN_NAMESPACE = "plugin-commerce";
 export const COMMERCE_SETTINGS_KEY = `${COMMERCE_PLUGIN_NAMESPACE}:settings`;
 export const PRODUCT_SETTINGS_KEY = `${COMMERCE_PLUGIN_NAMESPACE}:products`;
 export const ORDER_SETTINGS_KEY = `${COMMERCE_PLUGIN_NAMESPACE}:orders`;
+export const COLLECTION_SETTINGS_KEY = `${COMMERCE_PLUGIN_NAMESPACE}:collections`;

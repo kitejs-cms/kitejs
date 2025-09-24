@@ -1,0 +1,8 @@
+{
+  "title": "Unsaved changes",
+  "message": "You have unsaved changes. Continue without saving?",
+  "warning": "You have unsaved changes—are you sure you want to leave?",
+  "actions": {
+    "discard": "Discard changes"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "settings": {
+    "description": "Configure the commerce plugin behaviour and customise the data model.",
+    "general": "Commerce settings",
+    "actions": {
+      "save": "Save changes"
+    },
+    "sections": {
+      "general": {
+        "title": "Store preferences",
+        "description": "Default currency and checkout options used across the storefront."
+      },
+      "productFields": {
+        "title": "Product custom fields",
+        "description": "Extend the default product schema with additional attributes."
+      },
+      "addressFields": {
+        "title": "Customer address fields",
+        "description": "Capture extra information for billing and shipping addresses."
+      }
+    },
+    "fields": {
+      "defaultCurrency": {
+        "label": "Default currency",
+        "description": "Used as the pre-filled currency when creating new products."
+      },
+      "allowGuestCheckout": {
+        "label": "Guest checkout",
+        "title": "Allow guest checkout",
+        "description": "Let customers place orders without creating an account."
+      },
+      "taxInclusivePricing": {
+        "label": "Tax inclusive pricing",
+        "title": "Prices include taxes",
+        "description": "Display product prices including taxes by default."
+      }
+    }
+  }
+}

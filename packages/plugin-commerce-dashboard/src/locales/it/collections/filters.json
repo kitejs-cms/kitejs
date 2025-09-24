@@ -1,0 +1,38 @@
+{
+  "active": "{{count}} filtri attivi",
+  "clear": "Rimuovi filtri",
+  "fields": {
+    "status": "Stato",
+    "tags": "Tag",
+    "publishAt": "Pubblica il",
+    "expireAt": "Nascondi il",
+    "createdAt": "Creato il"
+  },
+  "activeView": "Vista: {{name}}",
+  "views": {
+    "draft": {
+      "name": "Bozze",
+      "description": "Mostra le collection ancora in bozza"
+    },
+    "published": {
+      "name": "Pubblicate",
+      "description": "Mostra le collection gi\u00e0 online"
+    },
+    "archived": {
+      "name": "Archiviate",
+      "description": "Mostra le collection archiviate"
+    }
+  },
+  "toasts": {
+    "viewSaved": {
+      "title": "Vista salvata",
+      "description": "La vista \"{{name}}\" è stata salvata tra i filtri rapidi."
+    },
+    "viewDeleted": {
+      "title": "Vista eliminata",
+      "description": "La vista \"{{name}}\" è stata rimossa dai filtri salvati."
+    },
+    "viewSaveError": "Impossibile salvare la vista. Riprova.",
+    "viewDeleteError": "Impossibile eliminare la vista. Riprova."
+  }
+}

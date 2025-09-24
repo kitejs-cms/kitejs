@@ -1,0 +1,18 @@
+{
+  "common": {
+    "back": "Indietro",
+    "none": "Nessuna"
+  },
+  "menu": {
+    "commerce": "E-commerce",
+    "collections": "Collezioni",
+    "products": "Prodotti",
+    "orders": "Ordini"
+  },
+  "breadcrumb": {
+    "home": "Bacheca",
+    "collections": "Collezioni",
+    "products": "Prodotti",
+    "orders": "Ordini"
+  }
+}

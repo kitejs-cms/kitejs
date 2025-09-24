@@ -1,0 +1,35 @@
+{
+  "title": "Collection details",
+  "description": "Define the content and publication rules for this collection.",
+  "breadcrumb": "Collection details",
+  "language": "Language",
+  "name": "Title",
+  "namePlaceholder": "Collection name",
+  "slug": "Slug",
+  "slugPlaceholder": "collection-slug",
+  "descriptionPlaceholder": "Describe the purpose of this collection.",
+  "status": "Status",
+  "tags": "Tags",
+  "tagPlaceholder": "Add a tag and press enter",
+  "addTag": "Add tag",
+  "removeTag": "Remove tag \"{{tag}}\"",
+  "noTags": "No tags added yet.",
+  "publishAt": "Publish at",
+  "expireAt": "Unpublish at",
+  "meta": {
+    "title": "Metadata",
+    "created": "Created",
+    "updated": "Last updated"
+  },
+  "actions": {
+    "save": "Save collection",
+    "cancel": "Cancel"
+  },
+  "notifications": {
+    "saved": "Collection updated successfully.",
+    "created": "Collection created successfully.",
+    "title": "Title: {{title}}",
+    "validationError": "Please provide a title and slug for the selected language.",
+    "error": "Unable to save the collection. Please try again."
+  }
+}

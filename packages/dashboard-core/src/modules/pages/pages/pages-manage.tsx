@@ -17,7 +17,6 @@ import {
   type PageResponseDetailsModel,
 } from "@kitejs-cms/core/index";
 import { StatusBadge } from "../components/status-badge";
-import { LanguagesBadge } from "../components/languages-badge";
 import { useDebounce } from "../../../hooks/use-debounce";
 import { DeleteDialog } from "../components/delete-dialog";
 import { FilterModal } from "../../../components/filter-modal";
@@ -48,6 +47,7 @@ import {
 } from "lucide-react";
 import { useSettingsContext } from "../../../context/settings-context";
 import { buildFilterQuery } from "../../../lib/query-builder";
+import { LanguagesBadge } from "../../../components/languages-badge";
 
 export type Props = { pageType?: "Post" | "Page" };
 
@@ -78,8 +78,7 @@ export function PagesManagePage({ pageType = "Page" }: Props) {
   const { data, loading, fetchData, pagination } =
     useApi<PageResponseDetailsModel[]>();
   const hasPermission = useHasPermission();
-  const permissionPrefix =
-    pageType === "Page" ? "core:pages" : "core:articles";
+  const permissionPrefix = pageType === "Page" ? "core:pages" : "core:articles";
   const canCreate = hasPermission(`${permissionPrefix}.create`);
   const canUpdate = hasPermission(`${permissionPrefix}.update`);
   const canDelete = hasPermission(`${permissionPrefix}.delete`);

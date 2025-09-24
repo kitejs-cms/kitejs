@@ -1,0 +1,5 @@
+{
+  "titleRequired": "Il titolo è obbligatorio",
+  "slugRequired": "Lo slug è obbligatorio",
+  "saveFailed": "Impossibile salvare la collezione. Riprova."
+}

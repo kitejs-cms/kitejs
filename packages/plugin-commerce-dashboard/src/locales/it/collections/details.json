@@ -1,0 +1,35 @@
+{
+  "title": "Dettagli collezione",
+  "description": "Configura contenuti e regole di pubblicazione per questa collezione.",
+  "breadcrumb": "Dettagli collezione",
+  "language": "Lingua",
+  "name": "Titolo",
+  "namePlaceholder": "Nome della collezione",
+  "slug": "Slug",
+  "slugPlaceholder": "slug-collezione",
+  "descriptionPlaceholder": "Descrivi lo scopo della collezione.",
+  "status": "Stato",
+  "tags": "Tag",
+  "tagPlaceholder": "Aggiungi un tag e premi invio",
+  "addTag": "Aggiungi tag",
+  "removeTag": "Rimuovi tag \"{{tag}}\"",
+  "noTags": "Nessun tag ancora presente.",
+  "publishAt": "Pubblica il",
+  "expireAt": "Nascondi il",
+  "meta": {
+    "title": "Metadati",
+    "created": "Creato il",
+    "updated": "Aggiornato il"
+  },
+  "actions": {
+    "save": "Salva collezione",
+    "cancel": "Annulla"
+  },
+  "notifications": {
+    "saved": "Collezione aggiornata con successo.",
+    "created": "Collezione creata con successo.",
+    "title": "Titolo: {{title}}",
+    "validationError": "Inserisci titolo e slug per la lingua selezionata.",
+    "error": "Impossibile salvare la collezione. Riprova."
+  }
+}

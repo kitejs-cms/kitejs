@@ -13,7 +13,7 @@ import {
   CardContent,
 } from "../../../components/ui/card";
 import { useCategoryDetails } from "../hooks/use-category-details";
-import { LanguageTabs } from "../components/language-tabs";
+import { LanguageTabs } from "../../../components/language-tabs";
 import { SkeletonPage } from "../../../components/skeleton-page";
 import { Separator } from "../../../components/ui/separator";
 import { FileJson } from "lucide-react";
@@ -54,8 +54,8 @@ export function CategoryDetailsPage() {
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <LanguageTabs
-            translations={data?.translations}
-            activeLang={activeLang}
+            languages={Object.keys(data?.translations)}
+            activeLanguage={activeLang}
             onLanguageChange={setActiveLang}
             onAddLanguage={onAddLanguage}
           />

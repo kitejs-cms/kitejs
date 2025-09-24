@@ -1,0 +1,39 @@
+{
+  "settings": {
+    "description": "Configura il comportamento del plugin commerce e personalizza il modello dati.",
+    "general": "Impostazioni commerce",
+    "actions": {
+      "save": "Salva modifiche"
+    },
+    "sections": {
+      "general": {
+        "title": "Preferenze negozio",
+        "description": "Valuta predefinita e opzioni di checkout utilizzate nell'interfaccia."
+      },
+      "productFields": {
+        "title": "Campi personalizzati prodotto",
+        "description": "Estendi lo schema base del prodotto con attributi aggiuntivi."
+      },
+      "addressFields": {
+        "title": "Campi indirizzi cliente",
+        "description": "Raccogli informazioni extra per fatturazione e spedizione."
+      }
+    },
+    "fields": {
+      "defaultCurrency": {
+        "label": "Valuta predefinita",
+        "description": "Utilizzata come valuta proposta durante la creazione di nuovi prodotti."
+      },
+      "allowGuestCheckout": {
+        "label": "Checkout ospite",
+        "title": "Consenti checkout ospite",
+        "description": "Permetti ai clienti di completare l'ordine senza creare un account."
+      },
+      "taxInclusivePricing": {
+        "label": "Prezzi IVA inclusa",
+        "title": "Prezzi comprensivi di tasse",
+        "description": "Mostra i prezzi dei prodotti includendo le imposte per impostazione predefinita."
+      }
+    }
+  }
+}

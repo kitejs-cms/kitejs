@@ -1,0 +1,6 @@
+{
+  "title": "Elimina collezione",
+  "description": "Questa azione è irreversibile. Confermi di voler eliminare la collezione?",
+  "confirm": "Elimina",
+  "cancel": "Annulla"
+}

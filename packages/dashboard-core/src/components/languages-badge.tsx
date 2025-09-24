@@ -1,4 +1,4 @@
-import { Badge } from "@kitejs-cms/dashboard-core";
+import { Badge } from "./ui/badge";
 
 export function LanguagesBadge(translations: Record<string, unknown>) {
   const langs = Object.keys(translations);

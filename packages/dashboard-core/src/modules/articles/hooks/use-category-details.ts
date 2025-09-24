@@ -25,7 +25,6 @@ export function useCategoryDetails() {
   const { setBreadcrumb } = useBreadcrumb();
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
-
   const defaultLang = useMemo(
     () => cmsSettings?.defaultLanguage || "",
     [cmsSettings]
@@ -34,9 +33,8 @@ export function useCategoryDetails() {
   const { loading, fetchData } = useApi<CategoryResponseDetailsModel>();
   const { id } = useParams<{ id: string }>();
 
-  const [localData, setLocalData] = useState<CategoryResponseDetailsModel | null>(
-    null
-  );
+  const [localData, setLocalData] =
+    useState<CategoryResponseDetailsModel | null>(null);
 
   const [activeLang, setActiveLang] = useState(defaultLang);
   const [hasChanges, setHasChanges] = useState(false);
@@ -70,14 +68,14 @@ export function useCategoryDetails() {
           [defaultLang]: {
             title: "",
             description: "",
-            slug: ""
-          }
+            slug: "",
+          },
         },
         createdBy: "",
         updatedBy: "",
         createdAt: "",
         updatedAt: "",
-      }
+      };
 
       setLocalData(newCategory);
       setActiveLang(defaultLang);
@@ -128,7 +126,6 @@ export function useCategoryDetails() {
         title: "",
         description: "",
         slug: "",
-
       };
       setActiveLang(lang);
       setHasChanges(true);
@@ -164,11 +161,14 @@ export function useCategoryDetails() {
   );
 
   const onChange = useCallback(
-    (field: keyof CategoryTranslationModel | "tags" | "isActive", value: string | number | boolean | string[]) => {
+    (
+      field: keyof CategoryTranslationModel | "tags" | "isActive",
+      value: string | number | boolean | string[]
+    ) => {
       setLocalData((prev) => {
         if (!prev) return prev;
 
-        let updatedTranslations = { ...prev.translations };
+        const updatedTranslations = { ...prev.translations };
 
         // Auto-generate slug if the title is updated
         if (field === "title") {
@@ -226,77 +226,74 @@ export function useCategoryDetails() {
     return Object.keys(errors).length === 0;
   }, [localData, activeLang, t]);
 
-  const handleSave = useCallback(
-    async () => {
-      if (!localData || !validateForm()) {
-        toast.error("Form non valido", {
-          description: "Controlla i campi obbligatori",
+  const handleSave = useCallback(async () => {
+    if (!localData || !validateForm()) {
+      toast.error("Form non valido", {
+        description: "Controlla i campi obbligatori",
+      });
+      return;
+    }
+
+    const toastId = toast.loading("Salvataggio in corso...");
+
+    try {
+      const translation = localData.translations[activeLang];
+      if (!translation) {
+        toast.error("Traduzione mancante", {
+          description: `Lingua ${activeLang} non configurata`,
         });
         return;
       }
 
-      const toastId = toast.loading("Salvataggio in corso...");
+      const body: CategoryUpsertModel = {
+        id: id && id !== "create" ? localData.id : undefined,
+        tags: localData.tags,
+        isActive: localData.isActive,
+        language: activeLang,
+        ...localData.translations[activeLang],
+      };
 
-      try {
-        const translation = localData.translations[activeLang];
-        if (!translation) {
-          toast.error("Traduzione mancante", {
-            description: `Lingua ${activeLang} non configurata`,
-          });
-          return;
-        }
+      const result = await fetchData("categories", "POST", body);
 
-        const body: CategoryUpsertModel = {
-          id: id && id !== "create" ? localData.id : undefined,
-          tags: localData.tags,
-          isActive: localData.isActive,
-          language: activeLang,
-          ...localData.translations[activeLang],
-        };
-
-        const result = await fetchData("categories", "POST", body);
-
-        if (result?.data) {
-          toast.success(
-            id === "create" ? "Categoria creata" : "Categoria aggiornata",
-            {
-              id: toastId,
-              description: `Titolo: ${translation.title}`,
-            }
-          );
-
-          setLocalData(result.data);
-          setHasChanges(false);
-          setFormErrors({});
-
-          if (id === "create") {
-            navigate(`/categories/${result.data.id}`);
-          }
-        } else {
-          toast.error("Errore nel salvataggio", {
+      if (result?.data) {
+        toast.success(
+          id === "create" ? "Categoria creata" : "Categoria aggiornata",
+          {
             id: toastId,
-            description: "Nessun dato ricevuto dal server",
-          });
+            description: `Titolo: ${translation.title}`,
+          }
+        );
+
+        setLocalData(result.data);
+        setHasChanges(false);
+        setFormErrors({});
+
+        if (id === "create") {
+          navigate(`/categories/${result.data.id}`);
         }
-      } catch (error) {
-        console.error("Save failed:", error);
+      } else {
         toast.error("Errore nel salvataggio", {
           id: toastId,
-          description: t(
-            "errors.saveFailed",
-            "Failed to save page. Please try again."
-          ),
-        });
-        setFormErrors({
-          apiError: t(
-            "errors.saveFailed",
-            "Failed to save page. Please try again."
-          ),
+          description: "Nessun dato ricevuto dal server",
         });
       }
-    },
-    [localData, activeLang, id, fetchData, navigate, t, validateForm]
-  );
+    } catch (error) {
+      console.error("Save failed:", error);
+      toast.error("Errore nel salvataggio", {
+        id: toastId,
+        description: t(
+          "errors.saveFailed",
+          "Failed to save page. Please try again."
+        ),
+      });
+      setFormErrors({
+        apiError: t(
+          "errors.saveFailed",
+          "Failed to save page. Please try again."
+        ),
+      });
+    }
+  }, [localData, activeLang, id, fetchData, navigate, t, validateForm]);
   return {
     data: localData,
     loading,
@@ -307,6 +304,7 @@ export function useCategoryDetails() {
     handleNavigation,
     handleSave,
     onChange,
-    showUnsavedAlert
+    showUnsavedAlert,
+    formErrors,
   };
 }
