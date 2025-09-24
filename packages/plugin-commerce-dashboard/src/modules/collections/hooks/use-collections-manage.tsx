@@ -117,7 +117,8 @@ export function useCollectionsManage() {
 
     return statuses.map(({ key, value }) => {
       const name = key.toUpperCase();
-      const descriptionKey = `collections.filters.views.${key}.description` as const;
+      const descriptionKey =
+        `collections.filters.views.${key}.description` as const;
       const descriptionTranslation = t(descriptionKey);
 
       return {
@@ -332,9 +333,13 @@ export function useCollectionsManage() {
       const nextViews = [...savedViews, view];
 
       try {
-        await updateSetting(COMMERCE_PLUGIN_NAMESPACE, COLLECTION_SETTINGS_KEY, {
-          views: nextViews,
-        });
+        await updateSetting(
+          COMMERCE_PLUGIN_NAMESPACE,
+          COLLECTION_SETTINGS_KEY,
+          {
+            views: nextViews,
+          }
+        );
         setSavedViews(nextViews);
         toast.success(t("collections.filters.toasts.viewSaved.title"), {
           description: t("collections.filters.toasts.viewSaved.description", {
@@ -359,9 +364,13 @@ export function useCollectionsManage() {
       const nextViews = savedViews.filter((view) => view.id !== viewId);
 
       try {
-        await updateSetting(COMMERCE_PLUGIN_NAMESPACE, COLLECTION_SETTINGS_KEY, {
-          views: nextViews,
-        });
+        await updateSetting(
+          COMMERCE_PLUGIN_NAMESPACE,
+          COLLECTION_SETTINGS_KEY,
+          {
+            views: nextViews,
+          }
+        );
         setSavedViews(nextViews);
 
         if (activeView?.id === viewId) {
@@ -480,10 +489,16 @@ export function useCollectionsManage() {
 
     copyTable(dataset, [
       { key: "titleForClipboard", label: t("collections.fields.title") },
-      { key: "languagesForClipboard", label: t("collections.fields.languages") },
+      {
+        key: "languagesForClipboard",
+        label: t("collections.fields.languages"),
+      },
       { key: "tagsForClipboard", label: t("collections.fields.tags") },
       { key: "statusForClipboard", label: t("collections.fields.status") },
-      { key: "publishAtForClipboard", label: t("collections.fields.publishAt") },
+      {
+        key: "publishAtForClipboard",
+        label: t("collections.fields.publishAt"),
+      },
     ]);
   }, [collections, copyTable, getCollectionTitle, getStatusLabel, t]);
 

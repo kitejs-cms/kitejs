@@ -47,7 +47,7 @@ export function useCollectionDetails() {
   useEffect(() => {
     const items = [
       { label: t("breadcrumb.home"), path: "/" },
-      { label: t("breadcrumb.collections"), path: "/collections" },
+      { label: t("breadcrumb.collections"), path: "/commerce/collections" },
     ];
 
     if (id && localData && localData?.translations[activeLang]?.slug)
@@ -246,10 +246,7 @@ export function useCollectionDetails() {
     const translation = localData.translations[activeLang];
 
     if (!translation?.title?.trim()) {
-      errors.title = t(
-        "collections.errors.titleRequired",
-        "Title is required"
-      );
+      errors.title = t("collections.errors.titleRequired", "Title is required");
     }
 
     if (!translation?.slug?.trim()) {
@@ -301,12 +298,9 @@ export function useCollectionDetails() {
           ),
           {
             id: toastId,
-            description: t(
-              "collections.details.notifications.title",
-              {
-                title: translation.title,
-              }
-            ),
+            description: t("collections.details.notifications.title", {
+              title: translation.title,
+            }),
           }
         );
 
