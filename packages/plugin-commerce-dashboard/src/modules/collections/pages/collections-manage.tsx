@@ -81,10 +81,13 @@ const renderStatus = (
     return <span className="text-muted-foreground">-</span>;
   }
 
+  const badgeClasses =
+    statusBadgeStyles[status] || "border-gray-200 bg-gray-50";
+
   return (
     <Badge
       variant="outline"
-      className={`${statusBadgeStyles[status]} font-normal`}
+      className={`${badgeClasses} font-normal`}
     >
       {getStatusLabel(status)}
     </Badge>

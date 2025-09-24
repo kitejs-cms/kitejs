@@ -39,9 +39,9 @@ export interface CollectionListItem {
 const ITEMS_PER_PAGE = 10;
 
 const STATUS_BADGE_STYLES: Record<CollectionStatus, string> = {
-  Draft: "border-yellow-300 bg-yellow-50 text-yellow-800",
-  Published: "border-emerald-300 bg-emerald-50 text-emerald-800",
-  Archived: "border-slate-300 bg-slate-50 text-slate-800",
+  Draft: "border-yellow-700 bg-yellow-50",
+  Published: "border-green-700 bg-green-50",
+  Archived: "border-red-700 bg-red-50",
 };
 
 const isFilterValueEmpty = (value: unknown) => {
