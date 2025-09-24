@@ -294,10 +294,19 @@ export function useCollectionDetails() {
 
       if (result?.data) {
         toast.success(
-          id === "create" ? "Categoria creata" : "Categoria aggiornata",
+          t(
+            `collections.details.notifications.${
+              id === "create" ? "created" : "saved"
+            }`
+          ),
           {
             id: toastId,
-            description: `Titolo: ${translation.title}`,
+            description: t(
+              "collections.details.notifications.title",
+              {
+                title: translation.title,
+              }
+            ),
           }
         );
 

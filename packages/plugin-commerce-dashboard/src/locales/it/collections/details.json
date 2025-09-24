@@ -28,6 +28,7 @@
   "notifications": {
     "saved": "Collezione aggiornata con successo.",
     "created": "Collezione creata con successo.",
+    "title": "Titolo: {{title}}",
     "validationError": "Inserisci titolo e slug per la lingua selezionata.",
     "error": "Impossibile salvare la collezione. Riprova."
   }
