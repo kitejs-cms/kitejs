@@ -1,0 +1,16 @@
+{
+  "title": "Titolo",
+  "languages": "Lingue",
+  "tags": "Tag",
+  "status": "Stato",
+  "publishAt": "Pubblica il",
+  "updatedAt": "Ultimo aggiornamento",
+  "createdAt": "Creato il",
+  "actions": "Azioni",
+  "slug": "Slug",
+  "description": "Descrizione",
+  "expireAt": "Nascondi il",
+  "parentCollection": "Collezione principale",
+  "createdBy": "Creato da",
+  "updatedBy": "Aggiornato da"
+}

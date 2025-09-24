@@ -1,0 +1,11 @@
+{
+  "add": "Add collection",
+  "copy": "Copy",
+  "download": "Download",
+  "edit": "Edit",
+  "delete": "Delete",
+  "viewJson": "View JSON",
+  "cancel": "Cancel",
+  "save": "Save",
+  "discardChanges": "Discard changes"
+}

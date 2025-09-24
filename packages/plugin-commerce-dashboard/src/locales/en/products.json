@@ -1,0 +1,52 @@
+{
+  "products": {
+    "pageTitle": "Products",
+    "pageDescription": "Manage your catalogue, pricing and availability.",
+    "actions": {
+      "refresh": "Refresh",
+      "create": "New product"
+    },
+    "emptyState": {
+      "title": "No products yet",
+      "description": "Start building your catalogue by creating your first product."
+    },
+    "table": {
+      "columns": {
+        "name": "Name",
+        "status": "Status",
+        "currency": "Currency",
+        "updatedAt": "Last updated"
+      },
+      "untitled": "Untitled product"
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "details": {
+      "title": "Product details",
+      "description": "Review the product configuration and localisation.",
+      "breadcrumb": "Product details",
+      "generalInformation": "General information",
+      "status": "Status",
+      "currency": "Default currency",
+      "publishAt": "Scheduled publish",
+      "expireAt": "Scheduled expiration",
+      "contentSection": "Content",
+      "noSummary": "No summary available for this language.",
+      "slug": "Slug",
+      "additionalInformation": "Additional information",
+      "tags": "Tags",
+      "media": "Media",
+      "galleryCount": "{{count}} assets in gallery",
+      "updatedAt": "Last updated"
+    },
+    "create": {
+      "title": "Create product",
+      "description": "The visual editor for products will be available soon.",
+      "helper": "In the meantime you can create products via the API or integrate your own editor interface.",
+      "breadcrumb": "Create product"
+    }
+  }
+}

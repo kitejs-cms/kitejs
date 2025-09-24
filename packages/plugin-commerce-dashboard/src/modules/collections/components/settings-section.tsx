@@ -48,7 +48,7 @@ export function SettingsSection(props: SettingsSectionProps) {
     onViewJson,
   } = props;
 
-  const { t, i18n } = useTranslation("pages");
+  const { t, i18n } = useTranslation("commerce");
 
   const [collectionOptions, setCollectionOptions] = useState<
     { value: string; label: string }[]
@@ -79,13 +79,13 @@ export function SettingsSection(props: SettingsSectionProps) {
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
       <CardHeader className="bg-secondary text-primary py-4 rounded-t-xl">
         <div className="flex items-center justify-between">
-          <CardTitle>{t("sections.settings")}</CardTitle>
+          <CardTitle>{t("collections.sections.settings")}</CardTitle>
           <Button
             variant="ghost"
             size="sm"
             onClick={onViewJson}
             className="flex items-center"
-            aria-label={t("buttons.viewJson")}
+            aria-label={t("collections.buttons.viewJson")}
           >
             <FileJson className="h-4 w-4" />
           </Button>
@@ -97,25 +97,25 @@ export function SettingsSection(props: SettingsSectionProps) {
       <CardContent className="p-4 md:p-6 space-y-4">
         {/* Status */}
         <div>
-          <Label className="mb-2 block">{t("fields.status")}</Label>
+          <Label className="mb-2 block">{t("collections.fields.status")}</Label>
           <Select
             value={status}
             onValueChange={(val) => onChange("status", val)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("fields.status")} />
+              <SelectValue placeholder={t("collections.fields.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Draft">{t("status.draft")}</SelectItem>
-              <SelectItem value="Published">{t("status.published")}</SelectItem>
-              <SelectItem value="Archived">{t("status.archived")}</SelectItem>
+              <SelectItem value="Draft">{t("collections.status.Draft")}</SelectItem>
+              <SelectItem value="Published">{t("collections.status.Published")}</SelectItem>
+              <SelectItem value="Archived">{t("collections.status.Archived")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {/* Publish At */}
         <div>
-          <Label className="mb-2 block">{t("fields.publishAt")}</Label>
+          <Label className="mb-2 block">{t("collections.fields.publishAt")}</Label>
           <Input
             type="datetime-local"
             value={toInputDate(publishAt)} // sempre stringa
@@ -126,7 +126,7 @@ export function SettingsSection(props: SettingsSectionProps) {
 
         {/* Expire At */}
         <div>
-          <Label className="mb-2 block">{t("fields.expireAt")}</Label>
+          <Label className="mb-2 block">{t("collections.fields.expireAt")}</Label>
           <Input
             type="datetime-local"
             value={toInputDate(expireAt)} // sempre stringa
@@ -139,7 +139,7 @@ export function SettingsSection(props: SettingsSectionProps) {
         {collectionOptions.length > 0 && (
           <div>
             <Label className="mb-2 block">
-              {t("fields.parentCollection", {
+              {t("collections.fields.parentCollection", {
                 defaultValue: "Collection principale",
               })}
             </Label>
@@ -152,7 +152,7 @@ export function SettingsSection(props: SettingsSectionProps) {
             >
               <SelectTrigger className="w-full">
                 <SelectValue
-                  placeholder={t("placeholders.selectParentCollection", {
+                  placeholder={t("collections.placeholders.selectParentCollection", {
                     defaultValue: "Seleziona la collection padre (opzionale)",
                   })}
                 />
@@ -173,7 +173,7 @@ export function SettingsSection(props: SettingsSectionProps) {
 
         {/* Tags */}
         <div>
-          <Label className="mb-2 block">{t("fields.tags")}</Label>
+          <Label className="mb-2 block">{t("collections.fields.tags")}</Label>
           <TagsInput
             initialTags={tags ?? []}
             onChange={(newTags) => onChange("tags", newTags)}
@@ -182,7 +182,7 @@ export function SettingsSection(props: SettingsSectionProps) {
 
         {/* Created By */}
         <div>
-          <Label className="mb-2 block">{t("fields.createdBy")}</Label>
+          <Label className="mb-2 block">{t("collections.fields.createdBy")}</Label>
           <Input
             value={createdBy ?? ""}
             disabled
@@ -192,7 +192,7 @@ export function SettingsSection(props: SettingsSectionProps) {
 
         {/* Modified By */}
         <div>
-          <Label className="mb-2 block">{t("fields.updatedBy")}</Label>
+          <Label className="mb-2 block">{t("collections.fields.updatedBy")}</Label>
           <Input
             value={updatedBy ?? ""}
             disabled

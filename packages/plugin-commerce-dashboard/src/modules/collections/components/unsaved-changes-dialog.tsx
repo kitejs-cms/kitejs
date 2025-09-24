@@ -21,23 +21,25 @@ export function UnsavedChangesDialog({
   onClose,
   onDiscard,
 }: UnsavedChangesDialogProps) {
-  const { t } = useTranslation("pages");
+  const { t } = useTranslation("commerce");
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("unsavedChanges.title")}</AlertDialogTitle>
+          <AlertDialogTitle>
+            {t("collections.unsavedChanges.title")}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            {t("unsavedChanges.message")}
+            {t("collections.unsavedChanges.message")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>
-            {t("buttons.cancel")}
+            {t("collections.buttons.cancel")}
           </AlertDialogCancel>
           <AlertDialogAction onClick={onDiscard}>
-            {t("buttons.discardChanges")}
+            {t("collections.buttons.discardChanges")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "name": "Nome",
+    "status": "Stato",
+    "tags": "Tag",
+    "updatedAt": "Ultimo aggiornamento"
+  },
+  "untitled": "Collezione senza titolo",
+  "error": "Impossibile caricare le collezioni. Riprova.",
+  "empty": "Nessuna collezione corrisponde ai filtri attuali."
+}

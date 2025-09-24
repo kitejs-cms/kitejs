@@ -1,0 +1,6 @@
+{
+  "title": "Delete collection",
+  "description": "This action cannot be undone. Are you sure you want to delete the collection?",
+  "confirm": "Delete",
+  "cancel": "Cancel"
+}

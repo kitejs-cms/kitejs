@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Button,
   Card,
@@ -36,7 +35,6 @@ export function CommerceCollectionDetailsPage() {
     handleSave,
     onChange,
     showUnsavedAlert,
-    formErrors,
     confirmDiscard,
     closeUnsavedAlert,
     onSettingsChange,
@@ -135,10 +133,10 @@ export function CommerceCollectionDetailsPage() {
 
       <div className="sticky bottom-0 bg-background border-t py-4 mt-6 flex justify-end gap-3">
         <Button variant="outline" onClick={() => handleNavigation("/pages")}>
-          {t("buttons.cancel")}
+          {t("collections.buttons.cancel")}
         </Button>
         <Button onClick={() => handleSave()} disabled={!hasChanges}>
-          {t("buttons.save")}
+          {t("collections.buttons.save")}
         </Button>
       </div>
 

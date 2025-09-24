@@ -10,8 +10,8 @@ import {
 import { COMMERCE_PLUGIN_NAMESPACE } from "./constants";
 
 /* i18n */
-import en from "./locales/en.json";
-import it from "./locales/it.json";
+import en from "./locales/en";
+import it from "./locales/it";
 
 export const CommerceModule: DashboardModule = {
   key: COMMERCE_PLUGIN_NAMESPACE,

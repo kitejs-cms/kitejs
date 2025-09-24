@@ -1,0 +1,8 @@
+{
+  "title": "Modifiche non salvate",
+  "message": "Hai modifiche non salvate. Continuare senza salvare?",
+  "warning": "Hai modifiche non salvate: sei sicuro di voler uscire?",
+  "actions": {
+    "discard": "Scarta le modifiche"
+  }
+}

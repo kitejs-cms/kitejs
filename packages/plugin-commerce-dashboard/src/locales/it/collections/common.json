@@ -1,0 +1,11 @@
+{
+  "pageTitle": "Collezioni",
+  "pageDescription": "Organizza i prodotti in gruppi tematici per campagne e pagine dedicate.",
+  "title": {
+    "manage": "Gestisci collezioni"
+  },
+  "search": {
+    "placeholder": "Cerca collezioni...",
+    "minLength": "Inserisci almeno 3 caratteri per cercare."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "pageTitle": "Collections",
+  "pageDescription": "Group products into curated selections to power landing pages and campaigns.",
+  "title": {
+    "manage": "Manage collections"
+  },
+  "search": {
+    "placeholder": "Search collections...",
+    "minLength": "Enter at least 3 characters to search."
+  }
+}

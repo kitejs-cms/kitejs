@@ -1,0 +1,52 @@
+{
+  "products": {
+    "pageTitle": "Prodotti",
+    "pageDescription": "Gestisci catalogo, prezzi e disponibilità.",
+    "actions": {
+      "refresh": "Aggiorna",
+      "create": "Nuovo prodotto"
+    },
+    "emptyState": {
+      "title": "Nessun prodotto",
+      "description": "Inizia a costruire il catalogo creando il primo prodotto."
+    },
+    "table": {
+      "columns": {
+        "name": "Nome",
+        "status": "Stato",
+        "currency": "Valuta",
+        "updatedAt": "Ultimo aggiornamento"
+      },
+      "untitled": "Prodotto senza titolo"
+    },
+    "status": {
+      "draft": "Bozza",
+      "active": "Attivo",
+      "archived": "Archiviato"
+    },
+    "details": {
+      "title": "Dettagli prodotto",
+      "description": "Consulta configurazione e localizzazioni del prodotto.",
+      "breadcrumb": "Dettagli prodotto",
+      "generalInformation": "Informazioni generali",
+      "status": "Stato",
+      "currency": "Valuta predefinita",
+      "publishAt": "Pubblicazione programmata",
+      "expireAt": "Scadenza programmata",
+      "contentSection": "Contenuti",
+      "noSummary": "Nessun riassunto disponibile per questa lingua.",
+      "slug": "Slug",
+      "additionalInformation": "Informazioni aggiuntive",
+      "tags": "Tag",
+      "media": "Media",
+      "galleryCount": "{{count}} elementi in galleria",
+      "updatedAt": "Ultimo aggiornamento"
+    },
+    "create": {
+      "title": "Crea prodotto",
+      "description": "L'editor visuale per i prodotti sarà presto disponibile.",
+      "helper": "Nel frattempo puoi creare prodotti via API o integrare una tua interfaccia.",
+      "breadcrumb": "Crea prodotto"
+    }
+  }
+}

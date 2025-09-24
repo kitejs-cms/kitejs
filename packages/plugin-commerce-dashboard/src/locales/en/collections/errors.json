@@ -1,0 +1,5 @@
+{
+  "titleRequired": "Title is required",
+  "slugRequired": "Slug is required",
+  "saveFailed": "Failed to save collection. Please try again."
+}

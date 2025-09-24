@@ -1,0 +1,11 @@
+{
+  "active": "{{count}} active filters",
+  "clear": "Clear filters",
+  "fields": {
+    "status": "Status",
+    "tags": "Tags",
+    "publishAt": "Publish at",
+    "expireAt": "Unpublish at",
+    "createdAt": "Created at"
+  }
+}

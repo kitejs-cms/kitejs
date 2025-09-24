@@ -22,7 +22,7 @@ export interface FormErrors {
 }
 
 export function useCollectionDetails() {
-  const { t } = useTranslation("posts");
+  const { t } = useTranslation("commerce");
   const navigate = useNavigate();
   const { cmsSettings } = useSettingsContext();
   const { setBreadcrumb } = useBreadcrumb();
@@ -112,7 +112,7 @@ export function useCollectionDetails() {
     const handler = (e: BeforeUnloadEvent): string | void => {
       if (hasChanges) {
         e.preventDefault();
-        return t("unsaved_changes_warning");
+        return t("collections.unsavedChanges.warning");
       }
     };
     window.addEventListener("beforeunload", handler);
@@ -246,11 +246,14 @@ export function useCollectionDetails() {
     const translation = localData.translations[activeLang];
 
     if (!translation?.title?.trim()) {
-      errors.title = t("errors.titleRequired", "Title is required");
+      errors.title = t(
+        "collections.errors.titleRequired",
+        "Title is required"
+      );
     }
 
     if (!translation?.slug?.trim()) {
-      errors.slug = t("errors.slugRequired", "Title is required");
+      errors.slug = t("collections.errors.slugRequired", "Slug is required");
     }
 
     setFormErrors(errors);
@@ -316,14 +319,14 @@ export function useCollectionDetails() {
       toast.error("Errore nel salvataggio", {
         id: toastId,
         description: t(
-          "errors.saveFailed",
-          "Failed to save page. Please try again."
+          "collections.errors.saveFailed",
+          "Failed to save collection. Please try again."
         ),
       });
       setFormErrors({
         apiError: t(
-          "errors.saveFailed",
-          "Failed to save page. Please try again."
+          "collections.errors.saveFailed",
+          "Failed to save collection. Please try again."
         ),
       });
     }

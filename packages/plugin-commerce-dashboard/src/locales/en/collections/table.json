@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "name": "Name",
+    "status": "Status",
+    "tags": "Tags",
+    "updatedAt": "Last updated"
+  },
+  "untitled": "Untitled collection",
+  "error": "Unable to load collections. Please retry.",
+  "empty": "No collections match the current filters."
+}
