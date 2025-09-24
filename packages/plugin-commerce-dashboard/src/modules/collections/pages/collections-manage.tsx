@@ -42,7 +42,7 @@ import {
   ListFilter,
   Trash,
 } from "lucide-react";
-import type { FilterCondition } from "@kitejs-cms/core";
+import type { FilterCondition, FilterView } from "@kitejs-cms/core";
 import type { FilterConfig } from "@kitejs-cms/dashboard-core/components/filter-modal";
 import { buildFilterQuery } from "@kitejs-cms/dashboard-core/lib/query-builder";
 
@@ -106,6 +106,37 @@ export function CommerceCollectionsPage() {
   const canUpdate = hasPermission("plugin-commerce:collections.update");
   const canDelete = hasPermission("plugin-commerce:collections.delete");
 
+  const statusFilterViews = useMemo<FilterView[]>(() => {
+    const statuses: Array<{ key: "draft" | "published" | "archived"; value: CollectionStatus }> = [
+      { key: "draft", value: "Draft" },
+      { key: "published", value: "Published" },
+      { key: "archived", value: "Archived" },
+    ];
+
+    return statuses.map(({ key, value }) => {
+      const name = t(`collections.filters.views.${key}.name`);
+      const descriptionKey = `collections.filters.views.${key}.description` as const;
+      const descriptionTranslation = t(descriptionKey);
+
+      return {
+        id: `status-${key}`,
+        name,
+        description:
+          descriptionTranslation !== descriptionKey
+            ? descriptionTranslation
+            : undefined,
+        conditions: [
+          {
+            id: `status-${key}`,
+            field: "status",
+            operator: "equals",
+            value,
+          },
+        ],
+      } satisfies FilterView;
+    });
+  }, [t]);
+
   const filterConfig = useMemo<FilterConfig>(
     () => ({
       fields: [
@@ -140,8 +171,9 @@ export function CommerceCollectionsPage() {
           type: "date",
         },
       ],
+      views: statusFilterViews,
     }),
-    [t]
+    [statusFilterViews, t]
   );
 
   useEffect(() => {

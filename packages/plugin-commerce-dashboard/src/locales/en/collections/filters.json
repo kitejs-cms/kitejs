@@ -7,5 +7,19 @@
     "publishAt": "Publish at",
     "expireAt": "Unpublish at",
     "createdAt": "Created at"
+  },
+  "views": {
+    "draft": {
+      "name": "Draft collections",
+      "description": "Show collections that are still in draft"
+    },
+    "published": {
+      "name": "Published collections",
+      "description": "Show collections that are already live"
+    },
+    "archived": {
+      "name": "Archived collections",
+      "description": "Show collections that are archived"
+    }
   }
 }

@@ -7,5 +7,19 @@
     "publishAt": "Pubblica il",
     "expireAt": "Nascondi il",
     "createdAt": "Creato il"
+  },
+  "views": {
+    "draft": {
+      "name": "Bozze",
+      "description": "Mostra le collection ancora in bozza"
+    },
+    "published": {
+      "name": "Pubblicate",
+      "description": "Mostra le collection gi\u00e0 online"
+    },
+    "archived": {
+      "name": "Archiviate",
+      "description": "Mostra le collection archiviate"
+    }
   }
 }
