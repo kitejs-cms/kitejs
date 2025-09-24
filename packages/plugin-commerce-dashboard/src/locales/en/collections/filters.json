@@ -8,6 +8,7 @@
     "expireAt": "Unpublish at",
     "createdAt": "Created at"
   },
+  "activeView": "View: {{name}}",
   "views": {
     "draft": {
       "name": "Draft collections",

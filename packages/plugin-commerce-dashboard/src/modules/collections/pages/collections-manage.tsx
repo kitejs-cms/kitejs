@@ -95,6 +95,7 @@ export function CommerceCollectionsPage() {
   const [showFilter, setShowFilter] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterCondition[]>([]);
   const [searchInput, setSearchInput] = useState("");
+  const [activeView, setActiveView] = useState<FilterView | null>(null);
 
   const itemsPerPage = ITEMS_PER_PAGE;
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
@@ -136,6 +137,21 @@ export function CommerceCollectionsPage() {
       } satisfies FilterView;
     });
   }, [t]);
+
+  useEffect(() => {
+    if (!activeView) {
+      return;
+    }
+
+    const updatedView = statusFilterViews.find((view) => view.id === activeView.id);
+    if (
+      updatedView &&
+      (updatedView.name !== activeView.name ||
+        updatedView.description !== activeView.description)
+    ) {
+      setActiveView(updatedView);
+    }
+  }, [activeView, statusFilterViews]);
 
   const filterConfig = useMemo<FilterConfig>(
     () => ({
@@ -347,6 +363,7 @@ export function CommerceCollectionsPage() {
 
   const handleApplyFilters = (filters: FilterCondition[]) => {
     setActiveFilters(filters);
+    setActiveView(null);
     setShowFilter(false);
 
     if (currentPage !== 1) {
@@ -356,8 +373,26 @@ export function CommerceCollectionsPage() {
     }
   };
 
+  const handleLoadView = (view: FilterView) => {
+    setActiveFilters(
+      view.conditions.map((condition) => ({
+        ...condition,
+        value: Array.isArray(condition.value)
+          ? [...condition.value]
+          : condition.value,
+      }))
+    );
+    setActiveView(view);
+    setShowFilter(false);
+
+    const params = new URLSearchParams(searchParams);
+    params.set("page", "1");
+    setSearchParams(params);
+  };
+
   const handleClearFilters = () => {
     setActiveFilters([]);
+    setActiveView(null);
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
     setSearchParams(params);
@@ -375,15 +410,29 @@ export function CommerceCollectionsPage() {
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-2">
               <CardTitle>{t("collections.title.manage")}</CardTitle>
-              {hasActiveFilters && (
-                <Badge
-                  variant="secondary"
-                  className="w-fit bg-blue-100 text-blue-800"
-                >
-                  {t("collections.filters.active", {
-                    count: activeFilterCount,
-                  })}
-                </Badge>
+              {(hasActiveFilters || activeView) && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {hasActiveFilters && (
+                    <Badge
+                      variant="secondary"
+                      className="w-fit bg-blue-100 text-blue-800"
+                    >
+                      {t("collections.filters.active", {
+                        count: activeFilterCount,
+                      })}
+                    </Badge>
+                  )}
+                  {activeView && (
+                    <Badge
+                      variant="outline"
+                      className="w-fit border-green-300 bg-green-100 text-green-800"
+                    >
+                      {t("collections.filters.activeView", {
+                        name: activeView.name,
+                      })}
+                    </Badge>
+                  )}
+                </div>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -619,6 +668,7 @@ export function CommerceCollectionsPage() {
         config={filterConfig}
         initialConditions={activeFilters}
         onApplyFilters={handleApplyFilters}
+        onLoadView={handleLoadView}
       />
     </div>
   );

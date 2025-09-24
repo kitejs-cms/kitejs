@@ -8,6 +8,7 @@
     "expireAt": "Nascondi il",
     "createdAt": "Creato il"
   },
+  "activeView": "Vista: {{name}}",
   "views": {
     "draft": {
       "name": "Bozze",
