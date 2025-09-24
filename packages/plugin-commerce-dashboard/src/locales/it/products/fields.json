@@ -1,0 +1,16 @@
+{
+  "title": "Titolo",
+  "subtitle": "Sottotitolo",
+  "slug": "Slug",
+  "summary": "Sommario",
+  "description": "Descrizione",
+  "status": "Stato",
+  "publishAt": "Pubblicazione programmata",
+  "expireAt": "Disattivazione programmata",
+  "defaultCurrency": "Valuta predefinita",
+  "tags": "Tag",
+  "thumbnail": "URL miniatura",
+  "gallery": "Elementi galleria",
+  "createdBy": "Creato da",
+  "updatedBy": "Aggiornato da"
+}

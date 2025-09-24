@@ -1,0 +1,10 @@
+{
+  "titleRequired": "Title is required",
+  "slugRequired": "Slug is required",
+  "formInvalid": "Invalid form",
+  "formInvalidDescription": "Check the required fields and try again.",
+  "missingTranslation": "Missing translation",
+  "translationMissingDescription": "The selected language ({{language}}) is not configured.",
+  "saveFailed": "Failed to save product",
+  "saveFailedDescription": "Unable to save the product. Please try again."
+}

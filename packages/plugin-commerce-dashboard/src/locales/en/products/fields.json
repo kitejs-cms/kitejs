@@ -1,0 +1,16 @@
+{
+  "title": "Title",
+  "subtitle": "Subtitle",
+  "slug": "Slug",
+  "summary": "Summary",
+  "description": "Description",
+  "status": "Status",
+  "publishAt": "Publish at",
+  "expireAt": "Unpublish at",
+  "defaultCurrency": "Default currency",
+  "tags": "Tags",
+  "thumbnail": "Thumbnail URL",
+  "gallery": "Gallery items",
+  "createdBy": "Created by",
+  "updatedBy": "Updated by"
+}
