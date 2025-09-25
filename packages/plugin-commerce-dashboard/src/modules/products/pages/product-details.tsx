@@ -18,6 +18,7 @@ import { useProductDetails } from "../hooks/use-product-details";
 import { ProductSeoSection } from "../components/seo-section";
 import { ProductSettingsSection } from "../components/settings-section";
 import { ProductUnsavedChangesDialog } from "../components/unsaved-changes-dialog";
+import { ProductVariantsSection } from "../components/product-variants-section";
 
 export function CommerceProductDetailsPage() {
   const { t } = useTranslation("commerce");
@@ -32,6 +33,12 @@ export function CommerceProductDetailsPage() {
     onChange,
     onSeoChange,
     onSettingsChange,
+    addVariant,
+    updateVariant,
+    removeVariant,
+    addVariantPrice,
+    updateVariantPrice,
+    removeVariantPrice,
     hasChanges,
     handleNavigation,
     handleSave,
@@ -179,6 +186,18 @@ export function CommerceProductDetailsPage() {
               </CardContent>
             </Card>
 
+            <ProductVariantsSection
+              variants={data.variants ?? []}
+              defaultCurrency={data.defaultCurrency ?? undefined}
+              error={formErrors.variants}
+              onAddVariant={addVariant}
+              onRemoveVariant={removeVariant}
+              onVariantChange={updateVariant}
+              onAddPrice={addVariantPrice}
+              onRemovePrice={removeVariantPrice}
+              onPriceChange={updateVariantPrice}
+            />
+
             <ProductSeoSection
               activeLang={activeLang}
               translations={data.translations}
@@ -192,6 +211,11 @@ export function CommerceProductDetailsPage() {
               publishAt={(data.publishAt as string | null) ?? null}
               expireAt={(data.expireAt as string | null) ?? null}
               tags={Array.isArray(data.tags) ? (data.tags as string[]) : undefined}
+              collectionIds={
+                Array.isArray(data.collectionIds)
+                  ? (data.collectionIds as string[])
+                  : undefined
+              }
               defaultCurrency={
                 typeof data.defaultCurrency === "string"
                   ? (data.defaultCurrency as string)

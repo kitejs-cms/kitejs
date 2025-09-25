@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FileJson } from "lucide-react";
 import {
@@ -16,14 +16,20 @@ import {
   SelectItem,
   Input,
   TagsInput,
+  MultiSelect,
+  useApi,
 } from "@kitejs-cms/dashboard-core";
-import { ProductStatus } from "@kitejs-cms/plugin-commerce-api";
+import {
+  ProductStatus,
+  type CollectionResponseDetailslModel,
+} from "@kitejs-cms/plugin-commerce-api";
 
 interface ProductSettingsSectionProps {
   status?: string;
   publishAt?: string | null;
   expireAt?: string | null;
   tags?: string[];
+  collectionIds?: string[];
   defaultCurrency?: string;
   thumbnail?: string | null;
   gallery?: string[];
@@ -35,6 +41,7 @@ interface ProductSettingsSectionProps {
       | "publishAt"
       | "expireAt"
       | "tags"
+      | "collectionIds"
       | "defaultCurrency"
       | "thumbnail"
       | "gallery",
@@ -48,6 +55,7 @@ export function ProductSettingsSection({
   publishAt,
   expireAt,
   tags,
+  collectionIds,
   defaultCurrency,
   thumbnail,
   gallery,
@@ -56,7 +64,14 @@ export function ProductSettingsSection({
   onChange,
   onViewJson,
 }: ProductSettingsSectionProps) {
-  const { t } = useTranslation("commerce");
+  const { t, i18n } = useTranslation("commerce");
+
+  const [collectionOptions, setCollectionOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+
+  const { data: collectionsData, fetchData: fetchCollections } =
+    useApi<CollectionResponseDetailslModel[]>();
 
   const statusOptions = useMemo(
     () => [
@@ -69,6 +84,22 @@ export function ProductSettingsSection({
 
   const toInputDate = (value?: string | null) =>
     value ? new Date(value).toISOString().slice(0, 16) : "";
+
+  useEffect(() => {
+    void fetchCollections("commerce/collections?page[number]=1&page[size]=100");
+  }, [fetchCollections]);
+
+  useEffect(() => {
+    if (!collectionsData) return;
+    const currentLanguage = i18n.language.split("-")[0];
+    setCollectionOptions(
+      collectionsData.map((collection) => ({
+        value: collection.id,
+        label:
+          collection.translations?.[currentLanguage]?.title ?? collection.id,
+      }))
+    );
+  }, [collectionsData, i18n.language]);
 
   return (
     <Card className="w-full gap-0 py-0 shadow-neutral-50">
@@ -156,6 +187,17 @@ export function ProductSettingsSection({
             id="product-tags"
             initialTags={tags ?? []}
             onChange={(value) => onChange("tags", value)}
+          />
+        </div>
+
+        <div>
+          <Label className="mb-2 block" htmlFor="product-collections">
+            {t("products.fields.collections")}
+          </Label>
+          <MultiSelect
+            options={collectionOptions}
+            initialTags={collectionIds ?? []}
+            onChange={(value) => onChange("collectionIds", value)}
           />
         </div>
 

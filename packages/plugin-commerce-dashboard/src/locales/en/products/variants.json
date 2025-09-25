@@ -1,0 +1,17 @@
+{
+  "description": "Manage variants to control inventory, SKUs and pricing.",
+  "defaultCurrency": "Default currency: {{currency}}",
+  "untitled": "Variant {{index}}",
+  "sku": "SKU: {{sku}}",
+  "skuPlaceholder": "No SKU configured",
+  "inventoryHint": "Inventory quantity controls stock availability for this variant.",
+  "empty": {
+    "title": "No variants yet",
+    "description": "Create your first variant to define pricing and stock levels."
+  },
+  "prices": {
+    "title": "Prices",
+    "description": "Define currency-specific amounts for this variant.",
+    "empty": "No prices configured yet."
+  }
+}

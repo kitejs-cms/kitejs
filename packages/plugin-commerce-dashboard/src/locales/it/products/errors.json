@@ -6,5 +6,11 @@
   "missingTranslation": "Traduzione mancante",
   "translationMissingDescription": "La lingua selezionata ({{language}}) non è configurata.",
   "saveFailed": "Salvataggio prodotto non riuscito",
-  "saveFailedDescription": "Impossibile salvare il prodotto. Riprova."
+  "saveFailedDescription": "Impossibile salvare il prodotto. Riprova.",
+  "variantTitleRequired": "Ogni variante deve avere un titolo.",
+  "variantSkuRequired": "Ogni variante deve avere uno SKU.",
+  "variantInventoryInvalid": "La quantità in magazzino non può essere negativa.",
+  "variantPriceRequired": "Ogni variante deve includere almeno un prezzo.",
+  "variantCurrencyRequired": "Per ogni prezzo è richiesta una valuta.",
+  "variantAmountRequired": "Per ogni prezzo è richiesto un importo."
 }

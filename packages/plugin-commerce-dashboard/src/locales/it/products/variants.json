@@ -1,0 +1,17 @@
+{
+  "description": "Gestisci le varianti per controllare inventario, SKU e prezzi.",
+  "defaultCurrency": "Valuta predefinita: {{currency}}",
+  "untitled": "Variante {{index}}",
+  "sku": "SKU: {{sku}}",
+  "skuPlaceholder": "SKU non impostato",
+  "inventoryHint": "La quantità in magazzino determina la disponibilità di questa variante.",
+  "empty": {
+    "title": "Nessuna variante",
+    "description": "Crea la tua prima variante per definire prezzi e disponibilità."
+  },
+  "prices": {
+    "title": "Prezzi",
+    "description": "Definisci gli importi per valuta per questa variante.",
+    "empty": "Nessun prezzo configurato."
+  }
+}

@@ -7,10 +7,19 @@
   "status": "Status",
   "publishAt": "Publish at",
   "expireAt": "Unpublish at",
+  "collections": "Collections",
   "defaultCurrency": "Default currency",
   "tags": "Tags",
   "thumbnail": "Thumbnail URL",
   "gallery": "Gallery items",
   "createdBy": "Created by",
-  "updatedBy": "Updated by"
+  "updatedBy": "Updated by",
+  "variantTitle": "Variant title",
+  "variantSku": "SKU",
+  "variantBarcode": "Barcode",
+  "variantInventory": "Inventory quantity",
+  "variantAllowBackorder": "Allow backorder",
+  "priceCurrency": "Currency",
+  "priceAmount": "Amount",
+  "priceCompareAt": "Compare-at amount"
 }

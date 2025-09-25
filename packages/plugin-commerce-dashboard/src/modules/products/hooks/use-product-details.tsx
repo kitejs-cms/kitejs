@@ -6,6 +6,8 @@ import {
   type ProductSeoModel,
   ProductStatus,
   type ProductResponseModel,
+  type ProductVariantModel,
+  type ProductPriceModel,
 } from "@kitejs-cms/plugin-commerce-api";
 import {
   useApi,
@@ -33,6 +35,7 @@ export type ProductResponseDetailsModel = ProductResponseModel & {
   createdBy?: string;
   updatedBy?: string;
   collectionIds?: string[];
+  variants?: ProductVariantFormModel[];
   translations: Record<string, ProductTranslationModel>;
   slugs?: Record<string, string>;
   [key: string]: unknown;
@@ -42,7 +45,78 @@ export interface ProductFormErrors {
   title?: string;
   slug?: string;
   apiError?: string;
+  variants?: string;
   [key: string]: string | undefined;
+}
+
+export type ProductVariantPriceFormModel = ProductPriceModel & {
+  _tempId: string;
+};
+
+export type ProductVariantFormModel = ProductVariantModel & {
+  _tempId: string;
+  prices?: ProductVariantPriceFormModel[];
+};
+
+function createTempId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).slice(2, 11);
+}
+
+function normalizeVariantPrice(
+  price: Record<string, unknown>
+): ProductVariantPriceFormModel {
+  const currencyValue =
+    typeof price.currencyCode === "string" ? price.currencyCode : "";
+  const amountValue = Number(price.amount ?? 0);
+  const compareAt = price.compareAtAmount;
+  const compareAtValue = Number(compareAt);
+
+  return {
+    _tempId: createTempId(),
+    currencyCode: currencyValue,
+    amount: Number.isFinite(amountValue) ? amountValue : Number.NaN,
+    ...(compareAt === undefined || compareAt === null
+      ? {}
+      : {
+          compareAtAmount: Number.isFinite(compareAtValue)
+            ? compareAtValue
+            : undefined,
+        }),
+  };
+}
+
+function normalizeVariant(variant: Record<string, unknown>): ProductVariantFormModel {
+  const idValue =
+    typeof variant.id === "string"
+      ? variant.id
+      : typeof variant._id === "string"
+        ? variant._id
+        : undefined;
+
+  const pricesArray = Array.isArray(variant.prices)
+    ? (variant.prices as Record<string, unknown>[]).map((price) =>
+        normalizeVariantPrice(price)
+      )
+    : [];
+
+  const inventoryValue = Number(variant.inventoryQuantity ?? 0);
+
+  return {
+    _tempId: createTempId(),
+    ...(idValue ? { id: idValue } : {}),
+    title: typeof variant.title === "string" ? variant.title : "",
+    sku: typeof variant.sku === "string" ? variant.sku : "",
+    barcode:
+      variant.barcode === undefined || variant.barcode === null
+        ? undefined
+        : String(variant.barcode),
+    inventoryQuantity: Number.isFinite(inventoryValue) ? inventoryValue : 0,
+    allowBackorder: Boolean(variant.allowBackorder),
+    prices: pricesArray,
+  };
 }
 
 function normalizeTranslation(
@@ -73,6 +147,31 @@ function normalizeProduct(
   const languages = Object.keys(product.translations ?? {});
   const slugs = product.slugs ?? {};
 
+  const rawCollections =
+    (product.collectionIds as string[] | undefined) ??
+    ((product as Record<string, unknown>).collections as
+      | unknown[]
+      | undefined);
+
+  const collectionIds = Array.isArray(rawCollections)
+    ? rawCollections
+        .map((item) => {
+          if (typeof item === "string") return item;
+          if (item && typeof item === "object") {
+            const value = item as { id?: string; _id?: string };
+            return value.id ?? value._id ?? "";
+          }
+          return "";
+        })
+        .filter((value) => Boolean(value))
+    : [];
+
+  const variants = Array.isArray((product as Record<string, unknown>).variants)
+    ? ((product as Record<string, unknown>).variants as Record<string, unknown>[]).map(
+        (variant) => normalizeVariant(variant)
+      )
+    : [];
+
   const translations = languages.reduce<Record<string, ProductTranslationModel>>(
     (acc, lang) => {
       acc[lang] = normalizeTranslation(
@@ -94,6 +193,8 @@ function normalizeProduct(
     defaultCurrency: product.defaultCurrency ?? "",
     thumbnail: product.thumbnail ?? "",
     gallery: Array.isArray(product.gallery) ? product.gallery : [],
+    collectionIds,
+    variants,
     translations,
     slugs,
   };
@@ -188,6 +289,8 @@ export function useProductDetails() {
         gallery: [],
         createdBy: "",
         updatedBy: "",
+        collectionIds: [],
+        variants: [],
       } as ProductResponseDetailsModel;
 
       setLocalData(newProduct);
@@ -307,12 +410,13 @@ export function useProductDetails() {
         | "tags"
         | "defaultCurrency"
         | "thumbnail"
-        | "gallery",
+        | "gallery"
+        | "collectionIds",
       value: string | string[] | null
     ) => {
       setLocalData((prev) => {
         if (!prev) return prev;
-        if (field === "tags" || field === "gallery") {
+        if (field === "tags" || field === "gallery" || field === "collectionIds") {
           return { ...prev, [field]: (value ?? []) as string[] };
         }
         return { ...prev, [field]: value as string | null };
@@ -321,6 +425,239 @@ export function useProductDetails() {
     },
     []
   );
+
+  const addVariant = useCallback(() => {
+    setLocalData((prev) => {
+      if (!prev) return prev;
+
+      const defaultPrice: ProductVariantPriceFormModel = {
+        _tempId: createTempId(),
+        currencyCode: prev.defaultCurrency ?? "",
+        amount: 0,
+      };
+
+      const nextVariant: ProductVariantFormModel = {
+        _tempId: createTempId(),
+        title: "",
+        sku: "",
+        prices: [defaultPrice],
+        inventoryQuantity: 0,
+        allowBackorder: false,
+      };
+
+      return {
+        ...prev,
+        variants: [...(prev.variants ?? []), nextVariant],
+      };
+    });
+    setHasChanges(true);
+  }, []);
+
+  const updateVariant = useCallback(
+    (
+      variantKey: string,
+      field: keyof Omit<ProductVariantFormModel, "_tempId" | "prices">,
+      value: string | number | boolean | undefined
+    ) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+
+        const updated = (prev.variants ?? []).map((variant) => {
+          const key = variant.id ?? variant._tempId;
+          if (key !== variantKey) return variant;
+
+          if (field === "inventoryQuantity") {
+            const numericValue =
+              value === "" || value === undefined || value === null
+                ? undefined
+                : Number(value);
+            return {
+              ...variant,
+              inventoryQuantity: Number.isFinite(numericValue)
+                ? (numericValue as number)
+                : 0,
+            };
+          }
+
+          if (field === "allowBackorder") {
+            return {
+              ...variant,
+              allowBackorder: Boolean(value),
+            };
+          }
+
+          if (field === "barcode") {
+            const barcodeValue = typeof value === "string" ? value : "";
+            return {
+              ...variant,
+              barcode: barcodeValue.trim() ? barcodeValue : undefined,
+            };
+          }
+
+          return {
+            ...variant,
+            [field]: value as string,
+          };
+        });
+
+        return {
+          ...prev,
+          variants: updated,
+        };
+      });
+      setHasChanges(true);
+    },
+    []
+  );
+
+  const removeVariant = useCallback((variantKey: string) => {
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      const variants = prev.variants ?? [];
+      return {
+        ...prev,
+        variants: variants.filter(
+          (variant) => (variant.id ?? variant._tempId) !== variantKey
+        ),
+      };
+    });
+    setHasChanges(true);
+  }, []);
+
+  const addVariantPrice = useCallback(
+    (variantKey: string) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+
+        const variants = prev.variants ?? [];
+        const updated = variants.map((variant) => {
+          const key = variant.id ?? variant._tempId;
+          if (key !== variantKey) return variant;
+
+          const prices = variant.prices ?? [];
+          const nextPrice: ProductVariantPriceFormModel = {
+            _tempId: createTempId(),
+            currencyCode: prev.defaultCurrency ?? "",
+            amount: 0,
+          };
+
+          return {
+            ...variant,
+            prices: [...prices, nextPrice],
+          };
+        });
+
+        return {
+          ...prev,
+          variants: updated,
+        };
+      });
+      setHasChanges(true);
+    },
+    []
+  );
+
+  const updateVariantPrice = useCallback(
+    (
+      variantKey: string,
+      priceKey: string,
+      field: keyof ProductVariantPriceFormModel,
+      value: string | number | undefined
+    ) => {
+      if (field === "_tempId") return;
+
+      setLocalData((prev) => {
+        if (!prev) return prev;
+
+        const variants = prev.variants ?? [];
+        const updated = variants.map((variant) => {
+          const key = variant.id ?? variant._tempId;
+          if (key !== variantKey) return variant;
+
+          const prices = variant.prices ?? [];
+          const updatedPrices = prices.map((price) => {
+            if (price._tempId !== priceKey) return price;
+
+            if (field === "amount" || field === "compareAtAmount") {
+              const numericValue =
+                value === "" || value === undefined || value === null
+                  ? undefined
+                  : Number(value);
+
+              if (field === "amount") {
+                if (numericValue === undefined) {
+                  return {
+                    ...price,
+                    amount: Number.NaN,
+                  };
+                }
+
+                return {
+                  ...price,
+                  amount: Number.isFinite(numericValue)
+                    ? (numericValue as number)
+                    : Number.NaN,
+                };
+              }
+
+              return {
+                ...price,
+                compareAtAmount: Number.isFinite(numericValue)
+                  ? (numericValue as number)
+                  : undefined,
+              };
+            }
+
+            if (field === "currencyCode") {
+              const code = typeof value === "string" ? value.toUpperCase() : "";
+              return {
+                ...price,
+                currencyCode: code,
+              };
+            }
+
+            return price;
+          });
+
+          return {
+            ...variant,
+            prices: updatedPrices,
+          };
+        });
+
+        return {
+          ...prev,
+          variants: updated,
+        };
+      });
+      setHasChanges(true);
+    },
+    []
+  );
+
+  const removeVariantPrice = useCallback((variantKey: string, priceKey: string) => {
+    setLocalData((prev) => {
+      if (!prev) return prev;
+
+      const variants = prev.variants ?? [];
+      const updated = variants.map((variant) => {
+        const key = variant.id ?? variant._tempId;
+        if (key !== variantKey) return variant;
+
+        const prices = variant.prices ?? [];
+        return {
+          ...variant,
+          prices: prices.filter((price) => price._tempId !== priceKey),
+        };
+      });
+
+      return {
+        ...prev,
+        variants: updated,
+      };
+    });
+    setHasChanges(true);
+  }, []);
 
   const generateSlug = useCallback((title: string) => {
     return title
@@ -443,6 +780,74 @@ export function useProductDetails() {
       errors.slug = t("products.errors.slugRequired", "Slug is required");
     }
 
+    const variants = localData.variants ?? [];
+    if (variants.length > 0) {
+      for (const variant of variants) {
+        if (!variant.title?.trim()) {
+          errors.variants = t(
+            "products.errors.variantTitleRequired",
+            "Each variant must have a title."
+          );
+          break;
+        }
+
+        if (!variant.sku?.trim()) {
+          errors.variants = t(
+            "products.errors.variantSkuRequired",
+            "Each variant must have an SKU."
+          );
+          break;
+        }
+
+        if (
+          variant.inventoryQuantity !== undefined &&
+          variant.inventoryQuantity !== null &&
+          variant.inventoryQuantity < 0
+        ) {
+          errors.variants = t(
+            "products.errors.variantInventoryInvalid",
+            "Inventory quantity cannot be negative."
+          );
+          break;
+        }
+
+        const prices = variant.prices ?? [];
+        if (!prices.length) {
+          errors.variants = t(
+            "products.errors.variantPriceRequired",
+            "Each variant must include at least one price."
+          );
+          break;
+        }
+
+        for (const price of prices) {
+          if (!price.currencyCode?.trim()) {
+            errors.variants = t(
+              "products.errors.variantCurrencyRequired",
+              "Price entries require a currency."
+            );
+            break;
+          }
+
+          if (
+            price.amount === undefined ||
+            price.amount === null ||
+            Number.isNaN(price.amount)
+          ) {
+            errors.variants = t(
+              "products.errors.variantAmountRequired",
+              "Price entries require an amount."
+            );
+            break;
+          }
+        }
+
+        if (errors.variants) {
+          break;
+        }
+      }
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }, [activeLang, localData, t]);
@@ -492,9 +897,36 @@ export function useProductDetails() {
         defaultCurrency: localData.defaultCurrency ?? undefined,
         thumbnail: localData.thumbnail ?? undefined,
         gallery: localData.gallery ?? [],
-        collectionIds: (localData.collectionIds ?? undefined) as
-          | string[]
-          | undefined,
+        collectionIds: (localData.collectionIds ?? []).filter((value) =>
+          Boolean(value)
+        ),
+        variants: (localData.variants ?? []).map((variant) => {
+          const { _tempId, prices, barcode, inventoryQuantity, ...rest } = variant;
+          const sanitizedPrices = (prices ?? [])
+            .filter((price) => price.currencyCode?.trim())
+            .map(({ _tempId: priceTempId, amount, compareAtAmount, ...price }) => ({
+              ...price,
+              amount: Number.isFinite(amount) ? amount : 0,
+              ...(compareAtAmount === undefined || compareAtAmount === null
+                ? {}
+                : {
+                    compareAtAmount: Number.isFinite(compareAtAmount)
+                      ? compareAtAmount
+                      : undefined,
+                  }),
+            }));
+
+          return {
+            ...rest,
+            ...(barcode?.trim() ? { barcode: barcode.trim() } : {}),
+            inventoryQuantity:
+              inventoryQuantity === undefined || inventoryQuantity === null
+                ? 0
+                : inventoryQuantity,
+            allowBackorder: Boolean(variant.allowBackorder),
+            prices: sanitizedPrices,
+          };
+        }),
       };
 
       const endpoint = isCreating
@@ -571,6 +1003,12 @@ export function useProductDetails() {
     onChange,
     onSeoChange,
     onSettingsChange,
+    addVariant,
+    updateVariant,
+    removeVariant,
+    addVariantPrice,
+    updateVariantPrice,
+    removeVariantPrice,
     hasChanges,
     handleNavigation,
     handleSave,
