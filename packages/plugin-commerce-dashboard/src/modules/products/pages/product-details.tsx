@@ -1,255 +1,258 @@
-import type { ReactNode } from "react";
-import { useCallback, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  Badge,
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  Input,
+  JsonModal,
+  Label,
+  LanguageTabs,
   Separator,
-  Skeleton,
-  useApi,
-  useBreadcrumb,
+  SkeletonPage,
+  Textarea,
 } from "@kitejs-cms/dashboard-core";
-
-interface ProductTranslation {
-  title?: string;
-  subtitle?: string;
-  summary?: string;
-  description?: string;
-  slug?: string;
-}
-
-interface ProductDetail {
-  id: string;
-  status?: string;
-  tags?: string[];
-  defaultCurrency?: string;
-  publishAt?: string | null;
-  expireAt?: string | null;
-  gallery?: string[];
-  slugs: Record<string, string>;
-  translations: Record<string, ProductTranslation>;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { useProductDetails } from "../hooks/use-product-details";
+import { ProductSeoSection } from "../components/seo-section";
+import { ProductSettingsSection } from "../components/settings-section";
+import { ProductUnsavedChangesDialog } from "../components/unsaved-changes-dialog";
+import { ProductVariantsSection } from "../components/product-variants-section";
 
 export function CommerceProductDetailsPage() {
-  const { id } = useParams<{ id: string }>();
-  const location = useLocation();
-  const { t, i18n } = useTranslation("commerce");
-  const navigate = useNavigate();
-  const { setBreadcrumb } = useBreadcrumb();
-  const isCreating = !id && location.pathname.endsWith("/new");
+  const { t } = useTranslation("commerce");
+  const [jsonView, setJsonView] = useState(false);
+
   const {
-    data: product,
+    data,
     loading,
-    fetchData,
-  } = useApi<ProductDetail>();
+    activeLang,
+    setActiveLang,
+    onAddLanguage,
+    onChange,
+    onSeoChange,
+    onSettingsChange,
+    addVariant,
+    updateVariant,
+    removeVariant,
+    addVariantPrice,
+    updateVariantPrice,
+    removeVariantPrice,
+    hasChanges,
+    handleNavigation,
+    handleSave,
+    showUnsavedAlert,
+    confirmDiscard,
+    closeUnsavedAlert,
+    formErrors,
+  } = useProductDetails();
 
-  const resolveProductTitle = useCallback(
-    (current?: ProductDetail) => {
-      if (!current) {
-        return t("products.details.breadcrumb");
-      }
-      const translation =
-        current.translations?.[i18n.language] ?? current.translations?.en;
-      if (translation?.title) {
-        return translation.title;
-      }
-      return t("products.details.breadcrumb");
-    },
-    [i18n.language, t]
-  );
-
-  useEffect(() => {
-    setBreadcrumb([
-      { label: t("breadcrumb.home"), path: "/" },
-      { label: t("breadcrumb.products"), path: "/commerce/products" },
-      isCreating
-        ? { label: t("products.create.breadcrumb"), path: location.pathname }
-        : {
-            label: resolveProductTitle(product ?? undefined),
-            path: location.pathname,
-          },
-    ]);
-  }, [
-    setBreadcrumb,
-    t,
-    location.pathname,
-    isCreating,
-    product,
-    resolveProductTitle,
-  ]);
-
-  useEffect(() => {
-    if (!isCreating && id) {
-      void fetchData(`commerce/products/${id}`);
+  const translation = useMemo(() => {
+    if (!data) {
+      return {
+        title: "",
+        subtitle: "",
+        summary: "",
+        description: "",
+        slug: "",
+      };
     }
-  }, [fetchData, id, isCreating]);
+    return data.translations?.[activeLang] ?? {
+      title: "",
+      subtitle: "",
+      summary: "",
+      description: "",
+      slug: "",
+    };
+  }, [activeLang, data]);
 
-  if (isCreating) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("products.create.title")}</CardTitle>
-          <CardDescription>{t("products.create.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {t("products.create.helper")}
-          </p>
-          <Button onClick={() => navigate(-1)} variant="outline">
-            {t("common.back")}
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (loading || !product) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-24 w-full" />
-      </div>
-    );
-  }
-
-  const translation =
-    product.translations?.[i18n.language] ?? product.translations?.en ?? {};
-
-  const formatDateTime = (value?: string | null) => {
-    if (!value) return "-";
-    try {
-      return new Intl.DateTimeFormat(i18n.language, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(value));
-    } catch {
-      return value;
+  const resolveUserValue = (value: unknown) => {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    if (typeof value === "object") {
+      const user = value as { email?: string; name?: string; _id?: string };
+      return user.email ?? user.name ?? user._id ?? "";
     }
+    return "";
   };
 
+  if (loading || !data) {
+    return <SkeletonPage />;
+  }
+
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="px-0">
-        {t("common.back")}
-      </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle>{translation.title ?? t("products.details.title")}</CardTitle>
-          <CardDescription>
-            {translation.subtitle ?? t("products.details.description")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <section className="space-y-3">
-            <h3 className="text-lg font-semibold">
-              {t("products.details.generalInformation")}
-            </h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              <DetailItem
-                label={t("products.details.status")}
-                value={
-                  product.status ? (
-                    <Badge variant="secondary">
-                      {t(`products.status.${product.status}`, {
-                        defaultValue: product.status,
-                      })}
-                    </Badge>
-                  ) : (
-                    "-"
-                  )
-                }
-              />
-              <DetailItem
-                label={t("products.details.currency")}
-                value={product.defaultCurrency ?? "-"}
-              />
-              <DetailItem
-                label={t("products.details.publishAt")}
-                value={formatDateTime(product.publishAt)}
-              />
-              <DetailItem
-                label={t("products.details.expireAt")}
-                value={formatDateTime(product.expireAt)}
-              />
-            </div>
-          </section>
+    <div className="flex min-h-[calc(100vh-64px)] flex-col">
+      <div className="flex-1 p-4 md:p-6">
+        <JsonModal
+          isOpen={jsonView}
+          onClose={() => setJsonView(false)}
+          data={data}
+        />
 
-          <Separator />
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <LanguageTabs
+            languages={Object.keys(data.translations ?? {})}
+            activeLanguage={activeLang}
+            onLanguageChange={setActiveLang}
+            onAddLanguage={onAddLanguage}
+          />
+        </div>
 
-          <section className="space-y-3">
-            <h3 className="text-lg font-semibold">
-              {t("products.details.contentSection")}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {translation.summary ?? t("products.details.noSummary")}
-            </p>
-            <DetailItem
-              label={t("products.details.slug")}
-              value={translation.slug ?? product.slugs?.[i18n.language] ?? "-"}
+        <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
+          <div className="space-y-4 md:space-y-6 lg:col-span-2">
+            <Card className="w-full gap-0 py-0 shadow-neutral-50">
+              <CardHeader className="rounded-t-xl bg-secondary py-4 md:py-6 text-primary">
+                <CardTitle>{t("products.sections.translations")}</CardTitle>
+              </CardHeader>
+              <Separator />
+              <CardContent className="space-y-4 p-4 md:p-6">
+                <div>
+                  <Label className="mb-2 block" htmlFor="product-title">
+                    {t("products.fields.title")}
+                  </Label>
+                  <Input
+                    id="product-title"
+                    value={translation.title ?? ""}
+                    onChange={(event) => onChange("title", event.target.value)}
+                  />
+                  {formErrors.title ? (
+                    <p className="mt-1 text-sm text-destructive">
+                      {formErrors.title}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <Label className="mb-2 block" htmlFor="product-subtitle">
+                    {t("products.fields.subtitle")}
+                  </Label>
+                  <Input
+                    id="product-subtitle"
+                    value={translation.subtitle ?? ""}
+                    onChange={(event) =>
+                      onChange("subtitle", event.target.value)
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block" htmlFor="product-slug">
+                    {t("products.fields.slug")}
+                  </Label>
+                  <Input
+                    id="product-slug"
+                    value={translation.slug ?? ""}
+                    onChange={(event) => onChange("slug", event.target.value)}
+                  />
+                  {formErrors.slug ? (
+                    <p className="mt-1 text-sm text-destructive">
+                      {formErrors.slug}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <Label className="mb-2 block" htmlFor="product-summary">
+                    {t("products.fields.summary")}
+                  </Label>
+                  <Textarea
+                    id="product-summary"
+                    value={translation.summary ?? ""}
+                    onChange={(event) =>
+                      onChange("summary", event.target.value)
+                    }
+                    className="min-h-[120px]"
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block" htmlFor="product-description">
+                    {t("products.fields.description")}
+                  </Label>
+                  <Textarea
+                    id="product-description"
+                    value={translation.description ?? ""}
+                    onChange={(event) =>
+                      onChange("description", event.target.value)
+                    }
+                    className="min-h-[160px]"
+                  />
+                </div>
+
+                {formErrors.apiError ? (
+                  <p className="text-sm text-destructive">{formErrors.apiError}</p>
+                ) : null}
+              </CardContent>
+            </Card>
+
+            <ProductVariantsSection
+              variants={data.variants ?? []}
+              defaultCurrency={data.defaultCurrency ?? undefined}
+              error={formErrors.variants}
+              onAddVariant={addVariant}
+              onRemoveVariant={removeVariant}
+              onVariantChange={updateVariant}
+              onAddPrice={addVariantPrice}
+              onRemovePrice={removeVariantPrice}
+              onPriceChange={updateVariantPrice}
             />
-          </section>
 
-          <Separator />
+            <ProductSeoSection
+              activeLang={activeLang}
+              translations={data.translations}
+              onChange={onSeoChange}
+            />
+          </div>
 
-          <section className="space-y-3">
-            <h3 className="text-lg font-semibold">
-              {t("products.details.additionalInformation")}
-            </h3>
-            <DetailItem
-              label={t("products.details.tags")}
-              value={
-                product.tags?.length ? (
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag) => (
-                      <Badge key={tag} variant="outline">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground">-</span>
-                )
+          <div className="space-y-6">
+            <ProductSettingsSection
+              status={typeof data.status === "string" ? data.status : undefined}
+              publishAt={(data.publishAt as string | null) ?? null}
+              expireAt={(data.expireAt as string | null) ?? null}
+              tags={Array.isArray(data.tags) ? (data.tags as string[]) : undefined}
+              collectionIds={
+                Array.isArray(data.collectionIds)
+                  ? (data.collectionIds as string[])
+                  : undefined
               }
+              defaultCurrency={
+                typeof data.defaultCurrency === "string"
+                  ? (data.defaultCurrency as string)
+                  : undefined
+              }
+              thumbnail={
+                typeof data.thumbnail === "string"
+                  ? (data.thumbnail as string)
+                  : null
+              }
+              gallery={Array.isArray(data.gallery) ? (data.gallery as string[]) : undefined}
+              createdBy={resolveUserValue(data.createdBy)}
+              updatedBy={resolveUserValue(data.updatedBy)}
+              onChange={onSettingsChange}
+              onViewJson={() => setJsonView(true)}
             />
-            <DetailItem
-              label={t("products.details.media")}
-              value={t("products.details.galleryCount", {
-                count: product.gallery?.length ?? 0,
-              })}
-            />
-            <DetailItem
-              label={t("products.details.updatedAt")}
-              value={formatDateTime(product.updatedAt)}
-            />
-          </section>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+          </div>
+        </div>
+      </div>
 
-function DetailItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: ReactNode;
-}) {
-  return (
-    <div className="space-y-1">
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <div className="text-sm text-foreground">{value}</div>
+      <div className="sticky bottom-0 mt-6 flex justify-end gap-3 border-t bg-background py-4 px-4 md:px-6">
+        <Button
+          variant="outline"
+          onClick={() => handleNavigation("/commerce/products")}
+        >
+          {t("products.buttons.cancel")}
+        </Button>
+        <Button onClick={handleSave} disabled={!hasChanges}>
+          {t("products.buttons.save")}
+        </Button>
+      </div>
+
+      <ProductUnsavedChangesDialog
+        isOpen={showUnsavedAlert}
+        onClose={closeUnsavedAlert}
+        onDiscard={confirmDiscard}
+      />
     </div>
   );
 }
