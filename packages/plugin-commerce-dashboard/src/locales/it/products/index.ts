@@ -11,7 +11,7 @@ import details from "./details.json";
 import create from "./create.json";
 import deleteModal from "./delete.json";
 
-export default {
+export const products = {
   ...common,
   actions,
   buttons,
