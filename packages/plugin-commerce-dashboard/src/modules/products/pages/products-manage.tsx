@@ -6,9 +6,9 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  Separator,
   Skeleton,
   Table,
   TableBody,
@@ -75,21 +75,16 @@ export function CommerceProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <CardTitle>{t("products.pageTitle")}</CardTitle>
-            <CardDescription>{t("products.pageDescription")}</CardDescription>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => fetchData("commerce/products")}
-              disabled={loading}
-            >
-              {t("products.actions.refresh")}
-            </Button>
+    <div className="flex flex-col items-center justify-center p-4">
+      <Card className="w-full gap-0 py-0 shadow-neutral-50">
+        <CardHeader className="rounded-t-xl bg-secondary py-4 text-primary">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-1">
+              <CardTitle>{t("products.pageTitle")}</CardTitle>
+              <p className="text-sm text-primary/70">
+                {t("products.pageDescription")}
+              </p>
+            </div>
             {canCreate ? (
               <Button onClick={() => navigate("/commerce/products/new")}>
                 {t("products.actions.create")}
@@ -97,9 +92,10 @@ export function CommerceProductsPage() {
             ) : null}
           </div>
         </CardHeader>
-        <CardContent>
+        <Separator />
+        <CardContent className="p-0">
           {loading ? (
-            <div className="space-y-4">
+            <div className="space-y-2 p-4">
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
