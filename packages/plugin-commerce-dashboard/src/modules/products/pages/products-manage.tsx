@@ -81,7 +81,8 @@ const renderStatus = (
     return <span className="text-muted-foreground">-</span>;
   }
 
-  const badgeClasses = statusBadgeStyles[status] || "border-gray-200 bg-gray-50";
+  const badgeClasses =
+    statusBadgeStyles[status] || "border-gray-200 bg-gray-50";
 
   return (
     <Badge variant="outline" className={`${badgeClasses} font-normal`}>
@@ -267,22 +268,10 @@ export function CommerceProductsPage() {
                 render: (_, row) => renderTags(row.tags),
               },
               {
-                key: "defaultCurrency" as never,
-                label: t("products.fields.currency"),
-                render: (value) => {
-                  const currency = value as string | null | undefined;
-                  return currency ?? "-";
-                },
-              },
-              {
                 key: "publishAt" as never,
                 label: t("products.fields.publishAt"),
-                render: (value) => formatDate(value as string | null | undefined),
-              },
-              {
-                key: "updatedAt" as never,
-                label: t("products.fields.updatedAt"),
-                render: (value) => formatDate(value as string | null | undefined),
+                render: (value) =>
+                  formatDate(value as string | null | undefined),
               },
               {
                 key: "id" as never,
@@ -292,7 +281,11 @@ export function CommerceProductsPage() {
                   return (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="shadow-none">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shadow-none"
+                        >
                           <MoreVertical />
                         </Button>
                       </DropdownMenuTrigger>

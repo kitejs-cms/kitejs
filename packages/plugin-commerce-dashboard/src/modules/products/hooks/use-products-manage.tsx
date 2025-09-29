@@ -187,23 +187,8 @@ export function useProductsManage() {
           type: "array",
         },
         {
-          key: "collectionId",
-          label: t("products.filters.fields.collection"),
-          type: "text",
-        },
-        {
           key: "publishAt",
           label: t("products.filters.fields.publishAt"),
-          type: "date",
-        },
-        {
-          key: "expireAt",
-          label: t("products.filters.fields.expireAt"),
-          type: "date",
-        },
-        {
-          key: "createdAt",
-          label: t("products.filters.fields.createdAt"),
           type: "date",
         },
       ],
@@ -326,13 +311,9 @@ export function useProductsManage() {
       const nextViews = [...savedViews, view];
 
       try {
-        await updateSetting(
-          COMMERCE_PLUGIN_NAMESPACE,
-          PRODUCT_SETTINGS_KEY,
-          {
-            views: nextViews,
-          }
-        );
+        await updateSetting(COMMERCE_PLUGIN_NAMESPACE, PRODUCT_SETTINGS_KEY, {
+          views: nextViews,
+        });
         setSavedViews(nextViews);
         toast.success(t("products.filters.toasts.viewSaved.title"), {
           description: t("products.filters.toasts.viewSaved.description", {
@@ -357,13 +338,9 @@ export function useProductsManage() {
       const nextViews = savedViews.filter((view) => view.id !== viewId);
 
       try {
-        await updateSetting(
-          COMMERCE_PLUGIN_NAMESPACE,
-          PRODUCT_SETTINGS_KEY,
-          {
-            views: nextViews,
-          }
-        );
+        await updateSetting(COMMERCE_PLUGIN_NAMESPACE, PRODUCT_SETTINGS_KEY, {
+          views: nextViews,
+        });
         setSavedViews(nextViews);
 
         if (activeView?.id === viewId) {
@@ -506,13 +483,7 @@ export function useProductsManage() {
         label: t("products.fields.updatedAt"),
       },
     ]);
-  }, [
-    copyTable,
-    getProductTitle,
-    getStatusLabel,
-    products,
-    t,
-  ]);
+  }, [copyTable, getProductTitle, getStatusLabel, products, t]);
 
   const activeFilterCount = activeFilters.filter(
     (filter) => !isFilterValueEmpty(filter.value)
