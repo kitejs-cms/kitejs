@@ -309,7 +309,7 @@ export function useCollectionDetails() {
         setFormErrors({});
 
         if (id === "create") {
-          navigate(`/collections/${result.data.id}`);
+          navigate(`/commerce/collections/${result.data.id}`);
         }
       } else {
         toast.error("Errore nel salvataggio", {

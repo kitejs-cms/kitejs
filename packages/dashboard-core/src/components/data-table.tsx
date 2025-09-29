@@ -58,15 +58,16 @@ export function DataTable<T>({
 }: TableProps<T>) {
   const { t } = useTranslation("components");
 
-  const noDataContent = emptyMessage ?? t("data-table.empty", { defaultValue: "No entries found" });
+  const noDataContent =
+    emptyMessage ?? t("data-table.empty", { defaultValue: "No entries found" });
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          {columns.map((col) => (
+          {columns.map((col, key) => (
             <TableHead
-              key={String(col.key)}
+              key={key}
               className={`p-4 ${alignClass[col.align ?? "left"]}`}
             >
               {col.label}
@@ -86,7 +87,9 @@ export function DataTable<T>({
             <TableRow
               key={rowIndex}
               onClick={() => onRowClick?.(row)}
-              className={onRowClick ? "cursor-pointer hover:bg-muted/50" : undefined}
+              className={
+                onRowClick ? "cursor-pointer hover:bg-muted/50" : undefined
+              }
             >
               {columns.map((col) => (
                 <TableCell

@@ -416,7 +416,7 @@ export function useCollectionsManage() {
   );
 
   const handleCreate = useCallback(() => {
-    navigate("/commerce/collections/new");
+    navigate("/commerce/collections/create");
   }, [navigate]);
 
   const requestDelete = useCallback((collection: CollectionListItem) => {
