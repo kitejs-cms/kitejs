@@ -1,0 +1,36 @@
+{
+  "active": "{{count}} filtri attivi",
+  "activeView": "Vista: {{name}}",
+  "clear": "Pulisci filtri",
+  "fields": {
+    "status": "Stato",
+    "tags": "Tag",
+    "collection": "ID collezione",
+    "publishAt": "Pubblica il",
+    "expireAt": "Depubblica il",
+    "createdAt": "Creato il"
+  },
+  "views": {
+    "draft": {
+      "description": "Mostra i prodotti ancora in bozza"
+    },
+    "active": {
+      "description": "Mostra i prodotti già online"
+    },
+    "archived": {
+      "description": "Mostra i prodotti archiviati"
+    }
+  },
+  "toasts": {
+    "viewSaved": {
+      "title": "Vista salvata",
+      "description": "\"{{name}}\" è stata salvata per un riutilizzo rapido."
+    },
+    "viewDeleted": {
+      "title": "Vista eliminata",
+      "description": "\"{{name}}\" è stata rimossa dalle viste salvate."
+    },
+    "viewSaveError": "Impossibile salvare la vista. Riprova.",
+    "viewDeleteError": "Impossibile eliminare la vista. Riprova."
+  }
+}

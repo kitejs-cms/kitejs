@@ -1,0 +1,36 @@
+{
+  "active": "{{count}} active filters",
+  "activeView": "View: {{name}}",
+  "clear": "Clear filters",
+  "fields": {
+    "status": "Status",
+    "tags": "Tags",
+    "collection": "Collection ID",
+    "publishAt": "Publish at",
+    "expireAt": "Unpublish at",
+    "createdAt": "Created at"
+  },
+  "views": {
+    "draft": {
+      "description": "Show products that are still in draft"
+    },
+    "active": {
+      "description": "Show products that are live"
+    },
+    "archived": {
+      "description": "Show products that are archived"
+    }
+  },
+  "toasts": {
+    "viewSaved": {
+      "title": "View saved",
+      "description": "Saved \"{{name}}\" for quick reuse."
+    },
+    "viewDeleted": {
+      "title": "View deleted",
+      "description": "Removed \"{{name}}\" from your saved filters."
+    },
+    "viewSaveError": "Unable to save view. Please try again.",
+    "viewDeleteError": "Unable to delete view. Please try again."
+  }
+}

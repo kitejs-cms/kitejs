@@ -1,0 +1,10 @@
+{
+  "title": "Title",
+  "status": "Status",
+  "languages": "Languages",
+  "tags": "Tags",
+  "currency": "Currency",
+  "publishAt": "Publish at",
+  "updatedAt": "Updated at",
+  "actions": "Actions"
+}
