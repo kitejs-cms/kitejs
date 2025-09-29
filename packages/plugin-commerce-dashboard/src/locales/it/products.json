@@ -17,7 +17,8 @@
         "currency": "Valuta",
         "updatedAt": "Ultimo aggiornamento"
       },
-      "untitled": "Prodotto senza titolo"
+      "untitled": "Prodotto senza titolo",
+      "empty": "Nessun prodotto da mostrare"
     },
     "status": {
       "draft": "Bozza",

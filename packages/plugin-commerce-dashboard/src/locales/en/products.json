@@ -17,7 +17,8 @@
         "currency": "Currency",
         "updatedAt": "Last updated"
       },
-      "untitled": "Untitled product"
+      "untitled": "Untitled product",
+      "empty": "No products to display"
     },
     "status": {
       "draft": "Draft",

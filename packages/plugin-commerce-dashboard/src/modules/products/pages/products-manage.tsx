@@ -104,20 +104,6 @@ export function CommerceProductsPage() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-              <h3 className="text-lg font-semibold">
-                {t("products.emptyState.title")}
-              </h3>
-              <p className="max-w-lg text-sm text-muted-foreground">
-                {t("products.emptyState.description")}
-              </p>
-              {canCreate ? (
-                <Button onClick={() => navigate("/commerce/products/new")}>
-                  {t("products.actions.create")}
-                </Button>
-              ) : null}
-            </div>
           ) : (
             <Table>
               <TableHeader>
@@ -129,30 +115,41 @@ export function CommerceProductsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product) => (
-                  <TableRow
-                    key={product.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => navigate(`/commerce/products/${product.id}`)}
-                  >
-                    <TableCell className="font-medium">
-                      {getProductTitle(product)}
+                {products.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className="h-24 text-center text-sm text-muted-foreground"
+                    >
+                      {t("products.table.empty")}
                     </TableCell>
-                    <TableCell>
-                      {product.status ? (
-                        <Badge variant="secondary">
-                          {t(`products.status.${product.status}`, {
-                            defaultValue: product.status,
-                          })}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{product.defaultCurrency ?? "-"}</TableCell>
-                    <TableCell>{formatDate(product.updatedAt)}</TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  products.map((product) => (
+                    <TableRow
+                      key={product.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/commerce/products/${product.id}`)}
+                    >
+                      <TableCell className="font-medium">
+                        {getProductTitle(product)}
+                      </TableCell>
+                      <TableCell>
+                        {product.status ? (
+                          <Badge variant="secondary">
+                            {t(`products.status.${product.status}`, {
+                              defaultValue: product.status,
+                            })}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>{product.defaultCurrency ?? "-"}</TableCell>
+                      <TableCell>{formatDate(product.updatedAt)}</TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           )}
