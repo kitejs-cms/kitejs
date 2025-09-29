@@ -6,18 +6,77 @@
       "refresh": "Refresh",
       "create": "New product"
     },
+    "buttons": {
+      "add": "Add product",
+      "copy": "Copy",
+      "download": "Download",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "search": {
+      "placeholder": "Search products...",
+      "minLength": "Type at least 3 characters to search."
+    },
+    "filters": {
+      "active": "{{count}} active filters",
+      "activeView": "View: {{name}}",
+      "clear": "Clear filters",
+      "fields": {
+        "status": "Status",
+        "tags": "Tags",
+        "collection": "Collection ID",
+        "publishAt": "Publish at",
+        "expireAt": "Unpublish at",
+        "createdAt": "Created at"
+      },
+      "views": {
+        "draft": {
+          "description": "Show products that are still in draft"
+        },
+        "active": {
+          "description": "Show products that are live"
+        },
+        "archived": {
+          "description": "Show products that are archived"
+        }
+      },
+      "toasts": {
+        "viewSaved": {
+          "title": "View saved",
+          "description": "Saved \"{{name}}\" for quick reuse."
+        },
+        "viewDeleted": {
+          "title": "View deleted",
+          "description": "Removed \"{{name}}\" from your saved filters."
+        },
+        "viewSaveError": "Unable to save view. Please try again.",
+        "viewDeleteError": "Unable to delete view. Please try again."
+      }
+    },
     "emptyState": {
       "title": "No products yet",
       "description": "Start building your catalogue by creating your first product."
     },
     "table": {
+      "error": "Unable to load products. Please retry.",
       "columns": {
         "name": "Name",
         "status": "Status",
         "currency": "Currency",
         "updatedAt": "Last updated"
       },
-      "untitled": "Untitled product"
+      "untitled": "Untitled product",
+      "empty": "No products to display"
+    },
+    "fields": {
+      "title": "Title",
+      "status": "Status",
+      "languages": "Languages",
+      "tags": "Tags",
+      "currency": "Currency",
+      "publishAt": "Publish at",
+      "updatedAt": "Updated at",
+      "actions": "Actions"
     },
     "status": {
       "draft": "Draft",
@@ -41,6 +100,12 @@
       "media": "Media",
       "galleryCount": "{{count}} assets in gallery",
       "updatedAt": "Last updated"
+    },
+    "delete": {
+      "title": "Delete product",
+      "description": "Are you sure you want to delete this product? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
     },
     "create": {
       "title": "Create product",
