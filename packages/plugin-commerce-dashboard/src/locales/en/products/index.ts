@@ -10,6 +10,7 @@ import status from "./status.json";
 import details from "./details.json";
 import create from "./create.json";
 import deleteModal from "./delete.json";
+import errors from "./errors.json";
 
 export default {
   ...common,
@@ -24,4 +25,5 @@ export default {
   details,
   create,
   delete: deleteModal,
+  errors,
 };

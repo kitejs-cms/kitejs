@@ -1,18 +1,47 @@
 {
   "title": "Dettagli prodotto",
-  "description": "Consulta configurazione e localizzazioni del prodotto.",
+  "description": "Configura informazioni, disponibilità e varianti opzionali del prodotto.",
   "breadcrumb": "Dettagli prodotto",
-  "generalInformation": "Informazioni generali",
-  "status": "Stato",
-  "currency": "Valuta predefinita",
-  "publishAt": "Pubblicazione programmata",
-  "expireAt": "Scadenza programmata",
-  "contentSection": "Contenuti",
-  "noSummary": "Nessun riassunto disponibile per questa lingua.",
-  "slug": "Slug",
-  "additionalInformation": "Informazioni aggiuntive",
-  "tags": "Tag",
-  "media": "Media",
-  "galleryCount": "{{count}} elementi in galleria",
-  "updatedAt": "Ultimo aggiornamento"
+  "form": {
+    "title": "Informazioni prodotto",
+    "description": "Gestisci i contenuti mostrati ai clienti nelle lingue supportate.",
+    "fields": {
+      "title": "Titolo",
+      "subtitle": "Sottotitolo",
+      "summary": "Riassunto",
+      "description": "Descrizione",
+      "slug": "Slug"
+    }
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "description": "Controlla visibilità, pianificazione e metadati di catalogo.",
+    "status": "Stato",
+    "currency": "Valuta predefinita",
+    "publishAt": "Pubblica il",
+    "expireAt": "Scadenza",
+    "tags": "Tag"
+  },
+  "variants": {
+    "title": "Varianti",
+    "description": "Configura varianti opzionali con identificativi e prezzi dedicati.",
+    "empty": "Nessuna variante configurata.",
+    "add": "Aggiungi variante",
+    "remove": "Rimuovi variante",
+    "itemTitle": "Variante {{index}}",
+    "fields": {
+      "name": "Nome variante",
+      "sku": "SKU",
+      "barcode": "Barcode",
+      "inventory": "Quantità a magazzino",
+      "price": "Prezzo",
+      "compareAt": "Prezzo di confronto",
+      "currency": "Valuta"
+    }
+  },
+  "notifications": {
+    "saving": "Salvataggio prodotto...",
+    "saved": "Prodotto salvato con successo.",
+    "created": "Prodotto creato con successo."
+  }
 }

@@ -1,6 +1,6 @@
 {
   "title": "Crea prodotto",
-  "description": "L'editor visuale per i prodotti sarà presto disponibile.",
-  "helper": "Nel frattempo puoi creare prodotti via API o integrare una tua interfaccia.",
+  "description": "Imposta le informazioni principali, la disponibilità e le varianti opzionali del nuovo prodotto.",
+  "helper": "Compila le sezioni sottostanti per preparare il prodotto alla pubblicazione.",
   "breadcrumb": "Crea prodotto"
 }

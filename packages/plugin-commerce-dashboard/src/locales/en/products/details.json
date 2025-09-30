@@ -1,18 +1,47 @@
 {
   "title": "Product details",
-  "description": "Review the product configuration and localisation.",
+  "description": "Configure product information, availability, and optional variants.",
   "breadcrumb": "Product details",
-  "generalInformation": "General information",
-  "status": "Status",
-  "currency": "Default currency",
-  "publishAt": "Scheduled publish",
-  "expireAt": "Scheduled expiration",
-  "contentSection": "Content",
-  "noSummary": "No summary available for this language.",
-  "slug": "Slug",
-  "additionalInformation": "Additional information",
-  "tags": "Tags",
-  "media": "Media",
-  "galleryCount": "{{count}} assets in gallery",
-  "updatedAt": "Last updated"
+  "form": {
+    "title": "Product information",
+    "description": "Manage the content shown to customers across supported languages.",
+    "fields": {
+      "title": "Title",
+      "subtitle": "Subtitle",
+      "summary": "Summary",
+      "description": "Description",
+      "slug": "Slug"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Control visibility, scheduling, and catalogue metadata.",
+    "status": "Status",
+    "currency": "Default currency",
+    "publishAt": "Publish at",
+    "expireAt": "Expire at",
+    "tags": "Tags"
+  },
+  "variants": {
+    "title": "Variants",
+    "description": "Configure optional variants with their own identifiers and pricing.",
+    "empty": "No variants configured yet.",
+    "add": "Add variant",
+    "remove": "Remove variant",
+    "itemTitle": "Variant {{index}}",
+    "fields": {
+      "name": "Variant name",
+      "sku": "SKU",
+      "barcode": "Barcode",
+      "inventory": "Inventory quantity",
+      "price": "Price",
+      "compareAt": "Compare at price",
+      "currency": "Currency"
+    }
+  },
+  "notifications": {
+    "saving": "Saving product...",
+    "saved": "Product saved successfully.",
+    "created": "Product created successfully."
+  }
 }

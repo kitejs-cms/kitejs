@@ -3,5 +3,9 @@
   "copy": "Copia",
   "download": "Scarica",
   "edit": "Modifica",
-  "delete": "Elimina"
+  "delete": "Elimina",
+  "save": "Salva prodotto",
+  "saving": "Salvataggio...",
+  "cancel": "Annulla",
+  "viewJson": "Mostra JSON"
 }
