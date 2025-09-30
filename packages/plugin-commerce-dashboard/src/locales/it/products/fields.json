@@ -1,0 +1,10 @@
+{
+  "title": "Titolo",
+  "status": "Stato",
+  "languages": "Lingue",
+  "tags": "Tag",
+  "currency": "Valuta",
+  "publishAt": "Pubblica il",
+  "updatedAt": "Aggiornato il",
+  "actions": "Azioni"
+}

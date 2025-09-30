@@ -1,0 +1,18 @@
+{
+  "title": "Dettagli prodotto",
+  "description": "Consulta configurazione e localizzazioni del prodotto.",
+  "breadcrumb": "Dettagli prodotto",
+  "generalInformation": "Informazioni generali",
+  "status": "Stato",
+  "currency": "Valuta predefinita",
+  "publishAt": "Pubblicazione programmata",
+  "expireAt": "Scadenza programmata",
+  "contentSection": "Contenuti",
+  "noSummary": "Nessun riassunto disponibile per questa lingua.",
+  "slug": "Slug",
+  "additionalInformation": "Informazioni aggiuntive",
+  "tags": "Tag",
+  "media": "Media",
+  "galleryCount": "{{count}} elementi in galleria",
+  "updatedAt": "Ultimo aggiornamento"
+}

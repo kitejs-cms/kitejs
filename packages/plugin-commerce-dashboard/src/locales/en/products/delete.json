@@ -1,0 +1,6 @@
+{
+  "title": "Delete product",
+  "description": "Are you sure you want to delete this product? This action cannot be undone.",
+  "cancel": "Cancel",
+  "confirm": "Delete"
+}

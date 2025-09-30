@@ -1,0 +1,11 @@
+{
+  "error": "Impossibile caricare i prodotti. Riprova.",
+  "columns": {
+    "name": "Nome",
+    "status": "Stato",
+    "currency": "Valuta",
+    "updatedAt": "Ultimo aggiornamento"
+  },
+  "untitled": "Prodotto senza titolo",
+  "empty": "Nessun prodotto da mostrare"
+}

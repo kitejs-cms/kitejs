@@ -1,0 +1,18 @@
+{
+  "title": "Product details",
+  "description": "Review the product configuration and localisation.",
+  "breadcrumb": "Product details",
+  "generalInformation": "General information",
+  "status": "Status",
+  "currency": "Default currency",
+  "publishAt": "Scheduled publish",
+  "expireAt": "Scheduled expiration",
+  "contentSection": "Content",
+  "noSummary": "No summary available for this language.",
+  "slug": "Slug",
+  "additionalInformation": "Additional information",
+  "tags": "Tags",
+  "media": "Media",
+  "galleryCount": "{{count}} assets in gallery",
+  "updatedAt": "Last updated"
+}

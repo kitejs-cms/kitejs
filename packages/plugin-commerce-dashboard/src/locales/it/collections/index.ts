@@ -14,7 +14,7 @@ import placeholders from "./placeholders.json";
 import errors from "./errors.json";
 import unsavedChanges from "./unsaved-changes.json";
 
-export default {
+export const collections = {
   ...common,
   fields,
   sections,
