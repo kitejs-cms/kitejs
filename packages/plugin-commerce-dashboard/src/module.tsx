@@ -1,7 +1,10 @@
 import { Layers, Package, ShoppingCart, Truck } from "lucide-react";
 import type { DashboardModule } from "@kitejs-cms/dashboard-core";
 import { CommerceSettings } from "./modules/settings";
-import { CommerceProductsPage, CommerceProductDetailsPage } from "./modules/products";
+import {
+  CommerceProductsPage,
+  CommerceProductDetailsPage,
+} from "./modules/products";
 import { CommerceOrdersPage, CommerceOrderDetailsPage } from "./modules/orders";
 import {
   CommerceCollectionsPage,
@@ -56,7 +59,7 @@ export const CommerceModule: DashboardModule = {
       label: "commerce:menu.products",
       requiredPermissions: ["plugin-commerce:products.read"],
     },
-    {
+    /*{
       path: "commerce/products/new",
       element: <CommerceProductDetailsPage />,
       label: "",
@@ -67,7 +70,7 @@ export const CommerceModule: DashboardModule = {
       element: <CommerceProductDetailsPage />,
       label: "",
       requiredPermissions: ["plugin-commerce:products.read"],
-    },
+    },*/
     {
       path: "commerce/orders",
       element: <CommerceOrdersPage />,

@@ -3,6 +3,8 @@ import { Document, Schema as SchemaDb, Types } from "mongoose";
 import { ProductStatus } from "../models/product-status.enum";
 import { COMMERCE_PLUGIN_NAMESPACE } from "../../../constants";
 import { ProductVariant, ProductVariantSchema } from "./product-variant.schema";
+import { ProductOptionSchema } from "./product-option.schema";
+import { ProductOptionModel } from "../models/partials/product-option.model";
 import {
   ProductTranslation,
   ProductTranslationSchema,
@@ -51,6 +53,9 @@ export class Product extends Document {
   @Prop({ type: [ProductVariantSchema], default: [] })
   variants: ProductVariant[];
 
+  @Prop({ type: [ProductOptionSchema], default: [] })
+  options: ProductOptionModel[];
+
   @Prop({ type: String, default: "EUR" })
   defaultCurrency: string;
 
@@ -60,7 +65,10 @@ export class Product extends Document {
     required: true,
     default: {},
   })
-  translations: Map<string, ProductTranslation>;
+  translations: Record<string, ProductTranslation>;
+
+  @Prop({ type: Boolean, default: false })
+  isDigital: boolean;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

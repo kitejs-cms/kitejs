@@ -9,7 +9,6 @@ import {
   HttpCode,
   NotFoundException,
   Param,
-  Patch,
   Post,
   Query,
   UseGuards,

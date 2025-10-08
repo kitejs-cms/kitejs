@@ -21,6 +21,18 @@ export class ProductVariant {
   @Prop({ type: Boolean, default: false })
   allowBackorder: boolean;
 
+  @Prop({ type: [String], default: [] })
+  gallery: string[];
+
+  @Prop({ type: String })
+  downloadUrl?: string;
+
+  @Prop({ type: String, required: true })
+  optionValue!: string;
+
+  @Prop({ type: String, default: "color" })
+  optionName!: string;
 }
 
-export const ProductVariantSchema = SchemaFactory.createForClass(ProductVariant);
+export const ProductVariantSchema =
+  SchemaFactory.createForClass(ProductVariant);

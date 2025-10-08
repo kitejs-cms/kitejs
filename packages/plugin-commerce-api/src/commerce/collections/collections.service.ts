@@ -10,7 +10,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import type { CollectionResponseDetailslModel } from "./models/collection-response-details.model";
+import type { CollectionResponseDetailsModel } from "./models/collection-response-details.model";
 import type { CollectionTranslationModel } from "./models/collection-translation.model";
 import type { CollectionResponseModel } from "./models/collection-response.model";
 import type { JwtPayloadModel, User } from "@kitejs-cms/core";
@@ -102,7 +102,7 @@ export class CollectionsService {
   async upsertCollection(
     collectionData: CollectionUpsertModel,
     user: JwtPayloadModel
-  ): Promise<CollectionResponseDetailslModel> {
+  ): Promise<CollectionResponseDetailsModel> {
     try {
       const { id, language, parent, status, ...restData } = collectionData;
       const collectionBaseData = {
@@ -276,7 +276,7 @@ export class CollectionsService {
    */
   async findCollectionById(
     id: string
-  ): Promise<CollectionResponseDetailslModel> {
+  ): Promise<CollectionResponseDetailsModel> {
     try {
       const collection = await this.collectionModel
         .findById(id)
@@ -313,7 +313,7 @@ export class CollectionsService {
         createdBy: `${collection.createdBy.firstName} ${collection.createdBy.lastName}`,
         updatedBy: `${collection.updatedBy.firstName} ${collection.updatedBy.lastName}`,
         translations: translationsWithSlug,
-      } as unknown as CollectionResponseDetailslModel;
+      } as unknown as CollectionResponseDetailsModel;
     } catch (error) {
       this.logger.error(error);
       const errorMessage =
@@ -337,7 +337,7 @@ export class CollectionsService {
     sort?: Record<string, any>,
     filters?: Record<string, string>,
     language = "en"
-  ): Promise<CollectionResponseDetailslModel[]> {
+  ): Promise<CollectionResponseDetailsModel[]> {
     try {
       const query = await this.buildCollectionQuery(filters, language);
 
@@ -350,7 +350,7 @@ export class CollectionsService {
         .sort(sort ?? { createdAt: -1 })
         .exec();
 
-      const collectionsRes: CollectionResponseDetailslModel[] = [];
+      const collectionsRes: CollectionResponseDetailsModel[] = [];
 
       for (const item of collections) {
         const slugs = await this.slugService.findSlugsByEntity(item.id);
@@ -375,7 +375,7 @@ export class CollectionsService {
           translations: translationsWithSlug,
           createdBy: `${item.createdBy.firstName} ${item.createdBy.lastName}`,
           updatedBy: `${item.updatedBy.firstName} ${item.updatedBy.lastName}`,
-        } as unknown as CollectionResponseDetailslModel);
+        } as unknown as CollectionResponseDetailsModel);
       }
 
       return collectionsRes;

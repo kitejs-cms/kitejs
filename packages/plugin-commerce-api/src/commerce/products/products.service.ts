@@ -1,21 +1,26 @@
+import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
+import { Product, ProductDocument } from "./schemas/product.schema";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, Types } from "mongoose";
 import {
   BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, Types } from "mongoose";
-import { Product, ProductDocument } from "./schemas/product.schema";
-import { CreateProductDto } from "./dto/create-product.dto";
-import { ProductVariantDto } from "./dto/product-variant.dto";
-import { ProductPriceDto } from "./dto/product-price.dto";
-import { UpdateProductDto } from "./dto/update-product.dto";
-import { ProductStatus } from "./models/product-status.enum";
-import { COMMERCE_PRODUCT_SLUG_NAMESPACE } from "../../constants";
-import { SlugRegistryService, ObjectIdUtils } from "@kitejs-cms/core";
-import type { JwtPayloadModel } from "@kitejs-cms/core";
+import {
+  JwtPayloadModel,
+  ObjectIdUtils,
+  SlugRegistryService,
+  User,
+} from "@kitejs-cms/core";
+
+import type { ProductResponseDetailsModel } from "./models/product-response-details.model";
+import type { ProductTranslationModel } from "./models/partials/product-translation.model";
 import type { ProductResponseModel } from "./models/product-response.model";
+import type { ProductUpsertModel } from "./models/product-upsert.model";
+
+type ProductWithUsers = Product & { createdBy: User; updatedBy: User };
 
 @Injectable()
 export class ProductsService {
@@ -28,329 +33,428 @@ export class ProductsService {
     private readonly slugService: SlugRegistryService
   ) {}
 
+  /**
+   * Builds the MongoDB query object based on filters and language for products
+   * @param filters Optional filters for isActive, parent, and search
+   * @param language Language code for translations search
+   * @returns Record<string, any> MongoDB query object
+   */
   private buildProductQuery(
     filters?: Record<string, string>,
     language = "en"
-  ): FilterQuery<ProductDocument> {
-    if (!filters) {
-      return {};
-    }
+  ): Record<string, any> {
+    const query: any = { ...filters, deletedAt: null };
 
-    const { status, collectionId, tags, search } = filters;
+    // Handle search filter
+    if (filters.search) {
+      const searchTerm = filters.search.trim();
 
-    const tagValues = tags
-      ?.split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
+      if (searchTerm) {
+        const searchConditions = [
+          { tags: { $regex: searchTerm, $options: "i" } },
+          { description: { $regex: searchTerm, $options: "i" } },
+          {
+            [`translations.${language}.title`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+          {
+            [`translations.${language}.description`]: {
+              $regex: searchTerm,
+              $options: "i",
+            },
+          },
+        ];
 
-    const trimmedSearch = search?.trim();
-
-    return {
-      ...(status ? { status: status as ProductStatus } : {}),
-      ...(collectionId
-        ? { collections: ObjectIdUtils.toObjectId(collectionId) }
-        : {}),
-      ...(tagValues?.length
-        ? ({ tags: { $in: tagValues } } as FilterQuery<ProductDocument>)
-        : {}),
-      ...(trimmedSearch
-        ? {
-            $or: [
-              { tags: { $regex: trimmedSearch, $options: "i" } },
-              {
-                [`translations.${language}.title`]: {
-                  $regex: trimmedSearch,
-                  $options: "i",
-                },
-              },
-              {
-                [`translations.${language}.subtitle`]: {
-                  $regex: trimmedSearch,
-                  $options: "i",
-                },
-              },
-              {
-                [`translations.${language}.summary`]: {
-                  $regex: trimmedSearch,
-                  $options: "i",
-                },
-              },
-              {
-                [`translations.${language}.description`]: {
-                  $regex: trimmedSearch,
-                  $options: "i",
-                },
-              },
-            ],
-          }
-        : {}),
-    };
-  }
-
-  private mapCollectionIds(
-    collectionIds?: string[]
-  ): Types.ObjectId[] | undefined {
-    if (collectionIds === undefined) return undefined;
-    return collectionIds
-      .filter(Boolean)
-      .map((id) => ObjectIdUtils.toObjectId(id));
-  }
-
-  private mapVariantPrices(prices?: ProductPriceDto[]) {
-    return (prices ?? []).map((price) => ({
-      currencyCode: price.currencyCode,
-      amount: price.amount,
-      compareAtAmount: price.compareAtAmount,
-    }));
-  }
-
-  private mapVariants(variants?: ProductVariantDto[]) {
-    if (variants === undefined) return undefined;
-    return variants.map((variant) => ({
-      ...(variant.id ? { _id: ObjectIdUtils.toObjectId(variant.id) } : {}),
-      title: variant.title,
-      sku: variant.sku,
-      barcode: variant.barcode,
-      inventoryQuantity: variant.inventoryQuantity ?? 0,
-      allowBackorder: variant.allowBackorder ?? false,
-      prices: this.mapVariantPrices(variant.prices),
-    }));
-  }
-
-  private async buildResponse(product: Product): Promise<ProductResponseModel> {
-    const slugs = await this.slugService.findSlugsByEntity(
-      product._id as Types.ObjectId
-    );
-
-    const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
-      const languageKey = cur.language ?? "default";
-      acc[languageKey] = cur.slug;
-      return acc;
-    }, {});
-
-    const json = product.toJSON();
-    const translations = json.translations as Record<string, any>;
-    const translationsWithSlug: Record<string, any> = {};
-
-    for (const [language, translation] of Object.entries(translations ?? {})) {
-      translationsWithSlug[language] = {
-        ...(translation as Record<string, unknown>),
-        slug: slugMap[language] ?? slugMap.default ?? "",
-      };
-    }
-
-    return {
-      ...json,
-      id: product._id.toString(),
-      translations: translationsWithSlug,
-      slugs: slugMap,
-    } as ProductResponseModel;
-  }
-
-  private async upsertProduct(
-    id: string | undefined,
-    dto: CreateProductDto | UpdateProductDto,
-    user: JwtPayloadModel
-  ): Promise<ProductResponseModel> {
-    const {
-      slug,
-      language,
-      title,
-      subtitle,
-      summary,
-      description,
-      seo,
-      status,
-      tags,
-      publishAt,
-      expireAt,
-      thumbnail,
-      gallery,
-      collectionIds,
-      variants,
-      defaultCurrency,
-    } = dto;
-
-    const translationData = {
-      title,
-      subtitle,
-      summary,
-      description,
-      seo,
-    };
-
-    const mappedCollections = this.mapCollectionIds(collectionIds);
-    const mappedVariants = this.mapVariants(variants);
-
-    const baseData: Record<string, unknown> = {
-      updatedBy: ObjectIdUtils.toObjectId(user.sub),
-      ...(status !== undefined ? { status } : {}),
-      ...(tags !== undefined ? { tags } : !id ? { tags: [] } : {}),
-      ...(publishAt !== undefined
-        ? { publishAt: publishAt ? new Date(publishAt) : null }
-        : !id
-          ? { publishAt: null }
-          : {}),
-      ...(expireAt !== undefined
-        ? { expireAt: expireAt ? new Date(expireAt) : null }
-        : !id
-          ? { expireAt: null }
-          : {}),
-      ...(thumbnail !== undefined ? { thumbnail: thumbnail ?? null } : {}),
-      ...(gallery !== undefined
-        ? { gallery: gallery ?? [] }
-        : !id
-          ? { gallery: [] }
-          : {}),
-      ...(mappedCollections !== undefined
-        ? { collections: mappedCollections }
-        : !id
-          ? { collections: [] }
-          : {}),
-      ...(mappedVariants !== undefined
-        ? { variants: mappedVariants }
-        : !id
-          ? { variants: [] }
-          : {}),
-      ...(defaultCurrency !== undefined
-        ? { defaultCurrency }
-        : !id
-          ? { defaultCurrency: "EUR" }
-          : {}),
-    };
-
-    let product: Product;
-
-    if (id) {
-      const updateDoc: Record<string, unknown> = {
-        ...baseData,
-        $set: { [`translations.${language}`]: translationData },
-      };
-
-      product = await this.productModel
-        .findByIdAndUpdate(id, updateDoc, { new: true })
-        .exec();
-
-      if (!product) {
-        throw new NotFoundException(`Product with ID ${id} not found`);
+        query.$or = searchConditions;
       }
-    } else {
-      const createDoc: Record<string, unknown> = {
-        ...baseData,
-        createdBy: ObjectIdUtils.toObjectId(user.sub),
-        translations: {
-          [language]: translationData,
-        },
-      };
-
-      product = await this.productModel.create(createDoc);
+      delete query.search;
     }
 
-    await this.slugService.registerSlug(
-      slug,
-      this.slugNamespace,
-      product._id as Types.ObjectId,
-      language
-    );
-
-    return this.buildResponse(product);
+    return query;
   }
 
-  async create(dto: CreateProductDto, user: JwtPayloadModel) {
-    return this.upsertProduct(undefined, dto, user);
+  /**
+   * Creates or updates a product.
+   * @param productData Data for the new or existing product.
+   * @param user Authenticated user details.
+   * @returns The created or updated product details.
+   * @throws BadRequestException if the product cannot be created or updated.
+   */
+  async upsertProduct(
+    productData: ProductUpsertModel,
+    user: JwtPayloadModel
+  ): Promise<ProductResponseDetailsModel> {
+    try {
+      const { id, language, status, ...restData } = productData;
+      const productBaseData = {
+        tags: restData.tags,
+        updatedBy: user.sub,
+        parent,
+        status,
+      };
+
+      const translationData = {
+        title: restData.title,
+        description: restData.description,
+        slug: restData.slug,
+        seo: restData.seo,
+      };
+
+      let product: Product;
+
+      if (id) {
+        product = await this.productModel.findByIdAndUpdate(
+          id,
+          {
+            ...productBaseData,
+            $set: { [`translations.${language}`]: translationData },
+          },
+          { new: true, upsert: false }
+        );
+
+        if (!product) {
+          throw new NotFoundException(`Product with ID ${id} not found`);
+        }
+
+        await this.slugService.registerSlug(
+          restData.slug,
+          this.slugNamespace,
+          ObjectIdUtils.toObjectId(product.id),
+          language
+        );
+      } else {
+        product = await this.productModel.create({
+          ...productBaseData,
+          createdBy: user.sub,
+          translations: {
+            [language]: translationData,
+          },
+        });
+
+        await this.slugService.registerSlug(
+          restData.slug,
+          this.slugNamespace,
+          ObjectIdUtils.toObjectId(product.id),
+          language
+        );
+      }
+
+      return this.findProductById(product._id.toString());
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to upsert product: ${errorMessage}`
+      );
+    }
   }
 
-  async update(id: string, dto: UpdateProductDto, user: JwtPayloadModel) {
-    return this.upsertProduct(id, dto, user);
-  }
-
+  /**
+   * Counts the total number of products.
+   * @returns Total number of products.
+   * @throws BadRequestException if an error occurs.
+   */
   async countProducts(
     filters?: Record<string, string>,
     language = "en"
   ): Promise<number> {
     try {
       const query = this.buildProductQuery(filters, language);
+
       return await this.productModel.countDocuments(query).exec();
     } catch (error) {
       this.logger.error(error);
-      const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(`Failed to count products. ${message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to count products. ${errorMessage}`
+      );
     }
   }
 
-  async findProducts(
-    skip = 0,
-    take?: number,
-    sort?: Record<string, 1 | -1>,
-    filters?: Record<string, string>,
-    language = "en"
-  ): Promise<ProductResponseModel[]> {
+  /**
+   * Retrieves a full product document by its unique identifier (slug or _id).
+   * This method handles cases where slugs are managed externally.
+   *
+   * @param identify The unique identifier (slug or _id).
+   * @returns The full product document, or null if not found.
+   * @throws BadRequestException if the query fails.
+   */
+  async findProduct(
+    identify: string
+  ): Promise<ProductResponseDetailsModel | null> {
     try {
-      const query = this.buildProductQuery(filters, language);
-      const mongooseQuery = this.productModel
-        .find(query)
-        .sort(sort ?? { updatedAt: -1 })
-        .skip(skip);
+      let product:
+        | (ProductDocument & { createdBy: User; updatedBy: User })
+        | null = null;
 
-      if (typeof take === "number" && take > 0) {
-        mongooseQuery.limit(take);
+      if (Types.ObjectId.isValid(identify)) {
+        product = await this.productModel
+          .findById(identify)
+          .populate<{ createdBy: User }>("createdBy")
+          .populate<{ updatedBy: User }>("updatedBy")
+          .lean<ProductWithUsers>()
+          .exec();
+      } else {
+        const slugEntry = await this.slugService.findEntityBySlug(
+          identify,
+          this.slugNamespace
+        );
+
+        if (!slugEntry) {
+          throw new NotFoundException(`No product found for slug: ${identify}`);
+        }
+
+        product = await this.productModel
+          .findById(slugEntry)
+          .populate<{ createdBy: User }>("createdBy")
+          .populate<{ updatedBy: User }>("updatedBy")
+          .lean<ProductWithUsers>()
+          .exec();
       }
 
-      const products = await mongooseQuery.exec();
+      if (!product) return null;
 
-      return Promise.all(
-        products.map((product) => this.buildResponse(product))
-      );
+      const translations: Record<string, ProductTranslationModel> = {};
+      const allSlugs = await this.slugService.findSlugsByEntity(product.id);
+
+      for (const key of Object.keys(product.translations)) {
+        translations[key] = {
+          ...(product.translations[key] as ProductTranslationModel),
+          slug: allSlugs.find((s) => s.language === key)?.slug,
+        };
+      }
+
+      return {
+        ...(product as unknown as ProductResponseDetailsModel),
+        translations,
+        collections: product.collections.map((c) => c.toString()),
+        createdBy: product.createdBy ? product.createdBy.toJSON() : null,
+        updatedBy: product.updatedBy ? product.updatedBy.toJSON() : null,
+      };
     } catch (error) {
       this.logger.error(error);
-      const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(`Failed to fetch products. ${message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to fetch product. ${errorMessage}`);
     }
   }
 
-  async findAll(): Promise<ProductResponseModel[]> {
-    return this.findProducts(0, undefined, { updatedAt: -1 });
-  }
-
-  async findOne(id: string): Promise<ProductResponseModel> {
+  /**
+   * Retrieves a single product with detailed response model.
+   * @param id The product ID.
+   * @returns The product with response details.
+   * @throws NotFoundException if not found.
+   * @throws BadRequestException on errors.
+   */
+  async findProductById(id: string): Promise<ProductResponseDetailsModel> {
     try {
-      const product = await this.productModel.findById(id).exec();
+      const product: ProductWithUsers = await this.productModel
+        .findById(id)
+        .populate<{ createdBy: User }>("createdBy")
+        .populate<{ updatedBy: User }>("updatedBy")
+        .lean<ProductWithUsers>()
+        .exec();
 
       if (!product) {
-        throw new NotFoundException(`Product with ID ${id} not found`);
+        throw new NotFoundException(`Product with ID "${id}" not found.`);
       }
 
-      return this.buildResponse(product);
+      const slugs = await this.slugService.findSlugsByEntity(
+        new Types.ObjectId(id)
+      );
+
+      const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
+        acc[cur.language] = cur.slug;
+        return acc;
+      }, {});
+
+      const json = product.toJSON();
+      const translationsWithSlug: Record<string, ProductTranslationModel> = {};
+      for (const [lang, trans] of Object.entries(json.translations)) {
+        translationsWithSlug[lang] = {
+          ...(trans as unknown as ProductTranslationModel),
+          slug: slugMap[lang] ?? "",
+        };
+      }
+
+      return {
+        ...(json as unknown as ProductResponseDetailsModel),
+        translations: translationsWithSlug,
+        collections: product.collections.map((c) => c.toString()),
+        createdBy: json.createdBy ? json.createdBy : null,
+        updatedBy: json.updatedBy ? json.updatedBy : null,
+      };
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
       this.logger.error(error);
-      const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(`Failed to fetch product. ${message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to fetch product by ID. ${errorMessage}`
+      );
     }
   }
 
-  async remove(id: string): Promise<void> {
-    const product = await this.productModel.findByIdAndDelete(id).exec();
+  /**
+   * Retrieves a paginated list of product.
+   * @param pageNumber Product number (default: 1).
+   * @param itemsPerPage Number of items per page (default: 10).
+   * @returns An array of products.
+   * @throws BadRequestException if the query fails.
+   */
+  async findProducts(
+    skip = 0,
+    take = 10,
+    sort?: Record<string, any>,
+    filters?: Record<string, string>,
+    language = "en"
+  ): Promise<ProductResponseDetailsModel[]> {
+    try {
+      const query = await this.buildProductQuery(filters, language);
 
+      const products = await this.productModel
+        .find(query)
+        .skip(skip)
+        .limit(take)
+        .populate<{ createdBy: User }>("createdBy")
+        .populate<{ updatedBy: User }>("updatedBy")
+        .sort(sort ?? { createdAt: -1 })
+        .lean<ProductWithUsers[]>()
+        .exec();
+
+      const productsRes: ProductResponseDetailsModel[] = [];
+
+      for (const item of products) {
+        const slugs = await this.slugService.findSlugsByEntity(item.id);
+
+        const slugMap = slugs.reduce<Record<string, string>>((acc, cur) => {
+          acc[cur.language] = cur.slug;
+          return acc;
+        }, {});
+
+        const json = item.toJSON();
+        const translationsWithSlug: Record<string, ProductTranslationModel> =
+          {};
+        for (const [lang, trans] of Object.entries(json.translations)) {
+          translationsWithSlug[lang] = {
+            ...(trans as unknown as ProductTranslationModel),
+            slug: slugMap[lang] ?? "",
+          };
+        }
+
+        productsRes.push({
+          ...(json as unknown as ProductResponseDetailsModel),
+          translations: translationsWithSlug,
+          collections: json.collections.map((c) => c.toString()),
+          createdBy: json.createdBy ? json.createdBy : null,
+          updatedBy: json.updatedBy ? json.updatedBy : null,
+        });
+      }
+
+      return productsRes;
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to fetch products. ${errorMessage}`
+      );
+    }
+  }
+
+  /**
+   * Deletes a product by its ID.
+   * @param id The ID of the product.
+   * @returns True if deleted successfully, false otherwise.
+   * @throws BadRequestException if deletion fails.
+   */
+  async deleteProduct(id: string): Promise<boolean> {
+    const result = await this.productModel.findByIdAndDelete(id).exec();
+
+    if (!result) throw new NotFoundException(`Product with ID ${id} not found`);
+
+    try {
+      const slugs = await this.slugService.findSlugsByEntity(
+        result._id as Types.ObjectId
+      );
+
+      await Promise.all(
+        slugs.map((entry) =>
+          this.slugService.deleteSlug(
+            entry.slug,
+            this.slugNamespace,
+            entry.language ?? undefined
+          )
+        )
+      );
+
+      return result !== null;
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to delete product. ${errorMessage}`
+      );
+    }
+  }
+
+  /**
+   * Retrieves a product for frontend consumption with a single translation.
+   * It returns the product with only the translation corresponding to the requested language.
+   *
+   * If the requested language is not available, an optional fallback language is used.
+   * The response excludes the full translations map.
+   *
+   * @param identify The unique identifier (slug or _id).
+   * @param language The desired language code (e.g., 'en', 'it').
+   * @param fallbackLanguage Optional fallback language if the requested language is missing.
+   * @returns A ProductResponseDto containing product core properties and the selected translation.
+   * @throws NotFoundException if the language or translation is not found.
+   */
+  async findProductForWeb(
+    identify: string,
+    language: string,
+    fallbackLanguage?: string
+  ): Promise<ProductResponseModel> {
+    const product = await this.findProduct(identify);
     if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+      throw new NotFoundException(
+        `Product not found for identifier: ${identify}`
+      );
     }
 
-    const slugs = await this.slugService.findSlugsByEntity(
-      product._id as Types.ObjectId
-    );
+    const translations = product.translations as Record<
+      string,
+      ProductTranslationModel
+    >;
 
-    await Promise.all(
-      slugs.map((entry) =>
-        this.slugService.deleteSlug(
-          entry.slug,
-          this.slugNamespace,
-          entry.language ?? undefined
-        )
-      )
-    );
+    let selectedTranslation = translations[language];
+
+    if (!selectedTranslation && fallbackLanguage) {
+      selectedTranslation = translations[fallbackLanguage];
+    }
+
+    if (!selectedTranslation) {
+      throw new NotFoundException(
+        `Translation not found for language: ${language}` +
+          (fallbackLanguage ? ` and fallback: ${fallbackLanguage}` : "")
+      );
+    }
+
+    const response: ProductResponseModel = {
+      slug: selectedTranslation.slug,
+      tags: product.tags,
+      title: selectedTranslation.title,
+      description: selectedTranslation.description,
+      language: language,
+      status: product.status,
+      id: product.id,
+    };
+
+    return response;
   }
 }

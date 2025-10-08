@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   CollectionSeoModel,
-  type CollectionResponseDetailslModel,
+  type CollectionResponseDetailsModel,
   type CollectionTranslationModel,
   type CollectionUpsertModel,
 } from "@kitejs-cms/plugin-commerce-api";
@@ -30,15 +30,15 @@ export function useCollectionDetails() {
   const [navigateTo, setNavigateTo] = useState("");
 
   const defaultLang = useMemo(
-    () => cmsSettings?.defaultLanguage || "",
+    () => cmsSettings?.defaultLanguage || "en",
     [cmsSettings]
   );
 
-  const { loading, fetchData } = useApi<CollectionResponseDetailslModel>();
+  const { loading, fetchData } = useApi<CollectionResponseDetailsModel>();
   const { id } = useParams<{ id: string }>();
 
   const [localData, setLocalData] =
-    useState<CollectionResponseDetailslModel | null>(null);
+    useState<CollectionResponseDetailsModel | null>(null);
 
   const [activeLang, setActiveLang] = useState(defaultLang);
   const [hasChanges, setHasChanges] = useState(false);
@@ -63,7 +63,7 @@ export function useCollectionDetails() {
     if (!defaultLang) return;
 
     if (id === "create") {
-      const newCollection: CollectionResponseDetailslModel = {
+      const newCollection: CollectionResponseDetailsModel = {
         id: "",
         translations: {
           [defaultLang]: {

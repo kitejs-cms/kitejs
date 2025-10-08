@@ -1,8 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-
-import type { ProductPriceModel } from "../models/product-price.model";
+import type { ProductPriceModel } from "../../models/partials/product-price.model";
 
 export class ProductPriceDto implements ProductPriceModel {
   @ApiProperty()
@@ -20,4 +19,8 @@ export class ProductPriceDto implements ProductPriceModel {
   @Type(() => Number)
   @IsNumber()
   compareAtAmount?: number;
+
+  constructor(partial: ProductPriceModel) {
+    Object.assign(this, partial);
+  }
 }
