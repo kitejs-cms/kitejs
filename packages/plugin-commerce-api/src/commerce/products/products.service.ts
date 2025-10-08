@@ -335,10 +335,9 @@ export class ProductsService {
           return acc;
         }, {});
 
-        const json = item.toJSON();
         const translationsWithSlug: Record<string, ProductTranslationModel> =
           {};
-        for (const [lang, trans] of Object.entries(json.translations)) {
+        for (const [lang, trans] of Object.entries(item.translations)) {
           translationsWithSlug[lang] = {
             ...(trans as unknown as ProductTranslationModel),
             slug: slugMap[lang] ?? "",
@@ -346,11 +345,15 @@ export class ProductsService {
         }
 
         productsRes.push({
-          ...(json as unknown as ProductResponseDetailsModel),
+          ...(item as unknown as ProductResponseDetailsModel),
           translations: translationsWithSlug,
-          collections: json.collections.map((c) => c.toString()),
-          createdBy: json.createdBy ? json.createdBy : null,
-          updatedBy: json.updatedBy ? json.updatedBy : null,
+          collections: item.collections.map((c) => c.toString()),
+          createdBy: item.createdBy
+            ? `${item.createdBy.firstName} ${item.createdBy.lastName}`
+            : null,
+          updatedBy: item.updatedBy
+            ? `${item.updatedBy.firstName} ${item.updatedBy.lastName}`
+            : null,
         });
       }
 

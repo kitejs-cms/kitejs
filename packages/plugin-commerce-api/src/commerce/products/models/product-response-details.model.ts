@@ -19,8 +19,8 @@ export type ProductResponseDetailsModel = {
   publishAt?: Date;
   expireAt?: Date;
   thumbnail?: string;
-  createdBy: string;
-  updatedBy: string;
+  createdBy: string | null;
+  updatedBy: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
