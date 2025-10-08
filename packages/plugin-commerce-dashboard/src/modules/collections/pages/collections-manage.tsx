@@ -36,7 +36,6 @@ import {
 } from "lucide-react";
 import {
   type CollectionListItem,
-  type CollectionStatus,
   useCollectionsManage,
 } from "../hooks/use-collections-manage";
 
@@ -73,22 +72,26 @@ const renderTags = (tags: string[] | undefined) => {
 };
 
 const renderStatus = (
-  status: CollectionStatus | undefined,
-  getStatusLabel: (status?: CollectionStatus) => string,
-  statusBadgeStyles: Record<CollectionStatus, string>
+  status: string | undefined,
+  getStatusLabel: (status?: string) => string,
+  statusBadgeStyles: Record<string, string>
 ) => {
   if (!status) {
     return <span className="text-muted-foreground">-</span>;
   }
 
+  const normalized = status.toLowerCase();
+  const capitalized =
+    status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   const badgeClasses =
-    statusBadgeStyles[status] || "border-gray-200 bg-gray-50";
+    statusBadgeStyles[status] ||
+    statusBadgeStyles[normalized] ||
+    statusBadgeStyles[status.toUpperCase()] ||
+    statusBadgeStyles[capitalized] ||
+    "border-gray-200 bg-gray-50 text-muted-foreground";
 
   return (
-    <Badge
-      variant="outline"
-      className={`${badgeClasses} font-normal`}
-    >
+    <Badge variant="outline" className={`${badgeClasses} font-normal`}>
       {getStatusLabel(status)}
     </Badge>
   );

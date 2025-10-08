@@ -38,11 +38,14 @@ export interface CollectionListItem {
 
 const ITEMS_PER_PAGE = 10;
 
-const STATUS_BADGE_STYLES: Record<CollectionStatus, string> = {
-  Draft: "border-yellow-700 bg-yellow-50",
-  Published: "border-green-700 bg-green-50",
-  Archived: "border-red-700 bg-red-50",
-};
+const STATUS_BADGE_STYLES = {
+  Draft: "border-yellow-700 bg-yellow-50 text-yellow-800",
+  draft: "border-yellow-700 bg-yellow-50 text-yellow-800",
+  Published: "border-green-700 bg-green-50 text-green-800",
+  published: "border-green-700 bg-green-50 text-green-800",
+  Archived: "border-red-700 bg-red-50 text-red-800",
+  archived: "border-red-700 bg-red-50 text-red-800",
+} as const satisfies Record<string, string>;
 
 const isFilterValueEmpty = (value: unknown) => {
   if (value === null || value === undefined || value === "") return true;
@@ -452,9 +455,12 @@ export function useCollectionsManage() {
   );
 
   const getStatusLabel = useCallback(
-    (status?: CollectionStatus) => {
+    (status?: string) => {
       if (!status) return "-";
-      return t(`collections.status.${status}` as const);
+      const capitalized =
+        status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+      const key = `collections.status.${capitalized}`;
+      return t(key, { defaultValue: capitalized });
     },
     [t]
   );
