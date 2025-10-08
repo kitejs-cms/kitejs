@@ -1,5 +1,6 @@
 {
   "draft": "Draft",
   "active": "Active",
-  "archived": "Archived"
+  "archived": "Archived",
+  "published": "Published"
 }

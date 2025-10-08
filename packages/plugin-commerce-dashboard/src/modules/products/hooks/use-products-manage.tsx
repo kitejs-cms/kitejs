@@ -34,11 +34,16 @@ export interface ProductListItem {
 
 const ITEMS_PER_PAGE = 10;
 
-const STATUS_BADGE_STYLES: Record<ProductStatus, string> = {
-  draft: "border-yellow-700 bg-yellow-50",
-  active: "border-green-700 bg-green-50",
-  archived: "border-red-700 bg-red-50",
-};
+const STATUS_BADGE_STYLES = {
+  draft: "border-yellow-700 bg-yellow-50 text-yellow-800",
+  Draft: "border-yellow-700 bg-yellow-50 text-yellow-800",
+  active: "border-green-700 bg-green-50 text-green-800",
+  Active: "border-green-700 bg-green-50 text-green-800",
+  published: "border-green-700 bg-green-50 text-green-800",
+  Published: "border-green-700 bg-green-50 text-green-800",
+  archived: "border-red-700 bg-red-50 text-red-800",
+  Archived: "border-red-700 bg-red-50 text-red-800",
+} as const satisfies Record<string, string>;
 
 const isFilterValueEmpty = (value: unknown) => {
   if (value === null || value === undefined || value === "") return true;
@@ -426,11 +431,12 @@ export function useProductsManage() {
   );
 
   const getStatusLabel = useCallback(
-    (status?: ProductStatus) => {
+    (status?: string) => {
       if (!status) return "-";
-      const key = `products.status.${status}` as const;
-      const label = t(key);
-      return label === key ? status : label;
+      const normalized = status.toLowerCase();
+      const key = `products.status.${normalized}`;
+      const label = t(key, { defaultValue: status });
+      return label;
     },
     [t]
   );

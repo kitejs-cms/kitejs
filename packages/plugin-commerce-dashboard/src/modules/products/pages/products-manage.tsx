@@ -34,11 +34,7 @@ import {
   Trash,
   Trash2,
 } from "lucide-react";
-import {
-  type ProductListItem,
-  type ProductStatus,
-  useProductsManage,
-} from "../hooks/use-products-manage";
+import { type ProductListItem, useProductsManage } from "../hooks/use-products-manage";
 
 const renderTags = (tags: string[] | undefined) => {
   if (!tags || tags.length === 0) {
@@ -73,16 +69,23 @@ const renderTags = (tags: string[] | undefined) => {
 };
 
 const renderStatus = (
-  status: ProductStatus | undefined,
-  getStatusLabel: (status?: ProductStatus) => string,
-  statusBadgeStyles: Record<ProductStatus, string>
+  status: string | undefined,
+  getStatusLabel: (status?: string) => string,
+  statusBadgeStyles: Record<string, string>
 ) => {
   if (!status) {
     return <span className="text-muted-foreground">-</span>;
   }
 
+  const normalized = status.toLowerCase();
+  const capitalized =
+    status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   const badgeClasses =
-    statusBadgeStyles[status] || "border-gray-200 bg-gray-50";
+    statusBadgeStyles[status] ||
+    statusBadgeStyles[normalized] ||
+    statusBadgeStyles[status.toUpperCase()] ||
+    statusBadgeStyles[capitalized] ||
+    "border-gray-200 bg-gray-50 text-muted-foreground";
 
   return (
     <Badge variant="outline" className={`${badgeClasses} font-normal`}>
