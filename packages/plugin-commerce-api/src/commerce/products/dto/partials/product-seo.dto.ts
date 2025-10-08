@@ -1,7 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { IsArray, IsOptional, IsString } from "class-validator";
-
-import type { ProductSeoModel } from "../models/product-seo.model";
+import { ProductSeoModel } from "../../models/partials/product-seo.model";
 
 export class ProductSeoDto implements ProductSeoModel {
   @ApiPropertyOptional()
@@ -24,4 +23,8 @@ export class ProductSeoDto implements ProductSeoModel {
   @IsOptional()
   @IsString()
   canonicalUrl?: string;
+
+  constructor(partial: ProductSeoModel) {
+    Object.assign(this, partial);
+  }
 }

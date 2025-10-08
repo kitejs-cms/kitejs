@@ -4,6 +4,7 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -11,11 +12,16 @@ import {
 } from "class-validator";
 
 import { ProductStatus } from "../models/product-status.enum";
-import type { ProductBaseModel } from "../models/product-base.model";
-import { ProductSeoDto } from "./product-seo.dto";
-import { ProductVariantDto } from "./product-variant.dto";
+import { ProductVariantDto } from "./partials/product-variant.dto";
+import { ProductSeoDto } from "./partials/product-seo.dto";
+import type { ProductUpsertModel } from "../models/product-upsert.model";
 
-export class CreateProductDto implements ProductBaseModel {
+export class ProductUpsertDto implements ProductUpsertModel {
+  @IsMongoId()
+  @IsOptional()
+  @ApiPropertyOptional()
+  id?: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
@@ -100,4 +106,8 @@ export class CreateProductDto implements ProductBaseModel {
   @IsOptional()
   @IsString()
   defaultCurrency?: string;
+
+  constructor(partial: ProductUpsertModel) {
+    Object.assign(this, partial);
+  }
 }

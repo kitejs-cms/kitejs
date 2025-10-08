@@ -1,7 +1,7 @@
 import { CollectionStatus } from "./collection-status.enum";
 import { CollectionTranslationModel } from "./collection-translation.model";
 
-export type CollectionResponseDetailslModel = {
+export type CollectionResponseDetailsModel = {
   id: string;
   translations: Record<string, CollectionTranslationModel>;
   createdAt: string;

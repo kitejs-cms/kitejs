@@ -14,12 +14,12 @@ import {
 } from "class-validator";
 
 import type { CollectionTranslationModel } from "../models/collection-translation.model";
-import type { CollectionResponseDetailslModel } from "../models/collection-response-details.model";
+import type { CollectionResponseDetailsModel } from "../models/collection-response-details.model";
 import { CollectionTranslationDto } from "./collection-traslation.dto";
 import { CollectionStatus } from "../models/collection-status.enum";
 
 export class CollectionResponseDetailsDto
-  implements CollectionResponseDetailslModel
+  implements CollectionResponseDetailsModel
 {
   @ApiProperty()
   @IsString()
@@ -101,7 +101,7 @@ export class CollectionResponseDetailsDto
   @Exclude()
   __v: number;
 
-  constructor(partial: CollectionResponseDetailslModel) {
+  constructor(partial: CollectionResponseDetailsModel) {
     Object.assign(this, partial);
 
     // Convert translations to DTO format

@@ -9,7 +9,7 @@ import {
   ValidateNested,
 } from "class-validator";
 
-import type { ProductVariantModel } from "../models/product-variant.model";
+import type { ProductVariantModel } from "../../models/partials/product-variant.model";
 import { ProductPriceDto } from "./product-price.dto";
 
 export class ProductVariantDto implements ProductVariantModel {
@@ -49,4 +49,8 @@ export class ProductVariantDto implements ProductVariantModel {
   @IsOptional()
   @IsBoolean()
   allowBackorder?: boolean;
+
+  constructor(partial: ProductVariantModel) {
+    Object.assign(this, partial);
+  }
 }

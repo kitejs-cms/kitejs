@@ -1,4 +1,4 @@
-import { CollectionResponseDetailslModel } from "@kitejs-cms/plugin-commerce-api";
+import { CollectionResponseDetailsModel } from "@kitejs-cms/plugin-commerce-api";
 import { FileJson } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -54,7 +54,7 @@ export function SettingsSection(props: SettingsSectionProps) {
     { value: string; label: string }[]
   >([]);
 
-  const { data, fetchData } = useApi<CollectionResponseDetailslModel[]>();
+  const { data, fetchData } = useApi<CollectionResponseDetailsModel[]>();
 
   const toInputDate = (iso?: string) =>
     iso ? new Date(iso).toISOString().slice(0, 16) : "";
@@ -106,16 +106,24 @@ export function SettingsSection(props: SettingsSectionProps) {
               <SelectValue placeholder={t("collections.fields.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Draft">{t("collections.status.Draft")}</SelectItem>
-              <SelectItem value="Published">{t("collections.status.Published")}</SelectItem>
-              <SelectItem value="Archived">{t("collections.status.Archived")}</SelectItem>
+              <SelectItem value="Draft">
+                {t("collections.status.Draft")}
+              </SelectItem>
+              <SelectItem value="Published">
+                {t("collections.status.Published")}
+              </SelectItem>
+              <SelectItem value="Archived">
+                {t("collections.status.Archived")}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {/* Publish At */}
         <div>
-          <Label className="mb-2 block">{t("collections.fields.publishAt")}</Label>
+          <Label className="mb-2 block">
+            {t("collections.fields.publishAt")}
+          </Label>
           <Input
             type="datetime-local"
             value={toInputDate(publishAt)} // sempre stringa
@@ -126,7 +134,9 @@ export function SettingsSection(props: SettingsSectionProps) {
 
         {/* Expire At */}
         <div>
-          <Label className="mb-2 block">{t("collections.fields.expireAt")}</Label>
+          <Label className="mb-2 block">
+            {t("collections.fields.expireAt")}
+          </Label>
           <Input
             type="datetime-local"
             value={toInputDate(expireAt)} // sempre stringa
@@ -152,9 +162,12 @@ export function SettingsSection(props: SettingsSectionProps) {
             >
               <SelectTrigger className="w-full">
                 <SelectValue
-                  placeholder={t("collections.placeholders.selectParentCollection", {
-                    defaultValue: "Seleziona la collection padre (opzionale)",
-                  })}
+                  placeholder={t(
+                    "collections.placeholders.selectParentCollection",
+                    {
+                      defaultValue: "Seleziona la collection padre (opzionale)",
+                    }
+                  )}
                 />
               </SelectTrigger>
               <SelectContent>
@@ -182,7 +195,9 @@ export function SettingsSection(props: SettingsSectionProps) {
 
         {/* Created By */}
         <div>
-          <Label className="mb-2 block">{t("collections.fields.createdBy")}</Label>
+          <Label className="mb-2 block">
+            {t("collections.fields.createdBy")}
+          </Label>
           <Input
             value={createdBy ?? ""}
             disabled
@@ -192,7 +207,9 @@ export function SettingsSection(props: SettingsSectionProps) {
 
         {/* Modified By */}
         <div>
-          <Label className="mb-2 block">{t("collections.fields.updatedBy")}</Label>
+          <Label className="mb-2 block">
+            {t("collections.fields.updatedBy")}
+          </Label>
           <Input
             value={updatedBy ?? ""}
             disabled
