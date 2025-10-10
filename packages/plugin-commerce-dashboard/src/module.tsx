@@ -59,7 +59,7 @@ export const CommerceModule: DashboardModule = {
       label: "commerce:menu.products",
       requiredPermissions: ["plugin-commerce:products.read"],
     },
-    /*{
+    {
       path: "commerce/products/new",
       element: <CommerceProductDetailsPage />,
       label: "",
@@ -70,7 +70,7 @@ export const CommerceModule: DashboardModule = {
       element: <CommerceProductDetailsPage />,
       label: "",
       requiredPermissions: ["plugin-commerce:products.read"],
-    },*/
+    },
     {
       path: "commerce/orders",
       element: <CommerceOrdersPage />,

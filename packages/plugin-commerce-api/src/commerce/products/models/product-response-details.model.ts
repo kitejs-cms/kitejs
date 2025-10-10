@@ -7,7 +7,6 @@ export type ProductResponseDetailsModel = {
   id: string;
   status: ProductStatus;
   type: string;
-  slugs: Record<string, string>;
   translations: Record<string, ProductTranslationModel>;
   isDigital: boolean;
   defaultCurrency: string;

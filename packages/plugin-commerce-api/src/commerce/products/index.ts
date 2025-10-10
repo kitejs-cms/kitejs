@@ -5,6 +5,9 @@ export * from "./models/partials/product-price.model";
 export * from "./models/partials/product-variant.model";
 export * from "./models/product-response.model";
 export * from "./models/product-response-details.model";
+export * from "./models/partials/product-translation.model";
+export * from "./models/partials/product-option.model";
+export * from "./models/product-upsert.model";
 
 /* Schemas */
 export * from "./schemas/product.schema";
