@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -8,11 +8,40 @@ import {
   useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
 import type {
+  ProductOptionModel,
   ProductResponseDetailsModel,
+  ProductSeoModel,
   ProductTranslationModel,
   ProductUpsertModel,
-  ProductSeoModel,
+  ProductVariant,
+  ProductPriceModel,
 } from "@kitejs-cms/plugin-commerce-api";
+import { ProductStatus } from "@kitejs-cms/plugin-commerce-api";
+
+type VariantWithOptionalId = ProductVariant & { id?: string };
+
+const createEmptyTranslation = (): ProductTranslationModel => ({
+  title: "",
+  subtitle: "",
+  summary: "",
+  description: "",
+  slug: "",
+  seo: {},
+});
+
+const createEmptyVariant = (): VariantWithOptionalId => ({
+  id: undefined,
+  title: "",
+  sku: "",
+  barcode: "",
+  prices: [],
+  inventoryQuantity: 0,
+  allowBackorder: false,
+  gallery: [],
+  optionName: "",
+  optionValue: "",
+  downloadUrl: undefined,
+});
 
 export interface FormErrors {
   title?: string;
@@ -65,7 +94,7 @@ export function useProductDetails() {
     if (id === "create") {
       const newProduct: ProductResponseDetailsModel = {
         id: "",
-        status: "Draft" as never,
+        status: ProductStatus.Draft,
         type: "",
         isDigital: false,
         defaultCurrency: "",
@@ -73,16 +102,16 @@ export function useProductDetails() {
         options: [],
         gallery: [],
         tags: [],
-        createdBy: "",
         collections: [],
-        updatedBy: "",
-        createdAt: undefined,
-        updatedAt: undefined,
+        publishAt: undefined,
+        expireAt: undefined,
+        thumbnail: undefined,
+        createdBy: null,
+        updatedBy: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
         translations: {
-          [defaultLang]: {
-            title: "",
-            slug: "",
-          },
+          [defaultLang]: createEmptyTranslation(),
         },
       };
 
@@ -181,50 +210,111 @@ export function useProductDetails() {
 
   const onSettingsChange = useCallback(
     (
-      field: "status" | "publishAt" | "expireAt" | "tags" | "collections",
-      value: string | string[]
+      field:
+        | "status"
+        | "publishAt"
+        | "expireAt"
+        | "tags"
+        | "collections",
+      value: string | string[] | Date | null | undefined
     ) => {
+      let updated = false;
       setLocalData((prev) => {
         if (!prev) return prev;
+        updated = true;
         if (field === "tags") {
-          return { ...prev, tags: value as string[] };
+          return { ...prev, tags: Array.isArray(value) ? value : [] };
         }
-        return { ...prev, [field]: value as string };
+
+        if (field === "collections") {
+          return {
+            ...prev,
+            collections: Array.isArray(value)
+              ? (value as string[])
+              : prev.collections,
+          };
+        }
+
+        if (field === "publishAt" || field === "expireAt") {
+          const parsedValue =
+            value instanceof Date
+              ? value
+              : typeof value === "string" && value
+                ? new Date(value)
+                : undefined;
+          return {
+            ...prev,
+            [field]: parsedValue,
+          };
+        }
+
+        return {
+          ...prev,
+          [field]: value as ProductResponseDetailsModel[typeof field],
+        };
       });
-      setHasChanges(true);
+
+      if (updated) {
+        setHasChanges(true);
+      }
     },
     []
   );
 
-  const onChange = useCallback(
+  const onFieldChange = useCallback(
+    <K extends keyof ProductResponseDetailsModel>(
+      field: K,
+      value: ProductResponseDetailsModel[K]
+    ) => {
+      if (field === "translations") return;
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        updated = true;
+        return {
+          ...prev,
+          [field]: value,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onTranslationChange = useCallback(
     (
       field: keyof ProductTranslationModel,
-      value: string | number | boolean | string[]
+      value: string | number | boolean | string[] | ProductSeoModel | null
     ) => {
+      let updated = false;
       setLocalData((prev) => {
         if (!prev) return prev;
 
         const updatedTranslations = { ...prev.translations };
+        const current =
+          updatedTranslations[activeLang] ?? createEmptyTranslation();
 
         // Auto-generate slug if the title is updated
         if (field === "title") {
           const slug = generateSlug(value as string);
           updatedTranslations[activeLang] = {
-            ...updatedTranslations[activeLang],
+            ...current,
             title: value as string,
             slug,
           };
-        } else if (field in updatedTranslations[activeLang]) {
+        } else if (field in current) {
           updatedTranslations[activeLang] = {
-            ...updatedTranslations[activeLang],
-            [field]: value,
+            ...current,
+            [field]: value ?? "",
           };
         } else {
-          return {
-            ...prev,
-            [field]: value,
-          };
+          return prev;
         }
+
+        updated = true;
 
         return {
           ...prev,
@@ -232,7 +322,9 @@ export function useProductDetails() {
         };
       });
 
-      setHasChanges(true);
+      if (updated) {
+        setHasChanges(true);
+      }
     },
     [activeLang]
   );
@@ -251,11 +343,14 @@ export function useProductDetails() {
     const translation = localData.translations[activeLang];
 
     if (!translation?.title?.trim()) {
-      errors.title = t("collections.errors.titleRequired", "Title is required");
+      errors.title = t(
+        "products.errors.titleRequired",
+        "Title is required"
+      );
     }
 
     if (!translation?.slug?.trim()) {
-      errors.slug = t("collections.errors.slugRequired", "Slug is required");
+      errors.slug = t("products.errors.slugRequired", "Slug is required");
     }
 
     setFormErrors(errors);
@@ -281,29 +376,52 @@ export function useProductDetails() {
         return;
       }
 
+      const formatDate = (date?: Date) =>
+        date ? new Date(date).toISOString() : undefined;
+
       const body: ProductUpsertModel = {
         id: id && id !== "create" ? localData.id : undefined,
         language: activeLang,
         status: localData.status,
-        slug: localData.translations[activeLang].slug,
-        title: localData.translations[activeLang].title,
+        slug: translation.slug,
+        title: translation.title,
+        subtitle: translation.subtitle,
+        summary: translation.summary,
+        description: translation.description,
         tags: localData.tags,
-        seo: localData.translations[activeLang].seo,
-        collectionIds: localData.collections ?? null,
+        seo: translation.seo,
+        publishAt: formatDate(localData.publishAt),
+        expireAt: formatDate(localData.expireAt),
+        thumbnail: localData.thumbnail,
+        gallery: localData.gallery,
+        collectionIds: localData.collections,
+        variants: localData.variants?.map((variant) => ({
+          id: variant.id,
+          title: variant.title,
+          sku: variant.sku,
+          barcode: variant.barcode,
+          prices: variant.prices,
+          inventoryQuantity: variant.inventoryQuantity,
+          allowBackorder: variant.allowBackorder,
+        })),
+        defaultCurrency: localData.defaultCurrency,
       };
 
-      const result = await fetchData("commerce/collections", "POST", body);
+      const result = await fetchData("commerce/products", "POST", body);
 
       if (result?.data) {
         toast.success(
           t(
-            `collections.details.notifications.${
+            `products.details.notifications.${
               id === "create" ? "created" : "saved"
-            }`
+            }`,
+            id === "create"
+              ? "Product created successfully"
+              : "Product saved successfully"
           ),
           {
             id: toastId,
-            description: t("collections.details.notifications.title", {
+            description: t("products.details.notifications.title", {
               title: translation.title,
             }),
           }
@@ -314,7 +432,7 @@ export function useProductDetails() {
         setFormErrors({});
 
         if (id === "create") {
-          navigate(`/commerce/collections/${result.data.id}`);
+          navigate(`/commerce/products/${result.data.id}`);
         }
       } else {
         toast.error("Errore nel salvataggio", {
@@ -328,13 +446,13 @@ export function useProductDetails() {
         id: toastId,
         description: t(
           "products.errors.saveFailed",
-          "Failed to save collection. Please try again."
+          "Failed to save product. Please try again."
         ),
       });
       setFormErrors({
         apiError: t(
           "products.errors.saveFailed",
-          "Failed to save collection. Please try again."
+          "Failed to save product. Please try again."
         ),
       });
     }
@@ -367,6 +485,415 @@ export function useProductDetails() {
     []
   );
 
+  const onGalleryChange = useCallback((gallery: string[]) => {
+    let updated = false;
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      updated = true;
+      return {
+        ...prev,
+        gallery,
+      };
+    });
+
+    if (updated) {
+      setHasChanges(true);
+    }
+  }, []);
+
+  const onThumbnailChange = useCallback((thumbnail?: string) => {
+    let updated = false;
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      updated = true;
+      return {
+        ...prev,
+        thumbnail,
+      };
+    });
+
+    if (updated) {
+      setHasChanges(true);
+    }
+  }, []);
+
+  const onOptionAdd = useCallback(() => {
+    let updated = false;
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      updated = true;
+      const position = prev.options.length;
+      const newOption: ProductOptionModel = {
+        name: "",
+        values: [],
+        position,
+      };
+
+      return {
+        ...prev,
+        options: [...prev.options, newOption],
+      };
+    });
+
+    if (updated) {
+      setHasChanges(true);
+    }
+  }, []);
+
+  const onOptionUpdate = useCallback(
+    (index: number, changes: Partial<ProductOptionModel>) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        if (!prev.options[index]) return prev;
+        updated = true;
+
+        const options = prev.options.map((option, optionIndex) =>
+          optionIndex === index ? { ...option, ...changes } : option
+        );
+
+        return {
+          ...prev,
+          options,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onOptionsReorder = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    let updated = false;
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      if (!prev.options[fromIndex] || !prev.options[toIndex]) {
+        return prev;
+      }
+
+      updated = true;
+
+      const options = [...prev.options];
+      const [moved] = options.splice(fromIndex, 1);
+      options.splice(toIndex, 0, moved);
+
+      return {
+        ...prev,
+        options: options.map((option, position) => ({
+          ...option,
+          position,
+        })),
+      };
+    });
+
+    if (updated) {
+      setHasChanges(true);
+    }
+  }, []);
+
+  const onOptionRemove = useCallback((index: number) => {
+    let updated = false;
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      if (!prev.options[index]) return prev;
+      updated = true;
+
+      const remaining = prev.options
+        .filter((_, optionIndex) => optionIndex !== index)
+        .map((option, position) => ({ ...option, position }));
+
+      return {
+        ...prev,
+        options: remaining,
+      };
+    });
+
+    if (updated) {
+      setHasChanges(true);
+    }
+  }, []);
+
+  const onOptionValueAdd = useCallback((index: number, value: string) => {
+    let updated = false;
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      const option = prev.options[index];
+      if (!option) return prev;
+      updated = true;
+
+      const nextOption: ProductOptionModel = {
+        ...option,
+        values: [...option.values, value],
+      };
+
+      const options = prev.options.map((item, optionIndex) =>
+        optionIndex === index ? nextOption : item
+      );
+
+      return {
+        ...prev,
+        options,
+      };
+    });
+
+    if (updated) {
+      setHasChanges(true);
+    }
+  }, []);
+
+  const onOptionValueUpdate = useCallback(
+    (optionIndex: number, valueIndex: number, value: string) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const option = prev.options[optionIndex];
+        if (!option || !option.values[valueIndex]) return prev;
+        updated = true;
+
+        const values = option.values.map((current, index) =>
+          index === valueIndex ? value : current
+        );
+
+        const options = prev.options.map((item, index) =>
+          index === optionIndex ? { ...item, values } : item
+        );
+
+        return {
+          ...prev,
+          options,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onOptionValueRemove = useCallback(
+    (optionIndex: number, valueIndex: number) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const option = prev.options[optionIndex];
+        if (!option || !option.values[valueIndex]) return prev;
+        updated = true;
+
+        const values = option.values.filter((_, index) => index !== valueIndex);
+
+        const options = prev.options.map((item, index) =>
+          index === optionIndex ? { ...item, values } : item
+        );
+
+        return {
+          ...prev,
+          options,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onVariantAdd = useCallback(
+    (variant?: Partial<VariantWithOptionalId>) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        updated = true;
+
+        const newVariant: VariantWithOptionalId = {
+          ...createEmptyVariant(),
+          ...variant,
+        };
+
+        return {
+          ...prev,
+          variants: [...prev.variants, newVariant],
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onVariantUpdate = useCallback(
+    (index: number, changes: Partial<VariantWithOptionalId>) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        if (!prev.variants[index]) return prev;
+        updated = true;
+
+        const variants = prev.variants.map((variant, variantIndex) =>
+          variantIndex === index ? { ...variant, ...changes } : variant
+        );
+
+        return {
+          ...prev,
+          variants,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onVariantRemove = useCallback((index: number) => {
+    let updated = false;
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      if (!prev.variants[index]) return prev;
+      updated = true;
+
+      const variants = prev.variants.filter(
+        (_, variantIndex) => variantIndex !== index
+      );
+
+      return {
+        ...prev,
+        variants,
+      };
+    });
+
+    if (updated) {
+      setHasChanges(true);
+    }
+  }, []);
+
+  const onVariantPriceAdd = useCallback(
+    (variantIndex: number, price?: ProductPriceModel) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const variant = prev.variants[variantIndex];
+        if (!variant) return prev;
+        updated = true;
+
+        const prices = [...(variant.prices ?? []), price ?? { currencyCode: "", amount: 0 }];
+
+        const variants = prev.variants.map((item, index) =>
+          index === variantIndex ? { ...item, prices } : item
+        );
+
+        return {
+          ...prev,
+          variants,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onVariantPriceUpdate = useCallback(
+    (
+      variantIndex: number,
+      priceIndex: number,
+      field: keyof ProductPriceModel,
+      value: ProductPriceModel[keyof ProductPriceModel]
+    ) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const variant = prev.variants[variantIndex];
+        if (!variant) return prev;
+        const prices = variant.prices ?? [];
+        if (!prices[priceIndex]) return prev;
+        updated = true;
+
+        const nextPrices = prices.map((price, index) =>
+          index === priceIndex ? { ...price, [field]: value } : price
+        );
+
+        const variants = prev.variants.map((item, index) =>
+          index === variantIndex ? { ...item, prices: nextPrices } : item
+        );
+
+        return {
+          ...prev,
+          variants,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onVariantPriceRemove = useCallback(
+    (variantIndex: number, priceIndex: number) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const variant = prev.variants[variantIndex];
+        if (!variant) return prev;
+        const prices = variant.prices ?? [];
+        if (!prices[priceIndex]) return prev;
+        updated = true;
+
+        const nextPrices = prices.filter((_, index) => index !== priceIndex);
+
+        const variants = prev.variants.map((item, index) =>
+          index === variantIndex ? { ...item, prices: nextPrices } : item
+        );
+
+        return {
+          ...prev,
+          variants,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
+  const onVariantGalleryChange = useCallback(
+    (variantIndex: number, gallery: string[]) => {
+      let updated = false;
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        if (!prev.variants[variantIndex]) return prev;
+        updated = true;
+
+        const variants = prev.variants.map((variant, index) =>
+          index === variantIndex ? { ...variant, gallery } : variant
+        );
+
+        return {
+          ...prev,
+          variants,
+        };
+      });
+
+      if (updated) {
+        setHasChanges(true);
+      }
+    },
+    []
+  );
+
   return {
     data: localData,
     loading,
@@ -374,14 +901,31 @@ export function useProductDetails() {
     setActiveLang: onChangeActiveLang,
     onAddLanguage,
     onSettingsChange,
+    onFieldChange,
     confirmDiscard,
     hasChanges,
     handleNavigation,
     handleSave,
-    onChange,
+    onTranslationChange,
     onSeoChange,
     closeUnsavedAlert,
     showUnsavedAlert,
     formErrors,
+    onGalleryChange,
+    onThumbnailChange,
+    onOptionAdd,
+    onOptionUpdate,
+    onOptionsReorder,
+    onOptionRemove,
+    onOptionValueAdd,
+    onOptionValueUpdate,
+    onOptionValueRemove,
+    onVariantAdd,
+    onVariantUpdate,
+    onVariantRemove,
+    onVariantPriceAdd,
+    onVariantPriceUpdate,
+    onVariantPriceRemove,
+    onVariantGalleryChange,
   };
 }
