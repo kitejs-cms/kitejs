@@ -1,4 +1,4 @@
-import { ProductVariant } from "../schemas/product-variant.schema";
+import type { ProductVariantModel } from "./partials/product-variant.model";
 import { ProductOptionModel } from "./partials/product-option.model";
 import { ProductTranslationModel } from "./partials/product-translation.model";
 import { ProductStatus } from "./product-status.enum";
@@ -10,7 +10,7 @@ export type ProductResponseDetailsModel = {
   translations: Record<string, ProductTranslationModel>;
   isDigital: boolean;
   defaultCurrency: string;
-  variants: ProductVariant[];
+  variants: ProductVariantModel[];
   collections: string[];
   options: ProductOptionModel[];
   gallery: string[];

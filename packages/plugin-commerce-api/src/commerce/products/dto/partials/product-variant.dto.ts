@@ -50,6 +50,26 @@ export class ProductVariantDto implements ProductVariantModel {
   @IsBoolean()
   allowBackorder?: boolean;
 
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsString({ each: true })
+  gallery?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  downloadUrl?: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  optionValue: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  optionName?: string;
+
   constructor(partial: ProductVariantModel) {
     Object.assign(this, partial);
   }

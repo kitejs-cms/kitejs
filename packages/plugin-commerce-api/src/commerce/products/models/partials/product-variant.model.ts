@@ -8,4 +8,8 @@ export type ProductVariantModel = {
   prices?: ProductPriceModel[];
   inventoryQuantity?: number;
   allowBackorder?: boolean;
+  gallery?: string[];
+  downloadUrl?: string;
+  optionValue: string;
+  optionName?: string;
 };

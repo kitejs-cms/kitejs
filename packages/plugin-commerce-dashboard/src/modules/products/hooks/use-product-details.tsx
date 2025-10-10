@@ -13,12 +13,10 @@ import type {
   ProductSeoModel,
   ProductTranslationModel,
   ProductUpsertModel,
-  ProductVariant,
+  ProductVariantModel,
   ProductPriceModel,
 } from "@kitejs-cms/plugin-commerce-api";
 import { ProductStatus } from "@kitejs-cms/plugin-commerce-api";
-
-type VariantWithOptionalId = ProductVariant & { id?: string };
 
 const createEmptyTranslation = (): ProductTranslationModel => ({
   title: "",
@@ -29,7 +27,7 @@ const createEmptyTranslation = (): ProductTranslationModel => ({
   seo: {},
 });
 
-const createEmptyVariant = (): VariantWithOptionalId => ({
+const createEmptyVariant = (): ProductVariantModel => ({
   id: undefined,
   title: "",
   sku: "",
@@ -703,13 +701,13 @@ export function useProductDetails() {
   );
 
   const onVariantAdd = useCallback(
-    (variant?: Partial<VariantWithOptionalId>) => {
+    (variant?: Partial<ProductVariantModel>) => {
       let updated = false;
       setLocalData((prev) => {
         if (!prev) return prev;
         updated = true;
 
-        const newVariant: VariantWithOptionalId = {
+        const newVariant: ProductVariantModel = {
           ...createEmptyVariant(),
           ...variant,
         };
@@ -728,7 +726,7 @@ export function useProductDetails() {
   );
 
   const onVariantUpdate = useCallback(
-    (index: number, changes: Partial<VariantWithOptionalId>) => {
+    (index: number, changes: Partial<ProductVariantModel>) => {
       let updated = false;
       setLocalData((prev) => {
         if (!prev) return prev;
