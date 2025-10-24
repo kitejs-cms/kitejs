@@ -126,7 +126,7 @@ export function SettingsSection(props: SettingsSectionProps) {
           </Label>
           <Input
             type="datetime-local"
-            value={toInputDate(publishAt)} // sempre stringa
+            value={toInputDate(publishAt)}
             onChange={(e) => onChange("publishAt", e.target.value || undefined)}
             className="w-full"
           />
@@ -139,7 +139,7 @@ export function SettingsSection(props: SettingsSectionProps) {
           </Label>
           <Input
             type="datetime-local"
-            value={toInputDate(expireAt)} // sempre stringa
+            value={toInputDate(expireAt)}
             onChange={(e) => onChange("expireAt", e.target.value || undefined)}
             className="w-full"
           />

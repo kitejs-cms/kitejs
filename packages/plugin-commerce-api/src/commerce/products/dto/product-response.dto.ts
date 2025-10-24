@@ -6,6 +6,7 @@ import { ProductSeoDto } from "./partials/product-seo.dto";
 import { ProductVariantDto } from "./partials/product-variant.dto";
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsMongoId,
@@ -39,11 +40,6 @@ export class ProductResponseDto implements ProductResponseModel {
   @IsNotEmpty()
   @IsString()
   title: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  subtitle?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -101,13 +97,16 @@ export class ProductResponseDto implements ProductResponseModel {
   @Type(() => ProductVariantDto)
   variants?: ProductVariantDto[];
 
+  @IsBoolean()
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
-  defaultCurrency?: string;
+  isDigital?: boolean;
 
   @Exclude()
   _id: string;
+
+  @Exclude()
+  __v: string;
 
   constructor(partial: ProductResponseModel) {
     Object.assign(this, partial);

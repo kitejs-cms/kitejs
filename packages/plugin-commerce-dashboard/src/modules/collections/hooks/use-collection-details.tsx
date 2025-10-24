@@ -30,7 +30,7 @@ export function useCollectionDetails() {
   const [navigateTo, setNavigateTo] = useState("");
 
   const defaultLang = useMemo(
-    () => cmsSettings?.defaultLanguage || "en",
+    () => cmsSettings?.defaultLanguage,
     [cmsSettings]
   );
 
@@ -285,6 +285,9 @@ export function useCollectionDetails() {
         tags: localData.tags,
         seo: localData.translations[activeLang].seo,
         parent: localData.parent ?? null,
+        publishAt: localData.publishAt ?? null,
+        expireAt: localData.expireAt ?? null,
+        description: localData.translations[activeLang].description ?? null,
       };
 
       const result = await fetchData("commerce/collections", "POST", body);

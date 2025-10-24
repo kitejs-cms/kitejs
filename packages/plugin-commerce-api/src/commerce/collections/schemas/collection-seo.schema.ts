@@ -12,7 +12,7 @@ export class CollectionSeo {
   metaKeywords: string[];
 
   @Prop({ type: String, required: false })
-  canonicalUrl?: string;
+  canonical?: string;
 }
 
 export const CollectionSeoSchema = SchemaFactory.createForClass(CollectionSeo);

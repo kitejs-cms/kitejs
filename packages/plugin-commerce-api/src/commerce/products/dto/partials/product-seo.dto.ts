@@ -22,7 +22,7 @@ export class ProductSeoDto implements ProductSeoModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  canonicalUrl?: string;
+  canonical?: string;
 
   constructor(partial: ProductSeoModel) {
     Object.assign(this, partial);

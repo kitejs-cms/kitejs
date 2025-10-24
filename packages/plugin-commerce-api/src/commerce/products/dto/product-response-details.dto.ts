@@ -31,7 +31,6 @@ export class ProductResponseDetailsDto implements ProductResponseDetailsModel {
     example: {
       en: {
         name: "Leather Wallet",
-        subtitle: "Handmade",
         summary: "High-quality handmade leather wallet.",
         description: "Premium wallet",
         slug: "Buy the best handmade leather wallet online.",
@@ -58,10 +57,6 @@ export class ProductResponseDetailsDto implements ProductResponseDetailsModel {
   @ApiProperty()
   @IsBoolean()
   isDigital: boolean;
-
-  @ApiProperty()
-  @IsString()
-  defaultCurrency: string;
 
   @ApiProperty({ type: [ProductVariantDto] })
   @IsArray()
@@ -125,6 +120,9 @@ export class ProductResponseDetailsDto implements ProductResponseDetailsModel {
 
   @Exclude()
   _id: string;
+
+  @Exclude()
+  __v: string;
 
   constructor(partial: ProductResponseDetailsModel) {
     Object.assign(this, partial);

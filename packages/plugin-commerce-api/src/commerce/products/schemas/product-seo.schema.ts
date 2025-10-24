@@ -12,7 +12,7 @@ export class ProductSeo {
   metaKeywords: string[];
 
   @Prop({ type: String, required: false })
-  canonicalUrl?: string;
+  canonical?: string;
 }
 
 export const ProductSeoSchema = SchemaFactory.createForClass(ProductSeo);

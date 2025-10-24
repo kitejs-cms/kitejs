@@ -87,16 +87,18 @@ export class ProductsService {
     user: JwtPayloadModel
   ): Promise<ProductResponseDetailsModel> {
     try {
-      const { id, language, status, ...restData } = productData;
+      const { id, language, status, collections, ...restData } = productData;
       const productBaseData = {
         tags: restData.tags,
         updatedBy: user.sub,
-        parent,
+        publishAt: restData.publishAt,
+        expireAt: restData.expireAt,
         status,
       };
 
       const translationData = {
         title: restData.title,
+        summary: restData.summary,
         description: restData.description,
         slug: restData.slug,
         seo: restData.seo,
@@ -217,6 +219,7 @@ export class ProductsService {
       }
 
       if (!product) return null;
+      product.id = product._id.toString();
 
       const translations: Record<string, ProductTranslationModel> = {};
       const allSlugs = await this.slugService.findSlugsByEntity(product.id);
@@ -232,8 +235,8 @@ export class ProductsService {
         ...(product as unknown as ProductResponseDetailsModel),
         translations,
         collections: product.collections.map((c) => c.toString()),
-        createdBy: product.createdBy ? product.createdBy.toJSON() : null,
-        updatedBy: product.updatedBy ? product.updatedBy.toJSON() : null,
+        createdBy: `${product.createdBy.firstName} ${product.createdBy.lastName}`,
+        updatedBy: `${product.updatedBy.firstName} ${product.updatedBy.lastName}`,
       };
     } catch (error) {
       this.logger.error(error);
@@ -272,9 +275,8 @@ export class ProductsService {
         return acc;
       }, {});
 
-      const json = product.toJSON();
       const translationsWithSlug: Record<string, ProductTranslationModel> = {};
-      for (const [lang, trans] of Object.entries(json.translations)) {
+      for (const [lang, trans] of Object.entries(product.translations)) {
         translationsWithSlug[lang] = {
           ...(trans as unknown as ProductTranslationModel),
           slug: slugMap[lang] ?? "",
@@ -282,11 +284,11 @@ export class ProductsService {
       }
 
       return {
-        ...(json as unknown as ProductResponseDetailsModel),
+        ...(product as unknown as ProductResponseDetailsModel),
         translations: translationsWithSlug,
         collections: product.collections.map((c) => c.toString()),
-        createdBy: json.createdBy ? json.createdBy : null,
-        updatedBy: json.updatedBy ? json.updatedBy : null,
+        createdBy: product.createdBy ? product.createdBy.toString() : null,
+        updatedBy: product.updatedBy ? product.updatedBy.toString() : null,
       };
     } catch (error) {
       this.logger.error(error);
@@ -313,7 +315,7 @@ export class ProductsService {
     language = "en"
   ): Promise<ProductResponseDetailsModel[]> {
     try {
-      const query = await this.buildProductQuery(filters, language);
+      const query = this.buildProductQuery(filters, language);
 
       const products = await this.productModel
         .find(query)
@@ -345,6 +347,7 @@ export class ProductsService {
         }
 
         productsRes.push({
+          id: item._id.toString(),
           ...(item as unknown as ProductResponseDetailsModel),
           translations: translationsWithSlug,
           collections: item.collections.map((c) => c.toString()),

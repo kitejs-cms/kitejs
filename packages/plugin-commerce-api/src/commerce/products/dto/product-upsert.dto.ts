@@ -44,11 +44,6 @@ export class ProductUpsertDto implements ProductUpsertModel {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  subtitle?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
   summary?: string;
 
   @ApiPropertyOptional()
@@ -101,11 +96,6 @@ export class ProductUpsertDto implements ProductUpsertModel {
   @ValidateNested({ each: true })
   @Type(() => ProductVariantDto)
   variants?: ProductVariantDto[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  defaultCurrency?: string;
 
   constructor(partial: ProductUpsertModel) {
     Object.assign(this, partial);

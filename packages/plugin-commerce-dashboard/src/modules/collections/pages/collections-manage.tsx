@@ -222,7 +222,9 @@ export function CommerceCollectionsPage() {
                     {t("collections.buttons.copy")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => console.log(t("collections.buttons.download"))}
+                    onClick={() =>
+                      console.log(t("collections.buttons.download"))
+                    }
                   >
                     <Download className="mr-2 h-4 w-4" />
                     {t("collections.buttons.download")}
@@ -250,7 +252,7 @@ export function CommerceCollectionsPage() {
             isLoading={loading}
             columns={[
               {
-                key: "translations" as never,
+                key: "title" as never,
                 label: t("collections.fields.title"),
                 render: (_, row) => getCollectionTitle(row),
               },
@@ -288,7 +290,11 @@ export function CommerceCollectionsPage() {
                   return (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="shadow-none">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shadow-none"
+                        >
                           <MoreVertical />
                         </Button>
                       </DropdownMenuTrigger>
@@ -333,7 +339,10 @@ export function CommerceCollectionsPage() {
         </CardContent>
       </Card>
 
-      <AlertDialog open={collectionToDelete !== null} onOpenChange={(open) => !open && cancelDelete()}>
+      <AlertDialog
+        open={collectionToDelete !== null}
+        onOpenChange={(open) => !open && cancelDelete()}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("collections.delete.title")}</AlertDialogTitle>
@@ -342,7 +351,9 @@ export function CommerceCollectionsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("collections.delete.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t("collections.delete.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 void confirmDelete();

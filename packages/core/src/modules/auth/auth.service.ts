@@ -127,12 +127,14 @@ export class AuthService {
       }
     }
 
-    const accessToken = this.jwtService.sign(payload, { expiresIn });
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: expiresIn as `${number}${"s" | "m" | "h" | "d"}`,
+    });
 
     let refreshToken = null;
     if (refreshTokensEnabled) {
-      refreshToken = this.jwtService.sign(payload, {
-        expiresIn: refreshTokenExpiry,
+      refreshToken = await this.jwtService.signAsync(payload, {
+        expiresIn: refreshTokenExpiry as `${number}${"s" | "m" | "h" | "d"}`,
       });
     }
 
@@ -165,10 +167,7 @@ export class AuthService {
    * @throws {BadRequestException} If the old password is incorrect or update fails.
    * @returns A success message if the password is updated.
    */
-  async changePassword(
-    userId: string,
-    changePasswordDto: ChangePasswordDto
-  ) {
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     const { oldPassword, newPassword } = changePasswordDto;
 
     const user = await this.userService.findUser(userId);

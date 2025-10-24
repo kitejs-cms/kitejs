@@ -29,7 +29,6 @@ export interface ProductListItem {
   translations: Record<string, Record<string, unknown>>;
   updatedAt?: string;
   createdAt?: string;
-  defaultCurrency?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -391,7 +390,7 @@ export function useProductsManage() {
   );
 
   const handleCreate = useCallback(() => {
-    navigate("/commerce/products/new");
+    navigate("/commerce/products/create");
   }, [navigate]);
 
   const requestDelete = useCallback((product: ProductListItem) => {
@@ -416,8 +415,9 @@ export function useProductsManage() {
 
   const getProductTitle = useCallback(
     (product: ProductListItem) => {
+      const language = i18n.language.split("-")[0];
       const translation =
-        product.translations?.[i18n.language] ?? product.translations?.en;
+        product.translations?.[language] ?? product.translations[0];
       if (
         translation &&
         typeof translation.title === "string" &&

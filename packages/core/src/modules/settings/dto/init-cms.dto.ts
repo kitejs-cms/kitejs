@@ -50,7 +50,6 @@ export class InitCmsDto implements InitCmsModel {
   siteName: string;
 
   @ApiProperty({ example: "https://example.com", description: "Website URL" })
-  @IsUrl()
   siteUrl: string;
 
   @ApiProperty({

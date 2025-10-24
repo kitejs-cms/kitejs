@@ -114,6 +114,11 @@ export const HTMLEditor: React.FC<HTMLEditorProps> = ({
     };
   }, [editor]);
 
+  useEffect(() => {
+    if (editor) editor.commands.setContent(content || "<p></p>");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content]);
+
   if (!editor) return null;
 
   const containerClasses = cn("relative", className);

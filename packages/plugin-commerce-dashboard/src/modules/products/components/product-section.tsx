@@ -1,0 +1,152 @@
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  HTMLEditor,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Separator,
+  useApi,
+} from "@kitejs-cms/dashboard-core";
+import type {
+  CollectionResponseDetailsModel,
+  ProductTranslationModel,
+} from "@kitejs-cms/plugin-commerce-api";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+interface ProductSectionProps {
+  activeLang: string;
+  translations: Record<string, ProductTranslationModel>;
+  onChange: (
+    field: keyof ProductTranslationModel,
+    value: string | string[]
+  ) => void;
+}
+
+export function ProductSection({
+  activeLang,
+  translations,
+  onChange,
+}: ProductSectionProps) {
+  const { t, i18n } = useTranslation("pages");
+  const { data, fetchData } = useApi<CollectionResponseDetailsModel[]>();
+  const [collectionOptions, setCollectionOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+
+  useEffect(() => {
+    if (data) {
+      const local = i18n.language.split("-")[0];
+      setCollectionOptions(
+        data.map((collection) => ({
+          value: collection.id,
+          label: collection.translations?.[local]?.title || collection.id,
+        }))
+      );
+    }
+  }, [data, i18n.language]);
+
+  useEffect(() => {
+    fetchData("commerce/collections?page[number]=1&page[size]=100");
+  }, [fetchData]);
+
+  return (
+    <Card className="w-full shadow-neutral-50 gap-0 py-0">
+      <CardHeader className="bg-secondary text-primary rounded-t-xl py-6">
+        <CardTitle>{t("sections.product")}</CardTitle>
+      </CardHeader>
+      <Separator />
+      <CardContent className="p-4 md:p-6">
+        <div className="space-y-4">
+          <div>
+            <Label className="mb-2 block" htmlFor="product-title">
+              {t("products.fields.title")}
+            </Label>
+            <Input
+              id="product-title"
+              value={translations[activeLang]?.title || ""}
+              onChange={(event) => onChange("title", event.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label className="mb-2 block" htmlFor="product-slug">
+              {t("products.fields.slug")}
+            </Label>
+            <Input
+              id="product-slug"
+              value={translations[activeLang]?.slug || ""}
+              onChange={(event) => onChange("slug", event.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label className="mb-2 block" htmlFor="product-summary">
+              {t("products.fields.summary")}
+            </Label>
+            <Input
+              id="product-summary"
+              value={translations[activeLang]?.summary || ""}
+              onChange={(event) => onChange("summary", event.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label className="mb-2 block" htmlFor="product-description">
+              {t("products.fields.description")}
+            </Label>
+            <HTMLEditor
+              enabledFeatures={{
+                bold: true,
+                italic: true,
+                underline: true,
+                link: true,
+                align: true,
+              }}
+              mode="classic"
+              content={translations[activeLang]?.description || ""}
+              onChange={(e) => onChange("description", e)}
+            />
+          </div>
+        </div>
+        {/* Collection padre (sotto-collection) — opzionale */}
+        {collectionOptions.length > 0 && (
+          <div className="pt-4">
+            <Label className="mb-2 block">
+              {t("collections.fields.collections", {
+                defaultValue: "Collection principale",
+              })}
+            </Label>
+
+            <Select value={"__none__"}>
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={t("collections.placeholders.collections", {
+                    defaultValue: "Seleziona collections (opzionale)",
+                  })}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">
+                  {t("common.none", { defaultValue: "Nessuna" })}
+                </SelectItem>
+                {collectionOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

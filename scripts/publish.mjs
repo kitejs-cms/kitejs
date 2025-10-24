@@ -141,10 +141,8 @@ function patchPackageJsonDeps(pkgJson, wsVersions) {
     pkgJson.optionalDependencies,
     wsVersions
   );
-
-  // Do NOT touch dev/peer deps
-  next.devDependencies = pkgJson.devDependencies;
-  next.peerDependencies = pkgJson.peerDependencies;
+  next.peerDependencies = patchBlockDeps(pkgJson.peerDependencies, wsVersions);
+  next.devDependencies = patchBlockDeps(pkgJson.devDependencies, wsVersions);
 
   return next;
 }

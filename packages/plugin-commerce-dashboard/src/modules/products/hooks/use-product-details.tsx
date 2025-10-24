@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -28,7 +28,7 @@ export function useProductDetails() {
   const { cmsSettings } = useSettingsContext();
 
   const defaultLang = useMemo(
-    () => cmsSettings?.defaultLanguage || "en",
+    () => cmsSettings?.defaultLanguage,
     [cmsSettings]
   );
 
@@ -68,7 +68,6 @@ export function useProductDetails() {
         status: "Draft" as never,
         type: "",
         isDigital: false,
-        defaultCurrency: "",
         variants: [],
         options: [],
         gallery: [],
@@ -78,10 +77,14 @@ export function useProductDetails() {
         updatedBy: "",
         createdAt: undefined,
         updatedAt: undefined,
+        publishAt: undefined,
+        expireAt: undefined,
         translations: {
           [defaultLang]: {
             title: "",
             slug: "",
+            description: "",
+            summary: "",
           },
         },
       };
@@ -214,7 +217,11 @@ export function useProductDetails() {
             title: value as string,
             slug,
           };
-        } else if (field in updatedTranslations[activeLang]) {
+        } else if (
+          field === "slug" ||
+          field === "description" ||
+          field === "summary"
+        ) {
           updatedTranslations[activeLang] = {
             ...updatedTranslations[activeLang],
             [field]: value,
@@ -251,11 +258,11 @@ export function useProductDetails() {
     const translation = localData.translations[activeLang];
 
     if (!translation?.title?.trim()) {
-      errors.title = t("collections.errors.titleRequired", "Title is required");
+      errors.title = t("products.errors.titleRequired", "Title is required");
     }
 
     if (!translation?.slug?.trim()) {
-      errors.slug = t("collections.errors.slugRequired", "Slug is required");
+      errors.slug = t("products.errors.slugRequired", "Slug is required");
     }
 
     setFormErrors(errors);
@@ -287,23 +294,28 @@ export function useProductDetails() {
         status: localData.status,
         slug: localData.translations[activeLang].slug,
         title: localData.translations[activeLang].title,
+        summary: localData.translations[activeLang].summary,
+        description: localData.translations[activeLang].description,
+        isDigital: localData.isDigital,
         tags: localData.tags,
         seo: localData.translations[activeLang].seo,
-        collectionIds: localData.collections ?? null,
+        publishAt: localData.publishAt,
+        expireAt: localData.expireAt,
+        collections: localData.collections ?? null,
       };
 
-      const result = await fetchData("commerce/collections", "POST", body);
+      const result = await fetchData("commerce/products", "POST", body);
 
       if (result?.data) {
         toast.success(
           t(
-            `collections.details.notifications.${
+            `products.details.notifications.${
               id === "create" ? "created" : "saved"
             }`
           ),
           {
             id: toastId,
-            description: t("collections.details.notifications.title", {
+            description: t("products.details.notifications.title", {
               title: translation.title,
             }),
           }
@@ -314,7 +326,7 @@ export function useProductDetails() {
         setFormErrors({});
 
         if (id === "create") {
-          navigate(`/commerce/collections/${result.data.id}`);
+          navigate(`/commerce/products/${result.data.id}`);
         }
       } else {
         toast.error("Errore nel salvataggio", {

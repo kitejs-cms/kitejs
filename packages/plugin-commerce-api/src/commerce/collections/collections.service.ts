@@ -105,9 +105,12 @@ export class CollectionsService {
   ): Promise<CollectionResponseDetailsModel> {
     try {
       const { id, language, parent, status, ...restData } = collectionData;
+
       const collectionBaseData = {
         tags: restData.tags,
         updatedBy: user.sub,
+        publishAt: restData.publishAt,
+        expireAt: restData.expireAt,
         parent,
         status,
       };

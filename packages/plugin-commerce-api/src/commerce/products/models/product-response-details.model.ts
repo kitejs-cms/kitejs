@@ -9,14 +9,13 @@ export type ProductResponseDetailsModel = {
   type: string;
   translations: Record<string, ProductTranslationModel>;
   isDigital: boolean;
-  defaultCurrency: string;
   variants: ProductVariant[];
   collections: string[];
   options: ProductOptionModel[];
   gallery: string[];
   tags: string[];
-  publishAt?: Date;
-  expireAt?: Date;
+  publishAt?: string;
+  expireAt?: string;
   thumbnail?: string;
   createdBy: string | null;
   updatedBy: string | null;

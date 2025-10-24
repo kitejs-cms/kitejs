@@ -7,9 +7,6 @@ export class ProductTranslation {
   title!: string;
 
   @Prop({ type: String, required: false })
-  subtitle?: string;
-
-  @Prop({ type: String, required: false })
   summary?: string;
 
   @Prop({ type: String, required: false })

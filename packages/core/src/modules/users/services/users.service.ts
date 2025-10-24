@@ -45,6 +45,19 @@ export class UserService {
     try {
       const hashedPassword = await argon2.hash(userData.password);
 
+      if (!userData.roles || userData.roles.length === 0)
+        userData.roles = ["user"];
+
+      if (userData.roles && userData.roles.length > 0) {
+        const allRoles = await this.roleService.findRoles();
+        const validRoles = allRoles.filter(
+          (role) =>
+            userData.roles!.includes(role.id) ||
+            userData.roles!.includes(role.name)
+        );
+        userData.roles = validRoles.map((role) => role.id);
+      }
+
       const user = new this.userModel({
         ...userData,
         password: hashedPassword,
@@ -122,14 +135,15 @@ export class UserService {
       }
 
       const currentTotal = registrations.reduce((s, r) => s + r.count, 0);
-      const trend = previous === 0 ? 100 : ((currentTotal - previous) / previous) * 100;
+      const trend =
+        previous === 0 ? 100 : ((currentTotal - previous) / previous) * 100;
 
       return { total, registrations, trend };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new BadRequestException(
-        `Failed to compute user stats. ${errorMessage}`,
+        `Failed to compute user stats. ${errorMessage}`
       );
     }
   }
@@ -146,7 +160,7 @@ export class UserService {
     skip = 0,
     take = 10,
     sort?: Record<string, any>,
-    filters?: Record<string, any>,
+    filters?: Record<string, any>
   ): Promise<UserResponseModel[]> {
     try {
       const query = buildUserSearchQuery(filters);
@@ -290,9 +304,8 @@ export class UserService {
       USER_SETTINGS_KEY
     );
     const required = new Set(
-      settings?.value.consents
-        ?.filter((c) => c.required)
-        .map((c) => c.slug) ?? []
+      settings?.value.consents?.filter((c) => c.required).map((c) => c.slug) ??
+        []
     );
 
     if (consents.some((c) => required.has(c.consentType) && !c.given)) {

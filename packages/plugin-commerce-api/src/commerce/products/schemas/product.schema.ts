@@ -56,9 +56,6 @@ export class Product extends Document {
   @Prop({ type: [ProductOptionSchema], default: [] })
   options: ProductOptionModel[];
 
-  @Prop({ type: String, default: "EUR" })
-  defaultCurrency: string;
-
   @Prop({
     type: Map,
     of: ProductTranslationSchema,

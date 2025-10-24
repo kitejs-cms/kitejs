@@ -42,12 +42,6 @@ export const CommerceModule: DashboardModule = {
       requiredPermissions: ["plugin-commerce:collections.read"],
     },
     {
-      path: "commerce/collections/new",
-      element: <CommerceCollectionDetailsPage />,
-      label: "",
-      requiredPermissions: ["plugin-commerce:collections.create"],
-    },
-    {
       path: "commerce/collections/:id",
       element: <CommerceCollectionDetailsPage />,
       label: "",
@@ -58,12 +52,6 @@ export const CommerceModule: DashboardModule = {
       element: <CommerceProductsPage />,
       label: "commerce:menu.products",
       requiredPermissions: ["plugin-commerce:products.read"],
-    },
-    {
-      path: "commerce/products/new",
-      element: <CommerceProductDetailsPage />,
-      label: "",
-      requiredPermissions: ["plugin-commerce:products.create"],
     },
     {
       path: "commerce/products/:id",

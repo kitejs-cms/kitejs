@@ -33,6 +33,7 @@ import { CheckCircle } from "lucide-react";
 import { useApi } from "../../../hooks/use-api";
 import { Textarea } from "../../../components/ui/textarea";
 
+// 🌍 Supported languages
 const languages = [
   { code: "en", name: "English" },
   { code: "it", name: "Italiano" },
@@ -41,54 +42,53 @@ const languages = [
   { code: "de", name: "Deutsch" },
 ];
 
+// ✅ Schema con inferenza e regex robusta
+const strongPasswordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{6,}$/;
+
+const formSchema = z
+  .object({
+    adminEmail: z.string().email({ message: "Invalid email address" }),
+    adminPassword: z
+      .string()
+      .min(6, { message: "At least 6 characters" })
+      .regex(strongPasswordRegex, {
+        message:
+          "Password must contain upper, lower, number and special character",
+      }),
+    confirmPassword: z.string().min(6, { message: "At least 6 characters" }),
+    adminFirstName: z.string().min(2, { message: "Too short" }),
+    adminLastName: z.string().min(2, { message: "Too short" }),
+    siteName: z.string().min(3, { message: "Too short" }),
+    siteUrl: z.string().url({ message: "Invalid URL" }),
+    siteDescription: z.string().optional(),
+    defaultLanguage: z.string().min(2, { message: "Required" }),
+  })
+  .refine((data) => data.adminPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type InitCmsFormValues = z.infer<typeof formSchema>;
+
 export function InitCmsPage() {
   const { t, i18n } = useTranslation("init-cms");
   const { cmsSettings } = useSettingsContext();
+  const navigate = useNavigate();
+  const { fetchData } = useApi();
+
   const [step, setStep] = useState(1);
   const [isConfigured, setIsConfigured] = useState(false);
   const [genericError, setGenericError] = useState<string | null>(null);
 
-  const navigate = useNavigate();
-  const { fetchData } = useApi();
-
-  const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])/;
-
+  // ✅ Se CMS già configurato → redirect alla home
   useEffect(() => {
-    if (cmsSettings) navigate("/");
+    if (cmsSettings?.siteName) navigate("/");
   }, [cmsSettings, navigate]);
 
-  const formSchema = z
-    .object({
-      adminEmail: z.string().email({ message: t("validation.email") }),
-      adminPassword: z
-        .string()
-        .min(6, { message: t("validation.passwordMin") })
-        .regex(passwordRegex, { message: t("validation.passwordStrength") }),
-      confirmPassword: z
-        .string()
-        .min(6, { message: t("validation.passwordMin") }),
-      adminFirstName: z.string().min(2, {
-        message: t("validation.minCharacters", { min: 2 }),
-      }),
-      adminLastName: z.string().min(2, {
-        message: t("validation.minCharacters", { min: 2 }),
-      }),
-      siteName: z.string().min(3, {
-        message: t("validation.minCharacters", { min: 3 }),
-      }),
-      siteUrl: z.string().url({ message: t("validation.url") }),
-      siteDescription: z.string().optional(),
-      defaultLanguage: z.string().min(2, {
-        message: t("validation.required"),
-      }),
-    })
-    .refine((data) => data.adminPassword === data.confirmPassword, {
-      message: t("validation.passwordMismatch"),
-      path: ["confirmPassword"],
-    });
-
-  const form = useForm({
+  const form = useForm<InitCmsFormValues>({
     resolver: zodResolver(formSchema),
+    mode: "onBlur",
     defaultValues: {
       adminEmail: "",
       adminPassword: "",
@@ -102,35 +102,49 @@ export function InitCmsPage() {
     },
   });
 
+  // ✅ Imposta lingua predefinita dal browser / i18n
   useEffect(() => {
-    form.setValue("defaultLanguage", i18n.language.split("-")[0]);
-  }, [form, i18n.language]);
+    form.setValue("defaultLanguage", i18n.language.split("-")[0] || "en");
+  }, [i18n.language, form]);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  // ✅ Submit finale (solo step 2)
+  const onSubmit = async (values: InitCmsFormValues) => {
     try {
-      setGenericError(null); // Resetta l'errore generico
-      delete values.confirmPassword; // Rimuovi il campo di conferma password
+      setGenericError(null);
+      const { ...payload } = values;
 
       const { data, error } = await fetchData(
         "settings/init-cms",
         "POST",
-        values
+        payload
       );
 
       if (error) {
-        // Mostra un errore generico all'utente
-        setGenericError(t("errors.generic"));
-        // Logga l'errore in console per debug
         console.error("Errore durante la configurazione del CMS:", error);
+        setGenericError(t("errors.generic"));
       } else if (data) {
-        setIsConfigured(true); // Configurazione completata con successo
+        setIsConfigured(true);
       }
     } catch (err) {
-      // Gestisci errori inaspettati
-      setGenericError(t("errors.generic"));
       console.error("Errore inaspettato:", err);
+      setGenericError(t("errors.generic"));
     }
   };
+
+  // ✅ Validazione parziale step 1 → avanti
+  const handleNext = async () => {
+    const isValid = await form.trigger([
+      "adminFirstName",
+      "adminLastName",
+      "adminEmail",
+      "adminPassword",
+      "confirmPassword",
+    ]);
+    if (isValid) setStep(2);
+  };
+
+  // ✅ Torna indietro
+  const handleBack = () => setStep(1);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-muted">
@@ -155,41 +169,35 @@ export function InitCmsPage() {
 
         <CardContent>
           {isConfigured ? (
-            <>
-              <CardHeader className="text-center p-6">
-                {/* Icona e titolo */}
-                <div className="flex items-center justify-center space-x-2">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                  <CardTitle className="text-xl text-green-600">
-                    {t("success.title")}
-                  </CardTitle>
-                </div>
-                {/* Messaggio di successo */}
-                <p className="text-muted-foreground text-sm mt-2">
-                  {t("success.message")}
-                </p>
-              </CardHeader>
-              {/* Bottone per andare al login */}
-              <div className="mt-4">
-                <Button className="w-full" onClick={() => navigate("/login")}>
-                  {t("buttons.goToLogin")}
-                </Button>
+            <div className="text-center space-y-4 py-6">
+              <div className="flex justify-center items-center space-x-2">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+                <h3 className="text-green-600 font-semibold">
+                  {t("success.title")}
+                </h3>
               </div>
-            </>
+              <p className="text-sm text-muted-foreground">
+                {t("success.message")}
+              </p>
+              <Button className="w-full" onClick={() => navigate("/login")}>
+                {t("buttons.goToLogin")}
+              </Button>
+            </div>
           ) : (
             <>
-              {/* Mostra l'errore generico */}
               {genericError && (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
                   {genericError}
                 </div>
               )}
+
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-6"
                 >
-                  {step === 1 ? (
+                  {/* STEP 1: Admin setup */}
+                  {step === 1 && (
                     <>
                       <FormField
                         control={form.control}
@@ -273,27 +281,19 @@ export function InitCmsPage() {
                           </FormItem>
                         )}
                       />
+
                       <Button
                         type="button"
                         className="w-full"
-                        onClick={async () => {
-                          const isStepValid = await form.trigger([
-                            "adminFirstName",
-                            "adminLastName",
-                            "adminEmail",
-                            "adminPassword",
-                            "confirmPassword",
-                          ]);
-
-                          if (isStepValid) {
-                            setStep(2);
-                          }
-                        }}
+                        onClick={handleNext}
                       >
                         {t("buttons.next")}
                       </Button>
                     </>
-                  ) : (
+                  )}
+
+                  {/* STEP 2: Site setup */}
+                  {step === 2 && (
                     <>
                       <FormField
                         control={form.control}
@@ -351,8 +351,8 @@ export function InitCmsPage() {
                             <FormLabel>{t("fields.defaultLanguage")}</FormLabel>
                             <FormControl>
                               <Select
+                                value={field.value}
                                 onValueChange={field.onChange}
-                                defaultValue={field.value}
                               >
                                 <SelectTrigger>
                                   <SelectValue
@@ -362,8 +362,11 @@ export function InitCmsPage() {
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {languages.map((language, key) => (
-                                    <SelectItem key={key} value={language.code}>
+                                  {languages.map((language) => (
+                                    <SelectItem
+                                      key={language.code}
+                                      value={language.code}
+                                    >
                                       {language.name}
                                     </SelectItem>
                                   ))}
@@ -378,7 +381,7 @@ export function InitCmsPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => setStep(1)}
+                          onClick={handleBack}
                         >
                           {t("buttons.back")}
                         </Button>

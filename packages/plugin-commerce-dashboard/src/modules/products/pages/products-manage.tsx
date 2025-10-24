@@ -34,7 +34,10 @@ import {
   Trash,
   Trash2,
 } from "lucide-react";
-import { type ProductListItem, useProductsManage } from "../hooks/use-products-manage";
+import {
+  type ProductListItem,
+  useProductsManage,
+} from "../hooks/use-products-manage";
 
 const renderTags = (tags: string[] | undefined) => {
   if (!tags || tags.length === 0) {
@@ -250,7 +253,7 @@ export function CommerceProductsPage() {
             isLoading={loading}
             columns={[
               {
-                key: "translations" as never,
+                key: "title" as never,
                 label: t("products.fields.title"),
                 render: (_, row) => getProductTitle(row),
               },

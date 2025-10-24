@@ -112,8 +112,7 @@ export class SettingsService {
 
       const data = {
         ...settingData,
-        type:
-          settingData.type ?? this.getSettingType(settingData.namespace),
+        type: settingData.type ?? this.getSettingType(settingData.namespace),
       };
 
       const createdSetting = new this.settingModel(data);
@@ -222,6 +221,7 @@ export class SettingsService {
       password: data.adminPassword,
       firstName: data.adminFirstName,
       lastName: data.adminLastName,
+      roles: ["admin"],
     });
 
     if (!adminUser) {
