@@ -274,20 +274,26 @@ export function useProductDetails() {
 
   const handleSave = useCallback(async () => {
     if (!localData || !validateForm()) {
-      toast.error("Form non valido", {
-        description: "Controlla i campi obbligatori",
+      toast.error(t("products.details.notifications.invalid.title"), {
+        description: t("products.details.notifications.invalid.description"),
       });
       return;
     }
 
-    const toastId = toast.loading("Salvataggio in corso...");
+    const toastId = toast.loading(t("products.details.notifications.saving"));
 
     try {
       const translation = localData.translations[activeLang];
       if (!translation) {
-        toast.error("Traduzione mancante", {
-          description: `Lingua ${activeLang} non configurata`,
-        });
+        toast.error(
+          t("products.details.notifications.missingTranslation.title"),
+          {
+            description: t(
+              "products.details.notifications.missingTranslation.description",
+              { language: activeLang }
+            ),
+          }
+        );
         return;
       }
 
@@ -332,14 +338,14 @@ export function useProductDetails() {
           navigate(`/commerce/products/${result.data.id}`);
         }
       } else {
-        toast.error("Errore nel salvataggio", {
+        toast.error(t("products.details.notifications.saveError.title"), {
           id: toastId,
-          description: "Nessun dato ricevuto dal server",
+          description: t("products.details.notifications.saveError.noData"),
         });
       }
     } catch (error) {
       console.error("Save failed:", error);
-      toast.error("Errore nel salvataggio", {
+      toast.error(t("products.details.notifications.saveError.title"), {
         id: toastId,
         description: t(
           "products.errors.saveFailed",

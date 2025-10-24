@@ -42,6 +42,19 @@
   "notifications": {
     "saving": "Salvataggio prodotto...",
     "saved": "Prodotto salvato con successo.",
-    "created": "Prodotto creato con successo."
+    "created": "Prodotto creato con successo.",
+    "title": "Prodotto \"{{title}}\"",
+    "invalid": {
+      "title": "Dati prodotto non validi",
+      "description": "Controlla i campi obbligatori e riprova."
+    },
+    "missingTranslation": {
+      "title": "Traduzione mancante",
+      "description": "La lingua {{language}} non è configurata per questo prodotto."
+    },
+    "saveError": {
+      "title": "Impossibile salvare il prodotto",
+      "noData": "Nessun dato ricevuto dal server."
+    }
   }
 }

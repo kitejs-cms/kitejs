@@ -11,6 +11,9 @@ import details from "./details.json";
 import create from "./create.json";
 import deleteModal from "./delete.json";
 import errors from "./errors.json";
+import sections from "./sections.json";
+import seo from "./seo.json";
+import unsavedChanges from "./unsaved-changes.json";
 
 export default {
   ...common,
@@ -26,4 +29,7 @@ export default {
   create,
   delete: deleteModal,
   errors,
+  sections,
+  seo,
+  unsavedChanges,
 };

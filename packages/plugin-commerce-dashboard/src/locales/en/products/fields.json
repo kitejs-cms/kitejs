@@ -1,10 +1,17 @@
 {
   "title": "Title",
+  "slug": "Slug",
+  "summary": "Summary",
+  "description": "Description",
   "status": "Status",
   "languages": "Languages",
   "tags": "Tags",
+  "collections": "Collections",
   "currency": "Currency",
   "publishAt": "Publish at",
+  "expireAt": "Unpublish at",
+  "createdBy": "Created by",
+  "updatedBy": "Last updated by",
   "updatedAt": "Updated at",
   "actions": "Actions"
 }
