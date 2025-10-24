@@ -185,14 +185,17 @@ export function useProductDetails() {
   const onSettingsChange = useCallback(
     (
       field: "status" | "publishAt" | "expireAt" | "tags" | "collections",
-      value: string | string[]
+      value: string | string[] | undefined
     ) => {
       setLocalData((prev) => {
         if (!prev) return prev;
-        if (field === "tags") {
-          return { ...prev, tags: value as string[] };
+        if (field === "tags" || field === "collections") {
+          return {
+            ...prev,
+            [field]: (value as string[] | undefined) ?? [],
+          };
         }
-        return { ...prev, [field]: value as string };
+        return { ...prev, [field]: value as string | undefined };
       });
       setHasChanges(true);
     },

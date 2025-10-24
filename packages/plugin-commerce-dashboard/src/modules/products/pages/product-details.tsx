@@ -57,7 +57,11 @@ export function CommerceProductDetailsPage() {
             <ProductSection
               activeLang={activeLang}
               translations={data.translations}
+              collections={data.collections}
               onChange={onChange}
+              onCollectionsChange={(value) =>
+                onSettingsChange("collections", value)
+              }
             />
 
             {/* Varaint Product */}
