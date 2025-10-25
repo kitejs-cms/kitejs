@@ -404,5 +404,6 @@ export function useProductDetails() {
     closeUnsavedAlert,
     showUnsavedAlert,
     formErrors,
+    t,
   };
 }

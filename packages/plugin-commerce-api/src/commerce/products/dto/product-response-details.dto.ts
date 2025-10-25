@@ -87,13 +87,13 @@ export class ProductResponseDetailsDto implements ProductResponseDetailsModel {
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  publishAt?: Date;
+  publishAt?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  expireAt?: Date;
+  expireAt?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()

@@ -119,9 +119,7 @@ export function ProductSection({
         {/* Collection padre (sotto-collection) — opzionale */}
         <div className="pt-4">
           <Label className="mb-2 block">
-            {t("products.fields.collections", {
-              defaultValue: "Primary collection",
-            })}
+            {t("products.fields.collections")}
           </Label>
 
           <MultiSelect
