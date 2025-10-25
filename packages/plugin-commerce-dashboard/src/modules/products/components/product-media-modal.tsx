@@ -228,7 +228,7 @@ export function ProductMediaModal({
   );
 
   const handleDrop = useCallback(
-    async (event: React.DragEvent<HTMLDivElement>) => {
+    async (event: React.DragEvent<HTMLElement>) => {
       event.preventDefault();
       event.stopPropagation();
       setDragOver(false);
@@ -240,16 +240,19 @@ export function ProductMediaModal({
     [handleFiles, hasPendingUploads]
   );
 
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLElement>) => {
     event.preventDefault();
     event.stopPropagation();
     if (hasPendingUploads) return;
     setDragOver(true);
   }, [hasPendingUploads]);
 
-  const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = useCallback((event: React.DragEvent<HTMLElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    if (event.currentTarget.contains(event.relatedTarget as Node)) {
+      return;
+    }
     setDragOver(false);
   }, []);
 
@@ -296,7 +299,15 @@ export function ProductMediaModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent position="full" className="flex h-full flex-col overflow-hidden bg-background p-0">
+      <DialogContent
+        position="full"
+        className={`relative flex h-full flex-col overflow-hidden bg-background p-0 transition-colors ${
+          dragOver ? "ring-2 ring-primary" : ""
+        }`}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+      >
         <div className="flex items-start justify-between border-b px-8 py-6">
           <div className="space-y-1">
             <DialogTitle className="text-2xl font-semibold">
@@ -331,26 +342,20 @@ export function ProductMediaModal({
                           type="button"
                           onClick={() => item.url && setSelectedDefault(item.url)}
                           disabled={!item.url || isProcessing}
-                          className="relative h-48 w-full overflow-hidden bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-muted p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {item.type === "image" ? (
-                            <img
-                              src={item.previewUrl}
-                              alt={item.name}
-                              className="h-full w-full object-cover"
-                            />
+                            <img src={item.previewUrl} alt={item.name} className="max-h-full max-w-full object-contain" />
                           ) : item.type === "video" ? (
-                            <video
-                              src={item.previewUrl}
-                              className="h-full w-full object-cover"
-                              muted
-                              loop
-                              playsInline
-                            />
+                            <div className="flex h-full w-full items-center justify-center">
+                              <Video className="h-16 w-16 text-muted-foreground" />
+                            </div>
                           ) : (
-                            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
-                              <File className="h-8 w-8" />
-                              <span className="text-xs font-medium">{item.name}</span>
+                            <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-muted-foreground">
+                              <File className="h-16 w-16" />
+                              <span className="max-w-[80%] truncate text-xs font-medium" title={item.name}>
+                                {item.name}
+                              </span>
                             </div>
                           )}
 
@@ -436,9 +441,6 @@ export function ProductMediaModal({
 
           <div className="w-full max-w-sm shrink-0 space-y-4">
             <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
               className={`flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed p-6 text-center transition-colors ${
                 dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/40 bg-muted/50"
               } ${hasPendingUploads ? "opacity-70" : "cursor-pointer"}`}
@@ -468,17 +470,6 @@ export function ProductMediaModal({
                 multiple
                 onChange={handleFileInput}
               />
-            </div>
-
-            <div className="rounded-lg border bg-muted/40 p-4 text-left text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">
-                {t("products.details.media.helperTitle")}
-              </p>
-              <ul className="mt-2 list-disc space-y-1 pl-5">
-                <li>{t("products.details.media.helperDefault")}</li>
-                <li>{t("products.details.media.helperTypes")}</li>
-                <li>{t("products.details.media.helperOrder")}</li>
-              </ul>
             </div>
 
             {hasPendingUploads && (
