@@ -1,10 +1,17 @@
 {
   "title": "Titolo",
+  "slug": "Slug",
+  "summary": "Sommario",
+  "description": "Descrizione",
   "status": "Stato",
   "languages": "Lingue",
   "tags": "Tag",
+  "collections": "Collezioni",
   "currency": "Valuta",
   "publishAt": "Pubblica il",
+  "expireAt": "Depubblica il",
+  "createdBy": "Creato da",
+  "updatedBy": "Aggiornato da",
   "updatedAt": "Aggiornato il",
   "actions": "Azioni"
 }

@@ -1,0 +1,8 @@
+{
+  "title": "Unsaved product changes",
+  "message": "You have unsaved product changes. Continue without saving?",
+  "warning": "You have unsaved product changes—are you sure you want to leave?",
+  "actions": {
+    "discard": "Discard changes"
+  }
+}

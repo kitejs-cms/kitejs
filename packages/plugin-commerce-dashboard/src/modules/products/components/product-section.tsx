@@ -6,11 +6,7 @@ import {
   HTMLEditor,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  MultiSelect,
   Separator,
   useApi,
 } from "@kitejs-cms/dashboard-core";
@@ -24,18 +20,22 @@ import { useTranslation } from "react-i18next";
 interface ProductSectionProps {
   activeLang: string;
   translations: Record<string, ProductTranslationModel>;
+  collections?: string[];
   onChange: (
     field: keyof ProductTranslationModel,
     value: string | string[]
   ) => void;
+  onCollectionsChange: (value: string[]) => void;
 }
 
 export function ProductSection({
   activeLang,
   translations,
+  collections,
   onChange,
+  onCollectionsChange,
 }: ProductSectionProps) {
-  const { t, i18n } = useTranslation("pages");
+  const { t, i18n } = useTranslation("commerce");
   const { data, fetchData } = useApi<CollectionResponseDetailsModel[]>();
   const [collectionOptions, setCollectionOptions] = useState<
     { value: string; label: string }[]
@@ -60,7 +60,7 @@ export function ProductSection({
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
       <CardHeader className="bg-secondary text-primary rounded-t-xl py-6">
-        <CardTitle>{t("sections.product")}</CardTitle>
+        <CardTitle>{t("products.sections.details")}</CardTitle>
       </CardHeader>
       <Separator />
       <CardContent className="p-4 md:p-6">
@@ -117,35 +117,17 @@ export function ProductSection({
           </div>
         </div>
         {/* Collection padre (sotto-collection) — opzionale */}
-        {collectionOptions.length > 0 && (
-          <div className="pt-4">
-            <Label className="mb-2 block">
-              {t("collections.fields.collections", {
-                defaultValue: "Collection principale",
-              })}
-            </Label>
+        <div className="pt-4">
+          <Label className="mb-2 block">
+            {t("products.fields.collections")}
+          </Label>
 
-            <Select value={"__none__"}>
-              <SelectTrigger className="w-full">
-                <SelectValue
-                  placeholder={t("collections.placeholders.collections", {
-                    defaultValue: "Seleziona collections (opzionale)",
-                  })}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">
-                  {t("common.none", { defaultValue: "Nessuna" })}
-                </SelectItem>
-                {collectionOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+          <MultiSelect
+            initialTags={collections ?? []}
+            options={collectionOptions}
+            onChange={onCollectionsChange}
+          />
+        </div>
       </CardContent>
     </Card>
   );

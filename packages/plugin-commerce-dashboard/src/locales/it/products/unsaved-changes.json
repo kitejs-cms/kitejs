@@ -1,0 +1,8 @@
+{
+  "title": "Modifiche al prodotto non salvate",
+  "message": "Ci sono modifiche al prodotto non salvate. Continuare senza salvare?",
+  "warning": "Ci sono modifiche al prodotto non salvate: sei sicuro di voler uscire?",
+  "actions": {
+    "discard": "Annulla modifiche"
+  }
+}

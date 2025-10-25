@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useProductDetails } from "../hooks/use-product-details";
 import {
   Button,
@@ -13,7 +12,6 @@ import { SettingsSection } from "../components/settings-section";
 import { ProductSection } from "../components/product-section";
 
 export function CommerceProductDetailsPage() {
-  const { t } = useTranslation("commerce");
   const {
     data,
     loading,
@@ -29,6 +27,7 @@ export function CommerceProductDetailsPage() {
     onSeoChange,
     onSettingsChange,
     onChange,
+    t,
   } = useProductDetails();
   const [jsonView, setJsonView] = useState(false);
 
@@ -57,7 +56,11 @@ export function CommerceProductDetailsPage() {
             <ProductSection
               activeLang={activeLang}
               translations={data.translations}
+              collections={data.collections}
               onChange={onChange}
+              onCollectionsChange={(value) =>
+                onSettingsChange("collections", value)
+              }
             />
 
             {/* Varaint Product */}

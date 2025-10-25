@@ -42,6 +42,19 @@
   "notifications": {
     "saving": "Saving product...",
     "saved": "Product saved successfully.",
-    "created": "Product created successfully."
+    "created": "Product created successfully.",
+    "title": "Product \"{{title}}\"",
+    "invalid": {
+      "title": "Invalid product data",
+      "description": "Check the required fields and try again."
+    },
+    "missingTranslation": {
+      "title": "Translation missing",
+      "description": "Language {{language}} isn't configured for this product."
+    },
+    "saveError": {
+      "title": "Unable to save product",
+      "noData": "No data returned from the server."
+    }
   }
 }
