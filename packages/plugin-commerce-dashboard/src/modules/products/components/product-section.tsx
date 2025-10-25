@@ -73,7 +73,8 @@ export function ProductSection({
   const galleryCount = useMemo(() => gallery?.length ?? 0, [gallery]);
 
   const handleAutoPersistMedia = useCallback(
-    (payload: { gallery: string[]; thumbnail: string }) => onMediaChange(payload),
+    (payload: { gallery: string[]; thumbnail: string }) =>
+      onMediaChange(payload),
     [onMediaChange]
   );
 
@@ -171,34 +172,25 @@ export function ProductSection({
         </div>
 
         <div className="pt-4">
-          <Label className="mb-2 block">
-            {t("products.fields.thumbnail")}
-          </Label>
+          <Label className="mb-2 block">{t("products.fields.thumbnail")}</Label>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-            <div className="flex h-48 w-full max-w-xs items-center justify-center overflow-hidden rounded-md border bg-muted sm:w-48">
+            <div className="flex w-full items-center justify-center overflow-hidden rounded-md border bg-muted sm:max-w-sm sm:min-w-60 sm:min-h-[200px]">
               {thumbnail ? (
                 <img
                   src={thumbnail}
                   alt={t("products.details.media.previewAlt")}
-                  className="h-full w-full object-cover"
+                  className="max-h-80 w-auto object-contain"
                 />
               ) : (
-                <span className="text-sm text-muted-foreground">
+                <span className="py-12 text-sm text-muted-foreground">
                   {t("products.details.media.empty")}
                 </span>
               )}
             </div>
 
             <div className="flex flex-1 flex-col gap-2">
-              <Button
-                variant="outline"
-                className="w-fit"
-                onClick={() => setIsMediaModalOpen(true)}
-              >
-                {t("products.details.media.button")}
-              </Button>
-              <p className="text-sm text-muted-foreground max-w-sm">
+              <p className="max-w-sm text-sm text-muted-foreground">
                 {t("products.details.media.description")}
               </p>
               {galleryCount > 0 && (
@@ -209,6 +201,12 @@ export function ProductSection({
               {thumbnailError && (
                 <p className="text-sm text-destructive">{thumbnailError}</p>
               )}
+              <Button
+                className="w-fit"
+                onClick={() => setIsMediaModalOpen(true)}
+              >
+                {t("products.details.media.button")}
+              </Button>
             </div>
           </div>
         </div>

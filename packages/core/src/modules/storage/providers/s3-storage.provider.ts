@@ -62,32 +62,50 @@ export class S3StorageProvider implements IStorageProvider {
     dir?: string
   ): Promise<Omit<UploadResultModel, "assetId">> {
     const s3 = await this.getS3Client();
+
+    // Recupera configurazioni S3/MinIO
+    const settings = await this.settingsService.findOne<StorageSettingsModel>(
+      "core",
+      STORAGE_SETTINGS_KEY
+    );
+    const s3Settings = settings.value.s3;
+
+    // Genera percorso chiave univoco
     const keyPrefix = dir ? `${dir.replace(/\/$/, "")}/` : "";
     const key = `${keyPrefix}${file.fieldname}-${uuidv4()}${extname(
       file.originalname
     )}`;
 
+    // 🔼 Upload del file con ACL pubblica
     const putCommand = new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       Body: file.buffer,
       ContentType: file.mimetype,
+      ACL: "public-read",
     });
+
     await s3.send(putCommand);
 
-    const getCommand = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
+    // 🌍 Genera URL pubblico diretto
+    const endpoint = s3Settings.endpoint?.replace(/\/$/, "");
+    const forcePathStyle = s3Settings.forcePathStyle ?? false;
 
-    const signedUrl = await getSignedUrl(s3, getCommand, {
-      expiresIn: 3600,
-    });
+    let publicUrl: string;
+
+    if (endpoint) {
+      publicUrl = forcePathStyle
+        ? `${endpoint}/${this.bucket}/${key}`
+        : `${this.bucket}.${endpoint}/${key}`;
+    } else {
+      // AWS standard
+      publicUrl = `https://${this.bucket}.s3.${s3Settings.region}.amazonaws.com/${key}`;
+    }
 
     return {
       filename: key,
       path: `s3://${this.bucket}/${key}`,
-      url: signedUrl,
+      url: publicUrl,
     };
   }
 
