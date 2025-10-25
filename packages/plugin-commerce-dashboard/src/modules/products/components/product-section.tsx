@@ -175,12 +175,12 @@ export function ProductSection({
           <Label className="mb-2 block">{t("products.fields.thumbnail")}</Label>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-            <div className="flex w-full items-center justify-center overflow-hidden rounded-md border bg-muted sm:max-w-sm sm:min-w-60 sm:min-h-[200px]">
+            <div className="flex aspect-square w-full max-w-xs items-center justify-center overflow-hidden rounded-md border bg-muted sm:w-48">
               {thumbnail ? (
                 <img
                   src={thumbnail}
                   alt={t("products.details.media.previewAlt")}
-                  className="max-h-80 w-auto object-contain"
+                  className="h-full w-full object-contain"
                 />
               ) : (
                 <span className="py-12 text-sm text-muted-foreground">
