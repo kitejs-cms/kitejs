@@ -37,6 +37,11 @@
     "helperTypes": "Sono supportate immagini e video. Usa risorse ad alta risoluzione per una qualità migliore.",
     "helperOrder": "I caricamenti vengono aggiunti alla galleria nell'ordine mostrato qui.",
     "pendingUploads": "Attendi il completamento di tutti gli upload prima di salvare.",
+    "syncing": "Salvataggio delle modifiche ai media...",
+    "syncError": {
+      "title": "Impossibile aggiornare i media",
+      "description": "Non è stato possibile associare gli ultimi file. Prova a salvare manualmente il prodotto."
+    },
     "errorReminder": "Rimuovi i media con upload non riuscito prima di salvare."
   },
   "settings": {

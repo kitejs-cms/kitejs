@@ -24,13 +24,15 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useProductMediaSync } from "../hooks/use-product-media-sync";
 
 interface ProductMediaModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   gallery: string[];
   thumbnail?: string;
-  onConfirm: (payload: { gallery: string[]; thumbnail: string }) => void;
+  onConfirm: (payload: { gallery: string[]; thumbnail: string }) => Promise<void> | void;
+  onPersist: (payload: { gallery: string[]; thumbnail: string }) => Promise<void> | void;
 }
 
 type MediaStatus = "idle" | "uploading" | "error";
@@ -98,6 +100,7 @@ export function ProductMediaModal({
   const [dragOver, setDragOver] = useState(false);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [selectedDefault, setSelectedDefault] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const hasReadyItems = useMemo(() => mediaItems.some((item) => Boolean(item.url)), [mediaItems]);
   const hasPendingUploads = useMemo(
@@ -105,6 +108,26 @@ export function ProductMediaModal({
     [mediaItems]
   );
   const hasErrors = useMemo(() => mediaItems.some((item) => item.status === "error"), [mediaItems]);
+
+  const readyGallery = useMemo(
+    () => mediaItems.filter((item) => item.url).map((item) => item.url as string),
+    [mediaItems]
+  );
+
+  const uniqueGallery = useMemo(
+    () => readyGallery.filter((url, index) => readyGallery.indexOf(url) === index),
+    [readyGallery]
+  );
+
+  const isPersisting = useProductMediaSync({
+    open,
+    hasPendingUploads,
+    gallery: uniqueGallery,
+    thumbnail: selectedDefault,
+    onPersist,
+  });
+
+  const isBusy = hasPendingUploads || isPersisting;
 
   useEffect(() => {
     if (!open) {
@@ -232,20 +255,20 @@ export function ProductMediaModal({
       event.preventDefault();
       event.stopPropagation();
       setDragOver(false);
-      if (hasPendingUploads) return;
+      if (isBusy) return;
       if (event.dataTransfer.files?.length) {
         await handleFiles(event.dataTransfer.files);
       }
     },
-    [handleFiles, hasPendingUploads]
+    [handleFiles, isBusy]
   );
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    if (hasPendingUploads) return;
+    if (isBusy) return;
     setDragOver(true);
-  }, [hasPendingUploads]);
+  }, [isBusy]);
 
   const handleDragLeave = useCallback((event: React.DragEvent<HTMLElement>) => {
     event.preventDefault();
@@ -258,11 +281,11 @@ export function ProductMediaModal({
 
   const handleFileInput = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (!event.target.files?.length) return;
+      if (isBusy || !event.target.files?.length) return;
       await handleFiles(event.target.files);
       event.target.value = "";
     },
-    [handleFiles]
+    [handleFiles, isBusy]
   );
 
   const handleRemove = useCallback((id: string) => {
@@ -280,21 +303,18 @@ export function ProductMediaModal({
     });
   }, [selectedDefault]);
 
-  const confirmDisabled = !selectedDefault || !hasReadyItems || hasPendingUploads;
+  const confirmDisabled = isBusy || !selectedDefault || !hasReadyItems || isConfirming;
 
-  const readyGallery = useMemo(
-    () => mediaItems.filter((item) => item.url).map((item) => item.url as string),
-    [mediaItems]
-  );
-
-  const uniqueGallery = useMemo(
-    () => readyGallery.filter((url, index) => readyGallery.indexOf(url) === index),
-    [readyGallery]
-  );
-
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     if (confirmDisabled || !selectedDefault) return;
-    onConfirm({ gallery: uniqueGallery, thumbnail: selectedDefault });
+    setIsConfirming(true);
+    try {
+      await onConfirm({ gallery: uniqueGallery, thumbnail: selectedDefault });
+    } catch (error) {
+      console.error("Failed to confirm media selection", error);
+    } finally {
+      setIsConfirming(false);
+    }
   }, [confirmDisabled, onConfirm, selectedDefault, uniqueGallery]);
 
   return (
@@ -341,7 +361,7 @@ export function ProductMediaModal({
                         <button
                           type="button"
                           onClick={() => item.url && setSelectedDefault(item.url)}
-                          disabled={!item.url || isProcessing}
+                          disabled={!item.url || isProcessing || isBusy || isConfirming}
                           className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-muted p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {item.type === "image" ? (
@@ -401,6 +421,7 @@ export function ProductMediaModal({
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedDefault(item.url as string)}
+                                disabled={isBusy || isConfirming}
                               >
                                 <Star className="mr-1 h-4 w-4" />
                                 {t("products.details.media.setDefault")}
@@ -411,6 +432,7 @@ export function ProductMediaModal({
                               size="icon"
                               onClick={() => handleRemove(item.id)}
                               className="text-muted-foreground hover:text-destructive"
+                              disabled={isBusy || isConfirming}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -443,9 +465,9 @@ export function ProductMediaModal({
             <div
               className={`flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed p-6 text-center transition-colors ${
                 dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/40 bg-muted/50"
-              } ${hasPendingUploads ? "opacity-70" : "cursor-pointer"}`}
+              } ${isBusy ? "opacity-70" : "cursor-pointer"}`}
               onClick={() => {
-                if (!hasPendingUploads) fileInputRef.current?.click();
+                if (!isBusy) fileInputRef.current?.click();
               }}
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background shadow">
@@ -459,7 +481,7 @@ export function ProductMediaModal({
                   {t("products.details.media.uploadDescription")}
                 </p>
               </div>
-              <Button type="button" size="sm" disabled={hasPendingUploads}>
+              <Button type="button" size="sm" disabled={isBusy}>
                 {t("products.details.media.uploadButton")}
               </Button>
               <input
@@ -477,6 +499,12 @@ export function ProductMediaModal({
                 {t("products.details.media.pendingUploads")}
               </div>
             )}
+            {isPersisting && (
+              <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-primary">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("products.details.media.syncing")}
+              </div>
+            )}
             {!hasPendingUploads && !confirmDisabled && hasErrors && (
               <div className="rounded-md border border-amber-200 bg-amber-100 px-3 py-2 text-sm text-amber-900">
                 {t("products.details.media.errorReminder")}
@@ -490,6 +518,7 @@ export function ProductMediaModal({
             <Button variant="outline">{t("products.buttons.cancel")}</Button>
           </DialogClose>
           <Button onClick={handleConfirm} disabled={confirmDisabled}>
+            {isConfirming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("products.details.media.confirm")}
           </Button>
         </DialogFooter>

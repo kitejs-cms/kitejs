@@ -15,7 +15,7 @@ import type {
   CollectionResponseDetailsModel,
   ProductTranslationModel,
 } from "@kitejs-cms/plugin-commerce-api";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProductMediaModal } from "./product-media-modal";
 
@@ -31,8 +31,10 @@ interface ProductSectionProps {
     value: string | string[]
   ) => void;
   onCollectionsChange: (value: string[]) => void;
-  onThumbnailChange: (value: string) => void;
-  onGalleryChange: (value: string[]) => void;
+  onMediaChange: (
+    payload: { gallery: string[]; thumbnail: string },
+    options?: { force?: boolean }
+  ) => Promise<void>;
 }
 
 export function ProductSection({
@@ -44,8 +46,7 @@ export function ProductSection({
   thumbnailError,
   onChange,
   onCollectionsChange,
-  onThumbnailChange,
-  onGalleryChange,
+  onMediaChange,
 }: ProductSectionProps) {
   const { t, i18n } = useTranslation("commerce");
   const { data, fetchData } = useApi<CollectionResponseDetailsModel[]>();
@@ -71,17 +72,31 @@ export function ProductSection({
 
   const galleryCount = useMemo(() => gallery?.length ?? 0, [gallery]);
 
-  const handleConfirmMedia = ({
-    gallery: nextGallery,
-    thumbnail: nextThumbnail,
-  }: {
-    gallery: string[];
-    thumbnail: string;
-  }) => {
-    onGalleryChange(nextGallery);
-    onThumbnailChange(nextThumbnail);
-    setIsMediaModalOpen(false);
-  };
+  const handleAutoPersistMedia = useCallback(
+    (payload: { gallery: string[]; thumbnail: string }) => onMediaChange(payload),
+    [onMediaChange]
+  );
+
+  const handleConfirmMedia = useCallback(
+    async ({
+      gallery: nextGallery,
+      thumbnail: nextThumbnail,
+    }: {
+      gallery: string[];
+      thumbnail: string;
+    }) => {
+      try {
+        await onMediaChange(
+          { gallery: nextGallery, thumbnail: nextThumbnail },
+          { force: true }
+        );
+        setIsMediaModalOpen(false);
+      } catch (error) {
+        console.error("Unable to persist product media", error);
+      }
+    },
+    [onMediaChange]
+  );
 
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
@@ -205,6 +220,7 @@ export function ProductSection({
         gallery={gallery ?? []}
         thumbnail={thumbnail}
         onConfirm={handleConfirmMedia}
+        onPersist={handleAutoPersistMedia}
       />
     </Card>
   );

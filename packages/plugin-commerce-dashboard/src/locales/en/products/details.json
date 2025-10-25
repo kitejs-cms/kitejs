@@ -37,6 +37,11 @@
     "helperTypes": "Images and videos are supported. Use high-resolution assets for best quality.",
     "helperOrder": "Uploads are added to the gallery in the order they appear here.",
     "pendingUploads": "Please wait for all uploads to finish before saving.",
+    "syncing": "Saving media changes...",
+    "syncError": {
+      "title": "Unable to update media",
+      "description": "We couldn't attach the latest files. Try saving the product manually."
+    },
     "errorReminder": "Remove media with failed uploads before saving."
   },
   "settings": {

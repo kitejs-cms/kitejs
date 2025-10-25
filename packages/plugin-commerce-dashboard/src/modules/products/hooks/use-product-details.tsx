@@ -14,6 +14,41 @@ import type {
   ProductSeoModel,
 } from "@kitejs-cms/plugin-commerce-api";
 
+const arraysEqual = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((value, index) => value === b[index]);
+
+const getTranslationCandidate = (
+  translations: Record<string, ProductTranslationModel>,
+  lang?: string
+) => {
+  if (!lang) return null;
+  const translation = translations[lang];
+  if (translation?.title?.trim() && translation?.slug?.trim()) {
+    return { lang, translation } as const;
+  }
+  return null;
+};
+
+const findTranslationForUpsert = (
+  product: ProductResponseDetailsModel,
+  preferredLang?: string,
+  fallbackLang?: string
+) => {
+  const translations = product.translations ?? {};
+
+  const preferred = getTranslationCandidate(translations, preferredLang);
+  if (preferred) return preferred;
+
+  const fallback = getTranslationCandidate(translations, fallbackLang);
+  if (fallback) return fallback;
+
+  const entry = Object.entries(translations).find(([, translation]) =>
+    Boolean(translation?.title?.trim() && translation?.slug?.trim())
+  );
+
+  return entry ? { lang: entry[0], translation: entry[1] } : null;
+};
+
 export interface FormErrors {
   title?: string;
   slug?: string;
@@ -399,28 +434,97 @@ export function useProductDetails() {
     []
   );
 
-  const onThumbnailChange = useCallback((value: string) => {
-    setLocalData((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        thumbnail: value,
-      };
-    });
-    setHasChanges(true);
-    setFormErrors((prev) => ({ ...prev, thumbnail: undefined }));
-  }, []);
+  const onMediaChange = useCallback(
+    async (
+      value: { gallery: string[]; thumbnail: string },
+      options?: { force?: boolean }
+    ) => {
+      setFormErrors((prev) => ({ ...prev, thumbnail: undefined }));
+      if (!localData) return;
 
-  const onGalleryChange = useCallback((value: string[]) => {
-    setLocalData((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        gallery: value,
+      const nextGallery = value.gallery ?? [];
+      const nextThumbnail = value.thumbnail ?? "";
+
+      const currentGallery = localData.gallery ?? [];
+      const currentThumbnail = localData.thumbnail ?? "";
+
+      if (
+        arraysEqual(currentGallery, nextGallery) &&
+        currentThumbnail === nextThumbnail &&
+        !options?.force
+      ) {
+        return;
+      }
+
+      const updatedData: ProductResponseDetailsModel = {
+        ...localData,
+        gallery: nextGallery,
+        thumbnail: nextThumbnail,
       };
-    });
-    setHasChanges(true);
-  }, []);
+
+      setLocalData(updatedData);
+
+      if (!updatedData.id) {
+        setHasChanges(true);
+        return;
+      }
+
+      const translationEntry = findTranslationForUpsert(
+        updatedData,
+        activeLang,
+        defaultLang
+      );
+
+      if (!translationEntry) {
+        setHasChanges(true);
+        toast.error(
+          t("products.details.media.syncError.title", "Unable to update media"),
+          {
+            description: t(
+              "products.details.media.syncError.description",
+              "We couldn't attach the latest files. Try saving the product manually."
+            ),
+          }
+        );
+        return;
+      }
+
+      const { lang, translation } = translationEntry;
+
+      const body: ProductUpsertModel = {
+        id: updatedData.id,
+        language: lang,
+        status: updatedData.status,
+        slug: translation.slug,
+        title: translation.title,
+        summary: translation.summary,
+        description: translation.description,
+        seo: translation.seo,
+        isDigital: updatedData.isDigital,
+        tags: updatedData.tags,
+        publishAt: updatedData.publishAt,
+        expireAt: updatedData.expireAt,
+        collections: updatedData.collections ?? [],
+        gallery: nextGallery,
+        thumbnail: nextThumbnail,
+      };
+
+      try {
+        const result = await fetchData("commerce/products", "POST", body);
+        if (result?.data) {
+          setLocalData(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to sync product media", error);
+        toast.error(t("products.details.media.syncError.title"), {
+          description: t("products.details.media.syncError.description"),
+        });
+        setHasChanges(true);
+        throw error;
+      }
+    },
+    [activeLang, defaultLang, fetchData, localData, t]
+  );
 
   return {
     data: localData,
@@ -435,8 +539,7 @@ export function useProductDetails() {
     handleSave,
     onChange,
     onSeoChange,
-    onThumbnailChange,
-    onGalleryChange,
+    onMediaChange,
     closeUnsavedAlert,
     showUnsavedAlert,
     formErrors,
