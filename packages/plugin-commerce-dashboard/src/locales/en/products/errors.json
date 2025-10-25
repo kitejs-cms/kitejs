@@ -1,6 +1,7 @@
 {
   "titleRequired": "Title is required for this language.",
   "slugRequired": "Slug is required for this language.",
+  "thumbnailRequired": "Select a featured image for this product.",
   "saveFailed": "Unable to save product. Please try again.",
   "unsavedChanges": "You have unsaved product changes.",
   "discardChanges": "Discard unsaved changes?"

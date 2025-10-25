@@ -17,6 +17,7 @@ import type {
 export interface FormErrors {
   title?: string;
   slug?: string;
+  thumbnail?: string;
   apiError?: string;
   [key: string]: string | undefined;
 }
@@ -79,6 +80,7 @@ export function useProductDetails() {
         updatedAt: undefined,
         publishAt: undefined,
         expireAt: undefined,
+        thumbnail: "",
         translations: {
           [defaultLang]: {
             title: "",
@@ -268,6 +270,13 @@ export function useProductDetails() {
       errors.slug = t("products.errors.slugRequired", "Slug is required");
     }
 
+    if (!localData.thumbnail?.trim()) {
+      errors.thumbnail = t(
+        "products.errors.thumbnailRequired",
+        "Select a featured image for this product."
+      );
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }, [localData, activeLang, t]);
@@ -311,6 +320,7 @@ export function useProductDetails() {
         publishAt: localData.publishAt,
         expireAt: localData.expireAt,
         collections: localData.collections ?? null,
+        thumbnail: localData.thumbnail,
       };
 
       const result = await fetchData("commerce/products", "POST", body);
@@ -388,6 +398,18 @@ export function useProductDetails() {
     []
   );
 
+  const onThumbnailChange = useCallback((value: string) => {
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        thumbnail: value,
+      };
+    });
+    setHasChanges(true);
+    setFormErrors((prev) => ({ ...prev, thumbnail: undefined }));
+  }, []);
+
   return {
     data: localData,
     loading,
@@ -401,6 +423,7 @@ export function useProductDetails() {
     handleSave,
     onChange,
     onSeoChange,
+    onThumbnailChange,
     closeUnsavedAlert,
     showUnsavedAlert,
     formErrors,

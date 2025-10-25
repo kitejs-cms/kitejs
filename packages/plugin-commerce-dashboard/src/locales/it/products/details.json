@@ -13,6 +13,16 @@
       "slug": "Slug"
     }
   },
+  "media": {
+    "title": "Media",
+    "description": "Carica un'immagine che rappresenti il prodotto nelle liste e nelle pagine dettaglio.",
+    "button": "Gestisci media",
+    "empty": "Nessuna immagine selezionata",
+    "previewAlt": "Anteprima immagine prodotto",
+    "modalTitle": "Gestisci media prodotto",
+    "modalDescription": "Carica o sostituisci l'immagine principale di questo prodotto.",
+    "confirm": "Usa immagine"
+  },
   "settings": {
     "title": "Impostazioni",
     "description": "Controlla visibilità, pianificazione e metadati di catalogo.",

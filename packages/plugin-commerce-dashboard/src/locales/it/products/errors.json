@@ -1,6 +1,7 @@
 {
   "titleRequired": "Il titolo è obbligatorio per questa lingua.",
   "slugRequired": "Lo slug è obbligatorio per questa lingua.",
+  "thumbnailRequired": "Seleziona un'immagine principale per questo prodotto.",
   "saveFailed": "Impossibile salvare il prodotto. Riprova.",
   "unsavedChanges": "Ci sono modifiche non salvate al prodotto.",
   "discardChanges": "Vuoi scartare le modifiche non salvate?"

@@ -27,6 +27,8 @@ export function CommerceProductDetailsPage() {
     onSeoChange,
     onSettingsChange,
     onChange,
+    onThumbnailChange,
+    formErrors,
     t,
   } = useProductDetails();
   const [jsonView, setJsonView] = useState(false);
@@ -57,10 +59,13 @@ export function CommerceProductDetailsPage() {
               activeLang={activeLang}
               translations={data.translations}
               collections={data.collections}
+              thumbnail={data.thumbnail}
+              thumbnailError={formErrors.thumbnail}
               onChange={onChange}
               onCollectionsChange={(value) =>
                 onSettingsChange("collections", value)
               }
+              onThumbnailChange={onThumbnailChange}
             />
 
             {/* Varaint Product */}

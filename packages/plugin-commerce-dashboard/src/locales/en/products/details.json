@@ -13,6 +13,16 @@
       "slug": "Slug"
     }
   },
+  "media": {
+    "title": "Media",
+    "description": "Upload an image that represents the product in listings and detail pages.",
+    "button": "Manage media",
+    "empty": "No image selected",
+    "previewAlt": "Current product thumbnail",
+    "modalTitle": "Manage product media",
+    "modalDescription": "Upload or replace the featured image for this product.",
+    "confirm": "Use image"
+  },
   "settings": {
     "title": "Settings",
     "description": "Control visibility, scheduling, and catalogue metadata.",
