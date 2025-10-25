@@ -100,6 +100,19 @@ export class ProductsService {
         expireAt: restData.expireAt,
         status,
         ...(collections !== undefined ? { collections: collectionIds } : {}),
+        ...(restData.thumbnail !== undefined
+          ? { thumbnail: restData.thumbnail }
+          : {}),
+        ...(restData.gallery !== undefined
+          ? { gallery: restData.gallery }
+          : {}),
+        ...(restData.options !== undefined ? { options: restData.options } : {}),
+        ...(restData.variants !== undefined
+          ? { variants: restData.variants }
+          : {}),
+        ...(restData.isDigital !== undefined
+          ? { isDigital: restData.isDigital }
+          : {}),
       };
 
       const translationData = {
