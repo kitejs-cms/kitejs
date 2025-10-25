@@ -176,12 +176,12 @@ export function ProductSection({
           </Label>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-            <div className="flex h-48 w-full max-w-xs items-center justify-center overflow-hidden rounded-md border bg-muted sm:w-48">
+            <div className="flex aspect-square w-full max-w-xs items-center justify-center overflow-hidden rounded-md border bg-muted sm:w-48">
               {thumbnail ? (
                 <img
                   src={thumbnail}
                   alt={t("products.details.media.previewAlt")}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               ) : (
                 <span className="text-sm text-muted-foreground">

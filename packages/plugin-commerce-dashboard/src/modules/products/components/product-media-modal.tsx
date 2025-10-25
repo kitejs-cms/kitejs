@@ -348,7 +348,7 @@ export function ProductMediaModal({
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full">
               {mediaItems.length ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {mediaItems.map((item) => {
                     const isDefault = item.url && selectedDefault === item.url;
                     const isProcessing = item.status === "uploading";
@@ -356,7 +356,7 @@ export function ProductMediaModal({
                     return (
                       <div
                         key={item.id}
-                        className="group relative flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm"
+                        className="group relative flex w-full max-w-[220px] flex-col overflow-hidden rounded-lg border bg-card shadow-sm"
                       >
                         <button
                           type="button"
