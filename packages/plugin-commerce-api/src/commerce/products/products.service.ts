@@ -88,12 +88,18 @@ export class ProductsService {
   ): Promise<ProductResponseDetailsModel> {
     try {
       const { id, language, status, collections, ...restData } = productData;
+      const collectionIds =
+        collections?.map((collectionId) =>
+          ObjectIdUtils.toObjectId(collectionId)
+        ) ?? [];
+
       const productBaseData = {
         tags: restData.tags,
         updatedBy: user.sub,
         publishAt: restData.publishAt,
         expireAt: restData.expireAt,
         status,
+        ...(collections !== undefined ? { collections: collectionIds } : {}),
       };
 
       const translationData = {
