@@ -6,7 +6,8 @@ import { RenamePathDto } from "./dto/rename-path.dto";
 import { MovePathDto } from "./dto/move-path.dto";
 import { CopyPathDto } from "./dto/copy-path.dto";
 import { StorageItemDto } from "./dto/storage-response.dto";
-import { JwtAuthGuard } from "../auth";
+import { JwtAuthGuard, PermissionsGuard } from "../auth";
+import { Permissions } from "../../common";
 import {
   Controller,
   Post,
@@ -56,7 +57,8 @@ export class StorageController {
       },
     },
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.upload")
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor("file"))
   async uploadFile(
@@ -82,7 +84,8 @@ export class StorageController {
   @ApiResponse({ status: 200, description: "File removed successfully" })
   @ApiResponse({ status: 400, description: "Bad request or file not found" })
   @ApiBody({ type: RemoveFileDto })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async removeFile(@Body() removeFileDto: RemoveFileDto) {
     const { filePath } = removeFileDto;
@@ -103,7 +106,8 @@ export class StorageController {
     description: "Directory structure retrieved successfully",
     type: StorageItemDto,
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.read")
   @ApiBearerAuth()
   async getDirectoryStructure(): Promise<StorageItemDto> {
     try {
@@ -123,7 +127,8 @@ export class StorageController {
     description: "Bad request or error creating directory",
   })
   @ApiBody({ type: CreateDirectoryDto })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async createEmptyDirectory(@Body() createDirectoryDto: CreateDirectoryDto) {
     try {
@@ -145,7 +150,8 @@ export class StorageController {
     status: 400,
     description: "Bad request or error renaming item",
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   @ApiBody({ type: RenamePathDto })
   async renamePath(@Body() renameDto: RenamePathDto) {
@@ -165,7 +171,8 @@ export class StorageController {
   @ApiResponse({ status: 200, description: "Item moved successfully" })
   @ApiResponse({ status: 400, description: "Bad request or error moving item" })
   @ApiBody({ type: MovePathDto })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async movePath(@Body() moveDto: MovePathDto) {
     try {
@@ -187,7 +194,8 @@ export class StorageController {
     description: "Bad request or error copying item",
   })
   @ApiBody({ type: CopyPathDto })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async copyPath(@Body() copyDto: CopyPathDto) {
     try {
