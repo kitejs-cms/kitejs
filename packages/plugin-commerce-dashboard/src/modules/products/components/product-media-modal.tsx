@@ -328,7 +328,7 @@ export function ProductMediaModal({
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full">
               {mediaItems.length ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {mediaItems.map((item) => {
                     const isDefault = item.url && selectedDefault === item.url;
                     const isProcessing = item.status === "uploading";
@@ -342,18 +342,18 @@ export function ProductMediaModal({
                           type="button"
                           onClick={() => item.url && setSelectedDefault(item.url)}
                           disabled={!item.url || isProcessing}
-                          className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-muted p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-muted p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {item.type === "image" ? (
                             <img src={item.previewUrl} alt={item.name} className="max-h-full max-w-full object-contain" />
                           ) : item.type === "video" ? (
                             <div className="flex h-full w-full items-center justify-center">
-                              <Video className="h-16 w-16 text-muted-foreground" />
+                              <Video className="h-12 w-12 text-muted-foreground" />
                             </div>
                           ) : (
-                            <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-muted-foreground">
-                              <File className="h-16 w-16" />
-                              <span className="max-w-[80%] truncate text-xs font-medium" title={item.name}>
+                            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                              <File className="h-12 w-12" />
+                              <span className="max-w-[80%] truncate text-[11px] font-medium" title={item.name}>
                                 {item.name}
                               </span>
                             </div>
