@@ -41,9 +41,7 @@ export function DashboardProvider({ modules = [] }: DashboardRouterProps) {
   );
   modulesWithTranslations.forEach((mod) => {
     Object.entries(mod.translations!).forEach(([lang, translations]) => {
-      if (!i18n.hasResourceBundle(lang, mod.name)) {
-        i18n.addResourceBundle(lang, mod.name, translations, true, true);
-      }
+      i18n.addResourceBundle(lang, mod.name, translations, true, true);
     });
   });
 
