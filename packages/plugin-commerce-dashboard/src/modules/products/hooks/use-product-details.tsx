@@ -320,6 +320,7 @@ export function useProductDetails() {
         publishAt: localData.publishAt,
         expireAt: localData.expireAt,
         collections: localData.collections ?? null,
+        gallery: localData.gallery ?? [],
         thumbnail: localData.thumbnail,
       };
 
@@ -410,6 +411,17 @@ export function useProductDetails() {
     setFormErrors((prev) => ({ ...prev, thumbnail: undefined }));
   }, []);
 
+  const onGalleryChange = useCallback((value: string[]) => {
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        gallery: value,
+      };
+    });
+    setHasChanges(true);
+  }, []);
+
   return {
     data: localData,
     loading,
@@ -424,6 +436,7 @@ export function useProductDetails() {
     onChange,
     onSeoChange,
     onThumbnailChange,
+    onGalleryChange,
     closeUnsavedAlert,
     showUnsavedAlert,
     formErrors,

@@ -7,5 +7,6 @@
   "save": "Save product",
   "saving": "Saving...",
   "cancel": "Cancel",
-  "viewJson": "View JSON"
+  "viewJson": "View JSON",
+  "close": "Close"
 }

@@ -4,7 +4,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  FileUploader,
   HTMLEditor,
   Input,
   Label,
@@ -12,25 +11,19 @@ import {
   Separator,
   useApi,
 } from "@kitejs-cms/dashboard-core";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@kitejs-cms/dashboard-core/components/ui/dialog";
 import type {
   CollectionResponseDetailsModel,
   ProductTranslationModel,
 } from "@kitejs-cms/plugin-commerce-api";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ProductMediaModal } from "./product-media-modal";
 
 interface ProductSectionProps {
   activeLang: string;
   translations: Record<string, ProductTranslationModel>;
   collections?: string[];
+  gallery?: string[];
   thumbnail?: string;
   thumbnailError?: string;
   onChange: (
@@ -39,17 +32,20 @@ interface ProductSectionProps {
   ) => void;
   onCollectionsChange: (value: string[]) => void;
   onThumbnailChange: (value: string) => void;
+  onGalleryChange: (value: string[]) => void;
 }
 
 export function ProductSection({
   activeLang,
   translations,
   collections,
+  gallery,
   thumbnail,
   thumbnailError,
   onChange,
   onCollectionsChange,
   onThumbnailChange,
+  onGalleryChange,
 }: ProductSectionProps) {
   const { t, i18n } = useTranslation("commerce");
   const { data, fetchData } = useApi<CollectionResponseDetailsModel[]>();
@@ -57,10 +53,6 @@ export function ProductSection({
     { value: string; label: string }[]
   >([]);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
-  const [temporaryThumbnail, setTemporaryThumbnail] = useState<string | null>(
-    null
-  );
-
   useEffect(() => {
     if (data) {
       const local = i18n.language.split("-")[0];
@@ -77,15 +69,17 @@ export function ProductSection({
     fetchData("commerce/collections?page[number]=1&page[size]=100");
   }, [fetchData]);
 
-  useEffect(() => {
-    if (isMediaModalOpen) {
-      setTemporaryThumbnail(thumbnail ?? null);
-    }
-  }, [isMediaModalOpen, thumbnail]);
+  const galleryCount = useMemo(() => gallery?.length ?? 0, [gallery]);
 
-  const handleConfirmThumbnail = () => {
-    if (!temporaryThumbnail) return;
-    onThumbnailChange(temporaryThumbnail);
+  const handleConfirmMedia = ({
+    gallery: nextGallery,
+    thumbnail: nextThumbnail,
+  }: {
+    gallery: string[];
+    thumbnail: string;
+  }) => {
+    onGalleryChange(nextGallery);
+    onThumbnailChange(nextThumbnail);
     setIsMediaModalOpen(false);
   };
 
@@ -192,6 +186,11 @@ export function ProductSection({
               <p className="text-sm text-muted-foreground max-w-sm">
                 {t("products.details.media.description")}
               </p>
+              {galleryCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t("products.details.media.count", { count: galleryCount })}
+                </p>
+              )}
               {thumbnailError && (
                 <p className="text-sm text-destructive">{thumbnailError}</p>
               )}
@@ -200,39 +199,13 @@ export function ProductSection({
         </div>
       </CardContent>
 
-      <Dialog open={isMediaModalOpen} onOpenChange={setIsMediaModalOpen}>
-        <DialogContent className="max-h-[90vh] overflow-hidden p-0" position="right">
-          <div className="flex h-full flex-col">
-            <DialogHeader className="gap-1 border-b px-6 py-4">
-              <DialogTitle>{t("products.details.media.modalTitle")}</DialogTitle>
-              <DialogDescription>
-                {t("products.details.media.modalDescription")}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="flex-1 overflow-y-auto px-6 py-6">
-              <FileUploader
-                acceptedTypes="image/*"
-                onChange={(url) => setTemporaryThumbnail(url)}
-                defaultUrl={temporaryThumbnail}
-                dirName="commerce/products"
-              />
-            </div>
-
-            <DialogFooter className="border-t px-6 py-4">
-              <Button
-                variant="outline"
-                onClick={() => setIsMediaModalOpen(false)}
-              >
-                {t("products.buttons.cancel")}
-              </Button>
-              <Button onClick={handleConfirmThumbnail} disabled={!temporaryThumbnail}>
-                {t("products.details.media.confirm")}
-              </Button>
-            </DialogFooter>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ProductMediaModal
+        open={isMediaModalOpen}
+        onOpenChange={setIsMediaModalOpen}
+        gallery={gallery ?? []}
+        thumbnail={thumbnail}
+        onConfirm={handleConfirmMedia}
+      />
     </Card>
   );
 }

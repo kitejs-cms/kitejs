@@ -28,6 +28,7 @@ export function CommerceProductDetailsPage() {
     onSettingsChange,
     onChange,
     onThumbnailChange,
+    onGalleryChange,
     formErrors,
     t,
   } = useProductDetails();
@@ -59,6 +60,7 @@ export function CommerceProductDetailsPage() {
               activeLang={activeLang}
               translations={data.translations}
               collections={data.collections}
+              gallery={data.gallery}
               thumbnail={data.thumbnail}
               thumbnailError={formErrors.thumbnail}
               onChange={onChange}
@@ -66,6 +68,7 @@ export function CommerceProductDetailsPage() {
                 onSettingsChange("collections", value)
               }
               onThumbnailChange={onThumbnailChange}
+              onGalleryChange={onGalleryChange}
             />
 
             {/* Varaint Product */}

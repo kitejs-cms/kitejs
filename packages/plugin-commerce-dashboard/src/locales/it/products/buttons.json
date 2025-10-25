@@ -7,5 +7,6 @@
   "save": "Salva prodotto",
   "saving": "Salvataggio...",
   "cancel": "Annulla",
-  "viewJson": "Mostra JSON"
+  "viewJson": "Mostra JSON",
+  "close": "Chiudi"
 }
