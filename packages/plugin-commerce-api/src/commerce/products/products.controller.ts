@@ -38,8 +38,6 @@ import { ProductResponseDto } from "./dto/product-response.dto";
 import { ProductUpsertDto } from "./dto/product-upsert.dto";
 
 @ApiTags("Commerce - Products")
-//@ApiBearerAuth()
-//@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller("commerce/products")
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}

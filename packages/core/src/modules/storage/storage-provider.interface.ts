@@ -1,4 +1,5 @@
 import { DirectoryNodeModel } from "./models/fs-node.model";
+import { StorageResponseModel } from "./models/storage-response.model";
 import { UploadResultModel } from "./models/upload-result.model";
 
 export interface IStorageProvider {
@@ -23,7 +24,7 @@ export interface IStorageProvider {
    * Retrieves the directory structure.
    * @returns A promise that resolves with a tree-like structure of directories and files.
    */
-  getDirectoryStructure(): Promise<DirectoryNodeModel>;
+  getDirectoryStructure(): Promise<StorageResponseModel>;
 
   /**
    * Creates an empty directory at the specified path.
@@ -52,4 +53,13 @@ export interface IStorageProvider {
    * @param destinationPath New path for the copy
    */
   copyPath(sourcePath: string, destinationPath: string): Promise<void>;
+
+  /**
+   * 🔗 Retrieves a valid, readable URL for a given media identifier or path.
+   * - For public buckets, returns a direct URL.
+   * - For private buckets, returns a signed URL with TTL based on provider settings.
+   * @param mediaIdOrPath - The unique identifier or full path of the media file.
+   * @returns A promise resolving to the accessible URL of the file.
+   */
+  getFileUrl(mediaIdOrPath: string): Promise<string>;
 }

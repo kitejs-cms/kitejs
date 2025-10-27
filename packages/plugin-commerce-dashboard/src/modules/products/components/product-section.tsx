@@ -171,10 +171,10 @@ export function ProductSection({
           />
         </div>
 
-        <div className="pt-4">
+        <div className="pt-6">
           <Label className="mb-2 block">{t("products.fields.thumbnail")}</Label>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start pt-2">
             <div className="flex aspect-square w-full max-w-xs items-center justify-center overflow-hidden rounded-md border bg-muted sm:w-48">
               {thumbnail ? (
                 <img
@@ -213,7 +213,8 @@ export function ProductSection({
       </CardContent>
 
       <ProductMediaModal
-        open={isMediaModalOpen}
+        open
+        /*  open={isMediaModalOpen} */
         onOpenChange={setIsMediaModalOpen}
         gallery={gallery ?? []}
         thumbnail={thumbnail}

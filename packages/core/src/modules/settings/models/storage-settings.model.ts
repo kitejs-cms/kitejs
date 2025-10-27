@@ -12,6 +12,8 @@ export type S3StorageSettings = {
   secretAccessKey: string;
   endpoint?: string;
   forcePathStyle?: boolean;
+  isPublic?: boolean;
+  signedUrlExpiration?: number;
 };
 
 export type StorageSettingsModel = {

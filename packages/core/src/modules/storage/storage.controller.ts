@@ -5,14 +5,17 @@ import { CreateDirectoryDto } from "./dto/create-directory.dto";
 import { RenamePathDto } from "./dto/rename-path.dto";
 import { MovePathDto } from "./dto/move-path.dto";
 import { CopyPathDto } from "./dto/copy-path.dto";
-import { StorageItemDto } from "./dto/storage-response.dto";
+import { StorageResponseDto } from "./dto/storage-response.dto";
+import { UpdateStorageMetadataDto } from "./dto/update-storage-metadata.dto";
 import { JwtAuthGuard, PermissionsGuard } from "../auth";
-import { Permissions } from "../../common";
+import { Language, Permissions } from "../../common";
 import {
   Controller,
   Post,
   Delete,
   Get,
+  Patch,
+  Param,
   Body,
   UploadedFile,
   UseInterceptors,
@@ -26,7 +29,9 @@ import {
   ApiResponse,
   ApiBody,
   ApiBearerAuth,
+  ApiParam,
 } from "@nestjs/swagger";
+import { StorageResponseModel } from "./models/storage-response.model";
 
 @ApiTags("Storage")
 @Controller("storage")
@@ -104,12 +109,12 @@ export class StorageController {
   @ApiResponse({
     status: 200,
     description: "Directory structure retrieved successfully",
-    type: StorageItemDto,
+    type: StorageResponseDto,
   })
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions("core:storage.read")
   @ApiBearerAuth()
-  async getDirectoryStructure(): Promise<StorageItemDto> {
+  async getDirectoryStructure(): Promise<StorageResponseModel> {
     try {
       return await this.storageService.getDirectoryStructure();
     } catch (error) {
@@ -206,6 +211,37 @@ export class StorageController {
       return { message: "Item copied successfully" };
     } catch (error) {
       throw new InternalServerErrorException(`Error copying item: ${error}`);
+    }
+  }
+
+  @Patch(":id/metadata")
+  @ApiOperation({ summary: "Update SEO metadata for a media asset" })
+  @ApiResponse({ status: 200, description: "Metadata updated successfully" })
+  @ApiResponse({ status: 404, description: "Asset not found" })
+  @ApiParam({ name: "id", description: "Asset ID" })
+  @ApiBody({ type: UpdateStorageMetadataDto })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
+  @ApiBearerAuth()
+  async updateMetadata(
+    @Language() language: string,
+    @Param("id") id: string,
+    @Body() dto: UpdateStorageMetadataDto
+  ) {
+    try {
+      const result = await this.storageService.updateMetadata(
+        id,
+        dto,
+        language
+      );
+      return {
+        message: "Metadata updated successfully",
+        data: result,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error updating metadata: ${error}`
+      );
     }
   }
 }

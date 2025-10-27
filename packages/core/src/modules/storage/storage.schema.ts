@@ -22,14 +22,21 @@ export class Storage extends Document {
   @Prop({ type: Map, of: String })
   alt?: Map<string, string>;
 
-  @Prop({ type: String })
-  description?: string;
+  @Prop({ type: Map, of: String })
+  title?: Map<string, string>;
+
+  @Prop({ type: Map, of: String })
+  description?: Map<string, string>;
 
   @Prop({ type: Number })
   size?: number;
 
   @Prop({ type: String })
   mediaType?: string;
+
+  createdAt: string;
+
+  updatedAt: string;
 
   @Prop({ type: Object })
   dimensions?: {

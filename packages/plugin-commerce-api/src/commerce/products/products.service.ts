@@ -12,6 +12,7 @@ import {
   JwtPayloadModel,
   ObjectIdUtils,
   SlugRegistryService,
+  StorageService,
   User,
 } from "@kitejs-cms/core";
 
@@ -30,7 +31,8 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private readonly productModel: Model<ProductDocument>,
-    private readonly slugService: SlugRegistryService
+    private readonly slugService: SlugRegistryService,
+    private readonly storageService: StorageService
   ) {}
 
   /**
@@ -106,7 +108,9 @@ export class ProductsService {
         ...(restData.gallery !== undefined
           ? { gallery: restData.gallery }
           : {}),
-        ...(restData.options !== undefined ? { options: restData.options } : {}),
+        ...(restData.options !== undefined
+          ? { options: restData.options }
+          : {}),
         ...(restData.variants !== undefined
           ? { variants: restData.variants }
           : {}),
@@ -365,10 +369,20 @@ export class ProductsService {
           };
         }
 
+        const thumbnail = item.thumbnail
+          ? await this.storageService.getFileUrl(item.thumbnail?.toString())
+          : null;
+
+        const gallery = await this.storageService.getAssetsDetails(
+          item.gallery.map((g) => g.toString())
+        );
+
         productsRes.push({
           id: item._id.toString(),
           ...(item as unknown as ProductResponseDetailsModel),
+          gallery,
           translations: translationsWithSlug,
+          thumbnail,
           collections: item.collections.map((c) => c.toString()),
           createdBy: item.createdBy
             ? `${item.createdBy.firstName} ${item.createdBy.lastName}`

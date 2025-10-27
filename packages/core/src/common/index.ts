@@ -29,3 +29,4 @@ export * from "./utils/query-parser.util";
 export * from "./utils/meta-response.util";
 export * from "./utils/string.util";
 export * from "./utils/convert-custom-fields";
+export * from "./utils/localized";

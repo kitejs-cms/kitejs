@@ -16,6 +16,7 @@ import {
   IsString,
 } from "class-validator";
 import { ProductVariantDto } from "./partials/product-variant.dto";
+import { StorageResponseDetailsDto } from "@kitejs-cms/core";
 
 export class ProductResponseDetailsDto implements ProductResponseDetailsModel {
   @ApiProperty()
@@ -73,10 +74,10 @@ export class ProductResponseDetailsDto implements ProductResponseDetailsModel {
   @Type(() => ProductOptionDto)
   options: ProductOptionModel[];
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [StorageResponseDetailsDto] })
   @IsArray()
   @IsString({ each: true })
-  gallery: string[];
+  gallery: StorageResponseDetailsDto[];
 
   @ApiProperty({ type: [String] })
   @IsArray()

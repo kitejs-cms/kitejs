@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Button } from "@kitejs-cms/dashboard-core";
+import { Badge, Button } from "@kitejs-cms/dashboard-core";
 import { useProductMediaManager } from "../hooks/use-product-media";
 import {
   Dialog,
@@ -14,7 +14,6 @@ import {
   ScrollBar,
 } from "@kitejs-cms/dashboard-core/components/ui/scroll-area";
 import {
-  AlertTriangle,
   Upload,
   Loader2,
   Image as ImageIcon,
@@ -22,8 +21,9 @@ import {
   File,
   Star,
   Trash2,
-  X,
+  XIcon,
 } from "lucide-react";
+import { getTypeFromUrl } from "../helpers";
 
 interface ProductMediaModalProps {
   open: boolean;
@@ -46,54 +46,38 @@ export function ProductMediaModal({
   gallery,
   thumbnail,
   onConfirm,
-  onPersist,
 }: ProductMediaModalProps) {
   const { t } = useTranslation("commerce");
-
-  const manager = useProductMediaManager({
-    open,
-    gallery,
-    thumbnail,
-    onConfirm: async (payload) => {
-      await onConfirm(payload);
-    },
-    onPersist,
-  });
 
   const {
     ACCEPTED_TYPES,
     fileInputRef,
     mediaItems,
-    dragOver,
     selectedDefault,
     hasPendingUploads,
     hasErrors,
     isPersisting,
-    confirmDisabled,
     isConfirming,
     isBusy,
-    handleDrop,
-    handleDragOver,
-    handleDragLeave,
     handleFileInput,
     handleRemove,
     handleConfirm,
-    setSelectedDefault,
-  } = manager;
+    handleSetDefault,
+  } = useProductMediaManager({
+    open,
+    gallery,
+    thumbnail,
+    onConfirm,
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         position="full"
-        className={`relative flex h-full flex-col overflow-hidden bg-background p-0 transition-colors ${
-          dragOver ? "ring-4 ring-primary/40" : ""
-        }`}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        className="relative flex h-full flex-col overflow-hidden bg-background p-0 transition-colors"
       >
         {/* HEADER */}
-        <div className="flex items-start justify-between border-b px-8 py-6">
+        <div className="flex items-start justify-between border-b px-4 py-4">
           <div className="space-y-1">
             <DialogTitle className="text-2xl font-semibold">
               {t("products.details.media.modalTitle")}
@@ -102,23 +86,20 @@ export function ProductMediaModal({
               {t("products.details.media.modalDescription")}
             </DialogDescription>
           </div>
-          <DialogClose asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t("products.buttons.close") as string}
+
+          <DialogClose className="flex items-center gap-2 text-gray-500 hover:text-black transition cursor-pointer">
+            <Badge
+              variant="outline"
+              className="bg-gray-100 text-gray-400 border-gray-400 font-medium px-2 py-0.5"
             >
-              <X className="h-5 w-5" />
-            </Button>
+              Esc
+            </Badge>
+            <XIcon className="w-5 h-5" />
           </DialogClose>
         </div>
 
-        {/* DRAG AREA */}
-        <div
-          className={`relative flex flex-col flex-1 overflow-hidden px-8 py-6 transition-colors ${
-            dragOver ? "bg-primary/5" : ""
-          }`}
-        >
+        {/* BODY */}
+        <div className="relative flex flex-col flex-1 overflow-hidden px-8 py-6">
           {/* UPLOAD BAR */}
           <div
             className="mb-6 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/30 px-6 py-5 text-center cursor-pointer hover:bg-muted/50 transition"
@@ -127,8 +108,8 @@ export function ProductMediaModal({
             <Upload className="h-6 w-6 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">
               {t(
-                "products.details.media.dragInstruction",
-                "Trascina qui i file o clicca per caricarli"
+                "products.details.media.uploadInstruction",
+                "Clicca qui per caricare immagini o video"
               )}
             </span>
             <input
@@ -137,7 +118,7 @@ export function ProductMediaModal({
               className="hidden"
               accept={ACCEPTED_TYPES}
               multiple
-              onChange={handleFileInput}
+              onChange={(e) => handleFileInput(e.target.files!)}
             />
           </div>
 
@@ -145,44 +126,28 @@ export function ProductMediaModal({
           <ScrollArea className="flex-1">
             <div className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6 justify-start">
               {mediaItems.map((item) => {
-                const isDefault = item.url && selectedDefault === item.url;
-                const isProcessing = item.status === "uploading";
-                const isErrored = item.status === "error";
+                const isDefault = item && selectedDefault === item;
 
                 return (
                   <div
-                    key={item.id}
+                    key={item}
                     className="group relative flex w-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm"
                   >
                     {/* Anteprima */}
                     <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
-                      {item.type === "image" ? (
+                      {getTypeFromUrl(item) === "image" ? (
                         <img
-                          src={item.previewUrl}
-                          alt={item.name}
+                          src={item}
+                          alt={item}
                           className="h-full w-full object-contain"
                         />
-                      ) : item.type === "video" ? (
+                      ) : getTypeFromUrl(item) === "video" ? (
                         <Video className="h-14 w-14 text-muted-foreground" />
                       ) : (
                         <File className="h-14 w-14 text-muted-foreground" />
                       )}
 
-                      {isProcessing && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                          <Loader2 className="h-8 w-8 animate-spin text-white" />
-                        </div>
-                      )}
-                      {isErrored && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-destructive/90 text-destructive-foreground">
-                          <AlertTriangle className="h-5 w-5" />
-                          <span className="text-xs font-semibold">
-                            {t("products.details.media.uploadError")}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* ⭐ Pulsante piccolo per predefinito */}
+                      {/* ⭐ Pulsante predefinito */}
                       <button
                         type="button"
                         className={`absolute right-2 top-2 rounded-full p-1.5 transition cursor-pointer ${
@@ -190,8 +155,7 @@ export function ProductMediaModal({
                             ? "bg-primary text-primary-foreground"
                             : "bg-background/80 text-muted-foreground hover:text-foreground"
                         }`}
-                        onClick={() => item.url && setSelectedDefault(item.url)}
-                        disabled={!item.url || isProcessing || isBusy}
+                        onClick={() => item && handleSetDefault(item)}
                       >
                         <Star className="h-4 w-4" />
                       </button>
@@ -200,21 +164,19 @@ export function ProductMediaModal({
                     {/* Footer media */}
                     <div className="flex items-center justify-between gap-2 border-t px-4 py-3 text-sm">
                       <div className="flex min-w-0 items-center gap-2 text-muted-foreground">
-                        {item.type === "image" ? (
+                        {getTypeFromUrl(item) === "image" ? (
                           <ImageIcon className="h-4 w-4 shrink-0" />
-                        ) : item.type === "video" ? (
+                        ) : getTypeFromUrl(item) === "video" ? (
                           <Video className="h-4 w-4 shrink-0" />
                         ) : (
                           <File className="h-4 w-4 shrink-0" />
                         )}
-                        <span className="truncate font-medium">
-                          {item.name}
-                        </span>
+                        <span className="truncate font-medium">{item}</span>
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleRemove(item.id)}
+                        onClick={() => handleRemove(item)}
                         className="text-muted-foreground hover:text-destructive p-2"
                         disabled={isBusy || isConfirming}
                       >
@@ -225,7 +187,6 @@ export function ProductMediaModal({
                 );
               })}
             </div>
-
             <ScrollBar orientation="vertical" />
           </ScrollArea>
 
@@ -255,7 +216,7 @@ export function ProductMediaModal({
           <DialogClose asChild>
             <Button variant="outline">{t("products.buttons.cancel")}</Button>
           </DialogClose>
-          <Button onClick={handleConfirm} disabled={confirmDisabled}>
+          <Button onClick={handleConfirm}>
             {isConfirming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("products.details.media.confirm")}
           </Button>
