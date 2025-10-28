@@ -45,12 +45,16 @@
     "errorReminder": "Rimuovi i media con upload non riuscito prima di salvare.",
     "metadata": {
       "title": "SEO media",
-      "subtitle": "Compila i metadati localizzati per il media selezionato ({{language}}).",
-      "selectHint": "Seleziona un elemento dalla galleria per modificarne i metadati.",
-      "pendingUpload": "Carica il media prima di modificarne i metadati.",
+      "open": "Modifica metadati SEO",
+      "drawerSubtitle": "Aggiungi titoli, descrizioni e testo alternativo localizzati per questa risorsa.",
+      "unavailable": "Carica il media prima di modificarne i metadati.",
+      "languageLabel": "Lingua",
+      "languagePlaceholder": "Seleziona una lingua",
+      "languageHelper": "Passa tra le lingue supportate per aggiornare i campi SEO localizzati.",
       "alt": "Testo alternativo",
       "titleField": "Titolo",
       "description": "Descrizione",
+      "cancel": "Annulla",
       "save": "Aggiorna metadati"
     }
   },

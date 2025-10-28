@@ -45,12 +45,16 @@
     "errorReminder": "Remove media with failed uploads before saving.",
     "metadata": {
       "title": "Media SEO",
-      "subtitle": "Provide localized metadata for the selected media ({{language}}).",
-      "selectHint": "Select a media item from the gallery to edit its metadata.",
-      "pendingUpload": "Upload the media before editing its metadata.",
+      "open": "Edit SEO metadata",
+      "drawerSubtitle": "Add localized titles, descriptions, and alt text for this asset.",
+      "unavailable": "Upload the media before editing its metadata.",
+      "languageLabel": "Language",
+      "languagePlaceholder": "Select a language",
+      "languageHelper": "Switch between supported languages to update localized SEO fields.",
       "alt": "Alt text",
       "titleField": "Title",
       "description": "Description",
+      "cancel": "Cancel",
       "save": "Update metadata"
     }
   },

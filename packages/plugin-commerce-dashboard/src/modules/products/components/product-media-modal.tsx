@@ -24,6 +24,26 @@ import {
   ScrollBar,
 } from "@kitejs-cms/dashboard-core/components/ui/scroll-area";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@kitejs-cms/dashboard-core/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@kitejs-cms/dashboard-core/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@kitejs-cms/dashboard-core/components/ui/tooltip";
+import {
   Upload,
   Loader2,
   Image as ImageIcon,
@@ -32,6 +52,8 @@ import {
   Star,
   Trash2,
   XIcon,
+  FileText,
+  Languages,
 } from "lucide-react";
 
 interface ProductMediaModalProps {
@@ -61,6 +83,8 @@ export function ProductMediaModal({
 }: ProductMediaModalProps) {
   const { t } = useTranslation("commerce");
   const [activeMediaId, setActiveMediaId] = useState<string | null>(null);
+  const [metadataLanguage, setMetadataLanguage] = useState(language);
+  const [metadataTargetId, setMetadataTargetId] = useState<string | null>(null);
 
   const {
     ACCEPTED_TYPES,
@@ -83,10 +107,14 @@ export function ProductMediaModal({
     open,
     gallery,
     thumbnail,
-    language,
+    language: metadataLanguage,
     onConfirm,
     onPersist,
   });
+
+  useEffect(() => {
+    setMetadataLanguage(language);
+  }, [language]);
 
   useEffect(() => {
     if (!open) return;
@@ -104,11 +132,36 @@ export function ProductMediaModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, mediaItems]);
 
-  const activeMedia = useMemo(
+  const metadataTarget = useMemo(
     () =>
-      mediaItems.find((item) => getAssetId(item) === activeMediaId) ?? null,
-    [activeMediaId, mediaItems, getAssetId]
+      metadataTargetId
+        ? mediaItems.find((item) => getAssetId(item) === metadataTargetId) ??
+          null
+        : null,
+    [metadataTargetId, mediaItems, getAssetId]
   );
+
+  const { i18n } = useTranslation();
+
+  const availableLanguages = useMemo(() => {
+    const supported = (
+      (i18n.options?.supportedLngs as string[] | undefined) ??
+      i18n.languages ??
+      []
+    ).filter((code): code is string => Boolean(code) && code !== "cimode");
+
+    if (supported.length > 0) {
+      return Array.from(new Set(supported));
+    }
+
+    return [language];
+  }, [i18n, language]);
+
+  useEffect(() => {
+    if (!availableLanguages.includes(metadataLanguage)) {
+      setMetadataLanguage(availableLanguages[0] ?? language);
+    }
+  }, [availableLanguages, metadataLanguage, language]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -186,6 +239,7 @@ export function ProductMediaModal({
                 const displayUrl = item.previewUrl ?? item.url ?? undefined;
                 const isUploading = item.status === "uploading";
                 const isErrored = item.status === "error";
+                const isMetadataDisabled = !item.assetId || isUploading;
 
                 return (
                   <div
@@ -264,18 +318,49 @@ export function ProductMediaModal({
                           {item.name || identifier}
                         </span>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleRemove(identifier);
-                        }}
-                        className="text-muted-foreground hover:text-destructive p-2"
-                        disabled={isBusy || isConfirming || isUploading}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <TooltipProvider disableHoverableContent>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  if (isMetadataDisabled) return;
+                                  setMetadataTargetId(identifier);
+                                }}
+                                className="text-muted-foreground hover:text-foreground"
+                                disabled={
+                                  isMetadataDisabled ||
+                                  isBusy ||
+                                  item.isSavingMetadata
+                                }
+                              >
+                                <FileText className="h-4 w-4" />
+                                <span className="sr-only">
+                                  {t("products.details.media.metadata.open")}
+                                </span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              {t("products.details.media.metadata.open")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleRemove(identifier);
+                          }}
+                          className="text-muted-foreground hover:text-destructive p-2"
+                          disabled={isBusy || isConfirming || isUploading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -283,113 +368,6 @@ export function ProductMediaModal({
             </div>
             <ScrollBar orientation="vertical" />
           </ScrollArea>
-
-          {/* METADATA FORM */}
-          <div className="mt-6 rounded-xl border bg-background p-5 shadow-sm">
-            <div className="mb-4 flex flex-col gap-1">
-              <h3 className="text-lg font-semibold">
-                {t("products.details.media.metadata.title")}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t("products.details.media.metadata.subtitle", {
-                  language: language.toUpperCase(),
-                })}
-              </p>
-            </div>
-
-            {!activeMedia ? (
-              <p className="text-sm text-muted-foreground">
-                {t("products.details.media.metadata.selectHint")}
-              </p>
-            ) : !activeMedia.assetId ? (
-              <p className="text-sm text-muted-foreground">
-                {t("products.details.media.metadata.pendingUpload")}
-              </p>
-            ) : (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="media-alt">
-                      {t("products.details.media.metadata.alt")}
-                    </Label>
-                    <Input
-                      id="media-alt"
-                      value={
-                        activeMedia.metadata.alt?.[language] ?? ""
-                      }
-                      disabled={activeMedia.isSavingMetadata || isBusy}
-                      onChange={(event) =>
-                        handleMetadataChange(
-                          getAssetId(activeMedia),
-                          "alt",
-                          event.target.value
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="media-title">
-                      {t("products.details.media.metadata.titleField")}
-                    </Label>
-                    <Input
-                      id="media-title"
-                      value={
-                        activeMedia.metadata.title?.[language] ?? ""
-                      }
-                      disabled={activeMedia.isSavingMetadata || isBusy}
-                      onChange={(event) =>
-                        handleMetadataChange(
-                          getAssetId(activeMedia),
-                          "title",
-                          event.target.value
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="media-description">
-                    {t("products.details.media.metadata.description")}
-                  </Label>
-                  <Textarea
-                    id="media-description"
-                    value={
-                      activeMedia.metadata.description?.[language] ?? ""
-                    }
-                    disabled={activeMedia.isSavingMetadata || isBusy}
-                    onChange={(event) =>
-                      handleMetadataChange(
-                        getAssetId(activeMedia),
-                        "description",
-                        event.target.value
-                      )
-                    }
-                    className="min-h-[120px]"
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <Button
-                    onClick={() =>
-                      activeMedia.assetId &&
-                      handleMetadataSave(activeMedia.assetId)
-                    }
-                    disabled={
-                      !activeMedia.assetId ||
-                      activeMedia.isSavingMetadata ||
-                      isBusy
-                    }
-                  >
-                    {activeMedia.isSavingMetadata && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {t("products.details.media.metadata.save")}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* STATUS BANNER */}
           <div className="mt-4 space-y-2">
@@ -413,19 +391,164 @@ export function ProductMediaModal({
         </div>
 
         {/* FOOTER */}
-        <DialogFooter className="border-t px-8 py-6">
-          <DialogClose asChild>
-            <Button variant="outline">{t("products.buttons.cancel")}</Button>
-          </DialogClose>
-          <Button
-            onClick={() => void handleConfirm()}
-            disabled={isBusy || hasPendingUploads}
-          >
-            {isConfirming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t("products.details.media.confirm")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      <DialogFooter className="border-t px-8 py-6">
+        <DialogClose asChild>
+          <Button variant="outline">{t("products.buttons.cancel")}</Button>
+        </DialogClose>
+        <Button
+          onClick={() => void handleConfirm()}
+          disabled={isBusy || hasPendingUploads}
+        >
+          {isConfirming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {t("products.details.media.confirm")}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+    <Sheet
+      open={Boolean(metadataTarget)}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          setMetadataTargetId(null);
+        }
+      }}
+    >
+      <SheetContent
+        side="right"
+        className="flex w-full max-w-full flex-col gap-6 overflow-y-auto bg-background p-6 sm:max-w-lg"
+      >
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2 text-xl">
+            <FileText className="h-5 w-5" />
+            {t("products.details.media.metadata.title")}
+          </SheetTitle>
+          <SheetDescription>
+            {t("products.details.media.metadata.drawerSubtitle")}
+          </SheetDescription>
+        </SheetHeader>
+
+        {!metadataTarget || !metadataTarget.assetId ? (
+          <p className="text-sm text-muted-foreground">
+            {t("products.details.media.metadata.unavailable")}
+          </p>
+        ) : (
+          <div className="flex flex-1 flex-col gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="metadata-language" className="flex items-center gap-2">
+                <Languages className="h-4 w-4" />
+                {t("products.details.media.metadata.languageLabel")}
+              </Label>
+              <Select value={metadataLanguage} onValueChange={setMetadataLanguage}>
+                <SelectTrigger id="metadata-language" className="w-full">
+                  <SelectValue
+                    placeholder={t(
+                      "products.details.media.metadata.languagePlaceholder"
+                    )}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableLanguages.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {code.toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {t("products.details.media.metadata.languageHelper")}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="metadata-alt">
+                  {t("products.details.media.metadata.alt")}
+                </Label>
+                <Input
+                  id="metadata-alt"
+                  value={metadataTarget.metadata.alt?.[metadataLanguage] ?? ""}
+                  disabled={metadataTarget.isSavingMetadata || isBusy}
+                  onChange={(event) =>
+                    handleMetadataChange(
+                      metadataTarget.assetId!,
+                      "alt",
+                      event.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="metadata-title">
+                  {t("products.details.media.metadata.titleField")}
+                </Label>
+                <Input
+                  id="metadata-title"
+                  value={metadataTarget.metadata.title?.[metadataLanguage] ?? ""}
+                  disabled={metadataTarget.isSavingMetadata || isBusy}
+                  onChange={(event) =>
+                    handleMetadataChange(
+                      metadataTarget.assetId!,
+                      "title",
+                      event.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="metadata-description">
+                  {t("products.details.media.metadata.description")}
+                </Label>
+                <Textarea
+                  id="metadata-description"
+                  value={
+                    metadataTarget.metadata.description?.[metadataLanguage] ??
+                    ""
+                  }
+                  disabled={metadataTarget.isSavingMetadata || isBusy}
+                  onChange={(event) =>
+                    handleMetadataChange(
+                      metadataTarget.assetId!,
+                      "description",
+                      event.target.value
+                    )
+                  }
+                  className="min-h-[120px]"
+                />
+              </div>
+            </div>
+
+            <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMetadataTargetId(null)}
+              >
+                {t("products.details.media.metadata.cancel")}
+              </Button>
+              <Button
+                type="button"
+                onClick={async () => {
+                  if (!metadataTarget.assetId) return;
+                  await handleMetadataSave(metadataTarget.assetId);
+                  setMetadataTargetId(null);
+                }}
+                disabled={
+                  !metadataTarget.assetId ||
+                  metadataTarget.isSavingMetadata ||
+                  isBusy
+                }
+              >
+                {metadataTarget.isSavingMetadata && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {t("products.details.media.metadata.save")}
+              </Button>
+            </div>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
     </Dialog>
   );
 }
