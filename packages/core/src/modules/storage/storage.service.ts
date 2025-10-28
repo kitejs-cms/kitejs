@@ -168,7 +168,7 @@ export class StorageService {
     assetId: string,
     updateData: UpdateStorageMetadata,
     lang: string
-  ): Promise<StorageDocument> {
+  ): Promise<StorageResponseModel> {
     const asset = await this.storageModel.findById(assetId);
 
     if (!asset) {
@@ -203,7 +203,8 @@ export class StorageService {
     }
 
     await asset.save();
-    return asset;
+
+    return this.getAssetById(assetId, lang);
   }
 
   /**
