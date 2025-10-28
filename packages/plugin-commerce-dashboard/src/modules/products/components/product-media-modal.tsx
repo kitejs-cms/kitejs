@@ -144,18 +144,26 @@ export function ProductMediaModal({
   const { i18n } = useTranslation();
 
   const availableLanguages = useMemo(() => {
-    const supported = (
+    const rawSupported =
       (i18n.options?.supportedLngs as string[] | undefined) ??
       i18n.languages ??
-      []
-    ).filter((code): code is string => Boolean(code) && code !== "cimode");
+      i18n.language ??
+      [];
 
-    if (supported.length > 0) {
-      return Array.from(new Set(supported));
+    const normalized = Array.isArray(rawSupported)
+      ? rawSupported
+      : [rawSupported];
+
+    const filtered = normalized.filter(
+      (code): code is string => Boolean(code) && code !== "cimode"
+    );
+
+    if (filtered.length > 0) {
+      return Array.from(new Set(filtered));
     }
 
     return [language];
-  }, [i18n, language]);
+  }, [i18n.language, i18n.languages, i18n.options?.supportedLngs, language]);
 
   useEffect(() => {
     if (!availableLanguages.includes(metadataLanguage)) {
