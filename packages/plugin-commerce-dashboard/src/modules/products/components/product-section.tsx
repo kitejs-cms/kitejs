@@ -18,12 +18,13 @@ import type {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProductMediaModal } from "./product-media-modal";
+import type { MediaSource } from "../hooks/use-product-media";
 
 interface ProductSectionProps {
   activeLang: string;
   translations: Record<string, ProductTranslationModel>;
   collections?: string[];
-  gallery?: string[];
+  gallery?: MediaSource[];
   thumbnail?: string;
   thumbnailError?: string;
   onChange: (
@@ -213,11 +214,11 @@ export function ProductSection({
       </CardContent>
 
       <ProductMediaModal
-        open
-        /*  open={isMediaModalOpen} */
+        open={isMediaModalOpen}
         onOpenChange={setIsMediaModalOpen}
         gallery={gallery ?? []}
         thumbnail={thumbnail}
+        language={activeLang}
         onConfirm={handleConfirmMedia}
         onPersist={handleAutoPersistMedia}
       />

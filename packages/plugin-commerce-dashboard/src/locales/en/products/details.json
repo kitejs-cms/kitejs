@@ -42,7 +42,17 @@
       "title": "Unable to update media",
       "description": "We couldn't attach the latest files. Try saving the product manually."
     },
-    "errorReminder": "Remove media with failed uploads before saving."
+    "errorReminder": "Remove media with failed uploads before saving.",
+    "metadata": {
+      "title": "Media SEO",
+      "subtitle": "Provide localized metadata for the selected media ({{language}}).",
+      "selectHint": "Select a media item from the gallery to edit its metadata.",
+      "pendingUpload": "Upload the media before editing its metadata.",
+      "alt": "Alt text",
+      "titleField": "Title",
+      "description": "Description",
+      "save": "Update metadata"
+    }
   },
   "settings": {
     "title": "Settings",

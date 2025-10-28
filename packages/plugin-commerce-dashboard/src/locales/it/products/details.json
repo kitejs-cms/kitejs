@@ -42,7 +42,17 @@
       "title": "Impossibile aggiornare i media",
       "description": "Non è stato possibile associare gli ultimi file. Prova a salvare manualmente il prodotto."
     },
-    "errorReminder": "Rimuovi i media con upload non riuscito prima di salvare."
+    "errorReminder": "Rimuovi i media con upload non riuscito prima di salvare.",
+    "metadata": {
+      "title": "SEO media",
+      "subtitle": "Compila i metadati localizzati per il media selezionato ({{language}}).",
+      "selectHint": "Seleziona un elemento dalla galleria per modificarne i metadati.",
+      "pendingUpload": "Carica il media prima di modificarne i metadati.",
+      "alt": "Testo alternativo",
+      "titleField": "Titolo",
+      "description": "Descrizione",
+      "save": "Aggiorna metadati"
+    }
   },
   "settings": {
     "title": "Impostazioni",
