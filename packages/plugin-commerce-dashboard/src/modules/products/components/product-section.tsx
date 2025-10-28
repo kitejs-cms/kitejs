@@ -25,7 +25,7 @@ interface ProductSectionProps {
   translations: Record<string, ProductTranslationModel>;
   collections?: string[];
   gallery?: MediaSource[];
-  thumbnail?: string;
+  thumbnail?: string | null;
   thumbnailError?: string;
   onChange: (
     field: keyof ProductTranslationModel,

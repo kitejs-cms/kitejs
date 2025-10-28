@@ -13,6 +13,7 @@ import type {
   ProductUpsertModel,
   ProductSeoModel,
 } from "@kitejs-cms/plugin-commerce-api";
+import type { MediaSource } from "./use-product-media";
 
 const arraysEqual = (a: string[], b: string[]) =>
   a.length === b.length && a.every((value, index) => value === b[index]);
@@ -29,8 +30,53 @@ const getTranslationCandidate = (
   return null;
 };
 
+type ProductDetailsState = Omit<
+  ProductResponseDetailsModel,
+  "gallery" | "thumbnail"
+> & {
+  gallery: MediaSource[];
+  thumbnail?: string | null;
+};
+
+const extractAssetId = (source: MediaSource | undefined | null): string | null => {
+  if (!source) return null;
+  if (typeof source === "string") return source;
+  return (
+    source.assetId ??
+    source.id ??
+    source._id ??
+    source.path ??
+    null
+  );
+};
+
+const mapAssetIdsToSources = (
+  assetIds: string[],
+  previous: MediaSource[]
+): MediaSource[] => {
+  if (!assetIds.length) return [];
+
+  const lookup = new Map<string, MediaSource>();
+  previous.forEach((entry) => {
+    const key = extractAssetId(entry);
+    if (key) {
+      lookup.set(key, entry);
+    }
+  });
+
+  return assetIds.map((id) => lookup.get(id) ?? id);
+};
+
+const hydrateProductDetails = (
+  product: ProductResponseDetailsModel
+): ProductDetailsState => ({
+  ...product,
+  gallery: product.gallery ?? [],
+  thumbnail: product.thumbnail ?? null,
+});
+
 const findTranslationForUpsert = (
-  product: ProductResponseDetailsModel,
+  product: ProductDetailsState,
   preferredLang?: string,
   fallbackLang?: string
 ) => {
@@ -77,8 +123,7 @@ export function useProductDetails() {
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
 
-  const [localData, setLocalData] =
-    useState<ProductResponseDetailsModel | null>(null);
+  const [localData, setLocalData] = useState<ProductDetailsState | null>(null);
 
   useEffect(() => {
     const items = [
@@ -99,7 +144,7 @@ export function useProductDetails() {
     if (!defaultLang) return;
 
     if (id === "create") {
-      const newProduct: ProductResponseDetailsModel = {
+      const newProduct: ProductDetailsState = {
         id: "",
         status: "Draft" as never,
         type: "",
@@ -115,7 +160,7 @@ export function useProductDetails() {
         updatedAt: undefined,
         publishAt: undefined,
         expireAt: undefined,
-        thumbnail: "",
+        thumbnail: null,
         translations: {
           [defaultLang]: {
             title: "",
@@ -135,7 +180,7 @@ export function useProductDetails() {
       (async () => {
         const result = await fetchData(`commerce/products/${id}`);
         if (result?.data) {
-          setLocalData(result.data);
+          setLocalData(hydrateProductDetails(result.data));
           setHasChanges(false);
         }
       })();
@@ -341,6 +386,10 @@ export function useProductDetails() {
         return;
       }
 
+      const galleryAssetIds = (localData.gallery ?? [])
+        .map((entry) => extractAssetId(entry))
+        .filter((id): id is string => Boolean(id));
+
       const body: ProductUpsertModel = {
         id: id && id !== "create" ? localData.id : undefined,
         language: activeLang,
@@ -355,8 +404,8 @@ export function useProductDetails() {
         publishAt: localData.publishAt,
         expireAt: localData.expireAt,
         collections: localData.collections ?? null,
-        gallery: localData.gallery ?? [],
-        thumbnail: localData.thumbnail,
+        gallery: galleryAssetIds,
+        thumbnail: localData.thumbnail ?? undefined,
       };
 
       const result = await fetchData("commerce/products", "POST", body);
@@ -376,7 +425,7 @@ export function useProductDetails() {
           }
         );
 
-        setLocalData(result.data);
+        setLocalData(hydrateProductDetails(result.data));
         setHasChanges(false);
         setFormErrors({});
 
@@ -445,21 +494,27 @@ export function useProductDetails() {
       const nextGallery = value.gallery ?? [];
       const nextThumbnail = value.thumbnail ?? "";
 
-      const currentGallery = localData.gallery ?? [];
+      const normalizedNextGallery = nextGallery.filter((id) => Boolean(id));
+      const currentGalleryIds = (localData.gallery ?? [])
+        .map((entry) => extractAssetId(entry))
+        .filter((id): id is string => Boolean(id));
       const currentThumbnail = localData.thumbnail ?? "";
 
       if (
-        arraysEqual(currentGallery, nextGallery) &&
+        arraysEqual(currentGalleryIds, normalizedNextGallery) &&
         currentThumbnail === nextThumbnail &&
         !options?.force
       ) {
         return;
       }
 
-      const updatedData: ProductResponseDetailsModel = {
+      const updatedData: ProductDetailsState = {
         ...localData,
-        gallery: nextGallery,
-        thumbnail: nextThumbnail,
+        gallery: mapAssetIdsToSources(
+          normalizedNextGallery,
+          localData.gallery ?? []
+        ),
+        thumbnail: nextThumbnail || null,
       };
 
       setLocalData(updatedData);
@@ -505,14 +560,14 @@ export function useProductDetails() {
         publishAt: updatedData.publishAt,
         expireAt: updatedData.expireAt,
         collections: updatedData.collections ?? [],
-        gallery: nextGallery,
+        gallery: normalizedNextGallery,
         thumbnail: nextThumbnail,
       };
 
       try {
         const result = await fetchData("commerce/products", "POST", body);
         if (result?.data) {
-          setLocalData(result.data);
+          setLocalData(hydrateProductDetails(result.data));
         }
       } catch (error) {
         console.error("Failed to sync product media", error);
