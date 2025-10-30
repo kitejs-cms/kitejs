@@ -5,6 +5,9 @@
 export type StorageItemType = "file" | "directory";
 
 export type StorageResponseModel = {
+  /** Unique identifier of the storage item when persisted */
+  id?: string;
+
   /** Name of the file or directory */
   name: string;
 

@@ -6,6 +6,12 @@ import {
 } from "../models/storage-response.model";
 
 export class StorageResponseDto implements StorageResponseModel {
+  @ApiProperty({
+    description: "Unique identifier of the storage item when persisted.",
+    required: false,
+  })
+  id?: string;
+
   @ApiProperty({ description: "Name of the file or directory" })
   name: string;
 

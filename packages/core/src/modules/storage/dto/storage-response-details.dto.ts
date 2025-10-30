@@ -15,6 +15,13 @@ import {
  * including metadata and localized fields.
  */
 export class StorageResponseDetailsDto implements StorageResponseDetailsModel {
+  @ApiPropertyOptional({
+    description: "Unique identifier of the storage item when persisted.",
+  })
+  @IsOptional()
+  @IsString()
+  id?: string;
+
   @ApiProperty({
     description: "Name of the file or directory.",
     example: "hero-banner.jpg",

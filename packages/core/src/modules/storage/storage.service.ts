@@ -225,6 +225,7 @@ export class StorageService {
     const fileUrl = await this.getFileUrl(asset.filePath);
 
     const response: StorageResponseModel = {
+      id: asset._id?.toString(),
       name: asset.fileName,
       path: asset.filePath,
       type: "file",
@@ -262,6 +263,7 @@ export class StorageService {
 
     // Build localized response array
     const response: StorageResponseModel[] = assets.map((asset, index) => ({
+      id: asset._id?.toString(),
       name: asset.fileName,
       path: asset.filePath,
       type: "file",
@@ -288,6 +290,7 @@ export class StorageService {
     const fileUrl = await this.getFileUrl(asset.filePath);
 
     const response: StorageResponseDetailsModel = {
+      id: asset._id?.toString(),
       name: asset.fileName,
       path: asset.filePath,
       type: "file",
@@ -327,6 +330,7 @@ export class StorageService {
 
     const response: StorageResponseDetailsModel[] = assets.map(
       (asset, index) => ({
+        id: asset._id?.toString(),
         name: asset.fileName,
         path: asset.filePath,
         type: "file",

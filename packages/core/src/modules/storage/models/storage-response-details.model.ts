@@ -7,6 +7,9 @@
 import { StorageItemType } from "./storage-response.model";
 
 export type StorageResponseDetailsModel = {
+  /** Unique identifier of the storage item when persisted. */
+  id?: string;
+
   /** Name of the file or directory */
   name: string;
 
