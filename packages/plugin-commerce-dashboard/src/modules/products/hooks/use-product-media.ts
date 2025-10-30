@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { StorageResponseDetailsModel } from "@kitejs-cms/core";
+import type {
+  StorageResponseDetailsModel,
+  UpdateStorageMetadata,
+} from "@kitejs-cms/core";
 import { IdGenerator, useApi } from "@kitejs-cms/dashboard-core";
 import { getTypeFromFile, getTypeFromUrl } from "../helpers";
 
@@ -17,11 +20,24 @@ export type MediaSource =
       _id?: string;
     });
 
+type MediaMetadataField = keyof Pick<
+  StorageResponseDetailsModel,
+  "alt" | "title" | "description"
+>;
+
 type MediaMetadata = {
-  alt: Record<string, string>;
-  title: Record<string, string>;
-  description: Record<string, string>;
+  [Field in MediaMetadataField]: NonNullable<
+    StorageResponseDetailsModel[Field]
+  >;
 };
+
+const createMetadata = (
+  source?: Pick<StorageResponseDetailsModel, MediaMetadataField>
+): MediaMetadata => ({
+  alt: (source?.alt ?? {}) as MediaMetadata["alt"],
+  title: (source?.title ?? {}) as MediaMetadata["title"],
+  description: (source?.description ?? {}) as MediaMetadata["description"],
+});
 
 export interface MediaItem {
   /** Internal identifier used for rendering */
@@ -76,7 +92,7 @@ const normalizeMediaItems = (gallery: MediaSource[]): MediaItem[] =>
         previewIsObject: false,
         status: "idle" as MediaStatus,
         type: deriveType(url),
-        metadata: { alt: {}, title: {}, description: {} },
+        metadata: createMetadata(),
         isSavingMetadata: false,
       } satisfies MediaItem;
     }
@@ -94,11 +110,7 @@ const normalizeMediaItems = (gallery: MediaSource[]): MediaItem[] =>
       previewIsObject: false,
       status: "idle",
       type: deriveType(url, entry.mediaType),
-      metadata: {
-        alt: entry.alt ?? {},
-        title: entry.title ?? {},
-        description: entry.description ?? {},
-      },
+      metadata: createMetadata(entry),
       isSavingMetadata: false,
     } satisfies MediaItem;
   });
@@ -211,7 +223,7 @@ export function useProductMediaManager({
         previewIsObject: true,
         status: "uploading",
         type: getTypeFromFile(file),
-        metadata: { alt: {}, title: {}, description: {} },
+        metadata: createMetadata(),
         isSavingMetadata: false,
       }));
 
@@ -337,7 +349,7 @@ export function useProductMediaManager({
 
   // 📝 Gestione metadati SEO
   const handleMetadataChange = useCallback(
-    (assetId: string, field: keyof MediaMetadata, value: string) => {
+    (assetId: string, field: MediaMetadataField, value: string) => {
       setMediaItems((prev) =>
         prev.map((item) => {
           if (item.assetId !== assetId && item.internalId !== assetId) {
@@ -370,19 +382,18 @@ export function useProductMediaManager({
         return;
       }
 
-      const payloadEntries: Partial<Record<keyof MediaMetadata, string>> = {
-        alt: target.metadata.alt?.[language]?.trim(),
-        title: target.metadata.title?.[language]?.trim(),
-        description: target.metadata.description?.[language]?.trim(),
-      };
+      const payload: UpdateStorageMetadata = {};
 
-      const body = Object.fromEntries(
-        Object.entries(payloadEntries).filter(
-          ([, value]) => Boolean(value)
-        )
-      );
+      const altValue = target.metadata.alt?.[language]?.trim();
+      if (altValue) payload.alt = altValue;
 
-      if (Object.keys(body).length === 0) {
+      const titleValue = target.metadata.title?.[language]?.trim();
+      if (titleValue) payload.title = titleValue;
+
+      const descriptionValue = target.metadata.description?.[language]?.trim();
+      if (descriptionValue) payload.description = descriptionValue;
+
+      if (Object.keys(payload).length === 0) {
         return;
       }
 
@@ -398,7 +409,7 @@ export function useProductMediaManager({
         await fetchData(
           `storage/${target.assetId}/metadata`,
           "PATCH",
-          body,
+          payload,
           {
             headers: {
               "Accept-Language": language,
