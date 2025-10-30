@@ -382,18 +382,30 @@ export function useProductMediaManager({
         return;
       }
 
-      const payload: UpdateStorageMetadata = {};
+      const payload: UpdateStorageMetadata = {
+        language,
+      };
 
-      const altValue = target.metadata.alt?.[language]?.trim();
-      if (altValue) payload.alt = altValue;
+      const altValue = target.metadata.alt?.[language];
+      if (typeof altValue === "string") {
+        payload.alt = altValue;
+      }
 
-      const titleValue = target.metadata.title?.[language]?.trim();
-      if (titleValue) payload.title = titleValue;
+      const titleValue = target.metadata.title?.[language];
+      if (typeof titleValue === "string") {
+        payload.title = titleValue;
+      }
 
-      const descriptionValue = target.metadata.description?.[language]?.trim();
-      if (descriptionValue) payload.description = descriptionValue;
+      const descriptionValue = target.metadata.description?.[language];
+      if (typeof descriptionValue === "string") {
+        payload.description = descriptionValue;
+      }
 
-      if (Object.keys(payload).length === 0) {
+      const hasMetadataFields = Object.keys(payload).some(
+        (key) => key !== "language"
+      );
+
+      if (!hasMetadataFields) {
         return;
       }
 
@@ -409,12 +421,7 @@ export function useProductMediaManager({
         await fetchData(
           `storage/${target.assetId}/metadata`,
           "PATCH",
-          payload,
-          {
-            headers: {
-              "Accept-Language": language,
-            },
-          }
+          payload
         );
         setHasErrors(false);
       } catch (error) {

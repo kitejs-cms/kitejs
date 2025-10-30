@@ -3,6 +3,9 @@
  * used to modify SEO-related and file information for stored assets.
  */
 export type UpdateStorageMetadata = {
+  /** Language code identifying which localized values should be updated */
+  language: string;
+
   /** Alternative text for accessibility and SEO (supports multiple languages) */
   alt?: string;
 

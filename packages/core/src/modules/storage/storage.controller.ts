@@ -8,7 +8,7 @@ import { CopyPathDto } from "./dto/copy-path.dto";
 import { StorageResponseDto } from "./dto/storage-response.dto";
 import { UpdateStorageMetadataDto } from "./dto/update-storage-metadata.dto";
 import { JwtAuthGuard, PermissionsGuard } from "../auth";
-import { Language, Permissions } from "../../common";
+import { Permissions } from "../../common";
 import {
   Controller,
   Post,
@@ -224,15 +224,13 @@ export class StorageController {
   @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async updateMetadata(
-    @Language() language: string,
     @Param("id") id: string,
     @Body() dto: UpdateStorageMetadataDto
   ) {
     try {
       const result = await this.storageService.updateMetadata(
         id,
-        dto,
-        language
+        dto
       );
       return {
         message: "Metadata updated successfully",

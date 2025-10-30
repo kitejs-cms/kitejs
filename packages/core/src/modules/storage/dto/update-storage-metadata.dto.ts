@@ -1,11 +1,19 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString, IsNumber } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { UpdateStorageMetadata } from "../models/update-storage-metadata.model";
 
 /**
  * DTO for updating storage metadata such as alt, title, and description.
  */
 export class UpdateStorageMetadataDto implements UpdateStorageMetadata {
+  @ApiProperty({
+    description: "Language code for the metadata update (e.g. 'en').",
+    example: "en",
+  })
+  @IsNotEmpty()
+  @IsString()
+  language: string;
+
   @ApiPropertyOptional({
     description:
       "Alternative text for accessibility and SEO. Example: 'Dog photo'.",

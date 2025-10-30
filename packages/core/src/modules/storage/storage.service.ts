@@ -3,7 +3,7 @@ import {
   STORAGE_SETTINGS_KEY,
   type StorageSettingsModel,
 } from "../settings";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Model } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
 import { IStorageProvider } from "./storage-provider.interface";
@@ -166,8 +166,7 @@ export class StorageService {
    */
   async updateMetadata(
     assetId: string,
-    updateData: UpdateStorageMetadata,
-    lang: string
+    updateData: UpdateStorageMetadata
   ): Promise<StorageResponseModel> {
     const asset = await this.storageModel.findById(assetId);
 
@@ -175,18 +174,24 @@ export class StorageService {
       throw new NotFoundException(`Asset with ID ${assetId} not found`);
     }
 
+    const { language } = updateData;
+
+    if (!language) {
+      throw new BadRequestException("Language is required to update metadata");
+    }
+
     if (typeof updateData.alt === "string") {
-      asset.alt = setLocalizedValue(asset.alt, lang, updateData.alt);
+      asset.alt = setLocalizedValue(asset.alt, language, updateData.alt);
     }
 
     if (typeof updateData.title === "string") {
-      asset.title = setLocalizedValue(asset.title, lang, updateData.title);
+      asset.title = setLocalizedValue(asset.title, language, updateData.title);
     }
 
     if (typeof updateData.description === "string") {
       asset.description = setLocalizedValue(
         asset.description,
-        lang,
+        language,
         updateData.description
       );
     }
@@ -205,7 +210,7 @@ export class StorageService {
 
     await asset.save();
 
-    return this.getAssetById(assetId, lang);
+    return this.getAssetById(assetId, language);
   }
 
   /**
@@ -231,9 +236,9 @@ export class StorageService {
       path: asset.filePath,
       type: "file",
       url: fileUrl,
-      alt: getLocalizedValue(asset.alt),
-      title: getLocalizedValue(asset.title),
-      description: getLocalizedValue(asset.description),
+      alt: getLocalizedValue(asset.alt, lang),
+      title: getLocalizedValue(asset.title, lang),
+      description: getLocalizedValue(asset.description, lang),
     };
 
     return response;
@@ -269,9 +274,9 @@ export class StorageService {
       path: asset.filePath,
       type: "file",
       url: urls[index],
-      alt: getLocalizedValue(asset.alt),
-      title: getLocalizedValue(asset.title),
-      description: getLocalizedValue(asset.description),
+      alt: getLocalizedValue(asset.alt, lang),
+      title: getLocalizedValue(asset.title, lang),
+      description: getLocalizedValue(asset.description, lang),
     }));
 
     return response;
