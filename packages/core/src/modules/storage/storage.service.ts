@@ -10,7 +10,7 @@ import { IStorageProvider } from "./storage-provider.interface";
 import { S3StorageProvider } from "./providers/s3-storage.provider";
 import { LocalStorageProvider } from "./providers/local-storage.provider";
 import { Storage, StorageDocument } from "./storage.schema";
-import { getLocalizedValue } from "../../common/utils/localized";
+import { getLocalizedValue, setLocalizedValue } from "../../common/utils/localized";
 import type { UpdateStorageMetadata } from "./models/update-storage-metadata.model";
 import type { UploadResultModel } from "./models/upload-result.model";
 import type { DirectoryNodeModel } from "./models/fs-node.model";
@@ -175,19 +175,20 @@ export class StorageService {
       throw new NotFoundException(`Asset with ID ${assetId} not found`);
     }
 
-    if (updateData.alt) {
-      asset.alt = { ...asset.alt, [lang]: updateData.alt.trim() };
+    if (typeof updateData.alt === "string") {
+      asset.alt = setLocalizedValue(asset.alt, lang, updateData.alt);
     }
 
-    if (updateData.title) {
-      asset.title = { ...asset.title, [lang]: updateData.title.trim() };
+    if (typeof updateData.title === "string") {
+      asset.title = setLocalizedValue(asset.title, lang, updateData.title);
     }
 
-    if (updateData.description) {
-      asset.description = {
-        ...asset.description,
-        [lang]: updateData.description.trim(),
-      };
+    if (typeof updateData.description === "string") {
+      asset.description = setLocalizedValue(
+        asset.description,
+        lang,
+        updateData.description
+      );
     }
 
     if (updateData.mediaType) {

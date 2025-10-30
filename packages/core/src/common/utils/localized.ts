@@ -37,9 +37,14 @@ export function setLocalizedValue(
     existing instanceof Map ? existing : Object.entries(existing ?? {})
   );
 
-  if (value && value.trim() !== "") {
-    map.set(lang, value.trim());
+  const trimmedValue = value.trim();
+
+  if (trimmedValue === "") {
+    map.delete(lang);
+    return map;
   }
+
+  map.set(lang, trimmedValue);
 
   return map;
 }
