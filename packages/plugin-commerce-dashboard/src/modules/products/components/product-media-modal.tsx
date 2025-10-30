@@ -6,6 +6,7 @@ import {
   Input,
   Label,
   Textarea,
+  useSettingsContext,
 } from "@kitejs-cms/dashboard-core";
 import {
   useProductMediaManager,
@@ -86,6 +87,8 @@ export function ProductMediaModal({
   const [metadataLanguage, setMetadataLanguage] = useState(language);
   const [metadataTargetId, setMetadataTargetId] = useState<string | null>(null);
 
+  const { cmsSettings } = useSettingsContext();
+
   const {
     ACCEPTED_TYPES,
     fileInputRef,
@@ -143,7 +146,7 @@ export function ProductMediaModal({
 
   const { i18n } = useTranslation();
 
-  const availableLanguages = useMemo(() => {
+  const fallbackLanguages = useMemo(() => {
     const rawSupported =
       (i18n.options?.supportedLngs as string[] | undefined) ??
       i18n.languages ??
@@ -154,16 +157,48 @@ export function ProductMediaModal({
       ? rawSupported
       : [rawSupported];
 
-    const filtered = normalized.filter(
+    return normalized.filter(
       (code): code is string => Boolean(code) && code !== "cimode"
     );
+  }, [i18n.language, i18n.languages, i18n.options?.supportedLngs]);
 
-    if (filtered.length > 0) {
-      return Array.from(new Set(filtered));
+  const configuredLanguages = useMemo(() => {
+    const configured = [
+      ...(cmsSettings?.supportedLanguages ?? []),
+      cmsSettings?.defaultLanguage,
+    ].filter((code): code is string => Boolean(code));
+
+    if (configured.length === 0) {
+      return null;
     }
 
-    return [language];
-  }, [i18n.language, i18n.languages, i18n.options?.supportedLngs, language]);
+    const unique = Array.from(new Set(configured));
+
+    return unique.sort((a, b) => {
+      if (a === cmsSettings?.defaultLanguage) return -1;
+      if (b === cmsSettings?.defaultLanguage) return 1;
+      return a.localeCompare(b);
+    });
+  }, [cmsSettings?.defaultLanguage, cmsSettings?.supportedLanguages]);
+
+  const availableLanguages = useMemo(() => {
+    const base = configuredLanguages && configuredLanguages.length > 0
+      ? configuredLanguages
+      : fallbackLanguages.length > 0
+        ? Array.from(new Set(fallbackLanguages))
+        : [language];
+
+    if (!metadataLanguage || base.includes(metadataLanguage)) {
+      return base;
+    }
+
+    return [...base, metadataLanguage];
+  }, [
+    configuredLanguages,
+    fallbackLanguages,
+    language,
+    metadataLanguage,
+  ]);
 
   useEffect(() => {
     if (!availableLanguages.includes(metadataLanguage)) {
