@@ -254,8 +254,18 @@ export class ProductsService {
         };
       }
 
+      const gallery = await this.storageService.getAssetsDetails(
+        product.gallery.map((g) => g.toString())
+      );
+
+      const thumbnail = product.thumbnail
+        ? await this.storageService.getFileUrl(product.thumbnail?.toString())
+        : null;
+
       return {
         ...(product as unknown as ProductResponseDetailsModel),
+        gallery,
+        thumbnail,
         translations,
         collections: product.collections.map((c) => c.toString()),
         createdBy: `${product.createdBy.firstName} ${product.createdBy.lastName}`,
@@ -289,8 +299,6 @@ export class ProductsService {
         throw new NotFoundException(`Product with ID "${id}" not found.`);
       }
 
-      product.id = product._id.toString();
-
       const slugs = await this.slugService.findSlugsByEntity(
         new Types.ObjectId(id)
       );
@@ -308,24 +316,22 @@ export class ProductsService {
         };
       }
 
-      const thumbnail = product.thumbnail
-        ? await this.storageService.getFileUrl(product.thumbnail.toString())
-        : null;
+      const gallery = await this.storageService.getAssetsDetails(
+        product.gallery.map((g) => g.toString())
+      );
 
-      const gallery = product.gallery.length
-        ? await this.storageService.getAssetsDetails(
-            product.gallery.map((asset) => asset.toString())
-          )
-        : [];
+      const thumbnail = product.thumbnail
+        ? await this.storageService.getFileUrl(product.thumbnail?.toString())
+        : null;
 
       return {
         ...(product as unknown as ProductResponseDetailsModel),
+        gallery,
+        thumbnail,
         translations: translationsWithSlug,
         collections: product.collections.map((c) => c.toString()),
         createdBy: product.createdBy ? product.createdBy.toString() : null,
         updatedBy: product.updatedBy ? product.updatedBy.toString() : null,
-        thumbnail,
-        gallery,
       };
     } catch (error) {
       this.logger.error(error);
