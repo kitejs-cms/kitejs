@@ -94,10 +94,10 @@ export function CommerceProductDetailsPage() {
 
       <div className="sticky bottom-0 bg-background border-t py-4 mt-6 flex justify-end gap-3">
         <Button variant="outline" onClick={() => handleNavigation("/pages")}>
-          {t("buttons.cancel")}
+          {t("products.buttons.cancel")}
         </Button>
         <Button onClick={() => handleSave()} disabled={!hasChanges}>
-          {t("buttons.save")}
+          {t("products.buttons.save")}
         </Button>
       </div>
 

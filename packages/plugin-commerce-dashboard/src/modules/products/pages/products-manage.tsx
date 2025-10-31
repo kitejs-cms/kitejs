@@ -353,7 +353,6 @@ export function CommerceProductsPage() {
               onClick={() => {
                 void confirmDelete();
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={deleteLoading}
             >
               {t("products.delete.confirm")}
