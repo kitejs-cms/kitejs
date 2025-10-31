@@ -18,6 +18,12 @@ import type { MediaSource } from "./use-product-media";
 const arraysEqual = (a: string[], b: string[]) =>
   a.length === b.length && a.every((value, index) => value === b[index]);
 
+const generateSlug = (title: string) =>
+  title
+    .toLowerCase()
+    .trim()
+    .replace(/[\s\W-]+/g, "-");
+
 const getTranslationCandidate = (
   translations: Record<string, ProductTranslationModel>,
   lang?: string
@@ -219,26 +225,134 @@ export function useProductDetails() {
     navigate(navigateTo);
   }, [navigate, navigateTo]);
 
-  const onAddLanguage = useCallback((lang: string) => {
-    setLocalData((prev) => {
-      if (!prev) return prev;
-      if (prev.translations[lang]) {
-        setActiveLang(lang);
-        return prev;
+  const onAddLanguage = useCallback(
+    async (lang: string) => {
+      if (!localData) return;
+
+      const previousHasChanges = hasChanges;
+
+      if (localData.id && hasChanges) {
+        toast.error(t("products.details.notifications.languageAddError.title"), {
+          description: t(
+            "products.details.notifications.languageAddError.description"
+          ),
+        });
+        return;
       }
-      const empty: ProductTranslationModel = {
-        title: "",
-        description: "",
-        slug: "",
+
+      if (localData.translations[lang]) {
+        setActiveLang(lang);
+        return;
+      }
+
+      const currentActiveLang = activeLang;
+      const previousData = localData;
+
+      const baseTranslation =
+        localData.translations[currentActiveLang] ??
+        (defaultLang ? localData.translations[defaultLang] : undefined) ??
+        Object.values(localData.translations)[0];
+
+      const template: ProductTranslationModel = {
+        title: baseTranslation?.title ?? "",
+        description: baseTranslation?.description ?? "",
+        slug: baseTranslation?.slug ?? "",
+        summary: baseTranslation?.summary ?? "",
+        seo: baseTranslation?.seo ? { ...baseTranslation.seo } : undefined,
       };
+
+      const fallbackTitle = template.title?.trim()
+        ? template.title.trim()
+        : baseTranslation?.title?.trim()
+        ? `${baseTranslation.title.trim()} (${lang.toUpperCase()})`
+        : t(
+            "products.details.notifications.languageAdded.defaultTitle",
+            { language: lang.toUpperCase() }
+          );
+
+      const fallbackSlug = template.slug?.trim()
+        ? template.slug.trim()
+        : generateSlug(`${fallbackTitle}-${lang}`);
+
+      const normalizedTranslation: ProductTranslationModel = {
+        ...template,
+        title: fallbackTitle,
+        slug: fallbackSlug,
+      };
+
+      const optimisticData: ProductDetailsState = {
+        ...localData,
+        translations: {
+          ...localData.translations,
+          [lang]: normalizedTranslation,
+        },
+      };
+
+      setLocalData(optimisticData);
       setActiveLang(lang);
-      setHasChanges(true);
-      return {
-        ...prev,
-        translations: { ...prev.translations, [lang]: empty },
+
+      if (!localData.id) {
+        setHasChanges(true);
+        return;
+      }
+
+      const galleryAssetIds = (optimisticData.gallery ?? [])
+        .map((entry) => extractAssetId(entry))
+        .filter((id): id is string => Boolean(id));
+
+      const body: ProductUpsertModel = {
+        id: localData.id,
+        language: lang,
+        status: optimisticData.status,
+        slug: normalizedTranslation.slug,
+        title: normalizedTranslation.title,
+        summary: normalizedTranslation.summary,
+        description: normalizedTranslation.description,
+        seo: normalizedTranslation.seo,
+        isDigital: optimisticData.isDigital,
+        tags: optimisticData.tags,
+        publishAt: optimisticData.publishAt,
+        expireAt: optimisticData.expireAt,
+        collections: optimisticData.collections ?? [],
+        gallery: galleryAssetIds,
+        thumbnail: optimisticData.thumbnail ?? undefined,
       };
-    });
-  }, []);
+
+      try {
+        const result = await fetchData("commerce/products", "POST", body);
+
+        if (result?.data) {
+          setLocalData(hydrateProductDetails(result.data));
+          setHasChanges(previousHasChanges);
+          toast.success(
+            t("products.details.notifications.languageAdded.title"),
+            {
+              description: t(
+                "products.details.notifications.languageAdded.description",
+                { language: lang.toUpperCase() }
+              ),
+            }
+          );
+          return;
+        }
+
+        throw new Error("Missing response data");
+      } catch (error) {
+        console.error("Failed to add product language", error);
+        setLocalData(previousData);
+        setHasChanges(previousHasChanges);
+        toast.error(
+          t("products.details.notifications.languageAddError.title"),
+          {
+            description: t(
+              "products.details.notifications.languageAddError.description"
+            ),
+          }
+        );
+      }
+    },
+    [activeLang, defaultLang, fetchData, hasChanges, localData, t]
+  );
 
   const onChangeActiveLang = useCallback(
     (lang: string) => {
@@ -328,13 +442,6 @@ export function useProductDetails() {
     },
     [activeLang]
   );
-
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .trim()
-      .replace(/[\s\W-]+/g, "-");
-  };
 
   const validateForm = useCallback((): boolean => {
     if (!localData) return false;

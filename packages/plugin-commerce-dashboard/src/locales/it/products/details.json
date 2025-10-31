@@ -100,6 +100,15 @@
     "saveError": {
       "title": "Impossibile salvare il prodotto",
       "noData": "Nessun dato ricevuto dal server."
+    },
+    "languageAdded": {
+      "title": "Lingua aggiunta",
+      "description": "Abbiamo copiato i contenuti esistenti in {{language}}. Controlla i campi prima di pubblicare.",
+      "defaultTitle": "Nuova traduzione prodotto {{language}}"
+    },
+    "languageAddError": {
+      "title": "Impossibile aggiungere la lingua",
+      "description": "Non siamo riusciti a creare la nuova traduzione. Riprova dopo aver salvato le modifiche."
     }
   }
 }
