@@ -81,13 +81,90 @@ const mapAssetIdsToSources = (
 
 const isLikelyExternalUrl = (value: string) => /^https?:\/\//i.test(value);
 
+const getUrlPath = (value: string): string | null => {
+  if (!value) return null;
+
+  try {
+    const url = new URL(value);
+    return url.pathname;
+  } catch (error) {
+    const normalized = value.split("?")[0];
+    return normalized.startsWith("/") ? normalized : null;
+  }
+};
+
+const findGalleryAssetIdByUrl = (
+  gallery: MediaSource[],
+  url: string
+): string | null => {
+  const targetPath = getUrlPath(url);
+  if (!targetPath) return null;
+
+  for (const entry of gallery) {
+    if (!entry) continue;
+
+    if (typeof entry === "string") {
+      if (!isLikelyExternalUrl(entry)) continue;
+      const entryPath = getUrlPath(entry);
+      if (entryPath && entryPath === targetPath) {
+        // String entries don't provide a stable asset identifier, so skip.
+        continue;
+      }
+      continue;
+    }
+
+    const urlsToCompare: string[] = [];
+    if (typeof entry.url === "string") {
+      urlsToCompare.push(entry.url);
+    }
+    const previewUrl = (entry as { previewUrl?: string | null }).previewUrl;
+    if (typeof previewUrl === "string") {
+      urlsToCompare.push(previewUrl);
+    }
+
+    for (const candidate of urlsToCompare) {
+      const candidatePath = getUrlPath(candidate);
+      if (candidatePath && candidatePath === targetPath) {
+        const assetId = extractAssetId(entry);
+        if (assetId) return assetId;
+      }
+    }
+
+    const entryPath = (entry as { path?: string | null }).path;
+    if (typeof entryPath === "string" && targetPath.endsWith(entryPath)) {
+      const assetId = extractAssetId(entry);
+      if (assetId) return assetId;
+    }
+  }
+
+  return null;
+};
+
+const normalizeThumbnailIdentifier = (
+  thumbnail: string | null | undefined,
+  gallery: MediaSource[]
+): string | null => {
+  if (!thumbnail) return null;
+  if (!isLikelyExternalUrl(thumbnail)) return thumbnail;
+
+  return findGalleryAssetIdByUrl(gallery, thumbnail);
+};
+
 const hydrateProductDetails = (
   product: ProductResponseDetailsModel
-): ProductDetailsState => ({
-  ...product,
-  gallery: product.gallery ?? [],
-  thumbnail: product.thumbnail ?? null,
-});
+): ProductDetailsState => {
+  const gallery = (product.gallery ?? []) as MediaSource[];
+  const normalizedThumbnail = normalizeThumbnailIdentifier(
+    product.thumbnail ?? null,
+    gallery
+  );
+
+  return {
+    ...product,
+    gallery,
+    thumbnail: normalizedThumbnail ?? product.thumbnail ?? null,
+  };
+};
 
 const findTranslationForUpsert = (
   product: ProductDetailsState,
@@ -516,6 +593,11 @@ export function useProductDetails() {
         }
       );
 
+      const thumbnailId = normalizeThumbnailIdentifier(
+        localData.thumbnail ?? null,
+        (localData.gallery ?? []) as MediaSource[]
+      );
+
       const body: ProductUpsertModel = {
         id: id && id !== "create" ? localData.id : undefined,
         language: activeLang,
@@ -531,7 +613,7 @@ export function useProductDetails() {
         expireAt: localData.expireAt,
         collections: localData.collections ?? null,
         gallery: galleryAssetIds,
-        thumbnail: localData.thumbnail ?? undefined,
+        thumbnail: thumbnailId ?? undefined,
         variants: normalizedVariants,
       };
 
@@ -653,13 +735,20 @@ export function useProductDetails() {
         ),
       }));
 
+      const nextGallerySources = mapAssetIdsToSources(
+        normalizedNextGallery,
+        localData.gallery ?? []
+      );
+
+      const normalizedThumbnailId = normalizeThumbnailIdentifier(
+        nextThumbnail,
+        nextGallerySources
+      );
+
       const updatedData: ProductDetailsState = {
         ...localData,
-        gallery: mapAssetIdsToSources(
-          normalizedNextGallery,
-          localData.gallery ?? []
-        ),
-        thumbnail: nextThumbnail,
+        gallery: nextGallerySources,
+        thumbnail: normalizedThumbnailId ?? nextThumbnail,
         variants: sanitizedVariants,
       };
 
@@ -707,7 +796,7 @@ export function useProductDetails() {
         expireAt: updatedData.expireAt,
         collections: updatedData.collections ?? [],
         gallery: normalizedNextGallery,
-        thumbnail: nextThumbnail ?? undefined,
+        thumbnail: normalizedThumbnailId ?? undefined,
       };
 
       try {
