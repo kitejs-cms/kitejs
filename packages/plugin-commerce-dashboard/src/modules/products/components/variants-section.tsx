@@ -154,8 +154,27 @@ export function VariantsSection({
         {variants.length > 0 && (
           <div className="space-y-4">
             {variants.map((variant, index) => {
-              const legacyId = (variant as { _id?: string })._id;
-              const variantKey = variant.id ?? (legacyId?.trim() ? legacyId.trim() : undefined);
+              const variantKey = (() => {
+                if (typeof variant.id === "string" && variant.id.trim()) {
+                  return variant.id.trim();
+                }
+
+                if (typeof variant.id === "number") {
+                  return String(variant.id);
+                }
+
+                const legacyId = (variant as { _id?: unknown })._id;
+
+                if (typeof legacyId === "string" && legacyId.trim()) {
+                  return legacyId.trim();
+                }
+
+                if (typeof legacyId === "number") {
+                  return String(legacyId);
+                }
+
+                return undefined;
+              })();
 
               const price = getPrimaryPrice(variant, defaultCurrency);
               const selectedGallery = variant.gallery ?? [];
