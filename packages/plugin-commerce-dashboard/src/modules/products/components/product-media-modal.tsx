@@ -296,7 +296,7 @@ export function ProductMediaModal({
                         setActiveMediaId(identifier);
                       }
                     }}
-                    className={`group relative flex w-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition ${
+                    className={`group relative flex w-full flex-col overflow-hidden rounded-xl border border-transparent bg-card shadow-sm transition ${
                       isActive ? "border-primary ring-2 ring-primary/40" : ""
                     } ${isErrored ? "border-destructive" : ""}`}
                   >

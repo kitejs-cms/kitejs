@@ -117,6 +117,53 @@ const normalizeMediaItems = (gallery: MediaSource[]): MediaItem[] =>
 
 const getAssetId = (item: MediaItem) => item.assetId ?? item.internalId;
 
+const getUrlPath = (value?: string | null): string | null => {
+  if (!value) return null;
+
+  try {
+    const { pathname } = new URL(value);
+    return pathname;
+  } catch (error) {
+    return null;
+  }
+};
+
+const resolveSelectedDefault = (
+  items: MediaItem[],
+  thumbnail?: string | null
+): string | null => {
+  if (!items.length) return null;
+
+  if (thumbnail) {
+    const matchedById = items.find(
+      (item) =>
+        item.assetId === thumbnail || item.internalId === thumbnail
+    );
+
+    if (matchedById?.assetId) {
+      return matchedById.assetId;
+    }
+
+    const thumbnailPath = getUrlPath(thumbnail);
+    if (thumbnailPath) {
+      const matchedByPath = items.find((item) => {
+        if (!item.assetId || !item.url) return false;
+
+        const itemPath = getUrlPath(item.url);
+        return Boolean(itemPath && itemPath === thumbnailPath);
+      });
+
+      if (matchedByPath?.assetId) {
+        return matchedByPath.assetId;
+      }
+    }
+  }
+
+  const firstAsset = items.find((item) => item.assetId)?.assetId ?? null;
+
+  return firstAsset;
+};
+
 export function useProductMediaManager({
   open,
   gallery,
@@ -152,16 +199,11 @@ export function useProductMediaManager({
 
   useEffect(() => {
     if (!open) return;
+
     const normalized = normalizeMediaItems(gallery);
     setMediaItems(normalized);
 
-    if (thumbnail) {
-      setSelectedDefault(thumbnail);
-      return;
-    }
-
-    const firstAsset = normalized.find((item) => item.assetId)?.assetId ?? null;
-    setSelectedDefault(firstAsset);
+    setSelectedDefault(resolveSelectedDefault(normalized, thumbnail));
   }, [gallery, open, thumbnail]);
 
   // 💡 Derived states
