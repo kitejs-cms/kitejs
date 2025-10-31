@@ -370,13 +370,6 @@ export function useProductDetails() {
       errors.slug = t("products.errors.slugRequired", "Slug is required");
     }
 
-    if (!localData.thumbnail?.trim()) {
-      errors.thumbnail = t(
-        "products.errors.thumbnailRequired",
-        "Select a featured image for this product."
-      );
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }, [localData, activeLang, t]);
@@ -505,20 +498,20 @@ export function useProductDetails() {
 
   const onMediaChange = useCallback(
     async (
-      value: { gallery: string[]; thumbnail: string },
+      value: { gallery: string[]; thumbnail: string | null },
       options?: { force?: boolean }
     ) => {
       setFormErrors((prev) => ({ ...prev, thumbnail: undefined }));
       if (!localData) return;
 
       const nextGallery = value.gallery ?? [];
-      const nextThumbnail = value.thumbnail ?? "";
+      const nextThumbnail = value.thumbnail ?? null;
 
       const normalizedNextGallery = nextGallery.filter((id) => Boolean(id));
       const currentGalleryIds = (localData.gallery ?? [])
         .map((entry) => extractAssetId(entry))
         .filter((id): id is string => Boolean(id));
-      const currentThumbnail = localData.thumbnail ?? "";
+      const currentThumbnail = localData.thumbnail ?? null;
 
       if (
         arraysEqual(currentGalleryIds, normalizedNextGallery) &&
@@ -534,7 +527,7 @@ export function useProductDetails() {
           normalizedNextGallery,
           localData.gallery ?? []
         ),
-        thumbnail: nextThumbnail || null,
+        thumbnail: nextThumbnail,
       };
 
       setLocalData(updatedData);
@@ -581,7 +574,7 @@ export function useProductDetails() {
         expireAt: updatedData.expireAt,
         collections: updatedData.collections ?? [],
         gallery: normalizedNextGallery,
-        thumbnail: nextThumbnail,
+        thumbnail: nextThumbnail ?? undefined,
       };
 
       try {

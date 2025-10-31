@@ -33,7 +33,7 @@ interface ProductSectionProps {
   ) => void;
   onCollectionsChange: (value: string[]) => void;
   onMediaChange: (
-    payload: { gallery: string[]; thumbnail: string },
+    payload: { gallery: string[]; thumbnail: string | null },
     options?: { force?: boolean }
   ) => Promise<void>;
 }
@@ -74,7 +74,7 @@ export function ProductSection({
   const galleryCount = useMemo(() => gallery?.length ?? 0, [gallery]);
 
   const handleAutoPersistMedia = useCallback(
-    (payload: { gallery: string[]; thumbnail: string }) =>
+    (payload: { gallery: string[]; thumbnail: string | null }) =>
       onMediaChange(payload),
     [onMediaChange]
   );
@@ -85,7 +85,7 @@ export function ProductSection({
       thumbnail: nextThumbnail,
     }: {
       gallery: string[];
-      thumbnail: string;
+      thumbnail: string | null;
     }) => {
       try {
         await onMediaChange(

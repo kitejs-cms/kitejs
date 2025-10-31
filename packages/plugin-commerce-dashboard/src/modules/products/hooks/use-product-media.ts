@@ -61,11 +61,11 @@ export interface UseProductMediaManagerOptions {
   language: string;
   onConfirm: (payload: {
     gallery: string[];
-    thumbnail: string;
+    thumbnail: string | null;
   }) => Promise<void> | void;
   onPersist?: (payload: {
     gallery: string[];
-    thumbnail: string;
+    thumbnail: string | null;
   }) => Promise<void> | void;
 }
 
@@ -185,17 +185,22 @@ export function useProductMediaManager({
         .map((item) => item.assetId)
         .filter((id): id is string => Boolean(id));
 
+      const currentDefault = selectedDefaultRef.current;
+      const selectedDefaultValue =
+        currentDefault && assetIds.includes(currentDefault)
+          ? currentDefault
+          : null;
+
       const defaultCandidate =
-        nextDefault ??
-        (assetIds.includes(selectedDefaultRef.current ?? "")
-          ? selectedDefaultRef.current
-          : assetIds[0] ?? "");
+        nextDefault !== undefined
+          ? nextDefault
+          : selectedDefaultValue ?? assetIds[0] ?? null;
 
       setIsPersisting(true);
       try {
         await onPersist({
           gallery: assetIds,
-          thumbnail: defaultCandidate ?? "",
+          thumbnail: defaultCandidate ?? null,
         });
         setHasErrors(false);
       } catch (error) {
@@ -449,9 +454,11 @@ export function useProductMediaManager({
       .map((item) => item.assetId)
       .filter((id): id is string => Boolean(id));
 
-    const thumbnailId = assetIds.includes(selectedDefault ?? "")
-      ? selectedDefault!
-      : assetIds[0] ?? "";
+    const currentDefault = selectedDefault;
+    const thumbnailId =
+      currentDefault && assetIds.includes(currentDefault)
+        ? currentDefault
+        : assetIds[0] ?? null;
 
     setIsConfirming(true);
 

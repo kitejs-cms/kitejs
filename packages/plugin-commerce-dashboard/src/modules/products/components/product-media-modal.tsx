@@ -65,11 +65,11 @@ interface ProductMediaModalProps {
   language: string;
   onConfirm: (payload: {
     gallery: string[];
-    thumbnail: string;
+    thumbnail: string | null;
   }) => Promise<void> | void;
   onPersist: (payload: {
     gallery: string[];
-    thumbnail: string;
+    thumbnail: string | null;
   }) => Promise<void> | void;
 }
 
