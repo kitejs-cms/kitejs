@@ -83,7 +83,16 @@
       "compareAt": "Compare at price",
       "currency": "Currency",
       "backorder": "Allow backorders",
-      "backorderDescription": "Let customers purchase this variant even when it's out of stock."
+      "backorderDescription": "Let customers purchase this variant even when it's out of stock.",
+      "media": "Gallery images",
+      "mediaDescription": "Select images from the product gallery to represent this variant.",
+      "mediaEmpty": "Add media to the product gallery to link images here."
+    },
+    "preview": {
+      "untitled": "Untitled variant",
+      "missingSku": "SKU not set",
+      "inventoryCount": "{{count}} in stock",
+      "inventoryFallback": "No inventory configured"
     }
   },
   "notifications": {

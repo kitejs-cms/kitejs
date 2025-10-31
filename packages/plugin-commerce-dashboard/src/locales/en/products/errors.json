@@ -4,5 +4,7 @@
   "thumbnailRequired": "Select a featured image for this product.",
   "saveFailed": "Unable to save product. Please try again.",
   "unsavedChanges": "You have unsaved product changes.",
-  "discardChanges": "Discard unsaved changes?"
+  "discardChanges": "Discard unsaved changes?",
+  "variantTitleRequired": "Variant name is required.",
+  "variantSkuRequired": "Variant SKU is required."
 }

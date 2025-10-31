@@ -83,7 +83,16 @@
       "compareAt": "Prezzo di confronto",
       "currency": "Valuta",
       "backorder": "Consenti preordini",
-      "backorderDescription": "Permetti ai clienti di acquistare la variante anche quando non è disponibile in magazzino."
+      "backorderDescription": "Permetti ai clienti di acquistare la variante anche quando non è disponibile in magazzino.",
+      "media": "Immagini galleria",
+      "mediaDescription": "Seleziona le immagini dalla galleria del prodotto da associare a questa variante.",
+      "mediaEmpty": "Aggiungi media alla galleria del prodotto per collegarli qui."
+    },
+    "preview": {
+      "untitled": "Variante senza nome",
+      "missingSku": "SKU non impostato",
+      "inventoryCount": "{{count}} in magazzino",
+      "inventoryFallback": "Quantità non impostata"
     }
   },
   "notifications": {

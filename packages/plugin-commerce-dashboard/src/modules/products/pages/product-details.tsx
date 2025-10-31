@@ -37,8 +37,11 @@ export function CommerceProductDetailsPage() {
     defaultCurrency,
     onVariantChange,
     onVariantPriceChange,
+    onVariantGalleryChange,
     onAddVariant,
     onRemoveVariant,
+    variantErrors,
+    variantGalleryOptions,
   } = useProductDetails();
   const [jsonView, setJsonView] = useState(false);
 
@@ -81,10 +84,13 @@ export function CommerceProductDetailsPage() {
             <VariantsSection
               variants={(data.variants ?? []) as VariantState[]}
               defaultCurrency={defaultCurrency}
+              productGallery={variantGalleryOptions}
+              variantErrors={variantErrors}
               onAddVariant={onAddVariant}
               onRemoveVariant={onRemoveVariant}
               onVariantChange={onVariantChange}
               onVariantPriceChange={onVariantPriceChange}
+              onVariantGalleryChange={onVariantGalleryChange}
             />
 
             {/* SEO Section */}

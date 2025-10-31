@@ -1,6 +1,15 @@
-import { Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Image as ImageIcon,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -16,15 +25,25 @@ import type {
   ProductVariantModel,
 } from "@kitejs-cms/plugin-commerce-api";
 
-export type VariantState = (ProductVariantModel & {
-  id?: string;
-  allowBackorder?: boolean;
+export type VariantState = ProductVariantModel & {
   prices?: ProductPriceModel[];
-}) & Record<string, unknown>;
+};
+
+export type VariantFieldErrors = Partial<
+  Record<"title" | "sku" | "inventoryQuantity" | "gallery", string>
+>;
+
+export interface VariantGalleryOption {
+  id: string;
+  label: string;
+  url: string | null;
+}
 
 interface VariantsSectionProps {
   variants: VariantState[];
   defaultCurrency: string;
+  productGallery: VariantGalleryOption[];
+  variantErrors?: VariantFieldErrors[];
   onAddVariant: () => void;
   onRemoveVariant: (index: number) => void;
   onVariantChange: (
@@ -42,6 +61,7 @@ interface VariantsSectionProps {
     field: keyof ProductPriceModel,
     value: string
   ) => void;
+  onVariantGalleryChange: (index: number, gallery: string[]) => void;
 }
 
 const getPrimaryPrice = (
@@ -65,15 +85,40 @@ const getPrimaryPrice = (
   };
 };
 
+const formatPrice = (amount: number, currency: string) => {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch (error) {
+    return `${currency} ${amount.toFixed(2)}`;
+  }
+};
+
 export function VariantsSection({
   variants,
   defaultCurrency,
+  productGallery,
+  variantErrors,
   onAddVariant,
   onRemoveVariant,
   onVariantChange,
   onVariantPriceChange,
+  onVariantGalleryChange,
 }: VariantsSectionProps) {
   const { t } = useTranslation("commerce");
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  const galleryLookup = useMemo(() => {
+    const map = new Map<string, VariantGalleryOption>();
+    productGallery.forEach((item) => {
+      map.set(item.id, item);
+    });
+    return map;
+  }, [productGallery]);
 
   const emptyState = (
     <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/40 p-6 text-center text-sm text-muted-foreground">
@@ -110,176 +155,309 @@ export function VariantsSection({
           <div className="space-y-4">
             {variants.map((variant, index) => {
               const price = getPrimaryPrice(variant, defaultCurrency);
+              const selectedGallery = variant.gallery ?? [];
+              const preview = selectedGallery.length
+                ? galleryLookup.get(selectedGallery[0])
+                : undefined;
+              const priceLabel = formatPrice(price.amount ?? 0, price.currencyCode);
+              const inventoryLabel =
+                typeof variant.inventoryQuantity === "number" &&
+                variant.inventoryQuantity > 0
+                  ? t("products.details.variants.preview.inventoryCount", {
+                      count: variant.inventoryQuantity,
+                    })
+                  : t("products.details.variants.preview.inventoryFallback");
+              const isExpanded = expanded === index;
+              const errors = variantErrors?.[index];
+
+              const toggleGallerySelection = (assetId: string) => {
+                if (selectedGallery.includes(assetId)) {
+                  onVariantGalleryChange(
+                    index,
+                    selectedGallery.filter((entry) => entry !== assetId)
+                  );
+                } else {
+                  onVariantGalleryChange(index, [...selectedGallery, assetId]);
+                }
+              };
 
               return (
                 <div
                   key={variant.id ?? `${index}`}
-                  className="space-y-4 rounded-xl border border-border bg-background p-4 shadow-sm"
+                  className="overflow-hidden rounded-xl border border-border bg-background shadow-sm"
                 >
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold">
-                      {t("products.details.variants.itemTitle", { index: index + 1 })}
-                    </h4>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => onRemoveVariant(index)}
-                      aria-label={t("products.details.variants.remove")}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor={`variant-title-${index}`}>
-                        {t("products.details.variants.fields.name")}
-                      </Label>
-                      <Input
-                        id={`variant-title-${index}`}
-                        value={(variant.title as string) ?? ""}
-                        onChange={(event) =>
-                          onVariantChange(index, "title", event.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`variant-sku-${index}`}>
-                        {t("products.details.variants.fields.sku")}
-                      </Label>
-                      <Input
-                        id={`variant-sku-${index}`}
-                        value={(variant.sku as string) ?? ""}
-                        onChange={(event) =>
-                          onVariantChange(index, "sku", event.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`variant-barcode-${index}`}>
-                        {t("products.details.variants.fields.barcode")}
-                      </Label>
-                      <Input
-                        id={`variant-barcode-${index}`}
-                        value={(variant.barcode as string) ?? ""}
-                        onChange={(event) =>
-                          onVariantChange(index, "barcode", event.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`variant-inventory-${index}`}>
-                        {t("products.details.variants.fields.inventory")}
-                      </Label>
-                      <Input
-                        id={`variant-inventory-${index}`}
-                        type="number"
-                        min={0}
-                        value={
-                          typeof variant.inventoryQuantity === "number"
-                            ? variant.inventoryQuantity
-                            : ""
-                        }
-                        onChange={(event) =>
-                          onVariantChange(
-                            index,
-                            "inventoryQuantity",
-                            event.target.value === ""
-                              ? undefined
-                              : Number(event.target.value)
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label htmlFor={`variant-price-${index}`}>
-                        {t("products.details.variants.fields.price")}
-                      </Label>
-                      <Input
-                        id={`variant-price-${index}`}
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        value={
-                          typeof price.amount === "number" ? price.amount : ""
-                        }
-                        onChange={(event) =>
-                          onVariantPriceChange(
-                            index,
-                            "amount",
-                            event.target.value
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`variant-compare-${index}`}>
-                        {t("products.details.variants.fields.compareAt")}
-                      </Label>
-                      <Input
-                        id={`variant-compare-${index}`}
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        value={
-                          typeof price.compareAtAmount === "number"
-                            ? price.compareAtAmount
-                            : ""
-                        }
-                        onChange={(event) =>
-                          onVariantPriceChange(
-                            index,
-                            "compareAtAmount",
-                            event.target.value
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`variant-currency-${index}`}>
-                        {t("products.details.variants.fields.currency")}
-                      </Label>
-                      <Input
-                        id={`variant-currency-${index}`}
-                        value={price.currencyCode ?? defaultCurrency}
-                        maxLength={3}
-                        onChange={(event) =>
-                          onVariantPriceChange(
-                            index,
-                            "currencyCode",
-                            event.target.value
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="rounded-md border p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="pr-4">
-                        <p className="text-sm font-medium">
-                          {t("products.details.variants.fields.backorder")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {t(
-                            "products.details.variants.fields.backorderDescription"
-                          )}
-                        </p>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-muted/50"
+                    onClick={() =>
+                      setExpanded((prev) => (prev === index ? null : index))
+                    }
+                    aria-expanded={isExpanded}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-md border bg-muted">
+                        {preview?.url ? (
+                          <img
+                            src={preview.url}
+                            alt={preview.label}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                        )}
                       </div>
-                      <Switch
-                        id={`variant-backorder-${index}`}
-                        checked={Boolean(variant.allowBackorder)}
-                        onCheckedChange={(checked) =>
-                          onVariantChange(index, "allowBackorder", checked)
-                        }
-                      />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-medium">
+                          {variant.title?.trim() ||
+                            t("products.details.variants.preview.untitled")}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {variant.sku?.trim() ||
+                            t("products.details.variants.preview.missingSku")}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col items-end">
+                        <Badge variant="outline" className="text-xs font-normal">
+                          {priceLabel}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {inventoryLabel}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onRemoveVariant(index);
+                        }}
+                        aria-label={t("products.details.variants.remove")}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="space-y-5 border-t px-4 py-5">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor={`variant-title-${index}`}>
+                            {t("products.details.variants.fields.name")}
+                          </Label>
+                          <Input
+                            id={`variant-title-${index}`}
+                            value={variant.title ?? ""}
+                            aria-invalid={Boolean(errors?.title)}
+                            onChange={(event) =>
+                              onVariantChange(index, "title", event.target.value)
+                            }
+                          />
+                          {errors?.title && (
+                            <p className="text-xs text-destructive">{errors.title}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`variant-sku-${index}`}>
+                            {t("products.details.variants.fields.sku")}
+                          </Label>
+                          <Input
+                            id={`variant-sku-${index}`}
+                            value={variant.sku ?? ""}
+                            aria-invalid={Boolean(errors?.sku)}
+                            onChange={(event) =>
+                              onVariantChange(index, "sku", event.target.value)
+                            }
+                          />
+                          {errors?.sku && (
+                            <p className="text-xs text-destructive">{errors.sku}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`variant-barcode-${index}`}>
+                            {t("products.details.variants.fields.barcode")}
+                          </Label>
+                          <Input
+                            id={`variant-barcode-${index}`}
+                            value={variant.barcode ?? ""}
+                            onChange={(event) =>
+                              onVariantChange(index, "barcode", event.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`variant-inventory-${index}`}>
+                            {t("products.details.variants.fields.inventory")}
+                          </Label>
+                          <Input
+                            id={`variant-inventory-${index}`}
+                            type="number"
+                            min={0}
+                            value={
+                              typeof variant.inventoryQuantity === "number"
+                                ? variant.inventoryQuantity
+                                : ""
+                            }
+                            onChange={(event) =>
+                              onVariantChange(
+                                index,
+                                "inventoryQuantity",
+                                event.target.value === ""
+                                  ? undefined
+                                  : Number(event.target.value)
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <div className="space-y-2">
+                          <Label htmlFor={`variant-price-${index}`}>
+                            {t("products.details.variants.fields.price")}
+                          </Label>
+                          <Input
+                            id={`variant-price-${index}`}
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={
+                              typeof price.amount === "number" ? price.amount : ""
+                            }
+                            onChange={(event) =>
+                              onVariantPriceChange(
+                                index,
+                                "amount",
+                                event.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`variant-compare-${index}`}>
+                            {t("products.details.variants.fields.compareAt")}
+                          </Label>
+                          <Input
+                            id={`variant-compare-${index}`}
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={
+                              typeof price.compareAtAmount === "number"
+                                ? price.compareAtAmount
+                                : ""
+                            }
+                            onChange={(event) =>
+                              onVariantPriceChange(
+                                index,
+                                "compareAtAmount",
+                                event.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`variant-currency-${index}`}>
+                            {t("products.details.variants.fields.currency")}
+                          </Label>
+                          <Input
+                            id={`variant-currency-${index}`}
+                            value={price.currencyCode ?? defaultCurrency}
+                            maxLength={3}
+                            onChange={(event) =>
+                              onVariantPriceChange(
+                                index,
+                                "currencyCode",
+                                event.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <Label>{t("products.details.variants.fields.media")}</Label>
+                          <p className="text-xs text-muted-foreground">
+                            {t("products.details.variants.fields.mediaDescription")}
+                          </p>
+                        </div>
+                        {productGallery.length > 0 ? (
+                          <div className="flex flex-wrap gap-3">
+                            {productGallery.map((asset) => {
+                              const isSelected = selectedGallery.includes(asset.id);
+                              return (
+                                <button
+                                  type="button"
+                                  key={asset.id}
+                                  className={`relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border transition ${
+                                    isSelected
+                                      ? "border-primary ring-2 ring-primary"
+                                      : "border-muted bg-muted"
+                                  }`}
+                                  onClick={() => toggleGallerySelection(asset.id)}
+                                  aria-pressed={isSelected}
+                                >
+                                  {asset.url ? (
+                                    <img
+                                      src={asset.url}
+                                      alt={asset.label}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                  )}
+                                  {isSelected && (
+                                    <span className="absolute right-1 top-1 rounded-full bg-primary p-1 text-primary-foreground">
+                                      <Check className="h-3 w-3" />
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            {t("products.details.variants.fields.mediaEmpty")}
+                          </p>
+                        )}
+                        {errors?.gallery && (
+                          <p className="text-xs text-destructive">{errors.gallery}</p>
+                        )}
+                      </div>
+
+                      <div className="rounded-md border p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="pr-4">
+                            <p className="text-sm font-medium">
+                              {t("products.details.variants.fields.backorder")}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {t(
+                                "products.details.variants.fields.backorderDescription"
+                              )}
+                            </p>
+                          </div>
+                          <Switch
+                            id={`variant-backorder-${index}`}
+                            checked={Boolean(variant.allowBackorder)}
+                            onCheckedChange={(checked) =>
+                              onVariantChange(index, "allowBackorder", checked)
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

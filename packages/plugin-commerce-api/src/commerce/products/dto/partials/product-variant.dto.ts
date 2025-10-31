@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
+  IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
@@ -49,6 +50,27 @@ export class ProductVariantDto implements ProductVariantModel {
   @IsOptional()
   @IsBoolean()
   allowBackorder?: boolean;
+
+  @ApiPropertyOptional({ type: () => [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  gallery?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  downloadUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  optionName?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  optionValue?: string;
 
   constructor(partial: ProductVariantModel) {
     Object.assign(this, partial);
