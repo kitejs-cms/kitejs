@@ -12,6 +12,7 @@ import {
   JwtPayloadModel,
   ObjectIdUtils,
   SlugRegistryService,
+  StorageService,
   User,
 } from "@kitejs-cms/core";
 
@@ -30,7 +31,8 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private readonly productModel: Model<ProductDocument>,
-    private readonly slugService: SlugRegistryService
+    private readonly slugService: SlugRegistryService,
+    private readonly storageService: StorageService
   ) {}
 
   /**
@@ -100,6 +102,21 @@ export class ProductsService {
         expireAt: restData.expireAt,
         status,
         ...(collections !== undefined ? { collections: collectionIds } : {}),
+        ...(restData.thumbnail !== undefined
+          ? { thumbnail: restData.thumbnail }
+          : {}),
+        ...(restData.gallery !== undefined
+          ? { gallery: restData.gallery }
+          : {}),
+        ...(restData.options !== undefined
+          ? { options: restData.options }
+          : {}),
+        ...(restData.variants !== undefined
+          ? { variants: restData.variants }
+          : {}),
+        ...(restData.isDigital !== undefined
+          ? { isDigital: restData.isDigital }
+          : {}),
       };
 
       const translationData = {
@@ -272,6 +289,8 @@ export class ProductsService {
         throw new NotFoundException(`Product with ID "${id}" not found.`);
       }
 
+      product.id = product._id.toString();
+
       const slugs = await this.slugService.findSlugsByEntity(
         new Types.ObjectId(id)
       );
@@ -289,12 +308,24 @@ export class ProductsService {
         };
       }
 
+      const thumbnail = product.thumbnail
+        ? await this.storageService.getFileUrl(product.thumbnail.toString())
+        : null;
+
+      const gallery = product.gallery.length
+        ? await this.storageService.getAssetsDetails(
+            product.gallery.map((asset) => asset.toString())
+          )
+        : [];
+
       return {
         ...(product as unknown as ProductResponseDetailsModel),
         translations: translationsWithSlug,
         collections: product.collections.map((c) => c.toString()),
         createdBy: product.createdBy ? product.createdBy.toString() : null,
         updatedBy: product.updatedBy ? product.updatedBy.toString() : null,
+        thumbnail,
+        gallery,
       };
     } catch (error) {
       this.logger.error(error);
@@ -352,10 +383,20 @@ export class ProductsService {
           };
         }
 
+        const thumbnail = item.thumbnail
+          ? await this.storageService.getFileUrl(item.thumbnail?.toString())
+          : null;
+
+        const gallery = await this.storageService.getAssetsDetails(
+          item.gallery.map((g) => g.toString())
+        );
+
         productsRes.push({
           id: item._id.toString(),
           ...(item as unknown as ProductResponseDetailsModel),
+          gallery,
           translations: translationsWithSlug,
+          thumbnail,
           collections: item.collections.map((c) => c.toString()),
           createdBy: item.createdBy
             ? `${item.createdBy.firstName} ${item.createdBy.lastName}`

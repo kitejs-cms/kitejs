@@ -37,11 +37,11 @@ export class Product extends Document {
   @Prop({ type: Date, default: null })
   expireAt?: Date;
 
-  @Prop({ type: String, required: false })
-  thumbnail?: string;
+  @Prop({ type: SchemaDb.ObjectId, required: false, ref: "Storage" })
+  thumbnail?: Types.ObjectId;
 
-  @Prop({ type: [String], default: [] })
-  gallery: string[];
+  @Prop({ type: [SchemaDb.ObjectId], default: [], ref: "Storage" })
+  gallery: Types.ObjectId[];
 
   @Prop({
     type: [SchemaDb.ObjectId],

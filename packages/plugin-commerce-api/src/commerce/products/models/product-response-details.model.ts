@@ -1,7 +1,8 @@
-import { ProductVariant } from "../schemas/product-variant.schema";
-import { ProductOptionModel } from "./partials/product-option.model";
-import { ProductTranslationModel } from "./partials/product-translation.model";
-import { ProductStatus } from "./product-status.enum";
+import type { StorageResponseDetailsModel } from "@kitejs-cms/core";
+import type { ProductVariant } from "../schemas/product-variant.schema";
+import type { ProductOptionModel } from "./partials/product-option.model";
+import type { ProductTranslationModel } from "./partials/product-translation.model";
+import type { ProductStatus } from "./product-status.enum";
 
 export type ProductResponseDetailsModel = {
   id: string;
@@ -12,7 +13,7 @@ export type ProductResponseDetailsModel = {
   variants: ProductVariant[];
   collections: string[];
   options: ProductOptionModel[];
-  gallery: string[];
+  gallery: StorageResponseDetailsModel[];
   tags: string[];
   publishAt?: string;
   expireAt?: string;

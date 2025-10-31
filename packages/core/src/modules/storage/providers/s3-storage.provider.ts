@@ -1,7 +1,7 @@
 import { extname } from "path";
 import { v4 as uuidv4 } from "uuid";
-import { IStorageProvider } from "../storage-provider.interface";
 import { Injectable, BadRequestException } from "@nestjs/common";
+import { IStorageProvider } from "../storage-provider.interface";
 import { UploadResultModel } from "../models/upload-result.model";
 import { DirectoryNodeModel, FileNodeModel } from "../models/fs-node.model";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -27,7 +27,7 @@ export class S3StorageProvider implements IStorageProvider {
   constructor(private readonly settingsService: SettingsService) {}
 
   /**
-   * Lazy-load S3 client and configuration from SettingsService.
+   * Lazily initializes the S3 client from the SettingsService.
    */
   private async getS3Client(): Promise<S3Client> {
     if (!this.s3) {
@@ -36,9 +36,11 @@ export class S3StorageProvider implements IStorageProvider {
         STORAGE_SETTINGS_KEY
       );
       const s3Settings = settings.value.s3;
+
       if (!s3Settings) {
         throw new BadRequestException("S3 settings not configured");
       }
+
       this.s3 = new S3Client({
         region: s3Settings.region,
         credentials: {
@@ -52,16 +54,33 @@ export class S3StorageProvider implements IStorageProvider {
             }
           : {}),
       });
+
       this.bucket = s3Settings.bucket;
     }
+
     return this.s3;
   }
 
+  /**
+   * Uploads a file to S3.
+   * Automatically handles public/private bucket configuration.
+   * If the bucket is private or undefined, it generates a signed URL with a default TTL of 4h.
+   */
   async uploadFile(
     file: Express.Multer.File,
     dir?: string
   ): Promise<Omit<UploadResultModel, "assetId">> {
     const s3 = await this.getS3Client();
+
+    const settings = await this.settingsService.findOne<StorageSettingsModel>(
+      "core",
+      STORAGE_SETTINGS_KEY
+    );
+    const s3Settings = settings.value.s3;
+
+    const isPublic = s3Settings?.isPublic ?? false;
+    const signedUrlExpiration = s3Settings?.signedUrlExpiration ?? 14400; // default 4h
+
     const keyPrefix = dir ? `${dir.replace(/\/$/, "")}/` : "";
     const key = `${keyPrefix}${file.fieldname}-${uuidv4()}${extname(
       file.originalname
@@ -73,26 +92,89 @@ export class S3StorageProvider implements IStorageProvider {
       Body: file.buffer,
       ContentType: file.mimetype,
     });
+
     await s3.send(putCommand);
+
+    const fileUrl = await this.resolveFileUrl(
+      key,
+      isPublic,
+      signedUrlExpiration,
+      s3Settings
+    );
+
+    return {
+      filename: key,
+      path: `s3://${this.bucket}/${key}`,
+      url: fileUrl,
+    };
+  }
+
+  /**
+   * Returns a valid file URL based on bucket visibility.
+   * - Public bucket → direct URL
+   * - Private bucket → signed URL with defined TTL
+   */
+  private async resolveFileUrl(
+    key: string,
+    isPublic: boolean,
+    signedUrlExpiration: number,
+    s3Settings: any
+  ): Promise<string> {
+    const s3 = await this.getS3Client();
+
+    if (isPublic) {
+      const endpoint = s3Settings.endpoint?.replace(/\/$/, "");
+      const forcePathStyle = s3Settings.forcePathStyle ?? false;
+
+      if (endpoint) {
+        return forcePathStyle
+          ? `${endpoint}/${this.bucket}/${key}`
+          : `${this.bucket}.${endpoint}/${key}`;
+      }
+
+      return `https://${this.bucket}.s3.${s3Settings.region}.amazonaws.com/${key}`;
+    }
 
     const getCommand = new GetObjectCommand({
       Bucket: this.bucket,
       Key: key,
     });
 
-    const signedUrl = await getSignedUrl(s3, getCommand, {
-      expiresIn: 3600,
+    return await getSignedUrl(s3, getCommand, {
+      expiresIn: signedUrlExpiration,
     });
-
-    return {
-      filename: key,
-      path: `s3://${this.bucket}/${key}`,
-      url: signedUrl,
-    };
   }
 
+  /**
+   * Retrieves a readable URL for a given media path or ID.
+   * If the bucket is private, generates a temporary signed URL.
+   */
+  async getFileUrl(mediaIdOrPath: string): Promise<string> {
+    const s3 = await this.getS3Client();
+
+    const settings = await this.settingsService.findOne<StorageSettingsModel>(
+      "core",
+      STORAGE_SETTINGS_KEY
+    );
+    const s3Settings = settings.value.s3;
+
+    const isPublic = s3Settings?.isPublic ?? false;
+    const signedUrlExpiration = s3Settings?.signedUrlExpiration ?? 14400;
+
+    const bucketPrefix = `s3://${this.bucket}/`;
+    const key = mediaIdOrPath.startsWith(bucketPrefix)
+      ? mediaIdOrPath.substring(bucketPrefix.length)
+      : mediaIdOrPath;
+
+    return this.resolveFileUrl(key, isPublic, signedUrlExpiration, s3Settings);
+  }
+
+  /**
+   * Deletes a file from S3.
+   */
   async removeFile(filePath: string): Promise<void> {
     const s3 = await this.getS3Client();
+
     let key = filePath;
     const bucketPrefix = `s3://${this.bucket}/`;
     if (filePath.startsWith(bucketPrefix)) {
@@ -106,35 +188,35 @@ export class S3StorageProvider implements IStorageProvider {
 
     try {
       await s3.send(command);
-    } catch (error) {
+    } catch {
       throw new BadRequestException("Error removing file from S3");
     }
   }
 
   /**
-   * Retrieves the directory structure starting from the root (or a configured prefix).
-   * If non viene passato un prefisso, viene utilizzata la root (stringa vuota).
+   * Retrieves the S3 directory structure starting from the root.
    */
   async getDirectoryStructure(): Promise<DirectoryNodeModel> {
-    const rootPrefix = "";
-    return this.getDirectoryStructureForPrefix(rootPrefix);
+    return this.getDirectoryStructureForPrefix("");
   }
 
   private async getDirectoryStructureForPrefix(
     prefix: string
   ): Promise<DirectoryNodeModel> {
     const s3 = await this.getS3Client();
+
     const command = new ListObjectsV2Command({
       Bucket: this.bucket,
       Prefix: prefix,
       Delimiter: "/",
     });
+
     let response;
     try {
       response = await s3.send(command);
-    } catch (error) {
+    } catch {
       throw new BadRequestException(
-        "Error listing S3 directory structure for prefix: " + prefix
+        `Error listing S3 directory structure for prefix: ${prefix}`
       );
     }
 
@@ -169,17 +251,20 @@ export class S3StorageProvider implements IStorageProvider {
         }
       }
     }
+
     return node;
   }
 
   /**
-   * Creates an empty "directory" on S3 by uploading an empty object with a key ending in "/".
+   * Creates an empty "directory" object in S3 (key ending with "/").
    */
   async createEmptyDirectory(directoryPath: string): Promise<void> {
     const s3 = await this.getS3Client();
+
     if (!directoryPath.endsWith("/")) {
       directoryPath += "/";
     }
+
     try {
       const command = new PutObjectCommand({
         Bucket: this.bucket,
@@ -187,41 +272,28 @@ export class S3StorageProvider implements IStorageProvider {
         Body: "",
       });
       await s3.send(command);
-    } catch (error) {
+    } catch {
       throw new BadRequestException("Error creating directory on S3");
     }
   }
 
   /**
-   * Rinomina un file o una directory su S3.
-   * Per S3, questa operazione si traduce in una copia seguita dall'eliminazione dell'elemento originale.
-   * @param oldPath - Il percorso attuale (chiave S3) dell'elemento.
-   * @param newPath - Il nuovo percorso (chiave S3) desiderato.
+   * Renames a file or directory (copy + delete).
    */
   async renamePath(oldPath: string, newPath: string): Promise<void> {
-    // Effettua la copia
     await this.copyPath(oldPath, newPath);
-    // Elimina l'elemento originale
     await this.removeFile(oldPath);
   }
 
   /**
-   * Sposta un file o una directory su S3.
-   * Su S3, lo spostamento è equivalente alla rinomina (copy + delete).
-   * @param sourcePath - Il percorso sorgente (chiave S3) dell'elemento.
-   * @param destinationPath - Il nuovo percorso (chiave S3) di destinazione.
+   * Moves a file or directory (copy + delete).
    */
   async movePath(sourcePath: string, destinationPath: string): Promise<void> {
-    // Per S3, spostare equivale a rinominare
     await this.renamePath(sourcePath, destinationPath);
   }
 
   /**
-   * Copia un file o una directory su S3.
-   * Se la sorgente è una directory (chiave che termina con "/"), effettua una copia ricorsiva di tutti gli oggetti contenuti.
-   * Altrimenti, copia il singolo oggetto.
-   * @param sourcePath - Il percorso sorgente (chiave S3) dell'elemento.
-   * @param destinationPath - Il percorso (chiave S3) di destinazione.
+   * Copies a file or an entire directory recursively.
    */
   async copyPath(sourcePath: string, destinationPath: string): Promise<void> {
     const s3 = await this.getS3Client();
@@ -232,14 +304,17 @@ export class S3StorageProvider implements IStorageProvider {
         Prefix: sourcePath,
       });
       const response = await s3.send(listCommand);
+
       if (response.Contents) {
         for (const obj of response.Contents) {
           if (!obj.Key) continue;
+
           const relativeKey = obj.Key.substring(sourcePath.length);
           const destDir = destinationPath.endsWith("/")
             ? destinationPath
-            : destinationPath + "/";
+            : `${destinationPath}/`;
           const destKey = destDir + relativeKey;
+
           const copyCommand = new CopyObjectCommand({
             Bucket: this.bucket,
             CopySource: `${this.bucket}/${obj.Key}`,

@@ -27,6 +27,8 @@ export function CommerceProductDetailsPage() {
     onSeoChange,
     onSettingsChange,
     onChange,
+    onMediaChange,
+    formErrors,
     t,
   } = useProductDetails();
   const [jsonView, setJsonView] = useState(false);
@@ -57,10 +59,14 @@ export function CommerceProductDetailsPage() {
               activeLang={activeLang}
               translations={data.translations}
               collections={data.collections}
+              gallery={data.gallery}
+              thumbnail={data.thumbnail}
+              thumbnailError={formErrors.thumbnail}
               onChange={onChange}
               onCollectionsChange={(value) =>
                 onSettingsChange("collections", value)
               }
+              onMediaChange={onMediaChange}
             />
 
             {/* Varaint Product */}
@@ -88,10 +94,10 @@ export function CommerceProductDetailsPage() {
 
       <div className="sticky bottom-0 bg-background border-t py-4 mt-6 flex justify-end gap-3">
         <Button variant="outline" onClick={() => handleNavigation("/pages")}>
-          {t("buttons.cancel")}
+          {t("products.buttons.cancel")}
         </Button>
         <Button onClick={() => handleSave()} disabled={!hasChanges}>
-          {t("buttons.save")}
+          {t("products.buttons.save")}
         </Button>
       </div>
 

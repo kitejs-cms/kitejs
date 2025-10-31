@@ -42,6 +42,26 @@
         "title": "Titolo Swagger",
         "description": "Descrizione Swagger",
         "version": "Versione Swagger"
+      },
+      "storage": {
+        "title": "Impostazioni Storage",
+        "provider": "Provider di Storage",
+        "providers": {
+          "local": "Storage Locale",
+          "s3": "Amazon S3"
+        },
+        "local": {
+          "uploadPath": "Percorso Upload",
+          "baseUrl": "Base URL"
+        },
+        "s3": {
+          "bucket": "Bucket",
+          "region": "Regione",
+          "accessKeyId": "Access Key ID",
+          "secretAccessKey": "Secret Access Key",
+          "endpoint": "Endpoint Personalizzato",
+          "forcePathStyle": "Forza Path Style"
+        }
       }
     }
   },

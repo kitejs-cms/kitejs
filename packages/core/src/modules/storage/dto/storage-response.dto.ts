@@ -1,9 +1,17 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Exclude, Type } from "class-transformer";
+import {
+  StorageItemType,
+  StorageResponseModel,
+} from "../models/storage-response.model";
 
-export type StorageItemType = "file" | "directory";
+export class StorageResponseDto implements StorageResponseModel {
+  @ApiProperty({
+    description: "Unique identifier of the storage item when persisted.",
+    required: false,
+  })
+  id?: string;
 
-export class StorageItemDto {
   @ApiProperty({ description: "Name of the file or directory" })
   name: string;
 
@@ -20,13 +28,38 @@ export class StorageItemDto {
   url?: string;
 
   @ApiProperty({
-    description: "Child items (only for directories)",
-    type: [StorageItemDto],
+    description: "Alt text for the file (only for files)",
     required: false,
   })
-  @Type(() => StorageItemDto)
-  children?: StorageItemDto[];
-  constructor(partial: Partial<StorageItemDto>) {
+  alt?: string;
+
+  @ApiProperty({
+    description: "Description of the file",
+    required: false,
+  })
+  description?: string;
+
+  @ApiProperty({
+    description: "Title of the file",
+    required: false,
+  })
+  title?: string;
+
+  @ApiProperty({
+    description: "Child items (only for directories)",
+    type: [StorageResponseDto],
+    required: false,
+  })
+  @Type(() => StorageResponseDto)
+  children?: StorageResponseDto[];
+
+  @Exclude()
+  _id: string;
+
+  @Exclude()
+  __v: number;
+
+  constructor(partial: Partial<StorageResponseDto>) {
     Object.assign(this, partial);
   }
 }

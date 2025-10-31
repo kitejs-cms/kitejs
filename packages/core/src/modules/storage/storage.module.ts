@@ -6,11 +6,13 @@ import { LocalStorageProvider } from "./providers/local-storage.provider";
 import { S3StorageProvider } from "./providers/s3-storage.provider";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Storage, StorageSchema } from "./storage.schema";
+import { UsersModule } from "../users";
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Storage.name, schema: StorageSchema }]),
     SettingsModule,
+    UsersModule,
   ],
   controllers: [StorageController],
   providers: [StorageService, LocalStorageProvider, S3StorageProvider],

@@ -185,9 +185,25 @@ export const CorePermissions: PermissionModel[] = [
     description: "Permission to update existing articles",
     role: ["admin", "editor"],
   },
-  {
+  { 
     name: "core:articles.delete",
     description: "Permission to delete articles",
+    role: ["admin"],
+  },
+  /* Storage */
+  {
+    name: "core:storage.read",
+    description: "Permission to browse storage directories and files",
+    role: ["admin", "editor", "viewer"],
+  },
+  {
+    name: "core:storage.upload",
+    description: "Permission to upload files to storage",
+    role: ["admin", "editor"],
+  },
+  {
+    name: "core:storage.manage",
+    description: "Permission to manage stored files and directories",
     role: ["admin"],
   },
 ];

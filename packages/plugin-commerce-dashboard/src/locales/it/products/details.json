@@ -13,6 +13,51 @@
       "slug": "Slug"
     }
   },
+  "media": {
+    "title": "Media",
+    "description": "Carica e organizza le immagini e i video che rappresentano questo prodotto.",
+    "button": "Gestisci media",
+    "empty": "Nessuna immagine selezionata",
+    "previewAlt": "Anteprima immagine prodotto",
+    "count_one": "{{count}} elemento multimediale configurato",
+    "count_other": "{{count}} elementi multimediali configurati",
+    "modalTitle": "Gestisci media prodotto",
+    "modalDescription": "Carica nuovi file e scegli l'immagine di copertina che i clienti vedranno per prima.",
+    "confirm": "Salva media",
+    "uploadTitle": "Carica media",
+    "uploadDescription": "Trascina i file o utilizza il pulsante qui sotto. Immagini e video sono supportati.",
+    "uploadButton": "Scegli file",
+    "emptyState": "Nessun media presente",
+    "emptyStateDescription": "Trascina qui i file o usa i controlli di upload per creare la galleria del prodotto.",
+    "defaultBadge": "Predefinita",
+    "setDefault": "Imposta come predefinita",
+    "uploadError": "Upload non riuscito",
+    "helperTitle": "Suggerimenti",
+    "helperDefault": "Seleziona un elemento da utilizzare come miniatura predefinita.",
+    "helperTypes": "Sono supportate immagini e video. Usa risorse ad alta risoluzione per una qualità migliore.",
+    "helperOrder": "I caricamenti vengono aggiunti alla galleria nell'ordine mostrato qui.",
+    "pendingUploads": "Attendi il completamento di tutti gli upload prima di salvare.",
+    "syncing": "Salvataggio delle modifiche ai media...",
+    "syncError": {
+      "title": "Impossibile aggiornare i media",
+      "description": "Non è stato possibile associare gli ultimi file. Prova a salvare manualmente il prodotto."
+    },
+    "errorReminder": "Rimuovi i media con upload non riuscito prima di salvare.",
+    "metadata": {
+      "title": "SEO media",
+      "open": "Modifica metadati SEO",
+      "drawerSubtitle": "Aggiungi titoli, descrizioni e testo alternativo localizzati per questa risorsa.",
+      "unavailable": "Carica il media prima di modificarne i metadati.",
+      "languageLabel": "Lingua",
+      "languagePlaceholder": "Seleziona una lingua",
+      "languageHelper": "Passa tra le lingue supportate per aggiornare i campi SEO localizzati.",
+      "alt": "Testo alternativo",
+      "titleField": "Titolo",
+      "description": "Descrizione",
+      "cancel": "Annulla",
+      "save": "Aggiorna metadati"
+    }
+  },
   "settings": {
     "title": "Impostazioni",
     "description": "Controlla visibilità, pianificazione e metadati di catalogo.",
@@ -55,6 +100,15 @@
     "saveError": {
       "title": "Impossibile salvare il prodotto",
       "noData": "Nessun dato ricevuto dal server."
+    },
+    "languageAdded": {
+      "title": "Lingua aggiunta",
+      "description": "Abbiamo copiato i contenuti esistenti in {{language}}. Controlla i campi prima di pubblicare.",
+      "defaultTitle": "Nuova traduzione prodotto {{language}}"
+    },
+    "languageAddError": {
+      "title": "Impossibile aggiungere la lingua",
+      "description": "Non siamo riusciti a creare la nuova traduzione. Riprova dopo aver salvato le modifiche."
     }
   }
 }

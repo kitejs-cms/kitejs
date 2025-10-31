@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -14,33 +15,46 @@ import type {
   CollectionResponseDetailsModel,
   ProductTranslationModel,
 } from "@kitejs-cms/plugin-commerce-api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ProductMediaModal } from "./product-media-modal";
+import type { MediaSource } from "../hooks/use-product-media";
 
 interface ProductSectionProps {
   activeLang: string;
   translations: Record<string, ProductTranslationModel>;
   collections?: string[];
+  gallery?: MediaSource[];
+  thumbnail?: string | null;
+  thumbnailError?: string;
   onChange: (
     field: keyof ProductTranslationModel,
     value: string | string[]
   ) => void;
   onCollectionsChange: (value: string[]) => void;
+  onMediaChange: (
+    payload: { gallery: string[]; thumbnail: string | null },
+    options?: { force?: boolean }
+  ) => Promise<void>;
 }
 
 export function ProductSection({
   activeLang,
   translations,
   collections,
+  gallery,
+  thumbnail,
+  thumbnailError,
   onChange,
   onCollectionsChange,
+  onMediaChange,
 }: ProductSectionProps) {
   const { t, i18n } = useTranslation("commerce");
   const { data, fetchData } = useApi<CollectionResponseDetailsModel[]>();
   const [collectionOptions, setCollectionOptions] = useState<
     { value: string; label: string }[]
   >([]);
-
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   useEffect(() => {
     if (data) {
       const local = i18n.language.split("-")[0];
@@ -56,6 +70,73 @@ export function ProductSection({
   useEffect(() => {
     fetchData("commerce/collections?page[number]=1&page[size]=100");
   }, [fetchData]);
+
+  const galleryCount = useMemo(() => gallery?.length ?? 0, [gallery]);
+
+  const resolveAssetId = useCallback((entry: MediaSource | undefined | null) => {
+    if (!entry) return null;
+    if (typeof entry === "string") {
+      return entry.startsWith("http") ? null : entry;
+    }
+
+    return (
+      entry.assetId ?? entry.id ?? entry._id ?? entry.path ?? null
+    );
+  }, []);
+
+  const resolveAssetUrl = useCallback((entry: MediaSource | undefined | null) => {
+    if (!entry) return null;
+    if (typeof entry === "string") {
+      return entry.startsWith("http") ? entry : null;
+    }
+
+    return entry.url ?? null;
+  }, []);
+
+  const displayThumbnail = useMemo(() => {
+    if (!thumbnail) return null;
+
+    if (thumbnail.startsWith("http")) {
+      return thumbnail;
+    }
+
+    if (!gallery || gallery.length === 0) {
+      return null;
+    }
+
+    const matched = gallery.find(
+      (entry) => resolveAssetId(entry) === thumbnail
+    );
+
+    return matched ? resolveAssetUrl(matched) : null;
+  }, [gallery, resolveAssetId, resolveAssetUrl, thumbnail]);
+
+  const handleAutoPersistMedia = useCallback(
+    (payload: { gallery: string[]; thumbnail: string | null }) =>
+      onMediaChange(payload),
+    [onMediaChange]
+  );
+
+  const handleConfirmMedia = useCallback(
+    async ({
+      gallery: nextGallery,
+      thumbnail: nextThumbnail,
+    }: {
+      gallery: string[];
+      thumbnail: string | null;
+    }) => {
+      try {
+        await onMediaChange(
+          { gallery: nextGallery, thumbnail: nextThumbnail },
+          { force: true }
+        );
+        setIsMediaModalOpen(false);
+      } catch (error) {
+        console.error("Unable to persist product media", error);
+      }
+    },
+    [onMediaChange]
+  );
 
   return (
     <Card className="w-full shadow-neutral-50 gap-0 py-0">
@@ -128,7 +209,61 @@ export function ProductSection({
             onChange={onCollectionsChange}
           />
         </div>
+
+        <div className="pt-6">
+          <Label className="mb-2 block">{t("products.fields.thumbnail")}</Label>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start pt-2">
+            <div
+              className={`flex aspect-square w-full max-w-xs items-center justify-center overflow-hidden rounded-md bg-muted sm:w-48 ${
+                thumbnailError ? "ring-2 ring-destructive" : ""
+              }`}
+            >
+              {displayThumbnail ? (
+                <img
+                  src={displayThumbnail}
+                  alt={t("products.details.media.previewAlt")}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <span className="py-12 text-sm text-muted-foreground">
+                  {t("products.details.media.empty")}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-1 flex-col gap-2">
+              <p className="max-w-sm text-sm text-muted-foreground">
+                {t("products.details.media.description")}
+              </p>
+              {galleryCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t("products.details.media.count", { count: galleryCount })}
+                </p>
+              )}
+              {thumbnailError && (
+                <p className="text-sm text-destructive">{thumbnailError}</p>
+              )}
+              <Button
+                className="w-fit"
+                onClick={() => setIsMediaModalOpen(true)}
+              >
+                {t("products.details.media.button")}
+              </Button>
+            </div>
+          </div>
+        </div>
       </CardContent>
+
+      <ProductMediaModal
+        open={isMediaModalOpen}
+        onOpenChange={setIsMediaModalOpen}
+        gallery={gallery ?? []}
+        thumbnail={thumbnail}
+        language={activeLang}
+        onConfirm={handleConfirmMedia}
+        onPersist={handleAutoPersistMedia}
+      />
     </Card>
   );
 }

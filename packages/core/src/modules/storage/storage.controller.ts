@@ -5,13 +5,17 @@ import { CreateDirectoryDto } from "./dto/create-directory.dto";
 import { RenamePathDto } from "./dto/rename-path.dto";
 import { MovePathDto } from "./dto/move-path.dto";
 import { CopyPathDto } from "./dto/copy-path.dto";
-import { StorageItemDto } from "./dto/storage-response.dto";
-import { JwtAuthGuard } from "../auth";
+import { StorageResponseDto } from "./dto/storage-response.dto";
+import { UpdateStorageMetadataDto } from "./dto/update-storage-metadata.dto";
+import { JwtAuthGuard, PermissionsGuard } from "../auth";
+import { Permissions } from "../../common";
 import {
   Controller,
   Post,
   Delete,
   Get,
+  Patch,
+  Param,
   Body,
   UploadedFile,
   UseInterceptors,
@@ -25,7 +29,9 @@ import {
   ApiResponse,
   ApiBody,
   ApiBearerAuth,
+  ApiParam,
 } from "@nestjs/swagger";
+import { StorageResponseModel } from "./models/storage-response.model";
 
 @ApiTags("Storage")
 @Controller("storage")
@@ -56,7 +62,8 @@ export class StorageController {
       },
     },
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.upload")
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor("file"))
   async uploadFile(
@@ -82,7 +89,8 @@ export class StorageController {
   @ApiResponse({ status: 200, description: "File removed successfully" })
   @ApiResponse({ status: 400, description: "Bad request or file not found" })
   @ApiBody({ type: RemoveFileDto })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async removeFile(@Body() removeFileDto: RemoveFileDto) {
     const { filePath } = removeFileDto;
@@ -101,11 +109,12 @@ export class StorageController {
   @ApiResponse({
     status: 200,
     description: "Directory structure retrieved successfully",
-    type: StorageItemDto,
+    type: StorageResponseDto,
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.read")
   @ApiBearerAuth()
-  async getDirectoryStructure(): Promise<StorageItemDto> {
+  async getDirectoryStructure(): Promise<StorageResponseModel> {
     try {
       return await this.storageService.getDirectoryStructure();
     } catch (error) {
@@ -123,7 +132,8 @@ export class StorageController {
     description: "Bad request or error creating directory",
   })
   @ApiBody({ type: CreateDirectoryDto })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async createEmptyDirectory(@Body() createDirectoryDto: CreateDirectoryDto) {
     try {
@@ -145,7 +155,8 @@ export class StorageController {
     status: 400,
     description: "Bad request or error renaming item",
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   @ApiBody({ type: RenamePathDto })
   async renamePath(@Body() renameDto: RenamePathDto) {
@@ -165,7 +176,8 @@ export class StorageController {
   @ApiResponse({ status: 200, description: "Item moved successfully" })
   @ApiResponse({ status: 400, description: "Bad request or error moving item" })
   @ApiBody({ type: MovePathDto })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async movePath(@Body() moveDto: MovePathDto) {
     try {
@@ -187,7 +199,8 @@ export class StorageController {
     description: "Bad request or error copying item",
   })
   @ApiBody({ type: CopyPathDto })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
   @ApiBearerAuth()
   async copyPath(@Body() copyDto: CopyPathDto) {
     try {
@@ -198,6 +211,35 @@ export class StorageController {
       return { message: "Item copied successfully" };
     } catch (error) {
       throw new InternalServerErrorException(`Error copying item: ${error}`);
+    }
+  }
+
+  @Patch(":id/metadata")
+  @ApiOperation({ summary: "Update SEO metadata for a media asset" })
+  @ApiResponse({ status: 200, description: "Metadata updated successfully" })
+  @ApiResponse({ status: 404, description: "Asset not found" })
+  @ApiParam({ name: "id", description: "Asset ID" })
+  @ApiBody({ type: UpdateStorageMetadataDto })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions("core:storage.manage")
+  @ApiBearerAuth()
+  async updateMetadata(
+    @Param("id") id: string,
+    @Body() dto: UpdateStorageMetadataDto
+  ) {
+    try {
+      const result = await this.storageService.updateMetadata(
+        id,
+        dto
+      );
+      return {
+        message: "Metadata updated successfully",
+        data: result,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error updating metadata: ${error}`
+      );
     }
   }
 }

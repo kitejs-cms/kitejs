@@ -4,6 +4,7 @@ import { ProductStatus } from "../models/product-status.enum";
 import { Exclude, Type } from "class-transformer";
 import { ProductSeoDto } from "./partials/product-seo.dto";
 import { ProductVariantDto } from "./partials/product-variant.dto";
+import { StorageResponseDto } from "@kitejs-cms/core";
 import {
   IsArray,
   IsBoolean,
@@ -78,11 +79,11 @@ export class ProductResponseDto implements ProductResponseModel {
   @IsString()
   thumbnail?: string;
 
-  @ApiPropertyOptional({ type: [String] })
+  @ApiPropertyOptional({ type: [StorageResponseDto] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  gallery?: string[];
+  gallery?: StorageResponseDto[];
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
