@@ -1611,6 +1611,6 @@ export function useProductDetails() {
     onOptionValueRemove,
     variantErrors,
     variantGalleryOptions,
-    productOptions: localData.options ?? [],
+    productOptions: localData?.options ?? [],
   };
 }
