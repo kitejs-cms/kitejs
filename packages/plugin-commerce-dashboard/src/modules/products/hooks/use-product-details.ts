@@ -30,6 +30,22 @@ const generateSlug = (title: string) =>
     .trim()
     .replace(/[\s\W-]+/g, "-");
 
+const slugifyOptionHandle = (value: string) =>
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const formatOptionDisplayName = (value: string) =>
+  value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((segment) => segment[0]?.toUpperCase() + segment.slice(1))
+    .join(" ");
+
 const getTranslationCandidate = (
   translations: Record<string, ProductTranslationModel>,
   lang?: string
@@ -159,10 +175,53 @@ const hydrateProductDetails = (
     gallery
   );
 
+  const normalizedOptions = (product.options ?? [])
+    .map((option, index) => {
+      const trimmedName = option?.name?.trim() ?? "";
+      const slug = trimmedName
+        ? slugifyOptionHandle(trimmedName)
+        : slugifyOptionHandle(option?.displayName ?? "");
+
+      const displayName = option?.displayName?.trim();
+
+      const values = Array.isArray(option?.values)
+        ? option.values
+            .map((value) => value?.trim())
+            .filter((value): value is string => Boolean(value))
+        : [];
+
+      return {
+        name: slug || `option-${index + 1}`,
+        displayName:
+          displayName && displayName.length > 0
+            ? displayName
+            : trimmedName
+              ? formatOptionDisplayName(trimmedName)
+              : `Option ${index + 1}`,
+        values,
+        position:
+          typeof option?.position === "number" ? option.position : index,
+      } satisfies ProductDetailsState["options"][number];
+    })
+    .sort((a, b) => a.position - b.position);
+
+  const normalizedVariants = (product.variants ?? []).map((variant) => ({
+    ...variant,
+    optionName: variant.optionName?.trim() ?? undefined,
+    optionValue: variant.optionValue?.trim() ?? undefined,
+    gallery: Array.isArray(variant.gallery)
+      ? variant.gallery.filter(
+          (id): id is string => typeof id === "string" && Boolean(id)
+        )
+      : [],
+  }));
+
   return {
     ...product,
     gallery,
     thumbnail: normalizedThumbnail ?? product.thumbnail ?? null,
+    options: normalizedOptions,
+    variants: normalizedVariants,
   };
 };
 
@@ -491,6 +550,42 @@ export function useProductDetails() {
         );
       }
 
+      const optionName = variant.optionName?.trim();
+      const optionValue = variant.optionValue?.trim();
+      const optionList = localData.options ?? [];
+      const hasConfiguredOptions = optionList.length > 0;
+      const option = optionName
+        ? optionList.find((entry) => entry.name === optionName)
+        : undefined;
+
+      if (!optionName) {
+        variantError.optionName = t(
+          "products.errors.variantOptionRequired",
+          "Select an option"
+        );
+      } else if (hasConfiguredOptions && !option) {
+        variantError.optionName = t(
+          "products.errors.variantOptionRequired",
+          "Select an option"
+        );
+      }
+
+      if (!optionValue) {
+        variantError.optionValue = t(
+          "products.errors.variantOptionValueRequired",
+          "Select a value"
+        );
+      } else if (
+        hasConfiguredOptions &&
+        option?.values?.length &&
+        !option.values.includes(optionValue)
+      ) {
+        variantError.optionValue = t(
+          "products.errors.variantOptionValueInvalid",
+          "Select a valid option value"
+        );
+      }
+
       if (Object.keys(variantError).length > 0) {
         hasVariantValidationErrors = true;
         nextVariantErrors[index] = variantError;
@@ -536,6 +631,43 @@ export function useProductDetails() {
         .map((entry) => extractAssetId(entry))
         .filter((id): id is string => Boolean(id));
 
+      const uniqueOptionHandles = new Set<string>();
+      const normalizedOptions = (localData.options ?? []).map((option, index) => {
+        const trimmedDisplayName = option.displayName?.trim();
+        const handleSource =
+          option.name?.trim() || trimmedDisplayName || `option-${index + 1}`;
+        const baseName =
+          slugifyOptionHandle(handleSource) || `option-${index + 1}`;
+        let name = baseName;
+        let attempt = 1;
+        while (uniqueOptionHandles.has(name)) {
+          name = `${baseName}-${++attempt}`;
+        }
+        uniqueOptionHandles.add(name);
+        const displayName =
+          trimmedDisplayName && trimmedDisplayName.length > 0
+            ? trimmedDisplayName
+            : formatOptionDisplayName(handleSource) || `Option ${index + 1}`;
+        const values = Array.from(
+          new Set(
+            (option.values ?? [])
+              .map((value) => value?.trim())
+              .filter((value): value is string => Boolean(value))
+          )
+        );
+
+        return {
+          name,
+          displayName,
+          values,
+          position: index,
+        } satisfies ProductDetailsState["options"][number];
+      });
+
+      const optionLookup = new Map(
+        normalizedOptions.map((option) => [option.name, option])
+      );
+
       const normalizedVariants = (localData.variants ?? []).map(
         (variant, variantIndex) => {
           const variantIdCandidate = (() => {
@@ -570,9 +702,28 @@ export function useProductDetails() {
             (id): id is string => typeof id === "string" && Boolean(id)
           );
 
-          const optionName = variant.optionName?.trim() || "default";
-          const optionValue =
-            variant.optionValue?.trim() || `${optionName}-${variantIndex + 1}`;
+          const optionNameCandidate = variant.optionName?.trim();
+
+          const optionMatch = optionNameCandidate
+            ? optionLookup.get(optionNameCandidate)
+            : undefined;
+
+          const fallbackOption = normalizedOptions[0];
+          const optionName = optionMatch?.name
+            ? optionMatch.name
+            : fallbackOption?.name ?? "default";
+
+          const optionValueCandidate = variant.optionValue?.trim();
+          const selectedOption = optionLookup.get(optionName);
+          let optionValue =
+            optionValueCandidate &&
+            selectedOption?.values.includes(optionValueCandidate)
+              ? optionValueCandidate
+              : selectedOption?.values?.[0];
+
+          if (!optionValue) {
+            optionValue = `${optionName}-${variantIndex + 1}`;
+          }
 
           return {
             id: variantIdCandidate,
@@ -611,11 +762,12 @@ export function useProductDetails() {
         seo: localData.translations[activeLang].seo,
         publishAt: localData.publishAt,
         expireAt: localData.expireAt,
-        collections: localData.collections ?? null,
-        gallery: galleryAssetIds,
-        thumbnail: thumbnailId ?? undefined,
-        variants: normalizedVariants,
-      };
+            collections: localData.collections ?? null,
+            gallery: galleryAssetIds,
+            thumbnail: thumbnailId ?? undefined,
+            variants: normalizedVariants,
+            options: normalizedOptions,
+          };
 
       const result = await fetchData("commerce/products", "POST", body);
 
@@ -824,7 +976,9 @@ export function useProductDetails() {
         | "sku"
         | "barcode"
         | "inventoryQuantity"
-        | "allowBackorder",
+        | "allowBackorder"
+        | "optionName"
+        | "optionValue",
       value: string | number | boolean | undefined
     ) => {
       setLocalData((prev) => {
@@ -858,6 +1012,45 @@ export function useProductDetails() {
           case "allowBackorder":
             updated.allowBackorder = Boolean(value);
             break;
+          case "optionName": {
+            const rawValue = typeof value === "string" ? value : "";
+            const normalizedValue = rawValue
+              ? slugifyOptionHandle(rawValue)
+              : "";
+            const availableOptions = prev.options ?? [];
+            const matchedOption = availableOptions.find(
+              (option) => option.name === rawValue || option.name === normalizedValue
+            );
+
+            if (matchedOption) {
+              updated.optionName = matchedOption.name;
+              if (
+                matchedOption.values?.length &&
+                matchedOption.values.includes(updated.optionValue ?? "")
+              ) {
+                // Keep current option value if it's still valid
+                updated.optionValue = updated.optionValue;
+              } else {
+                updated.optionValue = matchedOption.values?.[0];
+              }
+            } else {
+              updated.optionName =
+                normalizedValue && normalizedValue.length > 0
+                  ? normalizedValue
+                  : undefined;
+              // Preserve existing option value when working with custom handles
+            }
+            break;
+          }
+          case "optionValue": {
+            if (typeof value === "string") {
+              const trimmed = value.trim();
+              updated.optionValue = trimmed.length > 0 ? trimmed : undefined;
+            } else {
+              updated.optionValue = undefined;
+            }
+            break;
+          }
         }
 
         variants[index] = updated;
@@ -867,21 +1060,14 @@ export function useProductDetails() {
         if (!prev.length) return prev;
         const current = prev[index];
         if (!current) return prev;
-        if (
-          field !== "title" &&
-          field !== "sku" &&
-          field !== "inventoryQuantity"
-        ) {
-          return prev;
-        }
-
-        if (!current[field]) {
+        const fieldKey = field as keyof VariantFieldErrors;
+        if (!current[fieldKey]) {
           return prev;
         }
 
         const next = [...prev];
         const updatedErrors = { ...current } as VariantFieldErrors;
-        delete updatedErrors[field];
+        delete updatedErrors[fieldKey];
         next[index] = Object.keys(updatedErrors).length ? updatedErrors : {};
         return next;
       });
@@ -965,10 +1151,340 @@ export function useProductDetails() {
     []
   );
 
+  const onAddOption = useCallback(() => {
+    setLocalData((prev) => {
+      if (!prev) return prev;
+
+      const existingOptions = prev.options ?? [];
+      const position = existingOptions.length;
+      const defaultLabel = t("products.details.options.defaultName", {
+        index: position + 1,
+      });
+      const baseHandle = slugifyOptionHandle(defaultLabel) || `option-${position + 1}`;
+
+      let handle = baseHandle;
+      let attempt = 1;
+      const existingHandles = new Set(existingOptions.map((option) => option.name));
+      while (existingHandles.has(handle)) {
+        handle = `${baseHandle}-${++attempt}`;
+      }
+
+      const option: ProductDetailsState["options"][number] = {
+        name: handle,
+        displayName: defaultLabel,
+        values: [],
+        position,
+      };
+
+      return {
+        ...prev,
+        options: [...existingOptions, option],
+      };
+    });
+    setHasChanges(true);
+  }, [t]);
+
+  const onRemoveOption = useCallback(
+    (index: number) => {
+      const clearedIndexes = new Set<number>();
+      const missingOptionIndexes = new Set<number>();
+      const missingValueIndexes = new Set<number>();
+
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const options = [...(prev.options ?? [])];
+        const target = options[index];
+        if (!target) return prev;
+
+        options.splice(index, 1);
+
+        const normalizedOptions = options.map((option, optionIndex) => ({
+          ...option,
+          position: optionIndex,
+        }));
+
+        const fallbackOption = normalizedOptions[0];
+
+        const variants = (prev.variants ?? []).map((variant, variantIndex) => {
+          if (variant.optionName === target.name) {
+            if (fallbackOption?.name) {
+              const hasExistingValue = fallbackOption.values?.includes(
+                variant.optionValue ?? ""
+              );
+              const fallbackValue = hasExistingValue
+                ? variant.optionValue
+                : fallbackOption.values?.[0];
+
+              if (fallbackValue) {
+                clearedIndexes.add(variantIndex);
+              } else {
+                missingValueIndexes.add(variantIndex);
+              }
+
+              return {
+                ...variant,
+                optionName: fallbackOption.name,
+                optionValue: fallbackValue,
+              };
+            }
+
+            missingOptionIndexes.add(variantIndex);
+            missingValueIndexes.add(variantIndex);
+            return {
+              ...variant,
+              optionName: undefined,
+              optionValue: undefined,
+            };
+          }
+
+          return variant;
+        });
+
+        return {
+          ...prev,
+          options: normalizedOptions,
+          variants,
+        };
+      });
+
+      if (
+        clearedIndexes.size ||
+        missingOptionIndexes.size ||
+        missingValueIndexes.size
+      ) {
+        setVariantErrors((prev) => {
+          const next = [...prev];
+          clearedIndexes.forEach((idx) => {
+            while (next.length <= idx) {
+              next.push({});
+            }
+            const current = next[idx];
+            if (!current) return;
+            const updated = { ...current } as VariantFieldErrors;
+            delete updated.optionName;
+            delete updated.optionValue;
+            next[idx] = Object.keys(updated).length ? updated : {};
+          });
+
+          missingOptionIndexes.forEach((idx) => {
+            while (next.length <= idx) {
+              next.push({});
+            }
+            const current = next[idx] ?? {};
+            next[idx] = {
+              ...current,
+              optionName: t(
+                "products.errors.variantOptionRequired",
+                "Select an option"
+              ),
+              optionValue: t(
+                "products.errors.variantOptionValueRequired",
+                "Select a value"
+              ),
+            };
+          });
+
+          missingValueIndexes.forEach((idx) => {
+            while (next.length <= idx) {
+              next.push({});
+            }
+            if (missingOptionIndexes.has(idx)) return;
+            const current = next[idx] ?? {};
+            next[idx] = {
+              ...current,
+              optionValue: t(
+                "products.errors.variantOptionValueRequired",
+                "Select a value"
+              ),
+            };
+          });
+
+          return next;
+        });
+      }
+
+      setHasChanges(true);
+    },
+    [t]
+  );
+
+  const onOptionChange = useCallback(
+    (
+      index: number,
+      field: "name" | "displayName",
+      value: string
+    ) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const options = [...(prev.options ?? [])];
+        const target = options[index];
+        if (!target) return prev;
+
+        const updatedOption = { ...target } as ProductDetailsState["options"][number];
+        if (field === "displayName") {
+          updatedOption.displayName = value;
+          const currentSlug = slugifyOptionHandle(target.displayName ?? "");
+          const currentHandle = target.name ?? "";
+          const nextSlug = slugifyOptionHandle(value);
+
+          if (!currentHandle || currentHandle === currentSlug) {
+            updatedOption.name = nextSlug || currentHandle;
+          }
+        } else {
+          const nextHandle = slugifyOptionHandle(value);
+          updatedOption.name = nextHandle;
+
+          const variants = (prev.variants ?? []).map((variant) => {
+            if (variant.optionName === target.name) {
+              return {
+                ...variant,
+                optionName: nextHandle,
+              };
+            }
+            return variant;
+          });
+
+          options[index] = {
+            ...updatedOption,
+            position: target.position,
+          };
+
+          return {
+            ...prev,
+            options,
+            variants,
+          };
+        }
+
+        options[index] = {
+          ...updatedOption,
+          position: target.position,
+        };
+
+        return {
+          ...prev,
+          options,
+        };
+      });
+
+      setHasChanges(true);
+    },
+    []
+  );
+
+  const onOptionValueAdd = useCallback(
+    (index: number, value: string) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const options = [...(prev.options ?? [])];
+        const target = options[index];
+        if (!target) return prev;
+
+        const trimmedValue = value.trim();
+        if (!trimmedValue) return prev;
+
+        const existingValues = new Set(target.values ?? []);
+        if (existingValues.has(trimmedValue)) {
+          return prev;
+        }
+
+        const nextValues = [...(target.values ?? []), trimmedValue];
+
+        options[index] = {
+          ...target,
+          values: nextValues,
+        };
+
+        return {
+          ...prev,
+          options,
+        };
+      });
+
+      setHasChanges(true);
+    },
+    []
+  );
+
+  const onOptionValueRemove = useCallback(
+    (index: number, value: string) => {
+      const missingValueIndexes = new Set<number>();
+
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const options = [...(prev.options ?? [])];
+        const target = options[index];
+        if (!target) return prev;
+
+        const filteredValues = (target.values ?? []).filter(
+          (entry) => entry !== value
+        );
+
+        options[index] = {
+          ...target,
+          values: filteredValues,
+        };
+
+        const variants = (prev.variants ?? []).map((variant, variantIndex) => {
+          if (variant.optionName === target.name && variant.optionValue === value) {
+            const fallbackValue = filteredValues[0];
+            if (fallbackValue) {
+              return {
+                ...variant,
+                optionValue: fallbackValue,
+              };
+            }
+            missingValueIndexes.add(variantIndex);
+            return {
+              ...variant,
+              optionValue: undefined,
+            };
+          }
+          return variant;
+        });
+
+        return {
+          ...prev,
+          options,
+          variants,
+        };
+      });
+
+      if (missingValueIndexes.size) {
+        setVariantErrors((prev) => {
+          const next = [...prev];
+          missingValueIndexes.forEach((idx) => {
+            while (next.length <= idx) {
+              next.push({});
+            }
+            const current = next[idx] ?? {};
+            next[idx] = {
+              ...current,
+              optionValue: t(
+                "products.errors.variantOptionValueRequired",
+                "Select a value"
+              ),
+            };
+          });
+
+          return next;
+        });
+      }
+
+      setHasChanges(true);
+    },
+    [t]
+  );
+
   const onAddVariant = useCallback(() => {
     let didAdd = false;
     setLocalData((prev) => {
       if (!prev) return prev;
+
+      const primaryOption = prev.options?.[0];
+      const optionHandle = primaryOption?.name?.trim() || "default";
+      const initialOptionValue =
+        primaryOption?.values?.[0] ?? `${optionHandle}-${Date.now()}`;
 
       const variant: ProductDetailsState["variants"][number] = {
         id: undefined,
@@ -984,8 +1500,8 @@ export function useProductDetails() {
         inventoryQuantity: 0,
         allowBackorder: false,
         gallery: [],
-        optionName: "default",
-        optionValue: `default-${Date.now()}`,
+        optionName: optionHandle,
+        optionValue: initialOptionValue,
       } as ProductDetailsState["variants"][number];
 
       didAdd = true;
@@ -1088,7 +1604,13 @@ export function useProductDetails() {
     onVariantGalleryChange,
     onAddVariant,
     onRemoveVariant,
+    onAddOption,
+    onRemoveOption,
+    onOptionChange,
+    onOptionValueAdd,
+    onOptionValueRemove,
     variantErrors,
     variantGalleryOptions,
+    productOptions: localData.options ?? [],
   };
 }

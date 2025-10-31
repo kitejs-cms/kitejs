@@ -17,6 +17,11 @@ import {
   CardTitle,
   Input,
   Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
   Switch,
 } from "@kitejs-cms/dashboard-core";
@@ -31,6 +36,7 @@ import {
 import type {
   ProductPriceModel,
   ProductVariantModel,
+  ProductOptionModel,
 } from "@kitejs-cms/plugin-commerce-api";
 
 export type VariantState = ProductVariantModel & {
@@ -38,7 +44,15 @@ export type VariantState = ProductVariantModel & {
 };
 
 export type VariantFieldErrors = Partial<
-  Record<"title" | "sku" | "inventoryQuantity" | "gallery", string>
+  Record<
+    | "title"
+    | "sku"
+    | "inventoryQuantity"
+    | "gallery"
+    | "optionName"
+    | "optionValue",
+    string
+  >
 >;
 
 export interface VariantGalleryOption {
@@ -51,6 +65,7 @@ interface VariantsSectionProps {
   variants: VariantState[];
   defaultCurrency: string;
   productGallery: VariantGalleryOption[];
+  productOptions: ProductOptionModel[];
   variantErrors?: VariantFieldErrors[];
   onAddVariant: () => void;
   onRemoveVariant: (index: number) => void;
@@ -61,7 +76,9 @@ interface VariantsSectionProps {
       | "sku"
       | "barcode"
       | "inventoryQuantity"
-      | "allowBackorder",
+      | "allowBackorder"
+      | "optionName"
+      | "optionValue",
     value: string | number | boolean | undefined
   ) => void;
   onVariantPriceChange: (
@@ -110,6 +127,7 @@ export function VariantsSection({
   variants,
   defaultCurrency,
   productGallery,
+  productOptions,
   variantErrors,
   onAddVariant,
   onRemoveVariant,
@@ -134,6 +152,16 @@ export function VariantsSection({
     });
     return map;
   }, [productGallery]);
+
+  const optionLookup = useMemo(() => {
+    const map = new Map<string, ProductOptionModel>();
+    productOptions.forEach((option) => {
+      if (option?.name) {
+        map.set(option.name, option);
+      }
+    });
+    return map;
+  }, [productOptions]);
 
   const emptyState = (
     <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/40 p-6 text-center text-sm text-muted-foreground">
@@ -204,6 +232,46 @@ export function VariantsSection({
                       count: variant.inventoryQuantity,
                     })
                   : t("products.details.variants.preview.inventoryFallback");
+              const option =
+                variant.optionName && optionLookup.has(variant.optionName)
+                  ? optionLookup.get(variant.optionName)
+                  : undefined;
+              const availableValues = option?.values ?? [];
+              const optionPreview = (() => {
+                if (option) {
+                  const value = variant.optionValue?.trim();
+                  if (value) {
+                    return `${option.displayName ?? option.name}: ${value}`;
+                  }
+                  return t(
+                    "products.details.variants.preview.missingOptionValue",
+                    "Missing option value"
+                  );
+                }
+                if (variant.optionName?.trim() || variant.optionValue?.trim()) {
+                  const name = variant.optionName?.trim();
+                  const value = variant.optionValue?.trim();
+                  if (name && value) {
+                    return `${name}: ${value}`;
+                  }
+                  if (name) {
+                    return `${name}: ${t(
+                      "products.details.variants.preview.missingOptionValue",
+                      "Missing option value"
+                    )}`;
+                  }
+                  if (value) {
+                    return `${t(
+                      "products.details.variants.preview.missingOption",
+                      "Missing option"
+                    )}: ${value}`;
+                  }
+                }
+                return t(
+                  "products.details.variants.preview.missingOption",
+                  "Missing option"
+                );
+              })();
               const isExpanded = expanded === index;
               const errors = variantErrors?.[index];
 
@@ -240,6 +308,9 @@ export function VariantsSection({
                         <span className="text-xs text-muted-foreground">
                           {variant.sku?.trim() ||
                             t("products.details.variants.preview.missingSku")}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {optionPreview}
                         </span>
                       </div>
                     </div>
@@ -408,6 +479,127 @@ export function VariantsSection({
                             }
                           />
                         </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <Label>{t("products.details.variants.fields.optionHeader")}</Label>
+                          <p className="text-xs text-muted-foreground">
+                            {t("products.details.variants.fields.optionDescription")}
+                          </p>
+                        </div>
+                        {productOptions.length > 0 ? (
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">
+                                {t("products.details.variants.fields.optionName")}
+                              </Label>
+                              <Select
+                                value={variant.optionName ?? undefined}
+                                onValueChange={(value) =>
+                                  onVariantChange(index, "optionName", value)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue
+                                    placeholder={t(
+                                      "products.details.variants.fields.optionNamePlaceholder"
+                                    )}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {productOptions.map((optionItem) => (
+                                    <SelectItem
+                                      key={optionItem.name}
+                                      value={optionItem.name}
+                                    >
+                                      {optionItem.displayName ?? optionItem.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {errors?.optionName && (
+                                <p className="text-xs text-destructive">
+                                  {errors.optionName}
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">
+                                {t("products.details.variants.fields.optionValue")}
+                              </Label>
+                              <Select
+                                value={variant.optionValue ?? undefined}
+                                onValueChange={(value) =>
+                                  onVariantChange(index, "optionValue", value)
+                                }
+                                disabled={availableValues.length === 0}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue
+                                    placeholder={t(
+                                      "products.details.variants.fields.optionValuePlaceholder"
+                                    )}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availableValues.map((value) => (
+                                    <SelectItem key={value} value={value}>
+                                      {value}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {availableValues.length === 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  {t(
+                                    "products.details.variants.fields.optionValueEmpty"
+                                  )}
+                                </p>
+                              )}
+                              {errors?.optionValue && (
+                                <p className="text-xs text-destructive">
+                                  {errors.optionValue}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">
+                                {t("products.details.variants.fields.optionName")}
+                              </Label>
+                              <Input
+                                value={variant.optionName ?? ""}
+                                onChange={(event) =>
+                                  onVariantChange(index, "optionName", event.target.value)
+                                }
+                              />
+                              {errors?.optionName && (
+                                <p className="text-xs text-destructive">
+                                  {errors.optionName}
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">
+                                {t("products.details.variants.fields.optionValue")}
+                              </Label>
+                              <Input
+                                value={variant.optionValue ?? ""}
+                                onChange={(event) =>
+                                  onVariantChange(index, "optionValue", event.target.value)
+                                }
+                              />
+                              {errors?.optionValue && (
+                                <p className="text-xs text-destructive">
+                                  {errors.optionValue}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-3">

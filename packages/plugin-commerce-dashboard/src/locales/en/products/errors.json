@@ -6,5 +6,8 @@
   "unsavedChanges": "You have unsaved product changes.",
   "discardChanges": "Discard unsaved changes?",
   "variantTitleRequired": "Variant name is required.",
-  "variantSkuRequired": "Variant SKU is required."
+  "variantSkuRequired": "Variant SKU is required.",
+  "variantOptionRequired": "Select an option for each variant.",
+  "variantOptionValueRequired": "Select a value for this option.",
+  "variantOptionValueInvalid": "Select a valid value for this option."
 }

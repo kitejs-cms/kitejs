@@ -6,5 +6,8 @@
   "unsavedChanges": "Ci sono modifiche non salvate al prodotto.",
   "discardChanges": "Vuoi scartare le modifiche non salvate?",
   "variantTitleRequired": "Il nome della variante è obbligatorio.",
-  "variantSkuRequired": "Lo SKU della variante è obbligatorio."
+  "variantSkuRequired": "Lo SKU della variante è obbligatorio.",
+  "variantOptionRequired": "Seleziona un'opzione per ogni variante.",
+  "variantOptionValueRequired": "Seleziona un valore per questa opzione.",
+  "variantOptionValueInvalid": "Seleziona un valore valido per questa opzione."
 }
