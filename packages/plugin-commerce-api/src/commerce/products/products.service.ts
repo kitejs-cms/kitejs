@@ -308,12 +308,24 @@ export class ProductsService {
         };
       }
 
+      const thumbnail = product.thumbnail
+        ? await this.storageService.getFileUrl(product.thumbnail.toString())
+        : null;
+
+      const gallery = product.gallery.length
+        ? await this.storageService.getAssetsDetails(
+            product.gallery.map((asset) => asset.toString())
+          )
+        : [];
+
       return {
         ...(product as unknown as ProductResponseDetailsModel),
         translations: translationsWithSlug,
         collections: product.collections.map((c) => c.toString()),
         createdBy: product.createdBy ? product.createdBy.toString() : null,
         updatedBy: product.updatedBy ? product.updatedBy.toString() : null,
+        thumbnail,
+        gallery,
       };
     } catch (error) {
       this.logger.error(error);

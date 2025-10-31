@@ -73,6 +73,44 @@ export function ProductSection({
 
   const galleryCount = useMemo(() => gallery?.length ?? 0, [gallery]);
 
+  const resolveAssetId = useCallback((entry: MediaSource | undefined | null) => {
+    if (!entry) return null;
+    if (typeof entry === "string") {
+      return entry.startsWith("http") ? null : entry;
+    }
+
+    return (
+      entry.assetId ?? entry.id ?? entry._id ?? entry.path ?? null
+    );
+  }, []);
+
+  const resolveAssetUrl = useCallback((entry: MediaSource | undefined | null) => {
+    if (!entry) return null;
+    if (typeof entry === "string") {
+      return entry.startsWith("http") ? entry : null;
+    }
+
+    return entry.url ?? null;
+  }, []);
+
+  const displayThumbnail = useMemo(() => {
+    if (!thumbnail) return null;
+
+    if (thumbnail.startsWith("http")) {
+      return thumbnail;
+    }
+
+    if (!gallery || gallery.length === 0) {
+      return null;
+    }
+
+    const matched = gallery.find(
+      (entry) => resolveAssetId(entry) === thumbnail
+    );
+
+    return matched ? resolveAssetUrl(matched) : null;
+  }, [gallery, resolveAssetId, resolveAssetUrl, thumbnail]);
+
   const handleAutoPersistMedia = useCallback(
     (payload: { gallery: string[]; thumbnail: string | null }) =>
       onMediaChange(payload),
@@ -176,10 +214,14 @@ export function ProductSection({
           <Label className="mb-2 block">{t("products.fields.thumbnail")}</Label>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start pt-2">
-            <div className="flex aspect-square w-full max-w-xs items-center justify-center overflow-hidden rounded-md border bg-muted sm:w-48">
-              {thumbnail ? (
+            <div
+              className={`flex aspect-square w-full max-w-xs items-center justify-center overflow-hidden rounded-md bg-muted sm:w-48 ${
+                thumbnailError ? "ring-2 ring-destructive" : ""
+              }`}
+            >
+              {displayThumbnail ? (
                 <img
-                  src={thumbnail}
+                  src={displayThumbnail}
                   alt={t("products.details.media.previewAlt")}
                   className="h-full w-full object-contain"
                 />

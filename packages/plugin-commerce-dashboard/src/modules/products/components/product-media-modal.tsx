@@ -296,9 +296,9 @@ export function ProductMediaModal({
                         setActiveMediaId(identifier);
                       }
                     }}
-                    className={`group relative flex w-full flex-col overflow-hidden rounded-xl border border-transparent bg-card shadow-sm transition ${
-                      isActive ? "border-primary ring-2 ring-primary/40" : ""
-                    } ${isErrored ? "border-destructive" : ""}`}
+                    className={`group relative flex w-full flex-col overflow-hidden rounded-xl bg-card shadow-sm transition ring-1 ring-transparent ${
+                      isActive ? "ring-2 ring-primary/50 ring-offset-2 ring-offset-background" : ""
+                    } ${isErrored ? "ring-2 ring-destructive/60" : ""}`}
                   >
                     {/* Anteprima */}
                     <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
