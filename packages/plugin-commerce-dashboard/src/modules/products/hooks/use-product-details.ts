@@ -461,6 +461,21 @@ export function useProductDetails() {
 
       const normalizedVariants = (localData.variants ?? []).map(
         (variant, variantIndex) => {
+          const variantIdCandidate = (() => {
+            const variantWithId = variant as ProductVariantModel;
+            if (typeof variantWithId.id === "string" && variantWithId.id.trim()) {
+              return variantWithId.id.trim();
+            }
+
+            const legacyId = (variant as { _id?: unknown })._id;
+
+            if (typeof legacyId === "string" && legacyId.trim()) {
+              return legacyId.trim();
+            }
+
+            return undefined;
+          })();
+
           const normalizedPrices = (variant.prices ?? []).map((price) => ({
             currencyCode: price.currencyCode ?? defaultCurrency,
             amount:
@@ -483,7 +498,7 @@ export function useProductDetails() {
             variant.optionValue?.trim() || `${optionName}-${variantIndex + 1}`;
 
           return {
-            id: variant.id,
+            id: variantIdCandidate,
             title: variant.title ?? "",
             sku: variant.sku ?? "",
             barcode: variant.barcode,

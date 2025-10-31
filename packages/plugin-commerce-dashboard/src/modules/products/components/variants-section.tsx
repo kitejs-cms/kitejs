@@ -154,6 +154,9 @@ export function VariantsSection({
         {variants.length > 0 && (
           <div className="space-y-4">
             {variants.map((variant, index) => {
+              const legacyId = (variant as { _id?: string })._id;
+              const variantKey = variant.id ?? (legacyId?.trim() ? legacyId.trim() : undefined);
+
               const price = getPrimaryPrice(variant, defaultCurrency);
               const selectedGallery = variant.gallery ?? [];
               const preview = selectedGallery.length
@@ -183,7 +186,7 @@ export function VariantsSection({
 
               return (
                 <div
-                  key={variant.id ?? `${index}`}
+                  key={variantKey ?? `${index}`}
                   className="overflow-hidden rounded-xl border border-border bg-background shadow-sm"
                 >
                   <button
