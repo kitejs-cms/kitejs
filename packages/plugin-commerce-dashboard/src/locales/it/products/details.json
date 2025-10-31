@@ -86,13 +86,22 @@
       "backorderDescription": "Permetti ai clienti di acquistare la variante anche quando non è disponibile in magazzino.",
       "media": "Immagini galleria",
       "mediaDescription": "Seleziona le immagini dalla galleria del prodotto da associare a questa variante.",
-      "mediaEmpty": "Aggiungi media alla galleria del prodotto per collegarli qui."
+      "mediaEmpty": "Aggiungi media alla galleria del prodotto per collegarli qui.",
+      "mediaSelect": "Scegli immagini",
+      "mediaPreviewEmpty": "Nessuna immagine selezionata per questa variante.",
+      "mediaSelected_one": "{{count}} immagine selezionata",
+      "mediaSelected_other": "{{count}} immagini selezionate"
     },
     "preview": {
       "untitled": "Variante senza nome",
       "missingSku": "SKU non impostato",
       "inventoryCount": "{{count}} in magazzino",
       "inventoryFallback": "Quantità non impostata"
+    },
+    "galleryDialog": {
+      "title": "Seleziona media della variante",
+      "description": "Scegli quali immagini della galleria associare a questa variante.",
+      "confirm": "Salva selezione"
     }
   },
   "notifications": {
