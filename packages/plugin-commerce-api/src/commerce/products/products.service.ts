@@ -289,6 +289,8 @@ export class ProductsService {
         throw new NotFoundException(`Product with ID "${id}" not found.`);
       }
 
+      product.id = product._id.toString();
+
       const slugs = await this.slugService.findSlugsByEntity(
         new Types.ObjectId(id)
       );
