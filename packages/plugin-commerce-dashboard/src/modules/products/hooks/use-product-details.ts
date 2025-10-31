@@ -12,6 +12,7 @@ import type {
   ProductTranslationModel,
   ProductUpsertModel,
   ProductSeoModel,
+  ProductPriceModel,
 } from "@kitejs-cms/plugin-commerce-api";
 import type { MediaSource } from "./use-product-media";
 
@@ -119,6 +120,20 @@ export function useProductDetails() {
     () => cmsSettings?.defaultLanguage,
     [cmsSettings]
   );
+
+  const defaultCurrency = useMemo(() => {
+    if (!cmsSettings) return "EUR";
+    const commerceSettings = (cmsSettings as unknown as {
+      commerce?: { defaultCurrency?: string };
+    })?.commerce;
+
+    const code = commerceSettings?.defaultCurrency;
+    if (typeof code === "string" && code.trim()) {
+      return code.trim().toUpperCase();
+    }
+
+    return "EUR";
+  }, [cmsSettings]);
 
   const { loading, fetchData } = useApi<ProductResponseDetailsModel>();
   const { id } = useParams<{ id: string }>();
@@ -403,6 +418,20 @@ export function useProductDetails() {
         .map((entry) => extractAssetId(entry))
         .filter((id): id is string => Boolean(id));
 
+      const normalizedVariants = (localData.variants ?? []).map((variant) => ({
+        id: variant.id,
+        title: variant.title,
+        sku: variant.sku,
+        barcode: variant.barcode,
+        inventoryQuantity: variant.inventoryQuantity,
+        allowBackorder: variant.allowBackorder,
+        prices: (variant.prices ?? []).map((price) => ({
+          currencyCode: price.currencyCode,
+          amount: price.amount,
+          compareAtAmount: price.compareAtAmount,
+        })),
+      }));
+
       const body: ProductUpsertModel = {
         id: id && id !== "create" ? localData.id : undefined,
         language: activeLang,
@@ -419,6 +448,7 @@ export function useProductDetails() {
         collections: localData.collections ?? null,
         gallery: galleryAssetIds,
         thumbnail: localData.thumbnail ?? undefined,
+        variants: normalizedVariants,
       };
 
       const result = await fetchData("commerce/products", "POST", body);
@@ -594,6 +624,142 @@ export function useProductDetails() {
     [activeLang, defaultLang, fetchData, localData, t]
   );
 
+  const onVariantChange = useCallback(
+    (
+      index: number,
+      field:
+        | "title"
+        | "sku"
+        | "barcode"
+        | "inventoryQuantity"
+        | "allowBackorder",
+      value: string | number | boolean | undefined
+    ) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const variants = [...(prev.variants ?? [])];
+        const current = variants[index];
+        if (!current) return prev;
+
+        const updated = { ...current } as typeof current;
+
+        switch (field) {
+          case "title":
+          case "sku":
+          case "barcode":
+            updated[field] = (value as string) ?? "";
+            break;
+          case "inventoryQuantity": {
+            const numericValue =
+              typeof value === "number"
+                ? value
+                : value === undefined
+                  ? undefined
+                  : Number(value);
+
+            updated.inventoryQuantity =
+              numericValue === undefined || Number.isNaN(numericValue)
+                ? 0
+                : Math.max(0, Math.trunc(numericValue));
+            break;
+          }
+          case "allowBackorder":
+            updated.allowBackorder = Boolean(value);
+            break;
+        }
+
+        variants[index] = updated;
+        return { ...prev, variants };
+      });
+      setHasChanges(true);
+    },
+    []
+  );
+
+  const onVariantPriceChange = useCallback(
+    (index: number, field: keyof ProductPriceModel, value: string) => {
+      setLocalData((prev) => {
+        if (!prev) return prev;
+        const variants = [...(prev.variants ?? [])];
+        const current = variants[index];
+        if (!current) return prev;
+
+        const prices = [...(current.prices ?? [])];
+        const primary = {
+          currencyCode: defaultCurrency,
+          amount: 0,
+          compareAtAmount: undefined as number | undefined,
+          ...prices[0],
+        };
+
+        if (field === "currencyCode") {
+          primary.currencyCode = value
+            ? value.trim().toUpperCase().slice(0, 3)
+            : defaultCurrency;
+        }
+
+        if (field === "amount") {
+          const parsed = Number.parseFloat(value);
+          primary.amount = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
+        }
+
+        if (field === "compareAtAmount") {
+          const parsed = Number.parseFloat(value);
+          primary.compareAtAmount = Number.isNaN(parsed)
+            ? undefined
+            : Math.max(0, parsed);
+        }
+
+        prices[0] = primary;
+        variants[index] = { ...current, prices };
+        return { ...prev, variants };
+      });
+      setHasChanges(true);
+    },
+    [defaultCurrency]
+  );
+
+  const onAddVariant = useCallback(() => {
+    setLocalData((prev) => {
+      if (!prev) return prev;
+
+      const variant: ProductDetailsState["variants"][number] = {
+        id: undefined,
+        title: "",
+        sku: "",
+        barcode: "",
+        prices: [
+          {
+            currencyCode: defaultCurrency,
+            amount: 0,
+          },
+        ],
+        inventoryQuantity: 0,
+        allowBackorder: false,
+        gallery: [],
+        optionName: "default",
+        optionValue: `default-${Date.now()}`,
+      } as ProductDetailsState["variants"][number];
+
+      return {
+        ...prev,
+        variants: [...(prev.variants ?? []), variant],
+      };
+    });
+    setHasChanges(true);
+  }, [defaultCurrency]);
+
+  const onRemoveVariant = useCallback((index: number) => {
+    setLocalData((prev) => {
+      if (!prev) return prev;
+      const variants = [...(prev.variants ?? [])];
+      if (!variants[index]) return prev;
+      variants.splice(index, 1);
+      return { ...prev, variants };
+    });
+    setHasChanges(true);
+  }, []);
+
   return {
     data: localData,
     loading,
@@ -612,5 +778,10 @@ export function useProductDetails() {
     showUnsavedAlert,
     formErrors,
     t,
+    defaultCurrency,
+    onVariantChange,
+    onVariantPriceChange,
+    onAddVariant,
+    onRemoveVariant,
   };
 }

@@ -81,7 +81,9 @@
       "inventory": "Quantità a magazzino",
       "price": "Prezzo",
       "compareAt": "Prezzo di confronto",
-      "currency": "Valuta"
+      "currency": "Valuta",
+      "backorder": "Consenti preordini",
+      "backorderDescription": "Permetti ai clienti di acquistare la variante anche quando non è disponibile in magazzino."
     }
   },
   "notifications": {

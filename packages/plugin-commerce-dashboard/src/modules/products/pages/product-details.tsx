@@ -10,6 +10,10 @@ import { SeoSection } from "../components/seo-section";
 import { UnsavedChangesDialog } from "../../collections/components/unsaved-changes-dialog";
 import { SettingsSection } from "../components/settings-section";
 import { ProductSection } from "../components/product-section";
+import {
+  VariantsSection,
+  type VariantState,
+} from "../components/variants-section";
 
 export function CommerceProductDetailsPage() {
   const {
@@ -30,6 +34,11 @@ export function CommerceProductDetailsPage() {
     onMediaChange,
     formErrors,
     t,
+    defaultCurrency,
+    onVariantChange,
+    onVariantPriceChange,
+    onAddVariant,
+    onRemoveVariant,
   } = useProductDetails();
   const [jsonView, setJsonView] = useState(false);
 
@@ -69,7 +78,14 @@ export function CommerceProductDetailsPage() {
               onMediaChange={onMediaChange}
             />
 
-            {/* Varaint Product */}
+            <VariantsSection
+              variants={(data.variants ?? []) as VariantState[]}
+              defaultCurrency={defaultCurrency}
+              onAddVariant={onAddVariant}
+              onRemoveVariant={onRemoveVariant}
+              onVariantChange={onVariantChange}
+              onVariantPriceChange={onVariantPriceChange}
+            />
 
             {/* SEO Section */}
             <SeoSection

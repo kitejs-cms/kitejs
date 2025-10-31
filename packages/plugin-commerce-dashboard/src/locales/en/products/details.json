@@ -81,7 +81,9 @@
       "inventory": "Inventory quantity",
       "price": "Price",
       "compareAt": "Compare at price",
-      "currency": "Currency"
+      "currency": "Currency",
+      "backorder": "Allow backorders",
+      "backorderDescription": "Let customers purchase this variant even when it's out of stock."
     }
   },
   "notifications": {
