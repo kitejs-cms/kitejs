@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import type { VariantFieldErrors } from "../components/variants-section";
+import type { TFunction } from "i18next";
 import type { ProductDetailsState } from "./product-details.types";
 import { slugifyOptionHandle } from "./product-details.utils";
-import type { TFunction } from "react-i18next";
 
 export function useProductOptions({
   localData,
