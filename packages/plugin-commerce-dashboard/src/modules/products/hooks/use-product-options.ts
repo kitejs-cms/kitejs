@@ -1,6 +1,6 @@
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import type { VariantFieldErrors } from "../components/variants-section";
-import type { TFunction } from "react-i18next";
 import type { ProductDetailsState } from "./product-details.types";
 import { slugifyOptionHandle } from "./product-details.utils";
 
@@ -9,7 +9,6 @@ export function useProductOptions({
   setLocalData,
   setHasChanges,
   setVariantErrors,
-  t,
 }: {
   localData: ProductDetailsState | null;
   setLocalData: React.Dispatch<
@@ -19,8 +18,9 @@ export function useProductOptions({
   setVariantErrors: React.Dispatch<
     React.SetStateAction<VariantFieldErrors[]>
   >;
-  t: TFunction<"commerce">;
 }) {
+  const { t } = useTranslation<"commerce">("commerce");
+
   const onAddOption = useCallback(() => {
     setLocalData((prev) => {
       if (!prev) return prev;

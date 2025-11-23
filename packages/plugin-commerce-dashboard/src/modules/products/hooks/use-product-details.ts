@@ -786,7 +786,6 @@ export function useProductDetails() {
     setLocalData,
     setHasChanges,
     setVariantErrors,
-    t,
   });
 
   const {
