@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Exclude, Type } from "class-transformer";
 import {
   IsArray,
   IsBoolean,
@@ -71,6 +71,9 @@ export class ProductVariantDto implements ProductVariantModel {
   @IsOptional()
   @IsString()
   optionValue?: string;
+
+  @Exclude()
+  _id?: string;
 
   constructor(partial: ProductVariantModel) {
     Object.assign(this, partial);

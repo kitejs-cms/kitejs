@@ -28,6 +28,26 @@ export class ProductsService {
   private readonly logger = new Logger(ProductsService.name);
   private readonly slugNamespace = COMMERCE_PRODUCT_SLUG_NAMESPACE;
 
+  private formatUserIdentifier(
+    user?: Types.ObjectId | User | null
+  ): string | null {
+    if (!user) return null;
+
+    if ((user as User).firstName && (user as User).lastName) {
+      return `${(user as User).firstName} ${(user as User).lastName}`;
+    }
+
+    if (typeof (user as Types.ObjectId).toHexString === "function") {
+      return (user as Types.ObjectId).toHexString();
+    }
+
+    if (typeof (user as any).toString === "function") {
+      return (user as any).toString();
+    }
+
+    return null;
+  }
+
   constructor(
     @InjectModel(Product.name)
     private readonly productModel: Model<ProductDocument>,
@@ -330,8 +350,8 @@ export class ProductsService {
         thumbnail,
         translations: translationsWithSlug,
         collections: product.collections.map((c) => c.toString()),
-        createdBy: product.createdBy ? product.createdBy.toString() : null,
-        updatedBy: product.updatedBy ? product.updatedBy.toString() : null,
+        createdBy: this.formatUserIdentifier(product.createdBy),
+        updatedBy: this.formatUserIdentifier(product.updatedBy),
       };
     } catch (error) {
       this.logger.error(error);
