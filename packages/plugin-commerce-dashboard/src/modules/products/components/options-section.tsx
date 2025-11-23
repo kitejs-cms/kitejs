@@ -67,7 +67,7 @@ export function OptionsSection({
         {options.length > 0 && (
           <div className="space-y-4">
             {options.map((option, index) => {
-              const optionKey = option.name || `option-${index}`;
+              const optionKey = String(option.position ?? index);
               const valueInput = valueInputs[optionKey] ?? "";
               const valueCount = option.values?.length ?? 0;
 
