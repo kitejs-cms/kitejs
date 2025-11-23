@@ -12,6 +12,7 @@ import type {
   ProductUpsertModel,
   ProductVariantModel,
   ProductSeoModel,
+  ProductTranslationModel,
 } from "@kitejs-cms/plugin-commerce-api";
 import { useProductOptions } from "./use-product-options";
 import { useProductVariants } from "./use-product-variants";
