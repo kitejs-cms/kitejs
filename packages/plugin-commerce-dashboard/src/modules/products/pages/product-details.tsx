@@ -10,6 +10,11 @@ import { SeoSection } from "../components/seo-section";
 import { UnsavedChangesDialog } from "../../collections/components/unsaved-changes-dialog";
 import { SettingsSection } from "../components/settings-section";
 import { ProductSection } from "../components/product-section";
+import { OptionsSection } from "../components/options-section";
+import {
+  VariantsSection,
+  type VariantState,
+} from "../components/variants-section";
 
 export function CommerceProductDetailsPage() {
   const {
@@ -30,6 +35,20 @@ export function CommerceProductDetailsPage() {
     onMediaChange,
     formErrors,
     t,
+    defaultCurrency,
+    onVariantChange,
+    onVariantPriceChange,
+    onVariantGalleryChange,
+    onAddVariant,
+    onRemoveVariant,
+    variantErrors,
+    variantGalleryOptions,
+    productOptions,
+    onAddOption,
+    onRemoveOption,
+    onOptionChange,
+    onOptionValueAdd,
+    onOptionValueRemove,
   } = useProductDetails();
   const [jsonView, setJsonView] = useState(false);
 
@@ -69,7 +88,27 @@ export function CommerceProductDetailsPage() {
               onMediaChange={onMediaChange}
             />
 
-            {/* Varaint Product */}
+            <OptionsSection
+              options={productOptions}
+              onAddOption={onAddOption}
+              onRemoveOption={onRemoveOption}
+              onOptionChange={onOptionChange}
+              onOptionValueAdd={onOptionValueAdd}
+              onOptionValueRemove={onOptionValueRemove}
+            />
+
+            <VariantsSection
+              variants={(data.variants ?? []) as VariantState[]}
+              defaultCurrency={defaultCurrency}
+              productGallery={variantGalleryOptions}
+              productOptions={productOptions}
+              variantErrors={variantErrors}
+              onAddVariant={onAddVariant}
+              onRemoveVariant={onRemoveVariant}
+              onVariantChange={onVariantChange}
+              onVariantPriceChange={onVariantPriceChange}
+              onVariantGalleryChange={onVariantGalleryChange}
+            />
 
             {/* SEO Section */}
             <SeoSection

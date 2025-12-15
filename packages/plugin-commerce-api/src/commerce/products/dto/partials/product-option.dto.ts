@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsArray, IsNumber } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsString, IsArray, IsNumber, IsOptional } from "class-validator";
 import { ProductOptionModel } from "../../models/partials/product-option.model";
 
 export class ProductOptionDto implements ProductOptionModel {
@@ -7,9 +7,10 @@ export class ProductOptionDto implements ProductOptionModel {
   @IsString()
   name: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  displayName: string;
+  displayName?: string;
 
   @ApiProperty({ type: [String] })
   @IsArray()

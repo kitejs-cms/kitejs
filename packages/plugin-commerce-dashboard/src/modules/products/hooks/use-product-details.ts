@@ -9,77 +9,27 @@ import {
 } from "@kitejs-cms/dashboard-core";
 import type {
   ProductResponseDetailsModel,
-  ProductTranslationModel,
   ProductUpsertModel,
+  ProductVariantModel,
   ProductSeoModel,
+  ProductTranslationModel,
 } from "@kitejs-cms/plugin-commerce-api";
+import { useProductOptions } from "./use-product-options";
+import { useProductVariants } from "./use-product-variants";
+import {
+  arraysEqual,
+  extractAssetId,
+  formatOptionDisplayName,
+  generateSlug,
+  hydrateProductDetails,
+  mapAssetIdsToSources,
+  normalizeThumbnailIdentifier,
+  slugifyOptionHandle,
+  getTranslationCandidate,
+} from "./product-details.utils";
+import type { ProductDetailsState } from "./product-details.types";
 import type { MediaSource } from "./use-product-media";
-
-const arraysEqual = (a: string[], b: string[]) =>
-  a.length === b.length && a.every((value, index) => value === b[index]);
-
-const generateSlug = (title: string) =>
-  title
-    .toLowerCase()
-    .trim()
-    .replace(/[\s\W-]+/g, "-");
-
-const getTranslationCandidate = (
-  translations: Record<string, ProductTranslationModel>,
-  lang?: string
-) => {
-  if (!lang) return null;
-  const translation = translations[lang];
-  if (translation?.title?.trim() && translation?.slug?.trim()) {
-    return { lang, translation } as const;
-  }
-  return null;
-};
-
-type ProductDetailsState = Omit<
-  ProductResponseDetailsModel,
-  "gallery" | "thumbnail"
-> & {
-  gallery: MediaSource[];
-  thumbnail?: string | null;
-};
-
-const extractAssetId = (source: MediaSource | undefined | null): string | null => {
-  if (!source) return null;
-  if (typeof source === "string") return source;
-  return (
-    source.assetId ??
-    source.id ??
-    source._id ??
-    source.path ??
-    null
-  );
-};
-
-const mapAssetIdsToSources = (
-  assetIds: string[],
-  previous: MediaSource[]
-): MediaSource[] => {
-  if (!assetIds.length) return [];
-
-  const lookup = new Map<string, MediaSource>();
-  previous.forEach((entry) => {
-    const key = extractAssetId(entry);
-    if (key) {
-      lookup.set(key, entry);
-    }
-  });
-
-  return assetIds.map((id) => lookup.get(id) ?? id);
-};
-
-const hydrateProductDetails = (
-  product: ProductResponseDetailsModel
-): ProductDetailsState => ({
-  ...product,
-  gallery: product.gallery ?? [],
-  thumbnail: product.thumbnail ?? null,
-});
+import type { VariantFieldErrors } from "../components/variants-section";
 
 const findTranslationForUpsert = (
   product: ProductDetailsState,
@@ -120,6 +70,20 @@ export function useProductDetails() {
     [cmsSettings]
   );
 
+  const defaultCurrency = useMemo(() => {
+    if (!cmsSettings) return "EUR";
+    const commerceSettings = (cmsSettings as unknown as {
+      commerce?: { defaultCurrency?: string };
+    })?.commerce;
+
+    const code = commerceSettings?.defaultCurrency;
+    if (typeof code === "string" && code.trim()) {
+      return code.trim().toUpperCase();
+    }
+
+    return "EUR";
+  }, [cmsSettings]);
+
   const { loading, fetchData } = useApi<ProductResponseDetailsModel>();
   const { id } = useParams<{ id: string }>();
 
@@ -130,6 +94,7 @@ export function useProductDetails() {
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
 
   const [localData, setLocalData] = useState<ProductDetailsState | null>(null);
+  const [variantErrors, setVariantErrors] = useState<VariantFieldErrors[]>([]);
 
   useEffect(() => {
     const items = [
@@ -179,6 +144,7 @@ export function useProductDetails() {
 
       setLocalData(newProduct);
       setActiveLang(defaultLang);
+      setVariantErrors([]);
       return;
     }
 
@@ -188,6 +154,7 @@ export function useProductDetails() {
         if (result?.data) {
           setLocalData(hydrateProductDetails(result.data));
           setHasChanges(false);
+          setVariantErrors([]);
         }
       })();
     }
@@ -370,8 +337,75 @@ export function useProductDetails() {
       errors.slug = t("products.errors.slugRequired", "Slug is required");
     }
 
+    const variants = localData.variants ?? [];
+    let hasVariantValidationErrors = false;
+    const nextVariantErrors: VariantFieldErrors[] = variants.map(() => ({}));
+
+    variants.forEach((variant, index) => {
+      const variantError: VariantFieldErrors = {};
+      if (!variant.title?.trim()) {
+        variantError.title = t(
+          "products.errors.variantTitleRequired",
+          "Variant name is required"
+        );
+      }
+      if (!variant.sku?.trim()) {
+        variantError.sku = t(
+          "products.errors.variantSkuRequired",
+          "Variant SKU is required"
+        );
+      }
+
+      const optionName = variant.optionName?.trim();
+      const optionValue = variant.optionValue?.trim();
+      const optionList = localData.options ?? [];
+      const hasConfiguredOptions = optionList.length > 0;
+      const option = optionName
+        ? optionList.find((entry) => entry.name === optionName)
+        : undefined;
+
+      if (!optionName) {
+        variantError.optionName = t(
+          "products.errors.variantOptionRequired",
+          "Select an option"
+        );
+      } else if (hasConfiguredOptions && !option) {
+        variantError.optionName = t(
+          "products.errors.variantOptionRequired",
+          "Select an option"
+        );
+      }
+
+      if (!optionValue) {
+        variantError.optionValue = t(
+          "products.errors.variantOptionValueRequired",
+          "Select a value"
+        );
+      } else if (
+        hasConfiguredOptions &&
+        option?.values?.length &&
+        !option.values.includes(optionValue)
+      ) {
+        variantError.optionValue = t(
+          "products.errors.variantOptionValueInvalid",
+          "Select a valid option value"
+        );
+      }
+
+      if (Object.keys(variantError).length > 0) {
+        hasVariantValidationErrors = true;
+        nextVariantErrors[index] = variantError;
+      }
+    });
+
+    if (hasVariantValidationErrors) {
+      setVariantErrors(nextVariantErrors);
+    } else {
+      setVariantErrors([]);
+    }
+
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0 && !hasVariantValidationErrors;
   }, [localData, activeLang, t]);
 
   const handleSave = useCallback(async () => {
@@ -403,8 +437,132 @@ export function useProductDetails() {
         .map((entry) => extractAssetId(entry))
         .filter((id): id is string => Boolean(id));
 
+      const uniqueOptionHandles = new Set<string>();
+      const normalizedOptions = (localData.options ?? []).map((option, index) => {
+        const trimmedDisplayName = option.displayName?.trim();
+        const handleSource =
+          option.name?.trim() || trimmedDisplayName || `option-${index + 1}`;
+        const baseName =
+          slugifyOptionHandle(handleSource) || `option-${index + 1}`;
+        let name = baseName;
+        let attempt = 1;
+        while (uniqueOptionHandles.has(name)) {
+          name = `${baseName}-${++attempt}`;
+        }
+        uniqueOptionHandles.add(name);
+        const displayName =
+          trimmedDisplayName && trimmedDisplayName.length > 0
+            ? trimmedDisplayName
+            : formatOptionDisplayName(handleSource) || `Option ${index + 1}`;
+        const values = Array.from(
+          new Set(
+            (option.values ?? [])
+              .map((value) => value?.trim())
+              .filter((value): value is string => Boolean(value))
+          )
+        );
+
+        return {
+          name,
+          displayName,
+          values,
+          position: index,
+        } satisfies ProductDetailsState["options"][number];
+      });
+
+      const optionLookup = new Map(
+        normalizedOptions.map((option) => [option.name, option])
+      );
+
+      const normalizedVariants = (localData.variants ?? []).map(
+        (variant, variantIndex) => {
+          const variantIdCandidate = (() => {
+            const variantWithId = variant as ProductVariantModel;
+            if (typeof variantWithId.id === "string" && variantWithId.id.trim()) {
+              return variantWithId.id.trim();
+            }
+
+            const legacyId = (variant as { _id?: unknown })._id;
+
+            if (typeof legacyId === "string" && legacyId.trim()) {
+              return legacyId.trim();
+            }
+
+            return undefined;
+          })();
+
+          const normalizedPrices = (variant.prices ?? []).map((price) => ({
+            currencyCode: price.currencyCode ?? defaultCurrency,
+            amount:
+              typeof price.amount === "number" && !Number.isNaN(price.amount)
+                ? price.amount
+                : 0,
+            compareAtAmount:
+              typeof price.compareAtAmount === "number" &&
+              !Number.isNaN(price.compareAtAmount)
+                ? price.compareAtAmount
+                : undefined,
+          }));
+
+          const gallery = (variant.gallery ?? []).filter(
+            (id): id is string => typeof id === "string" && Boolean(id)
+          );
+
+          const optionNameCandidate = variant.optionName?.trim();
+
+          const optionMatch = optionNameCandidate
+            ? optionLookup.get(optionNameCandidate)
+            : undefined;
+
+          const fallbackOption = normalizedOptions[0];
+          const optionName = optionMatch?.name
+            ? optionMatch.name
+            : fallbackOption?.name ?? "default";
+
+          const optionValueCandidate = variant.optionValue?.trim();
+          const selectedOption = optionLookup.get(optionName);
+          let optionValue =
+            optionValueCandidate &&
+            selectedOption?.values.includes(optionValueCandidate)
+              ? optionValueCandidate
+              : selectedOption?.values?.[0];
+
+          if (!optionValue) {
+            optionValue = `${optionName}-${variantIndex + 1}`;
+          }
+
+          return {
+            id: variantIdCandidate,
+            title: variant.title ?? "",
+            sku: variant.sku ?? "",
+            barcode: variant.barcode,
+            inventoryQuantity:
+              typeof variant.inventoryQuantity === "number"
+                ? Math.max(0, Math.trunc(variant.inventoryQuantity))
+                : undefined,
+            allowBackorder: Boolean(variant.allowBackorder),
+            prices: normalizedPrices,
+            gallery,
+            downloadUrl: variant.downloadUrl,
+            optionName,
+            optionValue,
+          } satisfies ProductVariantModel;
+        }
+      );
+
+      const thumbnailId = normalizeThumbnailIdentifier(
+        localData.thumbnail ?? null,
+        (localData.gallery ?? []) as MediaSource[]
+      );
+
+      const upsertId = localData?.id?.trim()
+        ? localData.id.trim()
+        : id && id !== "create"
+          ? id
+          : undefined;
+
       const body: ProductUpsertModel = {
-        id: id && id !== "create" ? localData.id : undefined,
+        id: upsertId,
         language: activeLang,
         status: localData.status,
         slug: localData.translations[activeLang].slug,
@@ -416,10 +574,12 @@ export function useProductDetails() {
         seo: localData.translations[activeLang].seo,
         publishAt: localData.publishAt,
         expireAt: localData.expireAt,
-        collections: localData.collections ?? null,
-        gallery: galleryAssetIds,
-        thumbnail: localData.thumbnail ?? undefined,
-      };
+            collections: localData.collections ?? null,
+            gallery: galleryAssetIds,
+            thumbnail: thumbnailId ?? undefined,
+            variants: normalizedVariants,
+            options: normalizedOptions,
+          };
 
       const result = await fetchData("commerce/products", "POST", body);
 
@@ -441,6 +601,7 @@ export function useProductDetails() {
         setLocalData(hydrateProductDetails(result.data));
         setHasChanges(false);
         setFormErrors({});
+        setVariantErrors([]);
 
         if (id === "create") {
           navigate(`/commerce/products/${result.data.id}`);
@@ -467,7 +628,16 @@ export function useProductDetails() {
         ),
       });
     }
-  }, [localData, activeLang, id, fetchData, navigate, t, validateForm]);
+  }, [
+    localData,
+    activeLang,
+    id,
+    fetchData,
+    navigate,
+    t,
+    validateForm,
+    defaultCurrency,
+  ]);
 
   const onSeoChange = useCallback(
     <K extends keyof ProductSeoModel>(
@@ -521,13 +691,29 @@ export function useProductDetails() {
         return;
       }
 
+      const allowedGalleryIds = new Set(normalizedNextGallery);
+      const sanitizedVariants = (localData.variants ?? []).map((variant) => ({
+        ...variant,
+        gallery: (variant.gallery ?? []).filter((assetId): assetId is string =>
+          typeof assetId === "string" && allowedGalleryIds.has(assetId)
+        ),
+      }));
+
+      const nextGallerySources = mapAssetIdsToSources(
+        normalizedNextGallery,
+        localData.gallery ?? []
+      );
+
+      const normalizedThumbnailId = normalizeThumbnailIdentifier(
+        nextThumbnail,
+        nextGallerySources
+      );
+
       const updatedData: ProductDetailsState = {
         ...localData,
-        gallery: mapAssetIdsToSources(
-          normalizedNextGallery,
-          localData.gallery ?? []
-        ),
-        thumbnail: nextThumbnail,
+        gallery: nextGallerySources,
+        thumbnail: normalizedThumbnailId ?? nextThumbnail,
+        variants: sanitizedVariants,
       };
 
       setLocalData(updatedData);
@@ -560,7 +746,8 @@ export function useProductDetails() {
       const { lang, translation } = translationEntry;
 
       const body: ProductUpsertModel = {
-        id: updatedData.id,
+        id:
+          updatedData.id?.trim() || (id && id !== "create" ? id : undefined),
         language: lang,
         status: updatedData.status,
         slug: translation.slug,
@@ -574,7 +761,7 @@ export function useProductDetails() {
         expireAt: updatedData.expireAt,
         collections: updatedData.collections ?? [],
         gallery: normalizedNextGallery,
-        thumbnail: nextThumbnail ?? undefined,
+        thumbnail: normalizedThumbnailId ?? undefined,
       };
 
       try {
@@ -591,8 +778,33 @@ export function useProductDetails() {
         throw error;
       }
     },
-    [activeLang, defaultLang, fetchData, localData, t]
+    [activeLang, defaultLang, fetchData, id, localData, t]
   );
+
+  const { productOptions, onAddOption, onRemoveOption, onOptionChange, onOptionValueAdd, onOptionValueRemove } = useProductOptions({
+    localData,
+    setLocalData,
+    setHasChanges,
+    setVariantErrors,
+  });
+
+  const {
+    variantGalleryOptions,
+    onVariantChange,
+    onVariantPriceChange,
+    onVariantGalleryChange,
+    onAddVariant,
+    onRemoveVariant,
+  } = useProductVariants({
+    localData,
+    setLocalData,
+    setHasChanges,
+    setVariantErrors,
+    defaultCurrency,
+    productOptions,
+    activeLang,
+    defaultLang,
+  });
 
   return {
     data: localData,
@@ -612,5 +824,19 @@ export function useProductDetails() {
     showUnsavedAlert,
     formErrors,
     t,
+    defaultCurrency,
+    onVariantChange,
+    onVariantPriceChange,
+    onVariantGalleryChange,
+    onAddVariant,
+    onRemoveVariant,
+    onAddOption,
+    onRemoveOption,
+    onOptionChange,
+    onOptionValueAdd,
+    onOptionValueRemove,
+    variantErrors,
+    variantGalleryOptions,
+    productOptions,
   };
 }

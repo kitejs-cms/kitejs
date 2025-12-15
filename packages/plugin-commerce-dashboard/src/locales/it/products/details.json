@@ -81,8 +81,63 @@
       "inventory": "Quantità a magazzino",
       "price": "Prezzo",
       "compareAt": "Prezzo di confronto",
-      "currency": "Valuta"
+      "currency": "Valuta",
+      "optionHeader": "Assegnazione opzione",
+      "optionDescription": "Scegli quale opzione e valore rappresenta questa variante.",
+      "optionName": "Gruppo opzione",
+      "optionValue": "Valore opzione",
+      "optionNamePlaceholder": "Seleziona un'opzione",
+      "optionValuePlaceholder": "Seleziona un valore",
+      "optionValueEmpty": "Aggiungi valori a questa opzione per renderli disponibili qui.",
+      "backorder": "Consenti preordini",
+      "backorderDescription": "Permetti ai clienti di acquistare la variante anche quando non è disponibile in magazzino.",
+      "media": "Immagini galleria",
+      "mediaDescription": "Seleziona le immagini dalla galleria del prodotto da associare a questa variante.",
+      "mediaEmpty": "Aggiungi media alla galleria del prodotto per collegarli qui.",
+      "mediaSelect": "Scegli immagini",
+      "mediaPreviewEmpty": "Nessuna immagine selezionata per questa variante.",
+      "mediaSelected_one": "{{count}} immagine selezionata",
+      "mediaSelected_other": "{{count}} immagini selezionate"
+    },
+    "preview": {
+      "untitled": "Variante senza nome",
+      "missingSku": "SKU non impostato",
+      "missingOption": "Opzione non impostata",
+      "missingOptionValue": "Valore non impostato",
+      "inventoryCount": "{{count}} in magazzino",
+      "inventoryFallback": "Quantità non impostata"
+    },
+    "galleryDialog": {
+      "title": "Seleziona media della variante",
+      "description": "Scegli quali immagini della galleria associare a questa variante.",
+      "confirm": "Salva selezione"
     }
+  },
+  "options": {
+    "title": "Opzioni",
+    "description": "Definisci gruppi di opzioni condivisi e i relativi valori da associare alle varianti.",
+    "add": "Aggiungi opzione",
+    "remove": "Rimuovi opzione",
+    "empty": "Nessuna opzione configurata.",
+    "untitled": "Opzione senza titolo",
+    "defaultName": "Opzione {{index}}",
+    "optionSummary_one": "{{count}} valore configurato",
+    "optionSummary_other": "{{count}} valori configurati",
+    "fields": {
+      "displayName": "Nome visualizzato",
+      "displayNamePlaceholder": "es. Colore",
+      "displayNameHint": "Visibile ai clienti nel pannello e nello store.",
+      "handle": "Handle",
+      "handlePlaceholder": "es. colore",
+      "handleHint": "Identificativo minuscolo utilizzato nella richiesta API.",
+      "values": "Valori",
+      "valuesCount_one": "{{count}} valore",
+      "valuesCount_other": "{{count}} valori",
+      "valuesEmpty": "Nessun valore configurato.",
+      "newValuePlaceholder": "Aggiungi un valore",
+      "addValue": "Aggiungi valore"
+    },
+    "removeValue": "Rimuovi valore"
   },
   "notifications": {
     "saving": "Salvataggio prodotto...",

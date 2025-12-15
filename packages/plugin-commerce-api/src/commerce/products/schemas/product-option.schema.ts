@@ -5,6 +5,9 @@ class ProductOption {
   @Prop({ type: String, required: true })
   name!: string;
 
+  @Prop({ type: String, required: false })
+  displayName?: string;
+
   @Prop({ type: [String], default: [] })
   values!: string[];
 

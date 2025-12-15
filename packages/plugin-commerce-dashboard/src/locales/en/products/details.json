@@ -81,8 +81,63 @@
       "inventory": "Inventory quantity",
       "price": "Price",
       "compareAt": "Compare at price",
-      "currency": "Currency"
+      "currency": "Currency",
+      "optionHeader": "Option assignment",
+      "optionDescription": "Choose which option and value this variant represents.",
+      "optionName": "Option group",
+      "optionValue": "Option value",
+      "optionNamePlaceholder": "Select an option",
+      "optionValuePlaceholder": "Select a value",
+      "optionValueEmpty": "Add values to this option to make them available here.",
+      "backorder": "Allow backorders",
+      "backorderDescription": "Let customers purchase this variant even when it's out of stock.",
+      "media": "Gallery images",
+      "mediaDescription": "Select images from the product gallery to represent this variant.",
+      "mediaEmpty": "Add media to the product gallery to link images here.",
+      "mediaSelect": "Choose images",
+      "mediaPreviewEmpty": "No images selected for this variant yet.",
+      "mediaSelected_one": "{{count}} image selected",
+      "mediaSelected_other": "{{count}} images selected"
+    },
+    "preview": {
+      "untitled": "Untitled variant",
+      "missingSku": "SKU not set",
+      "missingOption": "Option not set",
+      "missingOptionValue": "Value not set",
+      "inventoryCount": "{{count}} in stock",
+      "inventoryFallback": "No inventory configured"
+    },
+    "galleryDialog": {
+      "title": "Select variant media",
+      "description": "Choose which gallery images should be associated with this variant.",
+      "confirm": "Save selection"
     }
+  },
+  "options": {
+    "title": "Options",
+    "description": "Define shared option groups and values that variants can reference.",
+    "add": "Add option",
+    "remove": "Remove option",
+    "empty": "No options configured yet.",
+    "untitled": "Untitled option",
+    "defaultName": "Option {{index}}",
+    "optionSummary_one": "{{count}} value configured",
+    "optionSummary_other": "{{count}} values configured",
+    "fields": {
+      "displayName": "Display name",
+      "displayNamePlaceholder": "e.g. Color",
+      "displayNameHint": "Shown to customers in the dashboard and storefront.",
+      "handle": "Handle",
+      "handlePlaceholder": "e.g. color",
+      "handleHint": "Lowercase handle used in the API payload.",
+      "values": "Values",
+      "valuesCount_one": "{{count}} value",
+      "valuesCount_other": "{{count}} values",
+      "valuesEmpty": "No values configured yet.",
+      "newValuePlaceholder": "Add a value",
+      "addValue": "Add value"
+    },
+    "removeValue": "Remove value"
   },
   "notifications": {
     "saving": "Saving product...",
